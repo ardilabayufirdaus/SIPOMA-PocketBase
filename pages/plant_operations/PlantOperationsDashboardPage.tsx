@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, RefreshCw, BarChart3, History } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { formatDate } from '../../utils/dateUtils';
 import OeeDashboardSection from '../../components/plant_operations/OeeDashboardSection';
 import { usePlantOperationsDataOptimizer } from '../../hooks/usePlantOperationsDataOptimizer';
+import PredictiveMaintenance from '../../components/monitoring/PredictiveMaintenance';
+import { useServerStats } from '../../hooks/useServerStats';
+import { Server, Zap, Thermometer, Activity, Calendar, RefreshCw, BarChart3 } from 'lucide-react';
 
 interface PlantOperationsDashboardPageProps {
   t: Record<string, string>;
@@ -11,7 +13,6 @@ interface PlantOperationsDashboardPageProps {
 }
 
 const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> = ({
-  t,
   section = 'CM',
 }) => {
   const [selectedDate, setSelectedDate] = useState(formatDate(new Date(), 'yyyy-MM-dd'));
@@ -23,13 +24,11 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     clearQueryCache();
-    // Logic inside OeeDashboardSection will re-fetch data because clearQueryCache triggers setDataVersion in some hooks
-    // or simply by re-mounting/re-triggering the fetch calls.
     setTimeout(() => setIsRefreshing(false), 1000);
   }, [clearQueryCache]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 text-slate-900 relative overflow-hidden font-ubuntu">
       {/* Background Elements - Ubuntu Style */}
       <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-ubuntu-aubergine/5 blur-[120px] rounded-full" />
       <div
@@ -39,6 +38,9 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
 
       {/* Main Content */}
       <div className="relative z-10 p-4 md:p-8 max-w-[1600px] mx-auto">
+        {/* Server Health Mini Monitoring */}
+        <ServerHealthHeader />
+
         {/* Header Section */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
           <motion.div
@@ -132,28 +134,107 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
 
             <OeeDashboardSection date={selectedDate} selectedUnit="all" />
           </section>
+
+          {/* Predictive Maintenance Section */}
+          <section className="mb-20">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#300a24] to-[#5e2750] flex items-center justify-center shadow-lg">
+                <Zap className="w-6 h-6 text-ubuntu-orange" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-black text-slate-800 tracking-tight font-display">
+                  Intelligent Asset Health
+                </h2>
+                <div className="flex items-center gap-3 mt-1">
+                  <div className="flex gap-0.5">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="w-1.5 h-1.5 rounded-full bg-ubuntu-orange/40" />
+                    ))}
+                  </div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">
+                    AI-Driven Predictive Insights
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <PredictiveMaintenance plantUnit={section === 'CM' ? 'Cement Mill 220' : 'RKC Unit'} />
+          </section>
         </main>
       </div>
     </div>
   );
 };
 
-const CardContainer: React.FC<{
-  title: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}> = ({ title, icon, children }) => (
-  <motion.div
-    initial={{ opacity: 0, scale: 0.95 }}
-    animate={{ opacity: 1, scale: 1 }}
-    className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm shadow-slate-200/50"
-  >
-    <div className="flex items-center gap-3 mb-6">
-      {icon}
-      <h3 className="text-lg font-bold text-slate-700">{title}</h3>
-    </div>
-    {children}
-  </motion.div>
-);
+const ServerHealthHeader: React.FC = () => {
+  const { stats } = useServerStats();
+
+  if (!stats) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-wrap items-center gap-6 mb-8 px-6 py-3 bg-white/40 backdrop-blur-xl rounded-3xl border border-white/60 shadow-sm"
+    >
+      <div className="flex items-center gap-2">
+        <Server className="w-4 h-4 text-ubuntu-aubergine" />
+        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+          System Engine
+        </span>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <div className="flex flex-col">
+          <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">
+            Load
+          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-bold text-slate-700">{stats.load.split(' ')[0]}</span>
+            <div className="w-8 h-1 bg-slate-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-ubuntu-orange"
+                style={{ width: `${Math.min(parseFloat(stats.load) * 10, 100)}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col">
+          <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">
+            Memory
+          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-bold text-slate-700">Active</span>
+            <Activity className="w-3 h-3 text-emerald-500" />
+          </div>
+        </div>
+
+        {stats.temp && (
+          <div className="flex flex-col">
+            <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">
+              Temp
+            </span>
+            <div className="flex items-center gap-1">
+              <Thermometer
+                className={`w-3 h-3 ${parseFloat(stats.temp) > 70 ? 'text-red-500' : 'text-slate-400'}`}
+              />
+              <span className="text-xs font-bold text-slate-700">{stats.temp}</span>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 ml-2 pl-4 border-l border-slate-100">
+          <div
+            className={`w-2 h-2 rounded-full animate-pulse ${stats.status === 'online' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500'}`}
+          />
+          <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">
+            Core Engine {stats.status}
+          </span>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
 export default PlantOperationsDashboardPage;

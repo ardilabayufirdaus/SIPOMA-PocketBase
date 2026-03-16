@@ -4,16 +4,29 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+// Plugin to draw white background
+const whiteBackgroundPlugin = {
+  id: 'customCanvasBackgroundColor',
+  beforeDraw: (chart: any) => {
+    const { ctx } = chart;
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-over';
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, chart.width, chart.height);
+    ctx.restore();
+  },
+};
+
 interface DonutChartProps {
   data: Array<{
     label: string;
     value: number;
     color: string;
   }>;
-  t: any;
+  t: Record<string, string>;
 }
 
-export const DonutChart: React.FC<DonutChartProps> = ({ data, t }) => {
+export const DonutChart = React.forwardRef<any, DonutChartProps>(({ data }, ref) => {
   const chartData = {
     labels: data.map((item) => item.label),
     datasets: [
@@ -31,6 +44,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({ data, t }) => {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    devicePixelRatio: 8, // Extreme high resolution for crisp PDF
     plugins: {
       legend: {
         display: false, // We show custom legend below
@@ -45,14 +59,13 @@ export const DonutChart: React.FC<DonutChartProps> = ({ data, t }) => {
         },
       },
     },
+    animation: false, // Essential for sharp PDF capture
     cutout: '60%', // Creates donut effect
   };
 
   return (
-    <div className="w-24 h-24">
-      <Doughnut data={chartData} options={options} />
+    <div className="w-32 h-32 mx-auto">
+      <Doughnut ref={ref} data={chartData} options={options} plugins={[whiteBackgroundPlugin]} />
     </div>
   );
-};
-
-
+});

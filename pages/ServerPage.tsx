@@ -229,10 +229,6 @@ const ServerPage: React.FC = () => {
   const geoCacheRef = useRef<Record<string, { lat: number; lon: number; city?: string }>>({});
 
   const resolveGeoIP = useCallback(async (ip: string) => {
-    if (geoCacheRef.current[ip]) return; // Sudah ada, skip
-    // Tandai sebagai sedang diproses agar tidak double fetch
-    geoCacheRef.current[ip] = { lat: 0, lon: 0 };
-
     // Helper hash buat fallback koordinat (deterministik per-IP)
     const stableHash = (s: string) => {
       let h = 0;
@@ -245,21 +241,24 @@ const ServerPage: React.FC = () => {
     };
 
     try {
-      const res = await fetch(`https://ip-api.com/json/${ip}?fields=status,lat,lon,city,country`);
+      // Menggunakan freeipapi.com yang lebih toleran untuk client-side
+      const res = await fetch(`https://free.freeipapi.com/api/json/${ip}`);
       if (!res.ok) throw new Error('fetch failed');
       const data = await res.json();
-      if (data.status === 'success' && data.lat && data.lon) {
-        const loc = { lat: data.lat, lon: data.lon, city: `${data.city}, ${data.country}` };
+      if (data.latitude && data.longitude) {
+        const loc = {
+          lat: data.latitude,
+          lon: data.longitude,
+          city: `${data.cityName || 'Unknown'}, ${data.countryName || 'Unknown'}`,
+        };
         geoCacheRef.current[ip] = loc;
         setGeoCache((prev) => ({ ...prev, [ip]: loc }));
       } else {
-        // ip-api gagal (IP private / blokir) — pakai fallback
         const loc = fallbackCoords(ip);
         geoCacheRef.current[ip] = loc;
         setGeoCache((prev) => ({ ...prev, [ip]: loc }));
       }
     } catch (e) {
-      // Network error — pakai fallback
       const loc = fallbackCoords(ip);
       geoCacheRef.current[ip] = loc;
       setGeoCache((prev) => ({ ...prev, [ip]: loc }));
@@ -269,11 +268,17 @@ const ServerPage: React.FC = () => {
   useEffect(() => {
     if (analytics) {
       const allIPs = [...analytics.users.map((u) => u.ip), ...analytics.attacks.map((a) => a.ip)];
+      let delay = 0;
       allIPs.forEach((ip) => {
-        if (!geoCacheRef.current[ip]) resolveGeoIP(ip);
+        // Jika IP belum ada di cache, tambahkan ke antrian fetch dengan delay bertahap
+        if (!geoCacheRef.current[ip]) {
+          // Penanda sementara agar tidak masuk antrian lagi saat analytics refresh
+          geoCacheRef.current[ip] = { lat: 0, lon: 0 };
+          setTimeout(() => resolveGeoIP(ip), delay);
+          delay += 1500; // Berikan jeda 1.5 detik antar request untuk menghindari Rate Limit (403)
+        }
       });
     }
-    // Sengaja tidak include geoCache/geoCacheRef agar tidak loop
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [analytics, resolveGeoIP]);
 

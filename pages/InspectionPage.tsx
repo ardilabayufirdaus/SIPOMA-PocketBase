@@ -5,7 +5,7 @@ import ArrowPathIcon from '../components/icons/ArrowPathRoundedSquareIcon';
 import FunnelIcon from '../components/icons/Bars4Icon';
 import MagnifyingGlassIcon from '../components/icons/DocumentMagnifyingGlassIcon';
 import PlusIcon from '../components/icons/PlusIcon';
-import XMarkIcon from '../components/icons/XMarkIcon'; // Assume exists or use SVG
+import XMarkIcon from '../components/icons/XMarkIcon';
 import TemplateManager from '../features/inspection/components/TemplateManager';
 import ShiftReportForm from '../features/inspection/components/ShiftReportForm';
 import CheckBadgeIcon from '../components/icons/CheckBadgeIcon';
@@ -13,11 +13,12 @@ import { useAuth } from '../hooks/useAuth';
 import { useInspectionData } from '../hooks/useInspectionData';
 import UnitManager from '../features/inspection/components/UnitManager';
 import CogIcon from '../components/icons/CogIcon';
-import ChevronDownIcon from '../components/icons/ChevronDownIcon';
 import { useEffect } from 'react';
 import { InspectionReport } from '../services/pocketbase';
 
 // Local Interface for UI development
+import { DailyReport } from '../types';
+
 // --- Dynamic Template Interfaces ---
 interface CheckPoint {
   id: string;
@@ -34,26 +35,6 @@ interface Group {
   id: string;
   name: string;
   equipments: Equipment[];
-}
-
-interface DailyReport {
-  id: string;
-  date: string;
-  unit: string;
-  unitId?: string;
-  areaId?: string;
-  status: 'pending' | 'completed' | 'critical';
-  data: Record<string, { s1: string; s2: string; s3: string; note: string }>;
-  personnel: {
-    s1: { tender: string; karu: string };
-    s2: { tender: string; karu: string };
-    s3: { tender: string; karu: string };
-  };
-  approvals: {
-    s1: boolean;
-    s2: boolean;
-    s3: boolean;
-  };
 }
 
 const INITIAL_TEMPLATE: Record<string, Group[]> = {
@@ -96,7 +77,11 @@ const InspectionPage: React.FC = () => {
     groups,
     equipments,
     checkpoints,
-    loading: isLoading,
+    units,
+    areas,
+    groups,
+    equipments,
+    checkpoints,
     refetch: refreshInspections,
     addUnit,
     updateUnit,
@@ -115,7 +100,6 @@ const InspectionPage: React.FC = () => {
     deleteCheckpoint,
     addInspection,
     updateInspection,
-    deleteInspection,
   } = useInspectionData();
 
   const [activeUnitId, setActiveUnitId] = useState<string>('');
@@ -131,7 +115,8 @@ const InspectionPage: React.FC = () => {
         ({
           id: row.id,
           date: row.date,
-          unit: row.unit,
+          unitName: units.find((u) => u.id === row.unit)?.name || 'Unknown Unit',
+          unitId: row.unit,
           areaId: row.area,
           status: row.status,
           data: row.data || {},
@@ -147,7 +132,7 @@ const InspectionPage: React.FC = () => {
           },
         }) as DailyReport
     );
-  }, [reportsFromDb]);
+  }, [reportsFromDb, units]);
 
   const isSuperAdmin =
     (currentUser?.role as string) === 'super_admin' ||
@@ -180,7 +165,7 @@ const InspectionPage: React.FC = () => {
   // Effective unit name for data filtering and saving (Unit or Sub-unit)
   const currentContextName = useMemo(
     () => activeSubUnit || activeUnit,
-    [activeUnitId, activeSubUnitId, units]
+    [activeUnit, activeSubUnit]
   );
 
   // Derive dynamic template for the active context (context-wide or specific area)
@@ -226,9 +211,12 @@ const InspectionPage: React.FC = () => {
     const reportDate = new Date(newReportData.date).toISOString().split('T')[0];
 
     // Find if report already exists for this unit and date in DB records
+    // Find if report already exists for this unit and date in DB records
     const existing = reportsFromDb.find((r) => {
       const rDate = new Date(r.date).toISOString().split('T')[0];
-      return r.unit === newReportData.unit && rDate === reportDate;
+      return (
+        r.unit === newReportData.unitId && rDate === reportDate && r.area === newReportData.areaId
+      );
     });
 
     // Map UI structure (DailyReport) to PB structure (InspectionReport)
@@ -261,9 +249,9 @@ const InspectionPage: React.FC = () => {
             ...newReportData.data,
           },
         };
-        await updateInspection(existing.id, updatedPbData as any);
+        await updateInspection(existing.id, updatedPbData as InspectionReport);
       } else {
-        await addInspection(pbData as any);
+        await addInspection(pbData as InspectionReport);
       }
       refreshInspections();
     } catch (err) {
@@ -303,17 +291,16 @@ const InspectionPage: React.FC = () => {
         day: 'numeric',
       });
       const matchesSearch =
-        report.unit.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        report.unitName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         reportDateLabel.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus =
         filterStatus === 'All Status' || report.status === filterStatus.toLowerCase();
-      const matchesUnit =
-        report.unit === activeSubUnitId || (!activeSubUnitId && report.unit === activeUnitId);
+      const matchesUnit = report.unitId === (activeSubUnitId || activeUnitId);
       const matchesArea = !activeAreaId || report.areaId === activeAreaId;
 
       return matchesSearch && matchesStatus && matchesUnit && matchesArea;
     });
-  }, [reports, searchTerm, filterStatus, currentContextName, activeAreaId]);
+  }, [reports, searchTerm, filterStatus, activeUnitId, activeSubUnitId, activeAreaId, units]);
 
   const stats = useMemo(() => {
     return [
@@ -536,14 +523,16 @@ const InspectionPage: React.FC = () => {
               <div className="flex items-center justify-between relative z-10">
                 <div className="space-y-1">
                   <p className="text-[10px] font-bold text-ubuntu-warmGrey uppercase tracking-[0.2em]">
-                    Daily Reports
+                    {stats[0].label}
                   </p>
                   <h3 className="text-4xl font-bold text-ubuntu-coolGrey dark:text-white">
-                    {filteredReports.length}
+                    {stats[0].value}
                   </h3>
                 </div>
-                <div className="p-4 rounded-2xl bg-ubuntu-orange/10 text-ubuntu-orange shadow-sm transition-transform group-hover:scale-110 duration-300">
-                  <ClipboardCheckIcon className="w-8 h-8" />
+                <div
+                  className={`p-4 rounded-2xl ${stats[0].bg} ${stats[0].color} shadow-sm transition-transform group-hover:scale-110 duration-300`}
+                >
+                  {React.createElement(stats[0].icon, { className: 'w-8 h-8' })}
                 </div>
               </div>
             </motion.div>
@@ -558,14 +547,16 @@ const InspectionPage: React.FC = () => {
               <div className="flex items-center justify-between relative z-10">
                 <div className="space-y-1">
                   <p className="text-[10px] font-bold text-rose-500 uppercase tracking-[0.2em]">
-                    Critical Findings
+                    {stats[1].label}
                   </p>
                   <h3 className="text-4xl font-bold text-rose-600 dark:text-rose-400">
-                    {filteredReports.filter((i) => i.status === 'critical').length}
+                    {stats[1].value}
                   </h3>
                 </div>
-                <div className="p-4 rounded-2xl bg-rose-500/10 text-rose-600 shadow-sm transition-transform group-hover:scale-110 duration-300">
-                  <XMarkIcon className="w-8 h-8" />
+                <div
+                  className={`p-4 rounded-2xl ${stats[1].bg} ${stats[1].color} shadow-sm transition-transform group-hover:scale-110 duration-300`}
+                >
+                  {React.createElement(stats[1].icon, { className: 'w-8 h-8' })}
                 </div>
               </div>
             </motion.div>
@@ -795,7 +786,7 @@ const InspectionPage: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                      {templates[currentContextName]?.map((group, gIdx) => (
+                      {templates[currentContextName]?.map((group) => (
                         <React.Fragment key={group.id}>
                           <tr className="bg-slate-50/50 dark:bg-slate-800/20">
                             <td
@@ -965,7 +956,7 @@ const InspectionPage: React.FC = () => {
               className="fixed right-0 top-0 h-full w-full max-w-7xl bg-white dark:bg-slate-900 z-[101] flex flex-col border-l border-slate-200 dark:border-white/10 shadow-2xl"
             >
               <ShiftReportForm
-                unit={currentContextName}
+                unit={activeSubUnit || activeUnit}
                 unitId={activeSubUnitId || activeUnitId}
                 areas={areas}
                 groups={currentAreaTemplate as any}

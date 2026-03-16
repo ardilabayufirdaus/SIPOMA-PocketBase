@@ -154,7 +154,7 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
       const calculateRangeOee = (startDate: string, endDate: string) => {
         const downtimeInRange = allData.downtime.filter(
           (d) =>
-            d.plant_unit === unitId &&
+            (d.unit === unitId || d.plant_unit === unitId) &&
             normalize(d.date) >= startDate &&
             normalize(d.date) <= endDate
         );
@@ -178,8 +178,11 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
         const availability = calculateAvailabilityRange(downtimeInRange, days);
         const designCapacity = feederParam?.max_value || 100;
         const prodRecords = capacityInRange.map((c) => {
-          const dtForDay = downtimeInRange.filter((d) => d.date === c.date);
-          const dtMinutes = dtForDay.reduce((sum, d) => sum + (parseFloat(d.duration) || 0), 0);
+          const dtForDay = downtimeInRange.filter((d) => normalize(d.date) === normalize(c.date));
+          const dtMinutes = dtForDay.reduce(
+            (sum, d) => sum + (parseFloat(d.duration_minutes || d.duration) || 0),
+            0
+          );
           return { actualOutput: c.wet || 0, operatingMinutes: 1440 - dtMinutes };
         });
         const performance = calculatePerformanceRange(prodRecords, designCapacity);

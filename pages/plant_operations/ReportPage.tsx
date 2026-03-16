@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { useReportSettings } from '../../hooks/useReportSettings';
 import { useSimpleReportSettings } from '../../hooks/useSimpleReportSettings';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
@@ -755,6 +754,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       });
 
       const imgData = canvas.toDataURL('image/png');
+      const { jsPDF } = await import('jspdf');
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',

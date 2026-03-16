@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ClientResponseError } from 'pocketbase';
 import { pb } from '../utils/pocketbase-simple';
-import { logger } from '../utils/logger';
 
 interface PresenceUser {
   id: string;
@@ -41,26 +39,12 @@ export const usePresenceTracker = () => {
               is_online: true,
               avatarUrl: user.avatar ? pb.files.getUrl(user, user.avatar) : undefined,
             };
-          } catch (fetchErr: any) {
-            if (fetchErr.status === 404) {
-              // SILENT DELETE: Wrap in catch to prevent console error leak
-              try {
-                  await pb.collection('user_online').delete(record.id);
-              } catch (_) { /* Ignore completely */ }
-              return null;
-            }
-            
-             presenceData = {
-              id: record.user_id,
-              username: 'User',
-              full_name: 'Online User',
-              role: 'Unknown',
-              last_seen: new Date(record.created),
-              is_online: true,
-            };
+          } catch (fetchErr: unknown) {
+            // Jika user tidak ditemukan (404), cukup abaikan record ini di UI.
+            // Jangan mencoba menghapusnya dari client (menyebabkan 404 bagi client lain).
+            return null;
           }
           return presenceData;
-
         } catch (e) {
           return null;
         }
@@ -76,7 +60,7 @@ export const usePresenceTracker = () => {
       setOnlineUsers(uniqueUsers);
       setIsConnected(true);
     } catch (error) {
-       setIsConnected(false);
+      setIsConnected(false);
     }
   }, []);
 
@@ -85,33 +69,46 @@ export const usePresenceTracker = () => {
     if (!userId) return;
 
     try {
-      const existingRecords = await pb.collection('user_online').getList(1, 50, {
+      // Cari record aktif untuk user ini
+      const existingRecords = await pb.collection('user_online').getList(1, 10, {
         filter: `user_id = "${userId}"`,
+        sort: '-created',
       });
 
       if (existingRecords.items.length > 0) {
-          // Force parallelism but individually catch errors to silence console
-          await Promise.all(existingRecords.items.map(async (item) => {
-              try {
-                  await pb.collection('user_online').delete(item.id);
-              } catch (err: any) {
-                  // If 404, specifically ignore.
-                  // Note: Browser will still log XHR 404 regardless of JS catch unless we preventdefault,
-                  // but we can't prevent XHR logging in devtools.
-                  // However, this prevents the "Uncaught (in promise)" error.
-                  if (err.status !== 404) {
-                      // Only care if it's NOT a 404
-                  }
-              }
-          }));
+        // Gunakan record terbaru yang ada
+        const latest = existingRecords.items[0];
+
+        // Update timestamp 'updated' untuk menandakan keaktifan
+        try {
+          await pb.collection('user_online').update(latest.id, {
+            user_id: userId, // Update field yang sama (no-op) untuk merefresh 'updated'
+          });
+        } catch (error: any) {
+          if (error.status === 404) {
+            // Jika record sudah hilang (mungkin dihapus tab lain), buat baru
+            await pb.collection('user_online').create({ user_id: userId });
+          }
+        }
+
+        // Jika ada duplikasi (lebih dari 1 record), bersihkan sisanya secara senyap
+        if (existingRecords.items.length > 1) {
+          for (let i = 1; i < existingRecords.items.length; i++) {
+            try {
+              await pb.collection('user_online').delete(existingRecords.items[i].id);
+            } catch (_) {
+              /* Ignore silent */
+            }
+          }
+        }
+      } else {
+        // Belum ada record, buat baru
+        await pb.collection('user_online').create({
+          user_id: userId,
+        });
       }
-
-      await pb.collection('user_online').create({
-        user_id: userId,
-      });
-
     } catch (error) {
-        // Ignore heartbeat flow errors
+      // Ignore heartbeat flow errors to keep app running
     }
   }, []);
 
@@ -122,17 +119,17 @@ export const usePresenceTracker = () => {
     const initialize = async () => {
       await fetchOnlineUsers();
       await sendHeartbeat();
-      
+
       heartbeatIntervalRef.current = setInterval(sendHeartbeat, 2 * 60 * 1000);
 
       try {
         unsubscribe = await pb.collection('user_online').subscribe('*', (e) => {
-            if (e.action === 'create' || e.action === 'delete') {
-                fetchOnlineUsers();
-            }
+          if (e.action === 'create' || e.action === 'delete') {
+            fetchOnlineUsers();
+          }
         });
       } catch (err) {
-          // Ignore
+        // Ignore
       }
     };
 

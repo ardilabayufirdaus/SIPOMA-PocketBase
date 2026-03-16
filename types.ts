@@ -298,3 +298,55 @@ export type Page =
 
 export type Language = 'en' | 'id';
 export type Theme = 'light';
+
+// --- Inspection Module Types ---
+export interface InspectionCheckPoint {
+  id: string;
+  name: string;
+}
+
+export interface InspectionEquipment {
+  id: string;
+  name: string;
+  checkPoints: InspectionCheckPoint[];
+}
+
+export interface InspectionGroup {
+  id: string;
+  name: string;
+  equipments: InspectionEquipment[];
+}
+
+export interface DailyReport {
+  id: string;
+  date: string;
+  unitName: string;
+  unitId: string;
+  areaId?: string;
+  status: 'pending' | 'completed' | 'critical';
+  data: Record<string, { s1: string; s2: string; s3: string; note: string }>;
+  personnel: {
+    s1: { tender: string; karu: string };
+    s2: { tender: string; karu: string };
+    s3: { tender: string; karu: string };
+  };
+  approvals: {
+    s1: boolean;
+    s2: boolean;
+    s3: boolean;
+  };
+}
+
+export interface GenericInspectionUnit {
+  id: string;
+  name: string;
+  parent_id?: string;
+  sort_order?: number;
+}
+
+export interface GenericInspectionArea {
+  id: string;
+  unit: string; // unit ID
+  name: string;
+  sort_order?: number;
+}

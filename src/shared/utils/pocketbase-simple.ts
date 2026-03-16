@@ -103,4 +103,9 @@ export const Collections = {
   USER_PERMISSIONS: 'user_permissions',
   USER_SESSIONS: 'user_sessions',
   WORK_INSTRUCTIONS: 'work_instructions',
+  API_KEY: 'api_key',
+  OPERATIONAL_AI_REVIEWS: 'operational_ai_reviews',
+  CCR_MATERIAL_USAGE: 'ccr_material_usage',
+  MOISTURE_MONITORING: 'moisture_monitoring',
+  MONITORING_PRODUCTION_CAPACITY: 'monitoring_production_capacity',
 };

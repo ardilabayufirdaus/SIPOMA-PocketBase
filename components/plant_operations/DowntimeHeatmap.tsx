@@ -16,19 +16,22 @@ const DowntimeHeatmap: React.FC<DowntimeHeatmapProps> = ({ units, downtimeData }
     });
 
     downtimeData.forEach((record) => {
-      const unitId = record.plant_unit;
+      // In ccr_downtime_data, the field is 'unit'
+      const unitId = record.unit;
       if (!data[unitId]) return;
 
-      // Extract hour from record (assuming downtime might have a specific hour or we use created/date)
-      // Since downtime records in SIPOMA usually have a start time or duration
-      // For simplicity, if we don't have the exact hour, we might need to check the schema
-      // Let's assume there is a 'start_time' or we can parse it from data
-      // For now, let's look for 'duration' and distribute it if possible,
-      // or just mark the hour if 'date' includes time.
+      // Extract hour from start_time (formatted as HH:MM)
+      let hour = 0;
+      if (record.start_time && record.start_time.includes(':')) {
+        hour = parseInt(record.start_time.split(':')[0], 10);
+      } else {
+        const dateObj = new Date(record.date);
+        hour = dateObj.getHours();
+      }
 
-      const dateObj = new Date(record.date);
-      const hour = dateObj.getHours();
-      data[unitId][hour] += parseFloat(record.duration) || 0;
+      if (hour >= 0 && hour < 24) {
+        data[unitId][hour] += parseFloat(record.duration_minutes || record.duration) || 0;
+      }
     });
 
     return data;

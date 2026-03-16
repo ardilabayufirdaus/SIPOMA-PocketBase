@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { useProjects } from '../../hooks/useProjects';
 import { formatRupiah } from '../../utils/formatters';
 
@@ -11,17 +11,18 @@ import CheckBadgeIcon from '../../components/icons/CheckBadgeIcon';
 import ExclamationTriangleIcon from '../../components/icons/ExclamationTriangleIcon';
 import ClipboardDocumentListIcon from '../../components/icons/ClipboardDocumentListIcon';
 import CurrencyDollarIcon from '../../components/icons/CurrencyDollarIcon';
-import ChartBarSquareIcon from '../../components/icons/ChartBarSquareIcon';
 import ShieldCheckIcon from '../../components/icons/ShieldCheckIcon';
 import FireIcon from '../../components/icons/FireIcon';
 import ClockIcon from '../../components/icons/ClockIcon';
 import ArrowPathRoundedSquareIcon from '../../components/icons/ArrowPathRoundedSquareIcon';
+import DocumentArrowDownIcon from '../../components/icons/DocumentArrowDownIcon';
 
 // Import Chart Components
 import { DonutChart } from '../../components/charts/DonutChart';
 import { ResourceAllocationChart } from '../../components/charts/ResourceAllocationChart';
 import { BudgetComparisonChart } from '../../components/charts/BudgetComparisonChart';
 import { addMonths, format, isBefore, startOfMonth, startOfDay } from 'date-fns';
+import { exportDashboardToPDF } from '../../utils/pdfExportUtils';
 
 const LoadingSpinner: React.FC = () => (
   <div className="flex items-center justify-center h-64">
@@ -33,13 +34,18 @@ const LoadingSpinner: React.FC = () => (
 );
 
 const ProjectDashboardPage: React.FC<{
-  t: any;
+  t: Record<string, string>;
   onNavigateToDetail: (projectId: string) => void;
 }> = ({ t, onNavigateToDetail }) => {
   const { projects, tasks, loading, refetch } = useProjects();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [refreshing, setRefreshing] = useState(false);
+
+  // Chart instance refs for direct high-res export
+  const resourceChartInstRef = useRef<any>(null);
+  const donutChartInstRef = useRef<any>(null);
+  const budgetChartInstRef = useRef<any>(null);
 
   // Enhanced accessibility hooks
   const { announceToScreenReader } = useAccessibility();
@@ -57,36 +63,9 @@ const ProjectDashboardPage: React.FC<{
     }
   };
 
-  // Handle export
-  const handleExport = () => {
-    const dataToExport = filteredProjectsSummary.map((p) => ({
-      Title: p.title,
-      Status: p.status,
-      Progress: `${p.progress.toFixed(1)}%`,
-      Budget: p.budget ? formatRupiah(p.budget) : 'N/A',
-      Tasks: tasks.filter((task) => task.project_id === p.id).length,
-      CompletedTasks: tasks.filter(
-        (task) => task.project_id === p.id && task.percent_complete === 100
-      ).length,
-    }));
-
-    const csvContent = [
-      Object.keys(dataToExport[0]).join(','),
-      ...dataToExport.map((row) => Object.values(row).join(',')),
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `projects_export_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
-
   const projectsSummary = useMemo(() => {
     return projects.map((project) => {
-      const projectTasks = tasks.filter((t) => t.project_id === project.id);
+      const projectTasks = tasks.filter((t_task) => t_task.project_id === project.id);
       if (projectTasks.length === 0) {
         return {
           ...project,
@@ -112,7 +91,7 @@ const ProjectDashboardPage: React.FC<{
         }, 0) * 100;
 
       const projectEndDate = new Date(
-        Math.max(...tasksWithDurations.map((t) => new Date(t.planned_end).getTime()))
+        Math.max(...tasksWithDurations.map((t_inner) => new Date(t_inner.planned_end).getTime()))
       );
 
       let status = t.proj_status_on_track,
@@ -150,13 +129,13 @@ const ProjectDashboardPage: React.FC<{
 
     const totalBudget = projects.reduce((sum, p) => sum + (p.budget || 0), 0);
     const avgBudget = totalProjects > 0 ? totalBudget / totalProjects : 0;
-    const highBudgetProjects = projects.filter((p) => (p.budget || 0) > avgBudget * 1.5).length;
+    const _highBudgetProjects = projects.filter((p) => (p.budget || 0) > avgBudget * 1.5).length;
 
-    const allTasks = tasks.length;
-    const activeTasks = tasks.filter((t) => t.percent_complete < 100).length;
-    const overdueTasks = tasks.filter((t) => {
-      const endDate = new Date(t.planned_end);
-      return t.percent_complete < 100 && endDate < new Date();
+    const _allTasks = tasks.length;
+    const activeTasks = tasks.filter((t_task) => t_task.percent_complete < 100).length;
+    const overdueTasks = tasks.filter((t_task) => {
+      const endDate = new Date(t_task.planned_end);
+      return t_task.percent_complete < 100 && endDate < new Date();
     }).length;
 
     const riskProjects = projectsSummary.map((p) => {
@@ -177,13 +156,10 @@ const ProjectDashboardPage: React.FC<{
       completedProjects,
       delayedProjects,
       totalBudget,
-      avgBudget,
-      highBudgetProjects,
-      allTasks,
       activeTasks,
       overdueTasks,
-      highRiskCount,
       projectHealthScore: Math.round(100 - (delayedProjects / Math.max(totalProjects, 1)) * 100),
+      highRiskCount,
     };
   }, [projectsSummary, projects, tasks, t]);
 
@@ -271,6 +247,38 @@ const ProjectDashboardPage: React.FC<{
         actual: ((p.progress || 0) / 100) * (p.budget || 0),
       }));
   }, [projectsSummary]);
+
+  // Handle export
+  const handleExport = async () => {
+    // Capture charts DIRECTLY from Chart.js (Pixel Perfect)
+    const charts: Record<string, string> = {};
+    try {
+      if (donutChartInstRef.current) {
+        charts.statusDonut = donutChartInstRef.current.toBase64Image('image/png', 1.0);
+      }
+      if (budgetChartInstRef.current) {
+        charts.budgetComparison = budgetChartInstRef.current.toBase64Image('image/png', 1.0);
+      }
+      if (resourceChartInstRef.current) {
+        charts.resourceAllocation = resourceChartInstRef.current.toBase64Image('image/png', 1.0);
+      }
+    } catch (err) {
+      console.error('Failed to capture charts directly:', err);
+    }
+
+    const dataToExport = filteredProjectsSummary.map((p) => ({
+      title: p.title,
+      status: p.status,
+      progress: p.progress,
+      budget: p.budget ? formatRupiah(p.budget) : 'N/A',
+      tasksCount: tasks.filter((task) => task.project_id === p.id).length,
+      completedTasksCount: tasks.filter(
+        (task) => task.project_id === p.id && task.percent_complete === 100
+      ).length,
+    }));
+
+    await exportDashboardToPDF(dataToExport, overallMetrics, t, charts);
+  };
 
   if (loading) return <LoadingSpinner />;
 
@@ -376,8 +384,8 @@ const ProjectDashboardPage: React.FC<{
                     onClick={handleExport}
                     className="bg-[#E95420] hover:bg-[#D34610] text-white border-transparent"
                   >
-                    <ChartBarSquareIcon className="w-4 h-4 mr-2" />
-                    Export
+                    <DocumentArrowDownIcon className="w-4 h-4 mr-2" />
+                    Export PDF
                   </EnhancedButton>
                 </div>
                 <div className="flex items-center justify-center lg:justify-end">
@@ -502,8 +510,8 @@ const ProjectDashboardPage: React.FC<{
                 6 Months Horizon
               </span>
             </div>
-            <div className="h-72 w-full">
-              <ResourceAllocationChart data={tasksForecastData} t={t} />
+            <div className="h-48 w-full">
+              <ResourceAllocationChart ref={resourceChartInstRef} data={tasksForecastData} t={t} />
             </div>
           </div>
 
@@ -511,7 +519,7 @@ const ProjectDashboardPage: React.FC<{
             <h3 className="text-lg font-bold text-[#2c001e] mb-6">{t.projects_by_status}</h3>
             <div className="flex-1 flex flex-col items-center justify-center min-h-[280px]">
               <div className="scale-125 mb-8">
-                <DonutChart data={statusCounts} t={t} />
+                <DonutChart ref={donutChartInstRef} data={statusCounts} t={t} />
               </div>
               <div className="w-full space-y-3 mt-auto">
                 {statusCounts.map((item) => (
@@ -544,7 +552,7 @@ const ProjectDashboardPage: React.FC<{
                   {t.total_budget || 'Total Budget'}
                 </p>
                 <p className="text-lg font-bold text-[#2c001e] truncate">
-                  {formatRupiah(overallMetrics.totalBudget)}
+                  {overallMetrics.totalBudget ? formatRupiah(overallMetrics.totalBudget) : 'Rp 0'}
                 </p>
               </div>
               <div className="p-4 rounded-xl bg-[#77216F]/5 border border-[#77216F]/10">
@@ -560,8 +568,8 @@ const ProjectDashboardPage: React.FC<{
                 </p>
               </div>
             </div>
-            <div className="flex-1 min-h-[150px]">
-              <BudgetComparisonChart data={budgetComparisonData} t={t} />
+            <div className="flex-1 h-64">
+              <BudgetComparisonChart ref={budgetChartInstRef} data={budgetComparisonData} t={t} />
             </div>
           </div>
 

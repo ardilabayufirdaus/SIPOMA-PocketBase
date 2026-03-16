@@ -4,6 +4,7 @@ import { useParameterSettings } from './useParameterSettings';
 import { pb } from '../utils/pocketbase-simple';
 import { useCcrDataCache } from './useDataCache';
 import { logger } from '../utils/logger';
+import { safeApiCall } from '../utils/connectionCheck';
 
 // Extend CcrParameterData interface untuk include name property
 export interface CcrParameterDataWithName extends CcrParameterData {
@@ -92,14 +93,19 @@ export const useCcrParameterData = () => {
 
         // Build query with optional plant_unit filter
         // Use date-only filter to match database storage format
-        let filter = `date="${isoDate}"`;
+        let filter = `date = "${isoDate}"`;
         if (plantUnit && plantUnit !== 'all') {
-          filter += ` && plant_unit="${plantUnit}"`;
+          filter += ` && plant_unit = "${plantUnit}"`;
         }
 
-        const data = await pb.collection('ccr_parameter_data').getFullList({
-          filter: filter,
-        });
+        const data = await safeApiCall(() =>
+          pb.collection('ccr_parameter_data').getFullList({
+            filter: filter,
+            requestKey: null, // Mencegah autocancel yang sering terjadi saat ganti tanggal cepat
+          })
+        );
+
+        if (!data) return [];
 
         // Filter parameters based on plant unit if specified
         let filteredParameters = parameters;
@@ -206,14 +212,19 @@ export const useCcrParameterData = () => {
         }
 
         // Build query with optional plant_unit filter and pagination
-        let filter = `date="${isoDate}"`;
+        let filter = `date = "${isoDate}"`;
         if (plantUnit && plantUnit !== 'all') {
-          filter += ` && plant_unit="${plantUnit}"`;
+          filter += ` && plant_unit = "${plantUnit}"`;
         }
 
-        const data = await pb.collection('ccr_parameter_data').getList(page, pageSize, {
-          filter: filter,
-        });
+        const data = await safeApiCall(() =>
+          pb.collection('ccr_parameter_data').getList(page, pageSize, {
+            filter: filter,
+            requestKey: null,
+          })
+        );
+
+        if (!data) return { data: [], total: 0, hasMore: false };
 
         // Filter parameters based on plant unit if specified
         let filteredParameters = parameters;

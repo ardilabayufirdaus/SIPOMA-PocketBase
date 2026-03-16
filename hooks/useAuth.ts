@@ -178,7 +178,7 @@ export const useAuth = () => {
         setLoading(false);
       }
     },
-    [handleError]
+    [handleError, loadUserPermissions]
   );
 
   const logout = useCallback(async () => {
@@ -189,11 +189,22 @@ export const useAuth = () => {
           filter: `user_id = "${pb.authStore.model.id}"`,
         });
 
-        // Delete all found records for this user
-        await Promise.all(records.map((record) => pb.collection('user_online').delete(record.id)));
+        // Delete all found records for this user safely
+        await Promise.all(
+          records.map((record) =>
+            pb
+              .collection('user_online')
+              .delete(record.id)
+              .catch((err) => {
+                if (err.status !== 404) {
+                  console.warn('Logout presence cleanup error:', err.message);
+                }
+              })
+          )
+        );
       }
     } catch (error) {
-      console.warn('Failed to delete user_online record:', error);
+      // General error in fetching or processing
     }
 
     setUser(null);

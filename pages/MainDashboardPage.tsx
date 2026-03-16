@@ -4,6 +4,7 @@ import DashboardHeader from '../components/dashboard/DashboardHeader';
 import KPISection from '../components/dashboard/KPISection';
 import OperationsOverview from '../components/dashboard/OperationsOverview';
 import QuickActions from '../components/dashboard/QuickActions';
+import AiOperationalReview from '../components/dashboard/AiOperationalReview';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 
@@ -56,6 +57,11 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
         {/* KPI Section */}
         <div className="flex-shrink-0">
           <KPISection metrics={metrics} t={t} />
+        </div>
+
+        {/* AI Operational Review Section */}
+        <div className="flex-shrink-0">
+          <AiOperationalReview t={t} />
         </div>
 
         {/* Main Content - Grid Layout */}

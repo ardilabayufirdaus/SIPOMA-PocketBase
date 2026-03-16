@@ -4,47 +4,19 @@ import XMarkIcon from '../../../components/icons/XMarkIcon';
 import ClipboardCheckIcon from '../../../components/icons/ClipboardCheckIcon';
 import { useAuth } from '../../../hooks/useAuth';
 import { useUserStore } from '../../../stores/userStore';
-import CogIcon from '../../../components/icons/CogIcon';
-import ChevronDownIcon from '../../../components/icons/ChevronDownIcon';
 import { useEffect } from 'react';
 import { InspectionArea } from '../../../services/pocketbase';
 
-interface CheckPoint {
-  id: string;
-  name: string;
-}
+import {
+  DailyReport,
+  InspectionGroup as IGroup,
+  InspectionEquipment as IEquipment,
+  InspectionCheckPoint as ICheckPoint,
+} from '../../../types';
 
-interface Equipment {
-  id: string;
-  name: string;
-  checkPoints: CheckPoint[];
-}
-
-interface Group {
-  id: string;
-  name: string;
-  equipments: Equipment[];
-}
-
-interface DailyReport {
-  id: string;
-  date: string;
-  unit: string;
-  unitId?: string; // Relation to InspectionUnit
-  areaId?: string;
-  status: 'pending' | 'completed' | 'critical';
-  data: Record<string, { s1: string; s2: string; s3: string; note: string }>;
-  personnel: {
-    s1: { tender: string; karu: string };
-    s2: { tender: string; karu: string };
-    s3: { tender: string; karu: string };
-  };
-  approvals: {
-    s1: boolean;
-    s2: boolean;
-    s3: boolean;
-  };
-}
+interface CheckPoint extends ICheckPoint {}
+interface Equipment extends IEquipment {}
+interface Group extends IGroup {}
 
 interface ShiftReportFormProps {
   unit: string;
@@ -53,7 +25,7 @@ interface ShiftReportFormProps {
   groups: Group[];
   existingReports: DailyReport[];
   onClose: () => void;
-  onSave: (report: any) => void;
+  onSave: (report: Partial<DailyReport>) => void;
 }
 
 const ShiftReportForm: React.FC<ShiftReportFormProps> = ({
@@ -80,7 +52,7 @@ const ShiftReportForm: React.FC<ShiftReportFormProps> = ({
 
   useEffect(() => {
     fetchUsers(1, 100);
-  }, []);
+  }, [fetchUsers]);
 
   const filteredAreas = areas.filter((a) => a.unit === unitId);
   // Filter users to only show Supervisors for the Karu dropdown
@@ -133,7 +105,7 @@ const ShiftReportForm: React.FC<ShiftReportFormProps> = ({
     // Check for duplicates at shift level
     const existingReport = existingReports.find((rep) => {
       const repDate = new Date(rep.date).toISOString().split('T')[0];
-      return rep.unit === unit && repDate === reportDate;
+      return rep.unitId === unitId && repDate === reportDate && rep.areaId === selectedAreaId;
     });
 
     if (existingReport) {
@@ -143,19 +115,18 @@ const ShiftReportForm: React.FC<ShiftReportFormProps> = ({
       if (conflictingShifts.length > 0) {
         const shiftNames = conflictingShifts.map((s) => s.toUpperCase()).join(', ');
         setError(
-          `Shift ${shiftNames} untuk unit ${unit} pada tanggal ${reportDate} sudah terisi oleh personil lain!`
+          `Shift ${shiftNames} untuk unit ${unit} pada area yang dipilih pada tanggal ${reportDate} sudah terisi oleh personil lain!`
         );
         return;
       }
     }
 
     onSave({
-      id: Math.random().toString(36).substr(2, 9),
       date: new Date(reportDate).toISOString(),
-      unit,
+      unitName: unit,
       unitId,
       areaId: selectedAreaId,
-      status: Object.values(reportData).some((d) => d.note) ? 'critical' : 'completed',
+      status: Object.values(reportData).some((d: any) => d.note) ? 'critical' : 'completed',
       data: reportData,
       personnel: personnel,
       approvals: { s1: false, s2: false, s3: false },
