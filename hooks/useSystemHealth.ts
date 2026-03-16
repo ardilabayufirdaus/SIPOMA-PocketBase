@@ -24,46 +24,66 @@ export const useSystemHealth = () => {
     // 1. Subscribe to system_status updates (CPU/Mem from the monitor script)
     const subscribeToStats = async () => {
       try {
-        // Initial Fetch
-        const fetchLatest = async () => {
-          const record = await pb
-            .collection('system_status')
-            .getOne('monitor_srv_001')
-            .catch(() => null);
+        // Check if monitor record exists first (one-time check)
+        const record = await pb
+          .collection('system_status')
+          .getOne('monitor_srv_001')
+          .catch(() => null);
 
-          if (record) {
+        if (!record) {
+          console.warn('System monitor record monitor_srv_001 not found. Disabling monitoring.');
+          setHealth((prev) => ({ ...prev, isLive: false }));
+          return () => {};
+        }
+
+        // Initial data
+        setHealth((prev) => ({
+          ...prev,
+          cpuLoad: record.cpu_load || 0,
+          memoryUsage: record.memory_usage || 0,
+          uptime: record.uptime || 0,
+          lastUpdated: record.last_updated || '',
+        }));
+
+        // Realtime Subscription
+        const unsubscribe = await pb.collection('system_status').subscribe('*', (e) => {
+          if (
+            e.record.id === 'monitor_srv_001' &&
+            (e.action === 'update' || e.action === 'create')
+          ) {
             setHealth((prev) => ({
               ...prev,
-              cpuLoad: record.cpu_load || 0,
-              memoryUsage: record.memory_usage || 0,
-              uptime: record.uptime || 0,
-              lastUpdated: record.last_updated,
+              cpuLoad: e.record.cpu_load || 0,
+              memoryUsage: e.record.memory_usage || 0,
+              uptime: e.record.uptime || 0,
+              lastUpdated: e.record.last_updated || '',
             }));
-          }
-        };
-
-        await fetchLatest();
-
-        // Realtime Subscription (Wildcard for robustness)
-        pb.collection('system_status').subscribe('*', (e) => {
-          if (e.record.id === 'monitor_srv_001') {
-            if (e.action === 'update' || e.action === 'create') {
-              setHealth((prev) => ({
-                ...prev,
-                cpuLoad: e.record.cpu_load || 0,
-                memoryUsage: e.record.memory_usage || 0,
-                uptime: e.record.uptime || 0,
-                lastUpdated: e.record.last_updated,
-              }));
-            }
           }
         });
 
-        // Fallback Polling (in case SSE fails/drops) every 5s
-        const pollInterval = setInterval(fetchLatest, 5000);
-        return () => clearInterval(pollInterval);
+        // No polling needed with realtime subscription - remove aggressive polling
+        // Fallback check every 5min only if subscription drops
+        const pollInterval = setInterval(async () => {
+          try {
+            const latest = await pb.collection('system_status').getOne('monitor_srv_001');
+            setHealth((prev) => ({
+              ...prev,
+              cpuLoad: latest.cpu_load || 0,
+              memoryUsage: latest.memory_usage || 0,
+              uptime: latest.uptime || 0,
+              lastUpdated: latest.last_updated || '',
+            }));
+          } catch (err) {
+            // Silently ignore - subscription should handle updates
+          }
+        }, 300000); // 5 minutes
+
+        return () => {
+          clearInterval(pollInterval);
+          unsubscribe();
+        };
       } catch (err) {
-        console.warn('System status collection might not exist yet.', err);
+        console.warn('System status collection unavailable:', err);
         return () => {};
       }
     };

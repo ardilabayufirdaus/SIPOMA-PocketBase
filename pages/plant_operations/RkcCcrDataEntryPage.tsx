@@ -2052,7 +2052,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
     setIsDeletingAll(true);
     try {
       // Get all parameter records for the selected date and unit
-      const filter = `date="${selectedDate}" && plant_unit="${selectedUnit}"`;
+      const filter = `date='${selectedDate}' && plant_unit='${selectedUnit}'`;
       const records = await pb.collection('ccr_parameter_data').getFullList({
         filter: filter,
       });
@@ -2113,7 +2113,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
     setIsDeletingAllNames(true);
     try {
       // Get all parameter records for the selected date and unit
-      const filter = `date="${selectedDate}" && plant_unit="${selectedUnit}"`;
+      const filter = `date='${selectedDate}' && plant_unit='${selectedUnit}'`;
       const records = await pb.collection('ccr_parameter_data').getFullList({
         filter: filter,
       });
@@ -2444,7 +2444,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
       const downtimeData = await pb
         .collection('ccr_downtime_data')
         .getFullList({
-          filter: `date="${selectedDate}" && unit="${selectedUnit}"`,
+          filter: `date='${selectedDate}' && unit='${selectedUnit}'`,
           sort: 'start_time',
         })
         .catch((error) => {
@@ -2715,7 +2715,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
       const materialUsageData = await pb
         .collection('ccr_material_usage')
         .getFullList({
-          filter: `date="${selectedDate}" && plant_unit="${selectedUnit}"`,
+          filter: `date='${selectedDate}' && plant_unit='${selectedUnit}'`,
           sort: 'created',
         })
         .catch((error) => {
@@ -3321,7 +3321,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                   // Console statement removed for production
                   // Delete existing downtime data for import dates
                   const existingRecords = await pb.collection('ccr_downtime_data').getFullList({
-                    filter: importDates.map((date) => `date="${date}"`).join(' || '),
+                    filter: importDates.map((date) => `date='${date}'`).join(' || '),
                   });
                   console.log(
                     '🔍 DEBUG: Found',
@@ -3476,7 +3476,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                   // Console statement removed for production
                   // Delete existing silo data for import dates
                   const existingRecords = await pb.collection('ccr_silo_data').getFullList({
-                    filter: importDates.map((date) => `date="${date}"`).join(' || '),
+                    filter: importDates.map((date) => `date='${date}'`).join(' || '),
                   });
                   console.log(
                     '🔍 DEBUG: Found',

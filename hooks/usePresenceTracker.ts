@@ -18,7 +18,10 @@ export const usePresenceTracker = () => {
 
   const fetchOnlineUsers = useCallback(async () => {
     try {
+      // Add time filter to prevent fetching too many records (PocketBase limit)
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
       const onlineRecords = await pb.collection('user_online').getFullList({
+        filter: `created > "${oneHourAgo}"`,
         sort: '-created',
       });
 
@@ -71,7 +74,7 @@ export const usePresenceTracker = () => {
     try {
       // Cari record aktif untuk user ini
       const existingRecords = await pb.collection('user_online').getList(1, 10, {
-        filter: `user_id = "${userId}"`,
+        filter: `user_id="${userId}"`,
         sort: '-created',
       });
 

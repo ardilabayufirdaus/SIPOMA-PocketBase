@@ -54,7 +54,6 @@ export const useCcrFooterData = () => {
       shift2_counter: roundToTwoDecimals(footerData.shift2_counter),
       shift3_counter: roundToTwoDecimals(footerData.shift3_counter),
       shift3_cont_counter: roundToTwoDecimals(footerData.shift3_cont_counter),
-      updated_at: new Date().toISOString(),
     };
 
     // Check if record already exists for this date and parameter_id
@@ -141,11 +140,14 @@ export const useCcrFooterData = () => {
 
   const getFooterDataForDate = useCallback(async (date: string, plantUnit?: string) => {
     // Use date as-is (YYYY-MM-DD format)
-    const filter = `date="${date}"${plantUnit && plantUnit !== 'all' ? ` && plant_unit="${plantUnit}"` : ''}`;
+    let filter = `date="${date}"`;
+    if (plantUnit && plantUnit !== 'all') {
+      filter += ` && plant_unit="${plantUnit}"`;
+    }
     const records = await safeApiCall(
       () =>
         pb.collection('ccr_footer_data').getFullList({
-          filter: filter,
+          filter,
         }),
       { retries: 2, retryDelay: 2000 }
     ); // Conservative retry settings with throttling
@@ -156,11 +158,14 @@ export const useCcrFooterData = () => {
   const deleteFooterData = useCallback(
     async (date: string, parameterId: string, plantUnit?: string) => {
       // Use date as-is (YYYY-MM-DD format)
-      const filter = `date="${date}" && parameter_id="${parameterId}"${plantUnit ? ` && plant_unit="${plantUnit}"` : ''}`;
+      let filter = `date="${date}" && parameter_id="${parameterId}"`;
+      if (plantUnit) {
+        filter += ` && plant_unit="${plantUnit}"`;
+      }
       const records = await safeApiCall(
         () =>
           pb.collection('ccr_footer_data').getFullList({
-            filter: filter,
+            filter,
           }),
         { retries: 2, retryDelay: 2000 }
       );

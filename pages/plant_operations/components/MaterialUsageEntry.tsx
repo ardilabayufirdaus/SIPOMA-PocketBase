@@ -84,10 +84,11 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
 
   const calculateMaterialUsageFromCounters = useCallback(
     (footerData: Record<string, unknown>[], shift: string): MaterialUsageData => {
+      const sanitizedUnit = selectedUnit.replace(/[^a-zA-Z0-9]/g, '_');
       const materialUsage: MaterialUsageData = {
         date: selectedDate,
         plant_category: selectedCategory,
-        plant_unit: selectedUnit,
+        plant_unit: sanitizedUnit,
         shift: shift as 'shift3_cont' | 'shift1' | 'shift2' | 'shift3',
       };
 

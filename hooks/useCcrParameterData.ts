@@ -91,11 +91,12 @@ export const useCcrParameterData = () => {
           return [];
         }
 
-        // Build query with optional plant_unit filter
+        // Build query with optional plant_unit filter (sanitized)
         // Use date-only filter to match database storage format
-        let filter = `date = "${isoDate}"`;
+        let filter = `date="${isoDate}"`;
         if (plantUnit && plantUnit !== 'all') {
-          filter += ` && plant_unit = "${plantUnit}"`;
+          const sanitizedUnit = plantUnit.replace(/[^a-zA-Z0-9]/g, '_');
+          filter += ` && plant_unit="${sanitizedUnit}"`;
         }
 
         const data = await safeApiCall(() =>
@@ -211,10 +212,11 @@ export const useCcrParameterData = () => {
           return { data: [], total: 0, hasMore: false };
         }
 
-        // Build query with optional plant_unit filter and pagination
-        let filter = `date = "${isoDate}"`;
+        // Build query with optional plant_unit filter and pagination (sanitized)
+        let filter = `date="${isoDate}"`;
         if (plantUnit && plantUnit !== 'all') {
-          filter += ` && plant_unit = "${plantUnit}"`;
+          const sanitizedUnit = plantUnit.replace(/[^a-zA-Z0-9]/g, '_');
+          filter += ` && plant_unit="${sanitizedUnit}"`;
         }
 
         const data = await safeApiCall(() =>
@@ -473,10 +475,11 @@ export const useCcrParameterData = () => {
           return cachedData;
         }
 
-        // Build query with date range and optional plant_unit filter
+        // Build query with date range and optional plant_unit filter (sanitized)
         let filter = `date >= "${isoStartDate}" && date <= "${isoEndDate}"`;
         if (plantUnit && plantUnit !== 'all') {
-          filter += ` && plant_unit="${plantUnit}"`;
+          const sanitizedUnit = plantUnit.replace(/[^a-zA-Z0-9]/g, '_');
+          filter += ` && plant_unit="${sanitizedUnit}"`;
         }
 
         const result = await pb.collection('ccr_parameter_data').getFullList({

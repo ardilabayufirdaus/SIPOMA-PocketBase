@@ -708,7 +708,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       try {
         // Approximate filter by date range
         const aggregates = await pb.collection('moisture_monitoring').getFullList({
-          filter: `unit="${selectedUnit}" && date >= "${startDate} 00:00:00" && date <= "${endDate} 23:59:59"`,
+          filter: `unit='${selectedUnit}' && date >= '${startDate} 00:00:00' && date <= '${endDate} 23:59:59'`,
         });
 
         if (aggregates.length > 0) {
@@ -740,7 +740,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         // (Keep existing Raw Calculation Logic - it is robust)
         // ... (Parameter fetching logic) ...
         const paramSettings = (await pb.collection('parameter_settings').getFullList({
-          filter: `unit="${selectedUnit}" && (parameter~"H2O" || parameter~"Set. Feeder")`,
+          filter: `unit='${selectedUnit}' && (parameter~'H2O' || parameter~'Set. Feeder')`,
         })) as unknown as ParameterSetting[];
 
         const paramMap = new Map<string, string>();
@@ -766,7 +766,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           const filterConditions = parameterIds.map((id) => `parameter_id="${id}"`).join(' || ');
           // Single Request for entire month
           const monthlyRecords = await pb.collection('ccr_parameter_data').getFullList({
-            filter: `date >= "${startDate}" && date <= "${endDate}" && (${filterConditions})`,
+            filter: `date >= '${startDate}' && date <= '${endDate}' && (${filterConditions})`,
           });
 
           const recordsByDate = new Map<string, any[]>();
@@ -950,7 +950,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       // 1. Try fetching from cop_aggregates (Server-Side Cache)
       try {
         const aggregates = await pb.collection('cop_aggregates').getFullList({
-          filter: `unit="${selectedUnit}" && date >= "${startDate}" && date <= "${endDate}"`,
+          filter: `unit='${selectedUnit}' && date >= '${startDate}' && date <= '${endDate}'`,
         });
 
         if (aggregates.length > 0) {
@@ -983,7 +983,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         // We fetch strictly from ccr_material_usage as the source of truth for Production/Feed
         // ignoring ccr_parameter_data counters.
         const materialUsageRecords = await pb.collection('ccr_material_usage').getFullList({
-          filter: `plant_unit="${selectedUnit}" && date >= "${startDate}" && date <= "${endDate}"`,
+          filter: `plant_unit='${selectedUnit}' && date >= '${startDate}' && date <= '${endDate}'`,
         });
 
         // Also fetch moisture for calculation
@@ -1900,7 +1900,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         // Optimization: Use cop_aggregates instead of ccr_footer_data
         // cop_aggregates is much smaller (1 record per day) vs footer_data (many per day)
         const records = await pb.collection('cop_aggregates').getFullList({
-          filter: `unit="${selectedUnit}"`,
+          filter: `unit='${selectedUnit}'`,
           fields: 'date',
           sort: '-date',
         });
@@ -3333,443 +3333,448 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             {!isLoading && !error && (
               <DragDropContext onDragEnd={handleDragEnd}>
                 <div className="bg-white/70 dark:bg-ubuntu-aubergine/40 backdrop-blur-xl rounded-[1.5rem] sm:rounded-[2rem] lg:rounded-[2.5rem] p-4 sm:p-6 lg:p-10 border border-white/20 dark:border-white/10 shadow-2xl animate-scale-in overflow-hidden">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
-            <div className="relative">
-              <div className="absolute -top-6 -left-6 w-20 h-20 bg-ubuntu-orange/10 rounded-full blur-2xl"></div>
-              <h2 className="text-xl sm:text-2xl lg:text-3xl font-black bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-orange bg-clip-text text-transparent tracking-tight relative z-10">
-                📊 Parameter Analytics Matrix
-              </h2>
-              <p className="text-slate-500 dark:text-ubuntu-warmGrey text-xs sm:text-sm lg:text-base font-bold italic">
-                Dynamic heatmap representing parameter adherence to target ranges.
-              </p>
-            </div>
-          </div>
-          <div
-            className="overflow-x-auto scroll-smooth rounded-xl sm:rounded-2xl lg:rounded-[2.5rem] shadow-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-white/20 custom-scrollbar"
-            role="region"
-            aria-label="COP Analysis Data Table"
-            tabIndex={0}
-          >
-            <table
-              className="min-w-full text-[11px] sm:text-[13px] border-collapse"
-                    role="table"
-                    aria-label="COP Analysis Table"
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+                    <div className="relative">
+                      <div className="absolute -top-6 -left-6 w-20 h-20 bg-ubuntu-orange/10 rounded-full blur-2xl"></div>
+                      <h2 className="text-xl sm:text-2xl lg:text-3xl font-black bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-orange bg-clip-text text-transparent tracking-tight relative z-10">
+                        📊 Parameter Analytics Matrix
+                      </h2>
+                      <p className="text-slate-500 dark:text-ubuntu-warmGrey text-xs sm:text-sm lg:text-base font-bold italic">
+                        Dynamic heatmap representing parameter adherence to target ranges.
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    className="overflow-x-auto scroll-smooth rounded-xl sm:rounded-2xl lg:rounded-[2.5rem] shadow-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-white/20 custom-scrollbar"
+                    role="region"
+                    aria-label="COP Analysis Data Table"
+                    tabIndex={0}
                   >
-                    <thead>
-                      <tr className="bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-darkAubergine text-white uppercase tracking-[0.1em] sm:tracking-[0.15em] font-black text-[10px] sm:text-[13px] h-16 sm:h-20 shadow-lg">
-                        <th className="sticky left-0 bg-ubuntu-aubergine z-40 px-2 sm:px-3 border-r border-white/10 w-10 sm:w-14 rounded-tl-[1.5rem] sm:rounded-tl-[2rem] text-center shadow-xl">
-                          #
-                        </th>
-                        <th className="sticky left-10 sm:left-14 bg-ubuntu-aubergine z-40 px-3 sm:px-6 border-r border-white/10 min-w-[120px] sm:min-w-[220px] text-left">
-                          Parameter Specification
-                        </th>
-                        <th className="px-2 sm:px-3 border-r border-white/10 w-16 sm:w-20 bg-red-500/10 text-red-300">
-                          {t.min}
-                        </th>
-                        <th className="px-2 sm:px-3 border-r border-white/10 w-16 sm:w-20 bg-emerald-500/10 text-emerald-300">
-                          {t.max}
-                        </th>
-                        {daysHeader.map((day) => (
-                          <th
-                            key={day}
-                            className="px-1 sm:px-2 border-r border-white/5 w-10 sm:w-14 hover:bg-white/10 transition-all duration-300 cursor-default group/h"
-                          >
-                            <div className="flex flex-col items-center">
-                              <span className="opacity-40 group-hover/h:opacity-100 transition-opacity text-[8px] sm:text-[11px]">
-                                {t.day || 'Day'}
-                              </span>
-                              <span className="text-[10px] sm:text-[13px] font-black">{day}</span>
-                            </div>
+                    <table
+                      className="min-w-full text-[11px] sm:text-[13px] border-collapse"
+                      role="table"
+                      aria-label="COP Analysis Table"
+                    >
+                      <thead>
+                        <tr className="bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-darkAubergine text-white uppercase tracking-[0.1em] sm:tracking-[0.15em] font-black text-[10px] sm:text-[13px] h-16 sm:h-20 shadow-lg">
+                          <th className="sticky left-0 bg-ubuntu-aubergine z-40 px-2 sm:px-3 border-r border-white/10 w-10 sm:w-14 rounded-tl-[1.5rem] sm:rounded-tl-[2rem] text-center shadow-xl">
+                            #
                           </th>
-                        ))}
-                        <th className="sticky right-0 bg-ubuntu-orange z-40 px-3 sm:px-6 w-16 sm:w-24 rounded-tr-[1.5rem] sm:rounded-tr-[2rem] shadow-[-8px_0_20px_rgba(0,0,0,0.2)] text-center">
-                          AVG
-                        </th>
-                      </tr>
-                    </thead>
-                    <Droppable droppableId="cop-analysis-table">
-                      {(provided) => (
-                        <tbody
-                          className="bg-white/80 dark:bg-white/5 backdrop-blur-md divide-y divide-slate-200 dark:divide-white/5"
-                          ref={provided.innerRef}
-                          {...provided.droppableProps}
-                        >
-                          {analysisData.map((row, rowIndex) => (
-                            <Draggable
-                              key={row.parameter.id}
-                              draggableId={row.parameter.id}
-                              index={rowIndex}
-                            >
-                              {(provided, snapshot) => (
-                                <tr
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                  className={`${
-                                    snapshot.isDragging
-                                      ? 'shadow-2xl bg-white dark:bg-slate-800 ring-4 ring-ubuntu-orange/40 z-50'
-                                      : 'hover:bg-slate-100/50 dark:hover:bg-white/5 transition-colors'
-                                  } group/row`}
-                                  style={{
-                                    ...provided.draggableProps.style,
-                                  }}
-                                >
-                                  <td className="sticky left-0 z-30 px-2 sm:px-3 py-4 text-slate-900 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-[#F3F3F3] dark:bg-slate-800 w-10 sm:w-14 font-black text-center shadow-lg group-hover/row:bg-ubuntu-orange/10 group-hover/row:text-ubuntu-orange transition-colors text-[11px] sm:text-[13px]">
-                                    {rowIndex + 1}
-                                  </td>
-                                  <td className="sticky left-10 sm:left-14 z-30 px-3 sm:px-6 py-4 font-black text-slate-800 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-900 min-w-[120px] sm:min-w-[220px] shadow-lg group-hover/row:text-ubuntu-orange transition-colors text-[11px] sm:text-[13px]">
-                                    <div className="flex flex-col">
-                                      <span className="truncate">{row.parameter.parameter}</span>
-                                    </div>
-                                  </td>
-                                  <td className="px-2 sm:px-3 py-4 text-center text-red-600 dark:text-red-400 border-r border-slate-200 dark:border-slate-700/50 bg-red-50/20 dark:bg-red-900/10 font-bold font-mono text-[10px] sm:text-[13px]">
-                                    {(() => {
-                                      const { min } = getMinMaxForCementType(
-                                        row.parameter,
-                                        selectedCementType
-                                      );
-                                      return formatCopNumber(min);
-                                    })()}
-                                  </td>
-                                  <td className="px-2 sm:px-3 py-4 text-center text-emerald-600 dark:text-emerald-400 border-r border-slate-200 dark:border-slate-700/50 bg-emerald-50/20 dark:bg-emerald-900/10 font-bold font-mono text-[10px] sm:text-[13px]">
-                                    {(() => {
-                                      const { max } = getMinMaxForCementType(
-                                        row.parameter,
-                                        selectedCementType
-                                      );
-                                      return formatCopNumber(max);
-                                    })()}
-                                  </td>
-                                  {row.dailyValues.map((day, dayIndex) => {
-                                    const colors = getPercentageColor(day.value);
-                                    return (
-                                      <td
-                                        key={dayIndex}
-                                        className={`px-1 sm:px-2 py-4 whitespace-nowrap text-center border-r border-slate-200 dark:border-slate-700/50 transition-colors duration-200 hover:brightness-95 ${colors.bg}`}
-                                      >
-                                        <div className="relative group/cell h-full w-full flex items-center justify-center">
-                                          <span className={`font-bold text-[10px] sm:text-[13px] ${colors.text}`}>
-                                            {formatCopNumber(day.raw)}
-                                          </span>
-                                          {day.raw !== undefined && (
-                                            <div className="absolute bottom-full mb-3 w-64 p-4 bg-ubuntu-aubergine dark:bg-slate-800 text-white rounded-2xl opacity-0 group-hover/cell:opacity-100 transition-all duration-300 pointer-events-none z-50 shadow-2xl border border-white/10 left-1/2 -translate-x-1/2 scale-95 group-hover/cell:scale-100">
-                                              <div className="flex items-center justify-between gap-3 mb-3 pb-2 border-b border-white/10">
-                                                <span className="font-bold text-ubuntu-warmGrey">
-                                                  {formatDate(
-                                                    new Date(
-                                                      Date.UTC(
-                                                        filterYear,
-                                                        filterMonth,
-                                                        dayIndex + 1
-                                                      )
-                                                    )
-                                                  )}
-                                                </span>
-                                                <span
-                                                  className={`px-2.5 py-1 rounded-lg text-white text-[10px] uppercase font-black ${colors.bg} ring-1 ring-white/20`}
-                                                >
-                                                  {colors.status}
-                                                </span>
-                                              </div>
-
-                                              <div className="space-y-2">
-                                                <div className="flex justify-between items-center text-[13px]">
-                                                  <span className="text-white/60 font-medium">
-                                                    {t.average}
-                                                  </span>
-                                                  <span className="text-ubuntu-orange font-bold">
-                                                    {formatCopNumber(day.raw)} {row.parameter.unit}
-                                                  </span>
-                                                </div>
-                                                <div className="flex justify-between items-center text-[13px]">
-                                                  <span className="text-white/60 font-medium">
-                                                    Target
-                                                  </span>
-                                                  <span className="text-emerald-400">
-                                                    {(() => {
-                                                      const { min, max } = getMinMaxForCementType(
-                                                        row.parameter,
-                                                        selectedCementType
-                                                      );
-                                                      return `${formatCopNumber(min)} - ${formatCopNumber(max)}`;
-                                                    })()}
-                                                  </span>
-                                                </div>
-                                                {day.value !== null && (
-                                                  <div className="flex justify-between items-center text-[13px]">
-                                                    <span className="text-white/60 font-medium">
-                                                      Performance
-                                                    </span>
-                                                    <span className="text-blue-400">
-                                                      {day.value.toFixed(1)}%
-                                                    </span>
-                                                  </div>
-                                                )}
-                                              </div>
-
-                                              {/* Triangle pointer */}
-                                              <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-ubuntu-aubergine dark:border-t-slate-800"></div>
-                                            </div>
-                                          )}
-                                        </div>
-                                      </td>
-                                    );
-                                  })}
-                                  {(() => {
-                                    const avgColors = getPercentageColor(row.monthlyAverage);
-                                    return (
-                                      <td
-                                        className={`sticky right-0 z-20 px-4 py-4 whitespace-nowrap text-center border-l border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 w-20 font-black shadow-[-4px_0_10px_rgba(0,0,0,0.05)]`}
-                                      >
-                                        <span
-                                          className={`${avgColors.text} text-[13px] font-black drop-shadow-sm`}
-                                        >
-                                          {formatCopNumber(row.monthlyAverageRaw)}
-                                        </span>
-                                      </td>
-                                    );
-                                  })()}
-                                </tr>
-                              )}
-                            </Draggable>
-                          ))}
-                          {provided.placeholder}
-                          {analysisData.length === 0 && (
-                            <tr>
-                              <td
-                                colSpan={daysHeader.length + 5}
-                                className="text-center py-10 text-slate-500"
-                              >
-                                {!selectedCategory || !selectedUnit
-                                  ? 'Please select both Category and Unit to view COP analysis data.'
-                                  : filteredCopParameters.length === 0
-                                    ? 'No COP parameters found for the selected Category and Unit.'
-                                    : 'No data available for the selected period.'}
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      )}
-                    </Droppable>
-                    <tfoot className="bg-slate-100/80 dark:bg-white/5 backdrop-blur-md group/f">
-                      <tr className="border-t-2 border-slate-300 dark:border-white/10">
-                        <td
-                          colSpan={2}
-                          className="sticky left-0 z-30 px-3 sm:px-6 py-6 text-right text-[10px] sm:text-[13px] font-black tracking-[0.1em] sm:tracking-[0.2em] text-ubuntu-aubergine dark:text-ubuntu-orange uppercase bg-white dark:bg-slate-900 shadow-xl border-r border-slate-200 font-display"
-                        >
-                          Quality Adherence (QAF)
-                        </td>
-                        <td className="bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50"></td>
-                        <td className="bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50"></td>
-                        {dailyQaf.daily.map((qaf, index) => {
-                          const colors = getQafColor(qaf.value);
-                          return (
-                            <td
-                              key={index}
-                              className={`px-1 sm:px-2 py-6 text-center border-r border-slate-200 dark:border-slate-700/50 ${colors.bg} ${colors.text} transition-all duration-300`}
-                            >
-                              <div className="relative group/cell h-full w-full flex items-center justify-center">
-                                <span className="text-[11px] sm:text-[13px] font-black drop-shadow-sm">
-                                  {qaf.value !== null && !isNaN(qaf.value)
-                                    ? `${formatCopNumber(qaf.value)}%`
-                                    : '-'}
-                                </span>
-                                {qaf.total > 0 && (
-                                  <div className="absolute bottom-full mb-4 w-56 p-5 bg-ubuntu-aubergine/95 backdrop-blur-xl text-white rounded-[1.5rem] opacity-0 group-hover/cell:opacity-100 transition-all duration-300 pointer-events-none z-50 shadow-2xl border border-white/20 text-center scale-90 group-hover/cell:scale-100">
-                                    <div className="text-[13px] font-black uppercase tracking-widest mb-2 text-white/60">
-                                      Compliance Status
-                                    </div>
-                                    <div className="text-xl font-black mb-1">
-                                      {formatCopNumber(qaf.value)}%
-                                    </div>
-                                    <div className="text-[13px] font-bold text-ubuntu-warmGrey">
-                                      {qaf.inRange} of {qaf.total} metrics in target
-                                    </div>
-                                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-ubuntu-aubergine/95"></div>
-                                  </div>
-                                )}
-                              </div>
-                            </td>
-                          );
-                        })}
-                        {(() => {
-                          const qaf = dailyQaf.monthly;
-                          const colors = getQafColor(qaf.value);
-                          return (
-                            <td
-                              className={`sticky right-0 z-30 px-3 sm:px-6 py-6 text-center shadow-[-8px_0_20px_rgba(0,0,0,0.2)] ${colors.bg} ${colors.text} font-black border-l border-white/10`}
+                          <th className="sticky left-10 sm:left-14 bg-ubuntu-aubergine z-40 px-3 sm:px-6 border-r border-white/10 min-w-[120px] sm:min-w-[220px] text-left">
+                            Parameter Specification
+                          </th>
+                          <th className="px-2 sm:px-3 border-r border-white/10 w-16 sm:w-20 bg-red-500/10 text-red-300">
+                            {t.min}
+                          </th>
+                          <th className="px-2 sm:px-3 border-r border-white/10 w-16 sm:w-20 bg-emerald-500/10 text-emerald-300">
+                            {t.max}
+                          </th>
+                          {daysHeader.map((day) => (
+                            <th
+                              key={day}
+                              className="px-1 sm:px-2 border-r border-white/5 w-10 sm:w-14 hover:bg-white/10 transition-all duration-300 cursor-default group/h"
                             >
                               <div className="flex flex-col items-center">
-                                <span className="text-[8px] sm:text-[13px] font-black uppercase tracking-widest opacity-60 mb-1">
-                                  Index
+                                <span className="opacity-40 group-hover/h:opacity-100 transition-opacity text-[8px] sm:text-[11px]">
+                                  {t.day || 'Day'}
                                 </span>
-                                <span className="text-sm sm:text-xl drop-shadow-md">
-                                  {qaf.value !== null && !isNaN(qaf.value)
-                                    ? `${formatCopNumber(qaf.value)}%`
-                                    : '-'}
-                                </span>
+                                <span className="text-[10px] sm:text-[13px] font-black">{day}</span>
                               </div>
-                            </td>
-                          );
-                        })()}
-                      </tr>
-                      {/* Moisture Content Row - Ubuntu Themed */}
-                      <tr className="border-t border-white/10 bg-blue-500/5 transition-colors hover:bg-blue-500/10">
-                        <td
-                          colSpan={2}
-                          className="sticky left-0 z-30 px-3 sm:px-6 py-5 text-right text-[10px] sm:text-[13px] font-black tracking-widest text-blue-800 dark:text-blue-300 uppercase bg-[#F3F6FF] dark:bg-slate-800 shadow-xl border-r border-slate-200"
-                        >
-                          Moisture Content (%)
-                        </td>
-                        <td className="bg-[#F3F6FF] dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
-                        <td className="bg-[#F3F6FF] dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
-                        {Array.from(
-                          { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
-                          (_, i) => {
-                            const day = i + 1;
-                            const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                            const dailyAverage = monthlyMoistureData.get(dateString);
-
-                            return (
-                              <td
-                                key={`moisture-${day}`}
-                                className="py-4 px-1 sm:px-2 text-center border-r border-slate-200 dark:border-slate-700/50 text-blue-700 dark:text-blue-400 font-bold text-[11px] sm:text-[13px] bg-blue-50/10"
+                            </th>
+                          ))}
+                          <th className="sticky right-0 bg-ubuntu-orange z-40 px-3 sm:px-6 w-16 sm:w-24 rounded-tr-[1.5rem] sm:rounded-tr-[2rem] shadow-[-8px_0_20px_rgba(0,0,0,0.2)] text-center">
+                            AVG
+                          </th>
+                        </tr>
+                      </thead>
+                      <Droppable droppableId="cop-analysis-table">
+                        {(provided) => (
+                          <tbody
+                            className="bg-white/80 dark:bg-white/5 backdrop-blur-md divide-y divide-slate-200 dark:divide-white/5"
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
+                          >
+                            {analysisData.map((row, rowIndex) => (
+                              <Draggable
+                                key={row.parameter.id}
+                                draggableId={row.parameter.id}
+                                index={rowIndex}
                               >
-                                {dailyAverage !== undefined && !isNaN(dailyAverage)
-                                  ? `${formatCopNumber(dailyAverage)}%`
-                                  : '-'}
-                              </td>
-                            );
-                          }
-                        )}
-                        <td className="sticky right-0 z-30 px-3 sm:px-6 py-5 text-center bg-blue-600 dark:bg-blue-900/40 text-white font-black text-sm sm:text-lg shadow-[-8px_0_20px_rgba(37,99,235,0.2)] border-l border-white/10">
-                          {(() => {
-                            const validValues = Array.from(monthlyMoistureData.values()).filter(
-                              (v) => v !== null && v !== undefined && !isNaN(v)
-                            );
-                            if (validValues.length === 0) return '-';
-                            const average =
-                              validValues.reduce((sum, val) => sum + val, 0) / validValues.length;
-                            return `${formatCopNumber(average)}%`;
-                          })()}
-                        </td>
-                      </tr>
-                      {/* Capacity Row - Ubuntu Themed */}
-                      <tr className="border-t border-white/10 bg-emerald-500/5 transition-colors hover:bg-emerald-500/10">
-                        <td
-                          colSpan={2}
-                          className="sticky left-0 z-30 px-3 sm:px-6 py-5 text-right text-[10px] sm:text-[13px] font-black tracking-widest text-emerald-800 dark:text-emerald-300 uppercase bg-[#F3FFF6] dark:bg-slate-800 shadow-xl border-r border-slate-200"
-                        >
-                          Throughput Capacity (TPH)
-                        </td>
-                        <td className="bg-[#F3FFF6] dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
-                        <td className="bg-[#F3FFF6] dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
-                        {Array.from(
-                          { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
-                          (_, i) => {
-                            const day = i + 1;
-                            const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                            const dailyFeed = monthlyFeedData.get(dateString);
-                            const dailyMoisture = monthlyMoistureData.get(dateString);
-                            const capacity =
-                              dailyFeed && dailyMoisture !== undefined
-                                ? dailyFeed - (dailyMoisture * dailyFeed) / 100
-                                : null;
+                                {(provided, snapshot) => (
+                                  <tr
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                    className={`${
+                                      snapshot.isDragging
+                                        ? 'shadow-2xl bg-white dark:bg-slate-800 ring-4 ring-ubuntu-orange/40 z-50'
+                                        : 'hover:bg-slate-100/50 dark:hover:bg-white/5 transition-colors'
+                                    } group/row`}
+                                    style={{
+                                      ...provided.draggableProps.style,
+                                    }}
+                                  >
+                                    <td className="sticky left-0 z-30 px-2 sm:px-3 py-4 text-slate-900 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-[#F3F3F3] dark:bg-slate-800 w-10 sm:w-14 font-black text-center shadow-lg group-hover/row:bg-ubuntu-orange/10 group-hover/row:text-ubuntu-orange transition-colors text-[11px] sm:text-[13px]">
+                                      {rowIndex + 1}
+                                    </td>
+                                    <td className="sticky left-10 sm:left-14 z-30 px-3 sm:px-6 py-4 font-black text-slate-800 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-900 min-w-[120px] sm:min-w-[220px] shadow-lg group-hover/row:text-ubuntu-orange transition-colors text-[11px] sm:text-[13px]">
+                                      <div className="flex flex-col">
+                                        <span className="truncate">{row.parameter.parameter}</span>
+                                      </div>
+                                    </td>
+                                    <td className="px-2 sm:px-3 py-4 text-center text-red-600 dark:text-red-400 border-r border-slate-200 dark:border-slate-700/50 bg-red-50/20 dark:bg-red-900/10 font-bold font-mono text-[10px] sm:text-[13px]">
+                                      {(() => {
+                                        const { min } = getMinMaxForCementType(
+                                          row.parameter,
+                                          selectedCementType
+                                        );
+                                        return formatCopNumber(min);
+                                      })()}
+                                    </td>
+                                    <td className="px-2 sm:px-3 py-4 text-center text-emerald-600 dark:text-emerald-400 border-r border-slate-200 dark:border-slate-700/50 bg-emerald-50/20 dark:bg-emerald-900/10 font-bold font-mono text-[10px] sm:text-[13px]">
+                                      {(() => {
+                                        const { max } = getMinMaxForCementType(
+                                          row.parameter,
+                                          selectedCementType
+                                        );
+                                        return formatCopNumber(max);
+                                      })()}
+                                    </td>
+                                    {row.dailyValues.map((day, dayIndex) => {
+                                      const colors = getPercentageColor(day.value);
+                                      return (
+                                        <td
+                                          key={dayIndex}
+                                          className={`px-1 sm:px-2 py-4 whitespace-nowrap text-center border-r border-slate-200 dark:border-slate-700/50 transition-colors duration-200 hover:brightness-95 ${colors.bg}`}
+                                        >
+                                          <div className="relative group/cell h-full w-full flex items-center justify-center">
+                                            <span
+                                              className={`font-bold text-[10px] sm:text-[13px] ${colors.text}`}
+                                            >
+                                              {formatCopNumber(day.raw)}
+                                            </span>
+                                            {day.raw !== undefined && (
+                                              <div className="absolute bottom-full mb-3 w-64 p-4 bg-ubuntu-aubergine dark:bg-slate-800 text-white rounded-2xl opacity-0 group-hover/cell:opacity-100 transition-all duration-300 pointer-events-none z-50 shadow-2xl border border-white/10 left-1/2 -translate-x-1/2 scale-95 group-hover/cell:scale-100">
+                                                <div className="flex items-center justify-between gap-3 mb-3 pb-2 border-b border-white/10">
+                                                  <span className="font-bold text-ubuntu-warmGrey">
+                                                    {formatDate(
+                                                      new Date(
+                                                        Date.UTC(
+                                                          filterYear,
+                                                          filterMonth,
+                                                          dayIndex + 1
+                                                        )
+                                                      )
+                                                    )}
+                                                  </span>
+                                                  <span
+                                                    className={`px-2.5 py-1 rounded-lg text-white text-[10px] uppercase font-black ${colors.bg} ring-1 ring-white/20`}
+                                                  >
+                                                    {colors.status}
+                                                  </span>
+                                                </div>
 
-                            return (
-                              <td
-                                key={`capacity-${day}`}
-                                className="py-4 px-1 sm:px-2 text-center border-r border-slate-200 dark:border-slate-700/50 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] sm:text-[13px] bg-emerald-50/10"
-                              >
-                                {capacity !== null && !isNaN(capacity)
-                                  ? formatCopNumber(capacity)
-                                  : '-'}
-                              </td>
-                            );
-                          }
+                                                <div className="space-y-2">
+                                                  <div className="flex justify-between items-center text-[13px]">
+                                                    <span className="text-white/60 font-medium">
+                                                      {t.average}
+                                                    </span>
+                                                    <span className="text-ubuntu-orange font-bold">
+                                                      {formatCopNumber(day.raw)}{' '}
+                                                      {row.parameter.unit}
+                                                    </span>
+                                                  </div>
+                                                  <div className="flex justify-between items-center text-[13px]">
+                                                    <span className="text-white/60 font-medium">
+                                                      Target
+                                                    </span>
+                                                    <span className="text-emerald-400">
+                                                      {(() => {
+                                                        const { min, max } = getMinMaxForCementType(
+                                                          row.parameter,
+                                                          selectedCementType
+                                                        );
+                                                        return `${formatCopNumber(min)} - ${formatCopNumber(max)}`;
+                                                      })()}
+                                                    </span>
+                                                  </div>
+                                                  {day.value !== null && (
+                                                    <div className="flex justify-between items-center text-[13px]">
+                                                      <span className="text-white/60 font-medium">
+                                                        Performance
+                                                      </span>
+                                                      <span className="text-blue-400">
+                                                        {day.value.toFixed(1)}%
+                                                      </span>
+                                                    </div>
+                                                  )}
+                                                </div>
+
+                                                {/* Triangle pointer */}
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-ubuntu-aubergine dark:border-t-slate-800"></div>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </td>
+                                      );
+                                    })}
+                                    {(() => {
+                                      const avgColors = getPercentageColor(row.monthlyAverage);
+                                      return (
+                                        <td
+                                          className={`sticky right-0 z-20 px-4 py-4 whitespace-nowrap text-center border-l border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 w-20 font-black shadow-[-4px_0_10px_rgba(0,0,0,0.05)]`}
+                                        >
+                                          <span
+                                            className={`${avgColors.text} text-[13px] font-black drop-shadow-sm`}
+                                          >
+                                            {formatCopNumber(row.monthlyAverageRaw)}
+                                          </span>
+                                        </td>
+                                      );
+                                    })()}
+                                  </tr>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                            {analysisData.length === 0 && (
+                              <tr>
+                                <td
+                                  colSpan={daysHeader.length + 5}
+                                  className="text-center py-10 text-slate-500"
+                                >
+                                  {!selectedCategory || !selectedUnit
+                                    ? 'Please select both Category and Unit to view COP analysis data.'
+                                    : filteredCopParameters.length === 0
+                                      ? 'No COP parameters found for the selected Category and Unit.'
+                                      : 'No data available for the selected period.'}
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
                         )}
-                        <td className="sticky right-0 z-30 px-3 sm:px-6 py-5 text-center bg-ubuntu-orange text-white font-black text-sm sm:text-lg shadow-[-8px_0_20px_rgba(233,84,32,0.3)] border-l border-white/10">
-                          {(() => {
-                            const validCapacities: number[] = [];
-                            Array.from(
-                              { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
-                              (_, i) => {
-                                const day = i + 1;
-                                const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                                const dailyFeed = monthlyFeedData.get(dateString);
-                                const dailyMoisture = monthlyMoistureData.get(dateString);
-                                if (dailyFeed && dailyMoisture !== undefined) {
-                                  const capacity = dailyFeed - (dailyMoisture * dailyFeed) / 100;
-                                  if (!isNaN(capacity)) validCapacities.push(capacity);
-                                }
-                              }
-                            );
-                            if (validCapacities.length === 0) return '-';
-                            const average =
-                              validCapacities.reduce((sum, val) => sum + val, 0) /
-                              validCapacities.length;
-                            return formatCopNumber(average);
-                          })()}
-                        </td>
-                      </tr>
-                      {/* COP Footer Parameters - Ubuntu Themed */}
-                      {footerData.map((row, index) => (
-                        <tr
-                          key={`footer-${row.parameter.id}`}
-                          className={`border-t border-white/5 transition-colors hover:bg-ubuntu-orange/5 group/frow ${index === footerData.length - 1 ? 'rounded-b-[2rem]' : ''}`}
-                        >
+                      </Droppable>
+                      <tfoot className="bg-slate-100/80 dark:bg-white/5 backdrop-blur-md group/f">
+                        <tr className="border-t-2 border-slate-300 dark:border-white/10">
                           <td
                             colSpan={2}
-                            className={`sticky left-0 z-30 px-3 sm:px-6 py-4 text-right text-[10px] sm:text-[13px] font-black tracking-widest text-slate-500 dark:text-ubuntu-warmGrey uppercase bg-white dark:bg-slate-900 border-r border-slate-200 shadow-lg group-hover/frow:text-ubuntu-orange ${index === footerData.length - 1 ? 'rounded-bl-[1.5rem] sm:rounded-bl-[2rem]' : ''}`}
+                            className="sticky left-0 z-30 px-3 sm:px-6 py-6 text-right text-[10px] sm:text-[13px] font-black tracking-[0.1em] sm:tracking-[0.2em] text-ubuntu-aubergine dark:text-ubuntu-orange uppercase bg-white dark:bg-slate-900 shadow-xl border-r border-slate-200 font-display"
                           >
-                            {row.parameter.parameter}
+                            Quality Adherence (QAF)
                           </td>
                           <td className="bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50"></td>
                           <td className="bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50"></td>
-                          {row.dailyValues.map((day, dayIndex) => {
-                            const colors = getPercentageColor(day.value);
+                          {dailyQaf.daily.map((qaf, index) => {
+                            const colors = getQafColor(qaf.value);
                             return (
                               <td
-                                key={dayIndex}
-                                className={`px-1 sm:px-2 py-4 text-center border-r border-white/5 ${colors.bg} text-[11px] sm:text-[13px] font-bold`}
+                                key={index}
+                                className={`px-1 sm:px-2 py-6 text-center border-r border-slate-200 dark:border-slate-700/50 ${colors.bg} ${colors.text} transition-all duration-300`}
                               >
-                                {formatCopNumber(day.raw)}
+                                <div className="relative group/cell h-full w-full flex items-center justify-center">
+                                  <span className="text-[11px] sm:text-[13px] font-black drop-shadow-sm">
+                                    {qaf.value !== null && !isNaN(qaf.value)
+                                      ? `${formatCopNumber(qaf.value)}%`
+                                      : '-'}
+                                  </span>
+                                  {qaf.total > 0 && (
+                                    <div className="absolute bottom-full mb-4 w-56 p-5 bg-ubuntu-aubergine/95 backdrop-blur-xl text-white rounded-[1.5rem] opacity-0 group-hover/cell:opacity-100 transition-all duration-300 pointer-events-none z-50 shadow-2xl border border-white/20 text-center scale-90 group-hover/cell:scale-100">
+                                      <div className="text-[13px] font-black uppercase tracking-widest mb-2 text-white/60">
+                                        Compliance Status
+                                      </div>
+                                      <div className="text-xl font-black mb-1">
+                                        {formatCopNumber(qaf.value)}%
+                                      </div>
+                                      <div className="text-[13px] font-bold text-ubuntu-warmGrey">
+                                        {qaf.inRange} of {qaf.total} metrics in target
+                                      </div>
+                                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-ubuntu-aubergine/95"></div>
+                                    </div>
+                                  )}
+                                </div>
                               </td>
                             );
                           })}
-                          <td className={`sticky right-0 z-30 px-3 sm:px-6 py-4 text-center bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-black text-[11px] sm:text-[13px] shadow-xl border-l border-slate-200 group-hover/frow:bg-ubuntu-orange group-hover/frow:text-white ${index === footerData.length - 1 ? 'rounded-br-[1.5rem] sm:rounded-bl-[2rem]' : ''}`}>
-                            {formatCopNumber(row.monthlyAverageRaw)}
+                          {(() => {
+                            const qaf = dailyQaf.monthly;
+                            const colors = getQafColor(qaf.value);
+                            return (
+                              <td
+                                className={`sticky right-0 z-30 px-3 sm:px-6 py-6 text-center shadow-[-8px_0_20px_rgba(0,0,0,0.2)] ${colors.bg} ${colors.text} font-black border-l border-white/10`}
+                              >
+                                <div className="flex flex-col items-center">
+                                  <span className="text-[8px] sm:text-[13px] font-black uppercase tracking-widest opacity-60 mb-1">
+                                    Index
+                                  </span>
+                                  <span className="text-sm sm:text-xl drop-shadow-md">
+                                    {qaf.value !== null && !isNaN(qaf.value)
+                                      ? `${formatCopNumber(qaf.value)}%`
+                                      : '-'}
+                                  </span>
+                                </div>
+                              </td>
+                            );
+                          })()}
+                        </tr>
+                        {/* Moisture Content Row - Ubuntu Themed */}
+                        <tr className="border-t border-white/10 bg-blue-500/5 transition-colors hover:bg-blue-500/10">
+                          <td
+                            colSpan={2}
+                            className="sticky left-0 z-30 px-3 sm:px-6 py-5 text-right text-[10px] sm:text-[13px] font-black tracking-widest text-blue-800 dark:text-blue-300 uppercase bg-[#F3F6FF] dark:bg-slate-800 shadow-xl border-r border-slate-200"
+                          >
+                            Moisture Content (%)
+                          </td>
+                          <td className="bg-[#F3F6FF] dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
+                          <td className="bg-[#F3F6FF] dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
+                          {Array.from(
+                            { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
+                            (_, i) => {
+                              const day = i + 1;
+                              const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                              const dailyAverage = monthlyMoistureData.get(dateString);
+
+                              return (
+                                <td
+                                  key={`moisture-${day}`}
+                                  className="py-4 px-1 sm:px-2 text-center border-r border-slate-200 dark:border-slate-700/50 text-blue-700 dark:text-blue-400 font-bold text-[11px] sm:text-[13px] bg-blue-50/10"
+                                >
+                                  {dailyAverage !== undefined && !isNaN(dailyAverage)
+                                    ? `${formatCopNumber(dailyAverage)}%`
+                                    : '-'}
+                                </td>
+                              );
+                            }
+                          )}
+                          <td className="sticky right-0 z-30 px-3 sm:px-6 py-5 text-center bg-blue-600 dark:bg-blue-900/40 text-white font-black text-sm sm:text-lg shadow-[-8px_0_20px_rgba(37,99,235,0.2)] border-l border-white/10">
+                            {(() => {
+                              const validValues = Array.from(monthlyMoistureData.values()).filter(
+                                (v) => v !== null && v !== undefined && !isNaN(v)
+                              );
+                              if (validValues.length === 0) return '-';
+                              const average =
+                                validValues.reduce((sum, val) => sum + val, 0) / validValues.length;
+                              return `${formatCopNumber(average)}%`;
+                            })()}
                           </td>
                         </tr>
-                      ))}
-                    </tfoot>
-                  </table>
-                </div>
-                {/* Export Button */}
-                <div className="mt-8 flex justify-end pr-6 pb-6">
-                  <button
-                    onClick={exportToExcel}
-                    className="group flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-black rounded-xl sm:rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-2xl shadow-emerald-500/30 uppercase tracking-widest text-[10px] sm:text-xs w-full sm:w-auto"
-                    disabled={analysisData.length === 0}
-                  >
-                    <div className="p-2 bg-white/20 rounded-xl group-hover:rotate-12 transition-transform">
-                      <svg
-                        className="w-5 h-5 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={3}
-                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                    </div>
-                    Export Matrix
-                  </button>
-                </div>
+                        {/* Capacity Row - Ubuntu Themed */}
+                        <tr className="border-t border-white/10 bg-emerald-500/5 transition-colors hover:bg-emerald-500/10">
+                          <td
+                            colSpan={2}
+                            className="sticky left-0 z-30 px-3 sm:px-6 py-5 text-right text-[10px] sm:text-[13px] font-black tracking-widest text-emerald-800 dark:text-emerald-300 uppercase bg-[#F3FFF6] dark:bg-slate-800 shadow-xl border-r border-slate-200"
+                          >
+                            Throughput Capacity (TPH)
+                          </td>
+                          <td className="bg-[#F3FFF6] dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
+                          <td className="bg-[#F3FFF6] dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
+                          {Array.from(
+                            { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
+                            (_, i) => {
+                              const day = i + 1;
+                              const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                              const dailyFeed = monthlyFeedData.get(dateString);
+                              const dailyMoisture = monthlyMoistureData.get(dateString);
+                              const capacity =
+                                dailyFeed && dailyMoisture !== undefined
+                                  ? dailyFeed - (dailyMoisture * dailyFeed) / 100
+                                  : null;
+
+                              return (
+                                <td
+                                  key={`capacity-${day}`}
+                                  className="py-4 px-1 sm:px-2 text-center border-r border-slate-200 dark:border-slate-700/50 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] sm:text-[13px] bg-emerald-50/10"
+                                >
+                                  {capacity !== null && !isNaN(capacity)
+                                    ? formatCopNumber(capacity)
+                                    : '-'}
+                                </td>
+                              );
+                            }
+                          )}
+                          <td className="sticky right-0 z-30 px-3 sm:px-6 py-5 text-center bg-ubuntu-orange text-white font-black text-sm sm:text-lg shadow-[-8px_0_20px_rgba(233,84,32,0.3)] border-l border-white/10">
+                            {(() => {
+                              const validCapacities: number[] = [];
+                              Array.from(
+                                { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
+                                (_, i) => {
+                                  const day = i + 1;
+                                  const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                                  const dailyFeed = monthlyFeedData.get(dateString);
+                                  const dailyMoisture = monthlyMoistureData.get(dateString);
+                                  if (dailyFeed && dailyMoisture !== undefined) {
+                                    const capacity = dailyFeed - (dailyMoisture * dailyFeed) / 100;
+                                    if (!isNaN(capacity)) validCapacities.push(capacity);
+                                  }
+                                }
+                              );
+                              if (validCapacities.length === 0) return '-';
+                              const average =
+                                validCapacities.reduce((sum, val) => sum + val, 0) /
+                                validCapacities.length;
+                              return formatCopNumber(average);
+                            })()}
+                          </td>
+                        </tr>
+                        {/* COP Footer Parameters - Ubuntu Themed */}
+                        {footerData.map((row, index) => (
+                          <tr
+                            key={`footer-${row.parameter.id}`}
+                            className={`border-t border-white/5 transition-colors hover:bg-ubuntu-orange/5 group/frow ${index === footerData.length - 1 ? 'rounded-b-[2rem]' : ''}`}
+                          >
+                            <td
+                              colSpan={2}
+                              className={`sticky left-0 z-30 px-3 sm:px-6 py-4 text-right text-[10px] sm:text-[13px] font-black tracking-widest text-slate-500 dark:text-ubuntu-warmGrey uppercase bg-white dark:bg-slate-900 border-r border-slate-200 shadow-lg group-hover/frow:text-ubuntu-orange ${index === footerData.length - 1 ? 'rounded-bl-[1.5rem] sm:rounded-bl-[2rem]' : ''}`}
+                            >
+                              {row.parameter.parameter}
+                            </td>
+                            <td className="bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50"></td>
+                            <td className="bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50"></td>
+                            {row.dailyValues.map((day, dayIndex) => {
+                              const colors = getPercentageColor(day.value);
+                              return (
+                                <td
+                                  key={dayIndex}
+                                  className={`px-1 sm:px-2 py-4 text-center border-r border-white/5 ${colors.bg} text-[11px] sm:text-[13px] font-bold`}
+                                >
+                                  {formatCopNumber(day.raw)}
+                                </td>
+                              );
+                            })}
+                            <td
+                              className={`sticky right-0 z-30 px-3 sm:px-6 py-4 text-center bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-black text-[11px] sm:text-[13px] shadow-xl border-l border-slate-200 group-hover/frow:bg-ubuntu-orange group-hover/frow:text-white ${index === footerData.length - 1 ? 'rounded-br-[1.5rem] sm:rounded-bl-[2rem]' : ''}`}
+                            >
+                              {formatCopNumber(row.monthlyAverageRaw)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tfoot>
+                    </table>
+                  </div>
+                  {/* Export Button */}
+                  <div className="mt-8 flex justify-end pr-6 pb-6">
+                    <button
+                      onClick={exportToExcel}
+                      className="group flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-black rounded-xl sm:rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-2xl shadow-emerald-500/30 uppercase tracking-widest text-[10px] sm:text-xs w-full sm:w-auto"
+                      disabled={analysisData.length === 0}
+                    >
+                      <div className="p-2 bg-white/20 rounded-xl group-hover:rotate-12 transition-transform">
+                        <svg
+                          className="w-5 h-5 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                      </div>
+                      Export Matrix
+                    </button>
+                  </div>
                 </div>
               </DragDropContext>
             )}

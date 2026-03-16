@@ -664,7 +664,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       try {
         // Approximate filter by date range
         const aggregates = await pb.collection('rkc_moisture_monitoring').getFullList({
-          filter: `unit="${selectedUnit}" && date >= "${startDate} 00:00:00" && date <= "${endDate} 23:59:59"`,
+          filter: `unit='${selectedUnit}' && date >= '${startDate} 00:00:00' && date <= '${endDate} 23:59:59'`,
         });
 
         if (aggregates.length > 0) {
@@ -696,7 +696,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         // (Keep existing Raw Calculation Logic - it is robust)
         // ... (Parameter fetching logic) ...
         const paramSettings = (await pb.collection('parameter_settings').getFullList({
-          filter: `unit="${selectedUnit}" && (parameter~"H2O" || parameter~"Set. Feeder")`,
+          filter: `unit='${selectedUnit}' && (parameter~'H2O' || parameter~'Set. Feeder')`,
         })) as unknown as ParameterSetting[];
 
         const paramMap = new Map<string, string>();
@@ -722,7 +722,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           const filterConditions = parameterIds.map((id) => `parameter_id="${id}"`).join(' || ');
           // Single Request for entire month
           const monthlyRecords = await pb.collection('rkc_ccr_parameter_data').getFullList({
-            filter: `date >= "${startDate}" && date <= "${endDate}" && (${filterConditions})`,
+            filter: `date >= '${startDate}' && date <= '${endDate}' && (${filterConditions})`,
           });
 
           const recordsByDate = new Map<string, any[]>();
@@ -906,7 +906,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       // 1. Try fetching from cop_aggregates (Server-Side Cache)
       try {
         const aggregates = await pb.collection('rkc_cop_aggregates').getFullList({
-          filter: `unit="${selectedUnit}" && date >= "${startDate}" && date <= "${endDate}"`,
+          filter: `unit='${selectedUnit}' && date >= '${startDate}' && date <= '${endDate}'`,
         });
 
         if (aggregates.length > 0) {
@@ -939,7 +939,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         // We fetch strictly from ccr_material_usage as the source of truth for Production/Feed
         // ignoring ccr_parameter_data counters.
         const materialUsageRecords = await pb.collection('rkc_ccr_material_usage').getFullList({
-          filter: `plant_unit="${selectedUnit}" && date >= "${startDate}" && date <= "${endDate}"`,
+          filter: `plant_unit='${selectedUnit}' && date >= '${startDate}' && date <= '${endDate}'`,
         });
 
         // Also fetch moisture for calculation
@@ -1835,7 +1835,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         // Optimization: Use cop_aggregates instead of ccr_footer_data
         // cop_aggregates is much smaller (1 record per day) vs footer_data (many per day)
         const records = await pb.collection('rkc_cop_aggregates').getFullList({
-          filter: `unit="${selectedUnit}"`,
+          filter: `unit='${selectedUnit}'`,
           fields: 'date',
           sort: '-date',
         });
@@ -2733,11 +2733,23 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   <div className="space-y-2.5 font-mono text-[10px] sm:text-[11px]">
                     {[
                       { label: 'Mean', val: stat.mean !== null ? formatCopNumber(stat.mean) : '-' },
-                      { label: 'Median', val: stat.median !== null ? formatCopNumber(stat.median) : '-' },
-                      { label: 'Std Dev', val: stat.stdDev !== null ? formatCopNumber(stat.stdDev) : '-' },
-                      { label: 'Range', val: `${stat.min !== null ? formatCopNumber(stat.min) : '-'}-${stat.max !== null ? formatCopNumber(stat.max) : '-'}` },
+                      {
+                        label: 'Median',
+                        val: stat.median !== null ? formatCopNumber(stat.median) : '-',
+                      },
+                      {
+                        label: 'Std Dev',
+                        val: stat.stdDev !== null ? formatCopNumber(stat.stdDev) : '-',
+                      },
+                      {
+                        label: 'Range',
+                        val: `${stat.min !== null ? formatCopNumber(stat.min) : '-'}-${stat.max !== null ? formatCopNumber(stat.max) : '-'}`,
+                      },
                     ].map((item, idx) => (
-                      <div key={idx} className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-700/50">
+                      <div
+                        key={idx}
+                        className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-700/50"
+                      >
                         <span className="text-slate-500 font-bold uppercase tracking-tighter">
                           {item.label}
                         </span>
@@ -2793,7 +2805,9 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <span className="text-slate-500 font-bold uppercase tracking-widest text-[9px]">
                         Outliers
                       </span>
-                      <span className={`font-mono font-black ${anomaly.outliers.length > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                      <span
+                        className={`font-mono font-black ${anomaly.outliers.length > 0 ? 'text-rose-600' : 'text-emerald-600'}`}
+                      >
                         {anomaly.outliers.length}/{anomaly.totalDays}
                       </span>
                     </div>
@@ -2801,11 +2815,15 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <span className="text-slate-500 font-bold uppercase tracking-widest text-[9px]">
                         Severity
                       </span>
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                        anomaly.severity === 'high' ? 'bg-rose-100 text-rose-700' :
-                        anomaly.severity === 'medium' ? 'bg-amber-100 text-amber-700' :
-                        'bg-emerald-100 text-emerald-700'
-                      }`}>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                          anomaly.severity === 'high'
+                            ? 'bg-rose-100 text-rose-700'
+                            : anomaly.severity === 'medium'
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-emerald-100 text-emerald-700'
+                        }`}
+                      >
                         {anomaly.severity}
                       </span>
                     </div>
@@ -2833,7 +2851,10 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     <thead className="bg-white/40 dark:bg-white/5 backdrop-blur-md">
                       <tr>
                         {['Parameter Pair', 'Correlation', 'Strength', 'Direction'].map((h) => (
-                          <th key={h} className="px-6 py-4 text-left text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">
+                          <th
+                            key={h}
+                            className="px-6 py-4 text-left text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest"
+                          >
                             {h}
                           </th>
                         ))}
@@ -2844,28 +2865,39 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         <tr key={idx} className="hover:bg-white/20 transition-colors group">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex flex-col">
-                              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-ubuntu-orange transition-colors">{corr.param1}</span>
-                              <span className="text-[10px] font-bold text-slate-500">vs {corr.param2}</span>
+                              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-ubuntu-orange transition-colors">
+                                {corr.param1}
+                              </span>
+                              <span className="text-[10px] font-bold text-slate-500">
+                                vs {corr.param2}
+                              </span>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-xs font-mono font-black text-slate-700 dark:text-slate-300">
                             {corr.correlation !== null ? corr.correlation.toFixed(3) : 'N/A'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center">
-                            <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                              corr.strength === 'strong' ? 'bg-rose-100 text-rose-700 shadow-lg shadow-rose-500/20' :
-                              corr.strength === 'moderate' ? 'bg-amber-100 text-amber-700 shadow-lg shadow-amber-500/20' :
-                              corr.strength === 'weak' ? 'bg-sky-100 text-sky-700 shadow-lg shadow-sky-500/20' :
-                              'bg-slate-100 text-slate-700'
-                            }`}>
+                            <span
+                              className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                corr.strength === 'strong'
+                                  ? 'bg-rose-100 text-rose-700 shadow-lg shadow-rose-500/20'
+                                  : corr.strength === 'moderate'
+                                    ? 'bg-amber-100 text-amber-700 shadow-lg shadow-amber-500/20'
+                                    : corr.strength === 'weak'
+                                      ? 'bg-sky-100 text-sky-700 shadow-lg shadow-sky-500/20'
+                                      : 'bg-slate-100 text-slate-700'
+                              }`}
+                            >
                               {corr.strength}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center">
                             {corr.correlation !== null && (
-                              <span className={`p-2 rounded-xl text-lg font-black bg-white/40 backdrop-blur-sm shadow-inner ${
-                                corr.correlation > 0 ? 'text-emerald-600' : 'text-rose-600'
-                              }`}>
+                              <span
+                                className={`p-2 rounded-xl text-lg font-black bg-white/40 backdrop-blur-sm shadow-inner ${
+                                  corr.correlation > 0 ? 'text-emerald-600' : 'text-rose-600'
+                                }`}
+                              >
                                 {corr.correlation > 0 ? '↗️' : '↘️'}
                               </span>
                             )}
@@ -2897,28 +2929,28 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   val: `${qualityMetrics.overallStability.toFixed(1)}%`,
                   icon: '📊',
                   color: 'text-blue-600 dark:text-blue-400',
-                  desc: 'Average parameter stability index'
+                  desc: 'Average parameter stability index',
                 },
                 {
                   label: 'Data Completeness',
                   val: `${qualityMetrics.averageCompleteness.toFixed(1)}%`,
                   icon: '✅',
                   color: 'text-emerald-600 dark:text-emerald-400',
-                  desc: 'Data capture rate across RKC'
+                  desc: 'Data capture rate across RKC',
                 },
                 {
                   label: 'Monitored Metrics',
                   val: qualityMetrics.parameterCount,
                   icon: '🔢',
                   color: 'text-purple-600 dark:text-purple-400',
-                  desc: 'Total active sensors monitored'
+                  desc: 'Total active sensors monitored',
                 },
                 {
                   label: 'Data Points',
                   val: `${qualityMetrics.validDataPoints}/${qualityMetrics.totalDataPoints}`,
                   icon: '📈',
                   color: 'text-ubuntu-orange',
-                  desc: 'Verified vs expected captures'
+                  desc: 'Verified vs expected captures',
                 },
               ].map((m, i) => (
                 <div
@@ -2926,13 +2958,19 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl p-6 rounded-[2rem] border border-white/30 dark:border-white/5 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 group cursor-default"
                 >
                   <div className="flex items-center justify-between mb-6">
-                    <div className="text-3xl filter drop-shadow-md group-hover:rotate-12 transition-transform duration-500">{m.icon}</div>
+                    <div className="text-3xl filter drop-shadow-md group-hover:rotate-12 transition-transform duration-500">
+                      {m.icon}
+                    </div>
                     <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                       {m.label}
                     </span>
                   </div>
-                  <div className={`text-3xl sm:text-4xl font-black ${m.color} mb-2 font-display`}>{m.val}</div>
-                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold tracking-tight opacity-80">{m.desc}</p>
+                  <div className={`text-3xl sm:text-4xl font-black ${m.color} mb-2 font-display`}>
+                    {m.val}
+                  </div>
+                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold tracking-tight opacity-80">
+                    {m.desc}
+                  </p>
                 </div>
               ))}
             </div>
@@ -2975,10 +3013,12 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </div>
 
             {isLoadingComparison ? (
-               <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                 <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent shadow-glow"></div>
-                 <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest animate-pulse">Computing Delta...</span>
-               </div>
+              <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent shadow-glow"></div>
+                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest animate-pulse">
+                  Computing Delta...
+                </span>
+              </div>
             ) : periodComparison.length === 0 ? (
               <div className="text-center py-20">
                 <div className="text-4xl mb-4 opacity-20">📊</div>
@@ -3021,12 +3061,16 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         <span className="text-slate-500 font-bold uppercase tracking-tighter text-[9px]">
                           Delta
                         </span>
-                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-black text-sm ${
-                          comparison.delta !== null && comparison.delta > 0 
-                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
-                            : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
-                        }`}>
-                          <span className="text-xs">{comparison.delta !== null && comparison.delta > 0 ? '↗' : '↘'}</span>
+                        <div
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-black text-sm ${
+                            comparison.delta !== null && comparison.delta > 0
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                              : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                          }`}
+                        >
+                          <span className="text-xs">
+                            {comparison.delta !== null && comparison.delta > 0 ? '↗' : '↘'}
+                          </span>
                           {comparison.delta !== null
                             ? `${Math.abs(comparison.delta).toFixed(1)}%`
                             : '0.0%'}
@@ -3061,10 +3105,22 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   </h3>
                   <div className="space-y-2.5 font-mono text-[10px] sm:text-[11px]">
                     {[
-                      { label: 'Current', val: insight.currentValue !== null ? formatCopNumber(insight.currentValue) : '-' },
-                      { label: '7-Day Forecast', val: insight.forecast !== null ? formatCopNumber(insight.forecast) : '-' },
+                      {
+                        label: 'Current',
+                        val:
+                          insight.currentValue !== null
+                            ? formatCopNumber(insight.currentValue)
+                            : '-',
+                      },
+                      {
+                        label: '7-Day Forecast',
+                        val: insight.forecast !== null ? formatCopNumber(insight.forecast) : '-',
+                      },
                     ].map((item, idx) => (
-                      <div key={idx} className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-700/50">
+                      <div
+                        key={idx}
+                        className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-700/50"
+                      >
                         <span className="text-slate-500 font-bold uppercase tracking-tighter">
                           {item.label}
                         </span>
@@ -3077,11 +3133,15 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <span className="text-slate-500 font-bold uppercase tracking-tighter">
                         Risk Level
                       </span>
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                        insight.risk === 'high' ? 'bg-rose-100 text-rose-700' :
-                        insight.risk === 'medium' ? 'bg-amber-100 text-amber-700' :
-                        'bg-emerald-100 text-emerald-700'
-                      }`}>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                          insight.risk === 'high'
+                            ? 'bg-rose-100 text-rose-700'
+                            : insight.risk === 'medium'
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-emerald-100 text-emerald-700'
+                        }`}
+                      >
                         {insight.risk}
                       </span>
                     </div>
@@ -3089,12 +3149,20 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <span className="text-slate-500 font-bold uppercase tracking-tighter">
                         Trend
                       </span>
-                      <span className={`text-base ${
-                        insight.trend === 'increasing' ? 'text-emerald-600' :
-                        insight.trend === 'decreasing' ? 'text-rose-600' :
-                        'text-slate-500'
-                      }`}>
-                        {insight.trend === 'increasing' ? '↗️' : insight.trend === 'decreasing' ? '↘️' : '➡️'}
+                      <span
+                        className={`text-base ${
+                          insight.trend === 'increasing'
+                            ? 'text-emerald-600'
+                            : insight.trend === 'decreasing'
+                              ? 'text-rose-600'
+                              : 'text-slate-500'
+                        }`}
+                      >
+                        {insight.trend === 'increasing'
+                          ? '↗️'
+                          : insight.trend === 'decreasing'
+                            ? '↘️'
+                            : '➡️'}
                       </span>
                     </div>
                   </div>
@@ -3200,16 +3268,23 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     disabled={isLoading}
                     className="group relative flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 disabled:opacity-50 text-white text-xs sm:text-sm font-black rounded-2xl shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
                   >
-                    <div className={`w-4 h-4 ${isLoading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`}>
+                    <div
+                      className={`w-4 h-4 ${isLoading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`}
+                    >
                       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={3}
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        />
                       </svg>
                     </div>
                     {isLoading ? 'REFRESHING...' : 'REFRESH DATA'}
                   </button>
                 </div>
               </div>
-              
+
               <div
                 className="overflow-x-auto custom-scrollbar rounded-3xl shadow-2xl border border-white/20"
                 style={{ scrollbarWidth: 'thin' }}
@@ -3287,34 +3362,53 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                       className={`relative px-2 py-4 text-center border-r border-white/5 transition-colors duration-300 ${colors.bg} group-hover/row:opacity-90`}
                                     >
                                       <div className="relative group/cell h-full w-full flex items-center justify-center">
-                                        <span className={`font-black text-[11px] ${colors.text} drop-shadow-sm`}>
+                                        <span
+                                          className={`font-black text-[11px] ${colors.text} drop-shadow-sm`}
+                                        >
                                           {formatCopNumber(day.raw)}
                                         </span>
                                         {day.raw !== undefined && (
                                           <div className="absolute bottom-full mb-3 w-max max-w-sm bg-slate-900/95 backdrop-blur-xl text-white text-[10px] rounded-2xl py-3 px-4 opacity-0 group-hover/cell:opacity-100 transition-all duration-300 pointer-events-none z-50 shadow-2xl border border-white/10 left-1/2 -translate-x-1/2 scale-90 group-hover/cell:scale-100">
                                             <div className="flex items-center justify-between gap-4 mb-2">
                                               <span className="font-black text-indigo-400 uppercase tracking-widest">
-                                                {formatDate(new Date(Date.UTC(filterYear, filterMonth, dayIndex + 1)))}
+                                                {formatDate(
+                                                  new Date(
+                                                    Date.UTC(filterYear, filterMonth, dayIndex + 1)
+                                                  )
+                                                )}
                                               </span>
-                                              <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tighter ${colors.bg} ${colors.text}`}>
+                                              <span
+                                                className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tighter ${colors.bg} ${colors.text}`}
+                                              >
                                                 {colors.status}
                                               </span>
                                             </div>
                                             <div className="space-y-1 font-mono">
                                               <p className="flex justify-between gap-4">
-                                                <span className="text-slate-400 font-bold uppercase">VAL:</span>
-                                                <span className="text-emerald-400 font-black">{formatCopNumber(day.raw)} {row.parameter.unit}</span>
+                                                <span className="text-slate-400 font-bold uppercase">
+                                                  VAL:
+                                                </span>
+                                                <span className="text-emerald-400 font-black">
+                                                  {formatCopNumber(day.raw)} {row.parameter.unit}
+                                                </span>
                                               </p>
                                               <p className="flex justify-between gap-4">
-                                                <span className="text-slate-400 font-bold uppercase">TARGET:</span>
+                                                <span className="text-slate-400 font-bold uppercase">
+                                                  TARGET:
+                                                </span>
                                                 <span className="text-amber-400 font-black">
-                                                  {formatCopNumber(row.parameter.min_value)} - {formatCopNumber(row.parameter.max_value)}
+                                                  {formatCopNumber(row.parameter.min_value)} -{' '}
+                                                  {formatCopNumber(row.parameter.max_value)}
                                                 </span>
                                               </p>
                                               {day.value !== null && (
                                                 <p className="flex justify-between gap-4 border-t border-white/10 pt-1 mt-1">
-                                                  <span className="text-slate-400 font-bold uppercase">NORM:</span>
-                                                  <span className="text-indigo-400 font-black">{day.value.toFixed(1)}%</span>
+                                                  <span className="text-slate-400 font-bold uppercase">
+                                                    NORM:
+                                                  </span>
+                                                  <span className="text-indigo-400 font-black">
+                                                    {day.value.toFixed(1)}%
+                                                  </span>
                                                 </p>
                                               )}
                                             </div>
@@ -3327,7 +3421,9 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                 {(() => {
                                   const avgColors = getPercentageColor(row.monthlyAverage);
                                   return (
-                                    <td className={`sticky right-0 z-20 px-4 py-4 text-center font-black border-l border-white/10 bg-inherit backdrop-blur-md ${avgColors.bg}`}>
+                                    <td
+                                      className={`sticky right-0 z-20 px-4 py-4 text-center font-black border-l border-white/10 bg-inherit backdrop-blur-md ${avgColors.bg}`}
+                                    >
                                       <span className={`${avgColors.text} text-xs drop-shadow-sm`}>
                                         {formatCopNumber(row.monthlyAverageRaw)}
                                       </span>

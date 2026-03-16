@@ -374,7 +374,7 @@ export const useCurrentUser = () => {
         if (pb.authStore.model?.id) {
           try {
             const records = await pb.collection('user_online').getFullList({
-              filter: `user_id = "${pb.authStore.model.id}"`,
+              filter: `user_id='${pb.authStore.model.id}'`,
             });
 
             // Delete all found records
