@@ -3990,7 +3990,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   </div>
 
                   {/* AI Features Group */}
-                  {hasPermission('cm_plant_operations', 'create') && selectedUnit && (
+                  {hasPermission('cm_plant_operations', 'WRITE') && selectedUnit && (
                     <div className="flex items-center gap-2">
                       <OptimizationAdvisorButton
                         unit={selectedUnit}

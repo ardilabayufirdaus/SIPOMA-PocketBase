@@ -4032,7 +4032,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                 </div>
 
                 {/* AI Features Group */}
-                {hasPermission('rkc_plant_operations', 'create') && selectedUnit && (
+                {hasPermission('rkc_plant_operations', 'WRITE') && selectedUnit && (
                   <div className="flex items-center gap-2">
                     {/* AI Parameter Optimization */}
                     <OptimizationAdvisorButton
