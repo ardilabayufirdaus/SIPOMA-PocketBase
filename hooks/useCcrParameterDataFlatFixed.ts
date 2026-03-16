@@ -554,7 +554,8 @@ export const useCcrParameterDataFlat = () => {
         const normalizedDate = date.split('T')[0];
 
         // Check for existing data by querying the database directly
-        const filter = `date="${normalizedDate}" && parameter_id="${parameter_id}"`;
+        // Include plant_unit in filter for more specific and robust targeting
+        const filter = `date="${normalizedDate}" && parameter_id="${parameter_id}" && plant_unit="${selectedUnit || 'Unknown'}"`;
         const existingRecords = await safeApiCall(
           () =>
             pb.collection('ccr_parameter_data').getFullList({

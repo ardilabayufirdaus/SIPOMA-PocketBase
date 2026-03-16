@@ -287,16 +287,31 @@ export const useCcrOfflineSync = (options: UseCcrOfflineSyncOptions): UseCcrOffl
               selectedUnit,
             } = op.data as Record<string, unknown>;
             const normalizedDate = (opDate as string).split('T')[0];
-            const filter = `date="${normalizedDate}" && parameter_id="${parameterId}"`;
+            // Include plant_unit in filter for more specific targeting
+            const filter = `date="${normalizedDate}" && parameter_id="${parameterId}" && plant_unit="${selectedUnit || 'Unknown'}"`;
             const existingRecords = await pb
               .collection('ccr_parameter_data')
               .getFullList({ filter });
 
             const hourField = `hour${hour}`;
             const userField = `hour${hour}_user`;
+
+            // Normalize value: handle Indonesian decimal format and types
+            let normalizedValue: string | number | null =
+              value === '' || value === null ? null : value;
+            if (typeof normalizedValue === 'string') {
+              // Try to parse as number if it looks like one (handle both dot and comma)
+              const sanitized = normalizedValue.replace(',', '.');
+              const parsed = parseFloat(sanitized);
+              if (!isNaN(parsed) && isFinite(parsed)) {
+                normalizedValue = parsed;
+              }
+            }
+
             const updateFields: Record<string, unknown> = {
-              [hourField]: value === '' || value === null ? null : value,
+              [hourField]: normalizedValue,
               [userField]: userName || 'Unknown User',
+              name: userName || 'Unknown User', // For backward compatibility
             };
 
             if (existingRecords.length > 0) {
@@ -305,7 +320,6 @@ export const useCcrOfflineSync = (options: UseCcrOfflineSyncOptions): UseCcrOffl
               await pb.collection('ccr_parameter_data').create({
                 date: normalizedDate,
                 parameter_id: parameterId,
-                name: userName || 'Unknown User',
                 plant_unit: selectedUnit || 'Unknown',
                 ...updateFields,
               });
@@ -321,7 +335,6 @@ export const useCcrOfflineSync = (options: UseCcrOfflineSyncOptions): UseCcrOffl
               shift,
               field,
               value: siloValue,
-              selectedUnit: siloUnit,
             } = op.data as Record<string, unknown>;
             const formattedField = field === 'emptySpace' ? 'empty_space' : 'content';
             const shiftNum = (shift as string).replace('shift', '');
@@ -342,9 +355,26 @@ export const useCcrOfflineSync = (options: UseCcrOfflineSyncOptions): UseCcrOffl
               await pb.collection('ccr_silo_data').create({
                 date: formattedDate,
                 silo_id: siloId,
-                plant_unit: siloUnit,
+                // Removed plant_unit as it's not in the ccr_silo_data schema
                 [flatFieldName]: siloValue,
               });
+            }
+            success++;
+            break;
+          }
+
+          case 'downtime': {
+            const { id: downtimeId, ...downtimeData } = op.data as Record<string, unknown>;
+            const { pb: pbDowntime } = await import('../utils/pocketbase-simple');
+
+            if (downtimeId && !downtimeId.startsWith('temp-')) {
+              // Update existing
+              await pbDowntime
+                .collection('ccr_downtime_data')
+                .update(downtimeId as string, downtimeData);
+            } else {
+              // Create new
+              await pbDowntime.collection('ccr_downtime_data').create(downtimeData);
             }
             success++;
             break;
