@@ -18,22 +18,31 @@ export const usePresenceTracker = () => {
 
   const fetchOnlineUsers = useCallback(async () => {
     try {
-      // Add time filter to prevent fetching too many records (PocketBase limit)
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      // Perlebar filter ke 2 jam terakhir untuk toleransi timezone
+      // Format YYYY-MM-DD HH:MM:SS lebih aman untuk filter PocketBase string
+      const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000)
+        .toISOString()
+        .replace('T', ' ')
+        .split('.')[0];
+
       const onlineRecords = await pb.collection('user_online').getFullList({
-        filter: `updated > "${oneHourAgo}"`,
+        filter: `updated > "${twoHoursAgo}"`,
         sort: '-updated',
       });
+
+      if (onlineRecords.length === 0) {
+        setOnlineUsers([]);
+        setIsConnected(true);
+        return;
+      }
 
       const promises = onlineRecords.map(async (record) => {
         try {
           if (!record.user_id) return null;
 
-          let presenceData: PresenceUser | null = null;
-
           try {
             const user = await pb.collection('users').getOne(record.user_id);
-            presenceData = {
+            return {
               id: user.id,
               username: user.username,
               full_name: user.name || user.full_name,
@@ -42,12 +51,16 @@ export const usePresenceTracker = () => {
               is_online: true,
               avatarUrl: user.avatar ? pb.files.getUrl(user, user.avatar) : undefined,
             };
-          } catch (fetchErr: unknown) {
-            // Jika user tidak ditemukan (404), cukup abaikan record ini di UI.
-            // Jangan mencoba menghapusnya dari client (menyebabkan 404 bagi client lain).
-            return null;
+          } catch (fetchErr) {
+            // Jika gagal ambil data user (misal: Guest), tetap tampilkan ID sebagai placeholder
+            return {
+              id: record.user_id,
+              username: 'User ' + record.user_id.slice(-4),
+              role: 'Unknown',
+              last_seen: new Date(record.updated),
+              is_online: true,
+            };
           }
-          return presenceData;
         } catch (e) {
           return null;
         }
@@ -63,6 +76,7 @@ export const usePresenceTracker = () => {
       setOnlineUsers(uniqueUsers);
       setIsConnected(true);
     } catch (error) {
+      console.error('PresenceTracker Error:', error);
       setIsConnected(false);
     }
   }, []);
