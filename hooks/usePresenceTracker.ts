@@ -18,23 +18,9 @@ export const usePresenceTracker = () => {
 
   const fetchOnlineUsers = useCallback(async () => {
     try {
-      // Perlebar filter ke 2 jam terakhir untuk toleransi timezone
-      // Format YYYY-MM-DD HH:MM:SS lebih aman untuk filter PocketBase string
-      const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000)
-        .toISOString()
-        .replace('T', ' ')
-        .split('.')[0];
-
       const onlineRecords = await pb.collection('user_online').getFullList({
-        filter: `updated > "${twoHoursAgo}"`,
         sort: '-updated',
       });
-
-      if (onlineRecords.length === 0) {
-        setOnlineUsers([]);
-        setIsConnected(true);
-        return;
-      }
 
       const promises = onlineRecords.map(async (record) => {
         try {
@@ -45,17 +31,16 @@ export const usePresenceTracker = () => {
             return {
               id: user.id,
               username: user.username,
-              full_name: user.name || user.full_name,
+              full_name: user.name || user.username,
               role: user.role,
               last_seen: new Date(record.updated),
               is_online: true,
               avatarUrl: user.avatar ? pb.files.getUrl(user, user.avatar) : undefined,
             };
           } catch (fetchErr) {
-            // Jika gagal ambil data user (misal: Guest), tetap tampilkan ID sebagai placeholder
             return {
               id: record.user_id,
-              username: 'User ' + record.user_id.slice(-4),
+              username: 'Rekan SIPOMA',
               role: 'Unknown',
               last_seen: new Date(record.updated),
               is_online: true,
@@ -69,14 +54,26 @@ export const usePresenceTracker = () => {
       const results = await Promise.all(promises);
       const validUsers = results.filter((u): u is PresenceUser => u !== null);
 
-      const uniqueUsers = validUsers.filter(
-        (user, index, self) => index === self.findIndex((u) => u.id === user.id)
-      );
+      // Pastikan ada setidaknya 1 jika kita sedang login
+      if (validUsers.length === 0 && pb.authStore.model) {
+        const me: PresenceUser = {
+          id: pb.authStore.model.id,
+          username: pb.authStore.model.username || 'Saya',
+          full_name: pb.authStore.model.name || 'Saya',
+          role: pb.authStore.model.role || 'Super Admin',
+          last_seen: new Date(),
+          is_online: true,
+        };
+        setOnlineUsers([me]);
+      } else {
+        const uniqueUsers = validUsers.filter(
+          (user, index, self) => index === self.findIndex((u) => u.id === user.id)
+        );
+        setOnlineUsers(uniqueUsers);
+      }
 
-      setOnlineUsers(uniqueUsers);
       setIsConnected(true);
     } catch (error) {
-      console.error('PresenceTracker Error:', error);
       setIsConnected(false);
     }
   }, []);
