@@ -21,8 +21,8 @@ export const usePresenceTracker = () => {
       // Add time filter to prevent fetching too many records (PocketBase limit)
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
       const onlineRecords = await pb.collection('user_online').getFullList({
-        filter: `created > "${oneHourAgo}"`,
-        sort: '-created',
+        filter: `updated > "${oneHourAgo}"`,
+        sort: '-updated',
       });
 
       const promises = onlineRecords.map(async (record) => {
@@ -38,7 +38,7 @@ export const usePresenceTracker = () => {
               username: user.username,
               full_name: user.name || user.full_name,
               role: user.role,
-              last_seen: new Date(record.created),
+              last_seen: new Date(record.updated),
               is_online: true,
               avatarUrl: user.avatar ? pb.files.getUrl(user, user.avatar) : undefined,
             };
@@ -87,8 +87,8 @@ export const usePresenceTracker = () => {
           await pb.collection('user_online').update(latest.id, {
             user_id: userId, // Update field yang sama (no-op) untuk merefresh 'updated'
           });
-        } catch (error: any) {
-          if (error.status === 404) {
+        } catch (error: unknown) {
+          if (error && typeof error === 'object' && 'status' in error && error.status === 404) {
             // Jika record sudah hilang (mungkin dihapus tab lain), buat baru
             await pb.collection('user_online').create({ user_id: userId });
           }
@@ -122,6 +122,8 @@ export const usePresenceTracker = () => {
     const initialize = async () => {
       await fetchOnlineUsers();
       await sendHeartbeat();
+      // Fetch again to include the record we just created/updated
+      await fetchOnlineUsers();
 
       heartbeatIntervalRef.current = setInterval(sendHeartbeat, 2 * 60 * 1000);
 

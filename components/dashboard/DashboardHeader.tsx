@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { User } from '../../types';
-import { useTranslation } from '../../hooks/useTranslation';
 
 interface DashboardHeaderProps {
   user: User | null;
@@ -9,7 +8,7 @@ interface DashboardHeaderProps {
   onlineUsersCount?: number;
 }
 
-const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, t, onlineUsersCount = 1 }) => {
+const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, t, onlineUsersCount = 0 }) => {
   const [greeting, setGreeting] = useState('');
   // const [systemStatus, setSystemStatus] = useState<'operational' | 'issues'>('operational'); // Simplified: removed redundant state if not used dynamically
 

@@ -23,7 +23,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
 
   // Use centralized presence tracker for real-time online users
   const { onlineUsers } = usePresenceTracker();
-  const onlineUsersCount = onlineUsers.length > 0 ? onlineUsers.length : 1;
+  const onlineUsersCount = onlineUsers.length;
 
   if (isLoading) {
     return (
