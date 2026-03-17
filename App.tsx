@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, Suspense } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 // ...existing code...
 
 // Import ThemeProvider
@@ -11,7 +11,6 @@ import SimpleErrorBoundary from './components/SimpleErrorBoundary';
 import LoadingSkeleton from './components/LoadingSkeleton';
 
 // Lazy load heavy components to break circular dependencies
-const Modal = React.lazy(() => import('./components/Modal'));
 const ProfileEditModal = React.lazy(() => import('./components/ProfileEditModal'));
 const UserForm = React.lazy(() => import('./features/user-management/components/UserForm'));
 const PasswordDisplay = React.lazy(() => import('./components/PasswordDisplay'));
@@ -21,6 +20,7 @@ const Sidebar = React.lazy(() => import('./components/Sidebar'));
 const Header = React.lazy(() => import('./components/Header'));
 const SignOutConfirmModal = React.lazy(() => import('./components/SignOutConfirmModal'));
 const ServerPage = React.lazy(() => import('./pages/ServerPage'));
+const ChatbotWidget = React.lazy(() => import('./src/components/chatbot/ChatbotWidget'));
 
 import { useUserStore } from './stores/userStore';
 import { useCurrentUser } from './hooks/useCurrentUser';
@@ -454,10 +454,10 @@ const App: React.FC = () => {
                   {/* Database Module */}
                   {currentPage === 'database' && <DatabasePage />}
 
-                   {/* Server Module - Only for Super Admin */}
-                   {currentPage === 'server' && currentUser?.role === 'Super Admin' && (
-                     <ServerPage />
-                   )}
+                  {/* Server Module - Only for Super Admin */}
+                  {currentPage === 'server' && currentUser?.role === 'Super Admin' && (
+                    <ServerPage />
+                  )}
 
                   {/* Inspection Module */}
                   <PermissionGuard
@@ -543,6 +543,8 @@ const App: React.FC = () => {
         />
 
         <LogoutProgress isVisible={isLogoutInProgress} stage={logoutStage} />
+
+        <ChatbotWidget />
       </Suspense>
     </SimpleErrorBoundary>
   );
