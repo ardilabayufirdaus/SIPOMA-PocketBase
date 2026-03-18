@@ -184,7 +184,7 @@ const requestThrottler = new RequestThrottler();
 export const pb = (() => {
   if (!pbInstance) {
     // Di Vercel/production, paksa gunakan HTTP untuk mengatasi masalah mixed content
-    if (isVercelDeployment) {
+    if (isVercelDeployment()) {
       logger.info('Mode production/Vercel terdeteksi, koneksi PocketBase dipaksa menggunakan HTTP');
       currentProtocol = 'http';
     }

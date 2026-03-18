@@ -24,14 +24,11 @@ export const useSystemHealth = () => {
     // 1. Subscribe to system_status updates (CPU/Mem from the monitor script)
     const subscribeToStats = async () => {
       try {
-        // Check if monitor record exists first (one-time check)
-        const record = await pb
-          .collection('system_status')
-          .getOne('monitor_srv_001')
-          .catch(() => null);
+        // Check if monitor record exists first (one-time check) - DISABLED (MOCKED NULL)
+        const record = null;
 
         if (!record) {
-          console.warn('System monitor record monitor_srv_001 not found. Disabling monitoring.');
+          // console.warn('System monitor record monitor_srv_001 not found. Disabling monitoring.');
           setHealth((prev) => ({ ...prev, isLive: false }));
           return () => {};
         }

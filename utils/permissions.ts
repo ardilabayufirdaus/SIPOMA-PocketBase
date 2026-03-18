@@ -44,8 +44,6 @@ export class PermissionChecker {
     }
 
     return false;
-
-    return false;
   }
 
   /**
@@ -155,8 +153,6 @@ export class PermissionChecker {
     }
 
     // For plant operations, return the highest permission level across all categories/units
-    return 'NONE';
-
     return 'NONE';
   }
 

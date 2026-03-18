@@ -140,7 +140,7 @@ export const useAuth = () => {
         try {
           // Check if already exists to avoid duplicates
           const existing = await pb.collection('user_online').getList(1, 1, {
-            filter: `user_id='${userData.id}'`,
+            filter: `user_id="${userData.id}"`,
           });
 
           if (existing.items.length === 0) {
