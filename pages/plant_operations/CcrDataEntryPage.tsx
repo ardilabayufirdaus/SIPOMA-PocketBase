@@ -130,8 +130,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     }>
   >([]);
 
-  // New state for toast notifications
   const [, setToastMessage] = useState<string | null>(null);
+  const [initialDraftExists, setInitialDraftExists] = useState(false);
+  const draftCheckedRef = useRef(false);
 
   // Function to show toast message for 3 seconds
   // Function to show toast message for 3 seconds
@@ -372,67 +373,34 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     autoSaveIntervalMs: 10000, // auto-save setiap 10 detik
   });
 
-  // Handler untuk memulihkan draft yang ditemukan
-  const handleRecoverDraft = useCallback(() => {
-    const draft = offlineSync.loadDraft();
-    if (!draft) return;
-
-    // Jika ada pending operations dalam draft, proses ke pending queue
-    if (draft.parameters && Object.keys(draft.parameters).length > 0) {
-      Object.values(draft.parameters).forEach((entry) => {
-        const { parameterId, hour, value, userName } = entry as Record<string, unknown>;
-        offlineSync.addToPendingQueue({
-          type: 'parameter',
-          data: {
-            parameterId,
-            date: selectedDate,
-            hour,
-            value,
-            userName,
-            selectedUnit,
-          },
-        });
-      });
-    }
-
-    if (draft.silos && Object.keys(draft.silos).length > 0) {
-      Object.values(draft.silos).forEach((entry) => {
-        const { siloId, shift, field, value } = entry as Record<string, unknown>;
-        offlineSync.addToPendingQueue({
-          type: 'silo',
-          data: {
-            date: selectedDate,
-            siloId,
-            shift,
-            field,
-            value,
-            selectedUnit,
-          },
-        });
-      });
-    }
-
-    // Proses queue jika online
-    if (isNetworkOnline) {
-      offlineSync.processPendingQueue();
-    }
-
-    // Clear the draft after recovering
-    offlineSync.clearDraft();
-    showToast('Data berhasil dipulihkan');
-  }, [offlineSync, selectedDate, selectedUnit, isNetworkOnline, showToast]);
-
-  // Handler untuk manual sync
-  const handleManualSync = useCallback(() => {
-    offlineSync.processPendingQueue().then(({ success, failed }) => {
-      if (success > 0) {
-        showToast(`${success} data berhasil disinkronkan`);
+  // Check for initial draft once on mount
+  useEffect(() => {
+    if (selectedDate && selectedUnit && !draftCheckedRef.current) {
+      const draft = offlineSync.loadDraft();
+      if (
+        draft &&
+        (Object.keys(draft.parameters || {}).length > 0 ||
+          Object.keys(draft.silos || {}).length > 0)
+      ) {
+        setInitialDraftExists(true);
       }
-      if (failed > 0) {
-        showToast(`${failed} data gagal disinkronkan`);
+      draftCheckedRef.current = true;
+    }
+  }, [selectedDate, selectedUnit, offlineSync]);
+
+  // Warning before unload if there is unsaved draft or pending sync
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (offlineSync.hasDraft || offlineSync.pendingCount > 0) {
+        const message = 'Anda memiliki data yang belum tersimpan atau belum sinkron. Tetap keluar?';
+        e.preventDefault();
+        e.returnValue = message;
+        return message;
       }
-    });
-  }, [offlineSync, showToast]);
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [offlineSync.hasDraft, offlineSync.pendingCount]);
 
   // Silo Data Hooks and Filtering
   const { records: siloMasterData } = useSiloCapacities();
@@ -1146,16 +1114,17 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       const data = await getParameterDataForDate(selectedDate, selectedUnit);
       setDailyParameterData(data);
 
-      // No need to update legacy records as the new flat structure is now used
-      // const _userName = loggedInUser?.full_name || currentUser.full_name || 'Unknown User';
+      // Phase 4: Clear old draft after successful fresh data load from server
+      if (data.length > 0) {
+        offlineSync.clearDraft();
+        setInitialDraftExists(false);
+      }
     } catch {
-      // Error logging removed for production
       showToast(t.error_fetching_parameter_data);
     } finally {
-      setLoading(false); // Clear loading state when done, regardless of success or failure
+      setLoading(false);
     }
-    // Remove dataVersion from the dependency array to prevent infinite loops
-  }, [selectedDate, selectedUnit, getParameterDataForDate, showToast, loggedInUser, currentUser]);
+  }, [selectedDate, selectedUnit, getParameterDataForDate, showToast, offlineSync]);
 
   // Pendekatan client-server standar: fetch data hanya ketika ada perubahan input
   useEffect(() => {
@@ -1535,13 +1504,85 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     selectedDate,
     selectedUnit,
     selectedCategory,
-    fetchParameterData,
-    fetchSiloData,
     showToast,
     triggerRefresh,
+    fetchParameterData,
+    fetchSiloData,
     informationRefetch,
     downtimeRefetch,
+    t.select_category_unit_date_first,
   ]);
+
+  // Handler untuk memulihkan draft yang ditemukan
+  const handleRecoverDraft = useCallback(() => {
+    const draft = offlineSync.loadDraft();
+    if (!draft) return;
+
+    // Jika ada pending operations dalam draft, proses ke pending queue
+    if (draft.parameters && Object.keys(draft.parameters).length > 0) {
+      Object.values(draft.parameters).forEach((entry) => {
+        const { parameterId, hour, value, userName } = entry as Record<string, unknown>;
+        offlineSync.addToPendingQueue({
+          type: 'parameter',
+          data: {
+            parameterId,
+            date: selectedDate,
+            hour,
+            value,
+            userName,
+            selectedUnit,
+          },
+        });
+      });
+    }
+
+    if (draft.silos && Object.keys(draft.silos).length > 0) {
+      Object.values(draft.silos).forEach((entry) => {
+        const { siloId, shift, field, value } = entry as Record<string, unknown>;
+        offlineSync.addToPendingQueue({
+          type: 'silo',
+          data: {
+            date: selectedDate,
+            siloId,
+            shift,
+            field,
+            value,
+            selectedUnit,
+          },
+        });
+      });
+    }
+
+    // Proses queue jika online
+    if (isNetworkOnline) {
+      offlineSync.processPendingQueue().then(() => {
+        // Refresh data setelah sync selesai untuk update UI
+        refreshData();
+      });
+    } else {
+      // Jika offline, kita masih ingin data muncul di UI
+      // Cara terbaik adalah dengan manual refresh yang akan meload dari IndexedDB/localStorage
+      refreshData();
+    }
+
+    // Clear the draft after recovering
+    offlineSync.clearDraft();
+    showToast('Data berhasil dipulihkan');
+  }, [offlineSync, selectedDate, selectedUnit, isNetworkOnline, showToast, refreshData]);
+
+  // Handler untuk manual sync
+  const handleManualSync = useCallback(() => {
+    offlineSync.processPendingQueue().then(({ success, failed }) => {
+      if (success > 0) {
+        showToast(`${success} data berhasil disinkronkan`);
+      }
+      if (failed > 0) {
+        showToast(`${failed} data gagal disinkronkan`);
+      }
+      // Refresh data after manual sync to update UI
+      refreshData();
+    });
+  }, [offlineSync, showToast, refreshData]);
 
   const formatStatValue = (value: number | undefined) => {
     if (value === undefined || value === null) return '-';
@@ -1719,82 +1760,37 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
   const siloUpdateInProgress = useRef(new Set<string>());
 
-  // Fungsi untuk handle perubahan input silo (hanya update state lokal)
-  const handleSiloDataChange = (
-    siloId: string,
-    shift: 'shift1' | 'shift2' | 'shift3',
-    field: 'emptySpace' | 'content',
-    value: string
-  ) => {
-    const parsedValue = parseFloat(value);
-    const isEmptyValue = value.trim() === '' || isNaN(parsedValue);
+  // Debounced save for silo draft
+  const saveSiloDraftWithDebounce = useMemo(
+    () =>
+      createDebounce((siloId: string, shift: string, field: string, value: number) => {
+        offlineSync.saveSiloDraft(siloId, shift, field, value);
+      }, 1000),
+    [offlineSync]
+  );
 
-    const key = `${siloId}-${shift}-${field}`;
+  // Debounced save for silo PocketBase (Real-time)
+  const saveSiloToPocketBaseWithDebounce = useMemo(
+    () =>
+      createDebounce(async (siloId: string, shift: string, field: string, value: number) => {
+        const key = `${siloId}-${shift}-${field}`;
+        if (siloUpdateInProgress.current.has(key)) return;
 
-    // Jika nilai kosong, hapus dari unsaved changes dan trigger delete
-    if (isEmptyValue) {
-      setUnsavedSiloChanges((prev) => {
-        const newChanges = { ...prev };
-        delete newChanges[key];
-        return newChanges;
-      });
+        try {
+          siloUpdateInProgress.current.add(key);
+          // Menggunakan updateSiloData yang mendukung (date, siloId, shift, field, value, unitId)
+          await updateSiloData(selectedDate, siloId, shift, field, value, selectedUnit);
 
-      // Trigger delete operation
-      handleSiloDataDelete(siloId, shift, field);
-      return;
-    }
-
-    // Update state lokal untuk immediate UI feedback
-    setAllDailySiloData((prev) => {
-      const existingIndex = prev.findIndex((data) => data.silo_id === siloId);
-
-      if (existingIndex >= 0) {
-        // Update existing data
-        return prev.map((data, index) => {
-          if (index === existingIndex) {
-            return {
-              ...data,
-              [shift]: {
-                ...data[shift],
-                [field]: parsedValue,
-              },
-            };
-          }
-          return data;
-        });
-      } else {
-        // Add new data entry for this silo
-        const masterSilo = siloMasterMap.get(siloId);
-        if (!masterSilo) return prev;
-
-        const newData: CcrSiloData = {
-          id: `temp-${siloId}`, // Temporary ID
-          silo_id: siloId,
-          date: selectedDate || '',
-          capacity: masterSilo.capacity,
-          percentage: 0,
-          silo_name: masterSilo.silo_name,
-          weight_value: 0,
-          status: '',
-          unit_id: masterSilo.unit,
-          shift1: { emptySpace: undefined, content: undefined },
-          shift2: { emptySpace: undefined, content: undefined },
-          shift3: { emptySpace: undefined, content: undefined },
-          [shift]: {
-            [field]: parsedValue,
-          },
-        };
-
-        return [...prev, newData];
-      }
-    });
-
-    // Simpan perubahan ke unsaved changes
-    setUnsavedSiloChanges((prev) => ({
-      ...prev,
-      [key]: { shift, field, value: parsedValue },
-    }));
-  };
+          // If successful, remove from draft
+          offlineSync.removeSiloDraft(siloId, shift, field);
+        } catch {
+          // If failed (e.g., offline), it remains in draft and will be picked up by onBlur or auto-sync
+        } finally {
+          siloUpdateInProgress.current.delete(key);
+        }
+      }, 3000), // 3 second debounce for server sync
+    [selectedDate, updateSiloData, selectedUnit, offlineSync]
+  );
 
   // Fungsi untuk handle penghapusan data silo dari database
   const handleSiloDataDelete = useCallback(
@@ -1803,6 +1799,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       shift: 'shift1' | 'shift2' | 'shift3',
       field: 'emptySpace' | 'content'
     ) => {
+      if (!selectedDate || !selectedUnit) return;
+
       const key = `${siloId}-${shift}-${field}`;
 
       if (siloUpdateInProgress.current.has(key)) {
@@ -1812,8 +1810,6 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       siloUpdateInProgress.current.add(key);
 
       try {
-        // Konversi parameter ke format yang sesuai dengan skema flat fields
-        // const _shiftNum = shift.replace('shift', '');
         const formattedField = field === 'emptySpace' ? 'empty_space' : 'content';
 
         // Gunakan fungsi deleteSiloData dari hook untuk menghapus data
@@ -1836,7 +1832,6 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 });
 
                 if (!hasDataInShift && !hasOtherShiftsInData) {
-                  // Jangan tampilkan data ini lagi di UI (akan kembali ke empty state)
                   return null;
                 }
 
@@ -1847,17 +1842,109 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               }
               return data;
             })
-            .filter(Boolean) as CcrSiloData[]; // Filter out null values
+            .filter(Boolean) as CcrSiloData[];
         });
-        // Refetch data untuk memastikan konsistensi dengan force refresh
+
+        // Refetch data untuk memastikan konsistensi
         await fetchSiloData(true);
-      } catch {
-        // Error handling quietly
+      } catch (error) {
+        logger.error('Error deleting silo data:', error);
       } finally {
         siloUpdateInProgress.current.delete(key);
       }
     },
-    [selectedDate, selectedUnit, fetchSiloData]
+    [selectedDate, selectedUnit, deleteSiloData, fetchSiloData]
+  );
+
+  // Fungsi untuk handle perubahan input silo (hanya update state lokal)
+  const handleSiloDataChange = useCallback(
+    (
+      siloId: string,
+      shift: 'shift1' | 'shift2' | 'shift3',
+      field: 'emptySpace' | 'content',
+      value: string
+    ) => {
+      const parsedValue = parseFloat(value);
+      const isEmptyValue = value.trim() === '' || isNaN(parsedValue);
+
+      const key = `${siloId}-${shift}-${field}`;
+
+      // Jika nilai kosong, hapus dari unsaved changes dan trigger delete
+      if (isEmptyValue) {
+        setUnsavedSiloChanges((prev) => {
+          const newChanges = { ...prev };
+          delete newChanges[key];
+          return newChanges;
+        });
+
+        handleSiloDataDelete(siloId, shift, field);
+        return;
+      }
+
+      // Update state lokal untuk immediate UI feedback
+      setAllDailySiloData((prev) => {
+        const existingIndex = prev.findIndex((data) => data.silo_id === siloId);
+
+        if (existingIndex >= 0) {
+          return prev.map((data, index) => {
+            if (index === existingIndex) {
+              return {
+                ...data,
+                [shift]: {
+                  ...data[shift],
+                  [field]: parsedValue,
+                },
+              };
+            }
+            return data;
+          });
+        } else {
+          const masterSilo = siloMasterMap.get(siloId);
+          if (!masterSilo) return prev;
+
+          const newData: CcrSiloData = {
+            id: `temp-${siloId}`,
+            silo_id: siloId,
+            date: selectedDate || '',
+            capacity: masterSilo.capacity,
+            percentage: 0,
+            silo_name: masterSilo.silo_name,
+            weight_value: 0,
+            status: '',
+            unit_id: masterSilo.unit,
+            shift1: { emptySpace: undefined, content: undefined },
+            shift2: { emptySpace: undefined, content: undefined },
+            shift3: { emptySpace: undefined, content: undefined },
+            [shift]: {
+              [field]: parsedValue,
+            },
+          };
+          return [...prev, newData];
+        }
+      });
+
+      // Simpan ke unsaved changes state
+      setUnsavedSiloChanges((prev) => ({
+        ...prev,
+        [key]: { shift, field, value: parsedValue },
+      }));
+
+      // Phase 2 (Silo): Only trigger save to draft if currently offline (as a safety net)
+      if (!isNetworkOnline) {
+        saveSiloDraftWithDebounce(siloId, shift, field, parsedValue);
+      }
+
+      // Trigger debounced save to PocketBase (real-time sync)
+      saveSiloToPocketBaseWithDebounce(siloId, shift, field, parsedValue);
+    },
+    [
+      selectedDate,
+      isNetworkOnline,
+      saveSiloDraftWithDebounce,
+      saveSiloToPocketBaseWithDebounce,
+      siloMasterMap,
+      handleSiloDataDelete,
+    ]
   );
 
   // Fungsi untuk save silo data ke database saat berpindah cell (onBlur)
@@ -1901,6 +1988,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           delete newChanges[key];
           return newChanges;
         });
+        // Remove from draft as it's now synced to server
+        offlineSync.removeSiloDraft(siloId, shift, field);
       } catch {
         // Jika gagal (server offline), tambahkan ke pending queue
         offlineSync.addToPendingQueue({
@@ -1939,7 +2028,38 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   }, [selectedDate, selectedUnit, getInformationForDate]);
 
   // Wrapper function for parameter data changes with optimistic updates and immediate saving
-  // Track pending changes yang belum disimpan ke database
+  // Track pending changes yang belum disimpan  // Debounced save for parameter draft
+  const saveParameterDraftWithDebounce = useMemo(
+    () =>
+      createDebounce(
+        (parameterId: string, hour: number, value: string, userName: string) => {
+          offlineSync.saveParameterDraft(parameterId, hour, value, userName);
+        },
+        1000 // 1 second debounce for local draft
+      ),
+    [offlineSync]
+  );
+
+  // Debounced save for parameter PocketBase (Real-time)
+  const saveParameterToPocketBaseWithDebounce = useMemo(
+    () =>
+      createDebounce(
+        async (parameterId: string, hour: number, value: string, userName: string) => {
+          try {
+            await updateParameterData(parameterId, selectedDate, hour, value, userName, undefined, {
+              skipTrigger: true,
+              skipSync: true,
+            });
+            // Berhasil kirim ke server, hapus dari draft lokal
+            offlineSync.removeParameterDraft(parameterId, hour);
+          } catch {
+            // Jika gagal, biarkan tetap di draft (akan ditangani onBlur atau auto-sync)
+          }
+        },
+        3000 // 3 seconds debounce for server sync
+      ),
+    [selectedDate, updateParameterData, offlineSync]
+  );
 
   // Fungsi untuk menangani perubahan nilai parameter (hanya update UI tanpa save ke database)
   const handleParameterDataChange = useCallback(
@@ -1991,8 +2111,24 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
         return newArr;
       });
+
+      // Phase 2: Only trigger save to draft if currently offline (as a safety net)
+      // If we are online, real-time sync with PocketBase is the priority.
+      const userName = loggedInUser?.full_name || currentUser?.full_name || 'Unknown User';
+      if (!isNetworkOnline) {
+        saveParameterDraftWithDebounce(parameterId, hour, value, userName);
+      }
+
+      // Trigger debounced save to PocketBase (real-time sync)
+      saveParameterToPocketBaseWithDebounce(parameterId, hour, value, userName);
     },
-    [loggedInUser, currentUser]
+    [
+      loggedInUser,
+      currentUser,
+      isNetworkOnline,
+      saveParameterDraftWithDebounce,
+      saveParameterToPocketBaseWithDebounce,
+    ]
   );
 
   // Fungsi untuk menyimpan perubahan ke database saat berpindah sel
@@ -2001,11 +2137,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       const effectiveUserName =
         userName || loggedInUser?.full_name || currentUser?.full_name || 'Unknown User';
 
-      // Selalu simpan ke draft lokal terlebih dahulu (safety net)
-      offlineSync.saveParameterDraft(parameterId, hour, value, effectiveUserName);
-
       try {
-        // Coba kirim ke server
+        // Coba kirim ke server (Real-time update)
         await updateParameterData(
           parameterId,
           selectedDate,
@@ -2013,10 +2146,14 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           value,
           effectiveUserName,
           undefined,
-          { skipTrigger: true }
+          { skipTrigger: true, skipSync: true }
         );
+
+        // Berhasil kirim ke server, hapus dari draft lokal jika tadinya ada
+        offlineSync.removeParameterDraft(parameterId, hour);
       } catch {
-        // Jika gagal (server offline), tambahkan ke pending queue
+        // Phase 3: Jika gagal (server offline atau gangguan), baru simpan ke draft dan queue
+        offlineSync.saveParameterDraft(parameterId, hour, value, effectiveUserName);
         offlineSync.addToPendingQueue({
           type: 'parameter',
           data: {
@@ -3783,10 +3920,13 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         <CcrConnectionBanner
           pendingCount={offlineSync.pendingCount}
           isSyncing={offlineSync.isSyncing}
-          hasDraft={offlineSync.hasDraft}
+          hasDraft={initialDraftExists}
           lastSyncTime={offlineSync.lastSyncTime}
           onRecoverDraft={handleRecoverDraft}
-          onDiscardDraft={() => offlineSync.clearDraft()}
+          onDiscardDraft={() => {
+            offlineSync.clearDraft();
+            setInitialDraftExists(false);
+          }}
           onManualSync={handleManualSync}
         />
 

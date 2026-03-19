@@ -40,7 +40,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
   }
 
   return (
-    <div className="relative flex flex-col min-h-full text-[#333333] dark:text-slate-100 font-sans bg-[#F7F7F7] dark:bg-slate-950">
+    <div className="relative flex flex-col min-h-full text-[#333333] dark:text-slate-100 font-sans bg-[#F7F7F7] dark:bg-slate-950 pb-20 md:pb-0">
       {/* Subtle Ubuntu Gradient Overlay */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-30">
         <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-[#E95420]/5 rounded-full blur-[120px]"></div>
@@ -65,7 +65,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
         </div>
 
         {/* Main Content - Grid Layout */}
-        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
+        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-6">
           {/* Left Column: Operations Overview */}
           <div className="lg:col-span-8 flex flex-col h-full">
             <OperationsOverview

@@ -7,7 +7,6 @@ import { logger } from '../utils/logger';
 import { useOfflineStatus } from './useOfflineStatus';
 import { getData as getIndexedDBData, storeData, STORES } from '../utils/indexedDB';
 import { syncPendingOperations } from '../utils/syncManager';
-import { offlineDB } from '../utils/offlineDatabase';
 import { useProductionCapacity } from './useProductionCapacity';
 
 // Define a common type for hour values to ensure consistency
@@ -80,18 +79,6 @@ interface PocketBaseParameterRecord {
   plant_unit?: string;
   hourly_values?: Record<string, string | number | { value: string | number; user_name: string }>;
   [key: string]: unknown; // For hour1-hour24 and hour1_user-hour24_user fields
-}
-
-// Helper function to get plant unit for a parameter
-async function getPlantUnitForParameter(parameter_id: string): Promise<string | null> {
-  try {
-    // Try to fetch the parameter to get its unit
-    const parameter = await pb.collection('parameter_settings').getOne(parameter_id);
-    return parameter.unit || null;
-  } catch {
-    // Error silenced for production
-    return null;
-  }
 }
 
 // Helper function to convert from hourly_values format to flat format
@@ -329,16 +316,14 @@ export const useCcrParameterDataFlat = () => {
           logger.warn('Failed to load cached data:', err);
         }
 
-        // If online, fetch fresh data and cache it
+        // If online, fetch fresh data directly from PocketBase (Bypass offlineDB wrapper for reliability)
         if (isOnline) {
           try {
-            // Build query with optional plant_unit filter
-            let filter = `date="${isoDate}"`;
-            if (plantUnit && plantUnit !== 'all') {
-              filter += ` && plant_unit="${plantUnit}"`;
-            }
+            // Query records for ALL units on this date to be robust against unit label variations
+            const filter = `date="${isoDate}"`;
 
-            const result = await offlineDB.getFullList('ccr_parameter_data', {
+            // Using direct PocketBase call to ensure fresh data after refresh
+            const result = await pb.collection('ccr_parameter_data').getFullList({
               filter: filter,
               sort: '-created',
             });
@@ -455,11 +440,8 @@ export const useCcrParameterDataFlat = () => {
           return { data: [], total: 0, hasMore: false };
         }
 
-        // Build query with optional plant_unit filter and pagination
-        let filter = `date="${isoDate}"`;
-        if (plantUnit && plantUnit !== 'all') {
-          filter += ` && plant_unit="${plantUnit}"`;
-        }
+        // Query ALL units for this date to ensure no data is missed due to inconsistent unit labels
+        const filter = `date="${isoDate}"`;
 
         // Always fetch fresh data directly from PocketBase
         const result = await pb.collection('ccr_parameter_data').getList(page, pageSize, {
@@ -542,7 +524,9 @@ export const useCcrParameterDataFlat = () => {
         throw new Error('Invalid userName parameter');
       }
 
-      setLoading(true);
+      if (!opts?.skipTrigger) {
+        setLoading(true);
+      }
       setError(null);
 
       try {
@@ -553,9 +537,9 @@ export const useCcrParameterDataFlat = () => {
         // Normalize the date format (YYYY-MM-DD)
         const normalizedDate = date.split('T')[0];
 
-        // Check for existing data by querying the database directly
-        // Include plant_unit in filter for more specific and robust targeting
-        const filter = `date="${normalizedDate}" && parameter_id="${parameter_id}" && plant_unit="${selectedUnit || 'Unknown'}"`;
+        // Check for existing data by querying ONLY with date and parameter_id (Unique Index keys)
+        // Including plant_unit in the filter is dangerous if records have inconsistent labels.
+        const filter = `date="${normalizedDate}" && parameter_id="${parameter_id}"`;
         const existingRecords = await safeApiCall(
           () =>
             pb.collection('ccr_parameter_data').getFullList({
@@ -608,12 +592,18 @@ export const useCcrParameterDataFlat = () => {
           }
         } else {
           // Create a new record with the hour field set
+          // First, get the correct unit for the parameter from master data if not provided
+          let plantUnitToUse = selectedUnit;
+          if (!plantUnitToUse || plantUnitToUse === 'Unknown' || plantUnitToUse === 'all') {
+            const paramSetting = parameters.find((p) => p.id === parameter_id);
+            plantUnitToUse = paramSetting?.unit || 'Unknown';
+          }
+
           const createFields: Record<string, string | number | null> = {
-            date: normalizedDate, // Pastikan format tanggal konsisten
+            date: normalizedDate,
             parameter_id,
-            name: safeUserName, // Keep for backward compatibility
-            // Use selectedUnit if provided, otherwise fallback to getting it from parameter_id
-            plant_unit: selectedUnit || (await getPlantUnitForParameter(parameter_id)) || 'Unknown',
+            name: safeUserName,
+            plant_unit: plantUnitToUse,
           };
 
           // Selalu tambahkan field jam, kosong atau tidak
@@ -668,7 +658,9 @@ export const useCcrParameterDataFlat = () => {
         setError(error instanceof Error ? error : new Error('Failed to update parameter data'));
         throw error; // Re-throw to allow handling at caller level
       } finally {
-        setLoading(false);
+        if (!opts?.skipTrigger) {
+          setLoading(false);
+        }
       }
     },
     [setLoading, setError, setDataVersion, recalculateAndSyncCapacity, parameters]

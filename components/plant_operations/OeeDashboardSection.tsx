@@ -306,36 +306,38 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
       <div className="relative group">
         <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-purple-600 to-indigo-600 rounded-[3rem] blur-2xl opacity-10 group-hover:opacity-20 transition-opacity duration-700" />
         <div className="relative bg-white/40 backdrop-blur-3xl p-1 rounded-[3rem] border border-white/60 shadow-2xl shadow-slate-200/50">
-          <div className="bg-gradient-to-br from-white/80 to-white/40 p-10 rounded-[2.8rem] flex flex-col md:flex-row items-center justify-between gap-10">
-            <div className="flex items-center gap-10">
-              <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-red-600 to-red-400 flex items-center justify-center shadow-2xl shadow-red-200 relative overflow-hidden group">
+          <div className="bg-gradient-to-br from-white/80 to-white/40 p-6 md:p-10 rounded-[2.8rem] flex flex-col md:flex-row items-center justify-between gap-6 md:gap-10">
+            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 text-center md:text-left">
+              <div className="w-16 h-16 md:w-24 md:h-24 rounded-[1.5rem] md:rounded-[2rem] bg-gradient-to-br from-red-600 to-red-400 flex items-center justify-center shadow-2xl shadow-red-200 relative overflow-hidden flex-shrink-0">
                 <div className="absolute inset-0 bg-white/20 animate-pulse" />
-                <TrendingUp className="w-12 h-12 text-white relative z-10" />
+                <TrendingUp className="w-8 h-8 md:w-12 md:h-12 text-white relative z-10" />
               </div>
               <div>
-                <span className="text-[11px] font-black text-red-600 uppercase tracking-[0.4em] mb-2 block">
+                <span className="text-[9px] md:text-[11px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 md:mb-2 block">
                   Enterprise Intelligence
                 </span>
-                <h2 className="text-xl font-bold text-slate-500 uppercase tracking-widest leading-none mb-1">
-                  Plant overall Performance
+                <h2 className="text-sm md:text-xl font-bold text-slate-500 uppercase tracking-widest leading-none mb-1">
+                  Plant Performance
                 </h2>
-                <div className="flex items-end gap-3">
-                  <h2 className="text-7xl font-black text-slate-900 tabular-nums tracking-tighter leading-none">
+                <div className="flex items-end justify-center md:justify-start gap-1 md:gap-3">
+                  <h2 className="text-4xl md:text-7xl font-black text-slate-900 tabular-nums tracking-tighter leading-none">
                     {plantOverallOee.toFixed(2)}
                   </h2>
-                  <span className="text-3xl font-black text-red-600 mb-1">%</span>
+                  <span className="text-xl md:text-3xl font-black text-red-600 mb-0.5 md:mb-1">
+                    %
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col items-end gap-4 text-right">
-              <div className="flex items-center gap-3 bg-white/60 px-4 py-2 rounded-2xl border border-white/80 shadow-sm">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">
-                  Hourly Sync Active
+            <div className="flex flex-col items-center md:items-end gap-3 md:gap-4 text-center md:text-right">
+              <div className="flex items-center gap-2 md:gap-3 bg-white/60 px-3 md:px-4 py-1.5 md:py-2 rounded-2xl border border-white/80 shadow-sm">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[9px] md:text-[10px] font-black text-slate-700 uppercase tracking-widest">
+                  Real-time Active
                 </span>
               </div>
-              <p className="max-w-[300px] text-xs text-slate-400 font-medium leading-relaxed italic opacity-80">
+              <p className="max-w-[300px] text-[10px] md:text-xs text-slate-400 font-medium leading-relaxed italic opacity-80 hidden md:block">
                 Aggregated equipment effectiveness metrics verified against real-time operational
                 design capacity and availability data.
               </p>

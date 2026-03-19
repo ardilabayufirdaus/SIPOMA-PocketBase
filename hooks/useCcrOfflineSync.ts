@@ -71,6 +71,8 @@ interface UseCcrOfflineSyncReturn {
   ) => void;
   saveSiloDraft: (siloId: string, shift: string, field: string, value: number) => void;
   saveInformationDraft: (text: string) => void;
+  removeParameterDraft: (parameterId: string, hour: number) => void;
+  removeSiloDraft: (siloId: string, shift: string, field: string) => void;
 }
 
 // Helper: generate unique ID
@@ -497,6 +499,89 @@ export const useCcrOfflineSync = (options: UseCcrOfflineSyncOptions): UseCcrOffl
   );
 
   /**
+   * Remove a single parameter value from draft (called after successful server save)
+   */
+  const removeParameterDraft = useCallback(
+    (parameterId: string, hour: number) => {
+      if (!date || !unit) return;
+      const paramKey = `${parameterId}_${hour}`;
+
+      try {
+        const key = getDraftKey(date, unit);
+        const existingRaw = localStorage.getItem(key);
+        if (!existingRaw) return;
+
+        const existing: DraftData = JSON.parse(existingRaw);
+        if (existing.parameters && existing.parameters[paramKey]) {
+          const { [paramKey]: _, ...remainingParams } = existing.parameters;
+          const updated: DraftData = {
+            ...existing,
+            parameters: remainingParams,
+            savedAt: Date.now(),
+          };
+
+          // If everything is empty, just remove the whole key
+          const hasParams = Object.keys(updated.parameters).length > 0;
+          const hasSilos = Object.keys(updated.silos).length > 0;
+          const hasInfo = !!updated.information;
+
+          if (!hasParams && !hasSilos && !hasInfo) {
+            localStorage.removeItem(key);
+            setHasDraft(false);
+          } else {
+            localStorage.setItem(key, JSON.stringify(updated));
+            setHasDraft(true);
+          }
+        }
+      } catch (error) {
+        logger.warn('[OfflineSync] Failed to remove parameter draft:', error);
+      }
+    },
+    [date, unit]
+  );
+
+  /**
+   * Remove a single silo value from draft
+   */
+  const removeSiloDraft = useCallback(
+    (siloId: string, shift: string, field: string) => {
+      if (!date || !unit) return;
+      const siloKey = `${siloId}_${shift}_${field}`;
+
+      try {
+        const key = getDraftKey(date, unit);
+        const existingRaw = localStorage.getItem(key);
+        if (!existingRaw) return;
+
+        const existing: DraftData = JSON.parse(existingRaw);
+        if (existing.silos && existing.silos[siloKey]) {
+          const { [siloKey]: _, ...remainingSilos } = existing.silos;
+          const updated: DraftData = {
+            ...existing,
+            silos: remainingSilos,
+            savedAt: Date.now(),
+          };
+
+          const hasParams = Object.keys(updated.parameters).length > 0;
+          const hasSilos = Object.keys(updated.silos).length > 0;
+          const hasInfo = !!updated.information;
+
+          if (!hasParams && !hasSilos && !hasInfo) {
+            localStorage.removeItem(key);
+            setHasDraft(false);
+          } else {
+            localStorage.setItem(key, JSON.stringify(updated));
+            setHasDraft(true);
+          }
+        }
+      } catch (error) {
+        logger.warn('[OfflineSync] Failed to remove silo draft:', error);
+      }
+    },
+    [date, unit]
+  );
+
+  /**
    * Save information text to draft
    */
   const saveInformationDraft = useCallback(
@@ -535,6 +620,20 @@ export const useCcrOfflineSync = (options: UseCcrOfflineSyncOptions): UseCcrOffl
         });
     }
   }, [isOnline, wasOffline, processPendingQueue, resetWasOffline]);
+
+  // ──────────────────────────────────────────────
+  // Periodic background auto-sync for pending queue
+  // ──────────────────────────────────────────────
+  useEffect(() => {
+    // Only run if online, has pending items, and not already syncing
+    if (!isOnline || pendingCount === 0 || isSyncing) return;
+
+    const intervalId = setInterval(() => {
+      processPendingQueue();
+    }, 30000); // Try every 30 seconds
+
+    return () => clearInterval(intervalId);
+  }, [isOnline, pendingCount, isSyncing, processPendingQueue]);
 
   // ──────────────────────────────────────────────
   // Check for existing draft on mount / date+unit change
@@ -627,6 +726,8 @@ export const useCcrOfflineSync = (options: UseCcrOfflineSyncOptions): UseCcrOffl
     saveParameterDraft,
     saveSiloDraft,
     saveInformationDraft,
+    removeParameterDraft,
+    removeSiloDraft,
   };
 };
 

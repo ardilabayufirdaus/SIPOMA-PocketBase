@@ -142,137 +142,143 @@ const PredictiveMaintenance: React.FC<PredictiveMaintenanceProps> = ({ plantUnit
   );
 };
 
-const AnomalyCard: React.FC<{ anomaly: AnomalyData; index: number }> = ({ anomaly, index }) => {
-  const chartData = {
-    labels: anomaly.history.map((h) => format(new Date(h.date), 'dd/MM')),
-    datasets: [
-      {
-        label: 'Daily Avg',
-        data: anomaly.history.map((h) => h.value),
-        borderColor: '#E95420',
-        backgroundColor: 'rgba(233, 84, 32, 0.05)',
-        borderWidth: 3,
-        pointRadius: 4,
-        pointBackgroundColor: '#fff',
-        pointBorderColor: '#E95420',
-        tension: 0.4,
-        fill: true,
+const AnomalyCard = React.forwardRef<HTMLDivElement, { anomaly: AnomalyData; index: number }>(
+  ({ anomaly, index }, ref) => {
+    const chartData = {
+      labels: anomaly.history.map((h) => format(new Date(h.date), 'dd/MM')),
+      datasets: [
+        {
+          label: 'Daily Avg',
+          data: anomaly.history.map((h) => h.value),
+          borderColor: '#E95420',
+          backgroundColor: 'rgba(233, 84, 32, 0.05)',
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: '#E95420',
+          tension: 0.4,
+          fill: true,
+        },
+      ],
+    };
+
+    const options = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1e293b',
+          titleFont: { size: 12, family: 'Ubuntu', weight: 'bold' as const },
+          bodyFont: { size: 12, family: 'Ubuntu' },
+          padding: 12,
+          cornerRadius: 12,
+          displayColors: false,
+        },
       },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: '#1e293b',
-        titleFont: { size: 12, family: 'Ubuntu', weight: 'bold' as const },
-        bodyFont: { size: 12, family: 'Ubuntu' },
-        padding: 12,
-        cornerRadius: 12,
-        displayColors: false,
+      scales: {
+        x: { display: false },
+        y: { display: false },
       },
-    },
-    scales: {
-      x: { display: false },
-      y: { display: false },
-    },
-  };
+    };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
-      className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-xl overflow-hidden group hover:shadow-2xl transition-all duration-500"
-    >
-      <div className="p-8">
-        <div className="flex justify-between items-start mb-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-slate-400" />
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                Parameter Analysis
+    return (
+      <motion.div
+        ref={ref}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.1 }}
+        className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-xl overflow-hidden group hover:shadow-2xl transition-all duration-500"
+      >
+        <div className="p-8">
+          <div className="flex justify-between items-start mb-6">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Activity className="w-4 h-4 text-slate-400" />
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  Parameter Analysis
+                </span>
+              </div>
+              <h3 className="text-lg font-black text-slate-900 group-hover:text-ubuntu-orange transition-colors">
+                {anomaly.parameterName}
+              </h3>
+            </div>
+
+            <div
+              className={`px-4 py-2 rounded-2xl border flex items-center gap-2 ${
+                anomaly.status === 'critical'
+                  ? 'bg-red-50 border-red-100 text-red-600'
+                  : 'bg-orange-50 border-orange-100 text-orange-600'
+              }`}
+            >
+              <Zap className="w-4 h-4 animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-widest">
+                {anomaly.status}
               </span>
             </div>
-            <h3 className="text-lg font-black text-slate-900 group-hover:text-ubuntu-orange transition-colors">
-              {anomaly.parameterName}
-            </h3>
           </div>
 
-          <div
-            className={`px-4 py-2 rounded-2xl border flex items-center gap-2 ${
-              anomaly.status === 'critical'
-                ? 'bg-red-50 border-red-100 text-red-600'
-                : 'bg-orange-50 border-orange-100 text-orange-600'
-            }`}
-          >
-            <Zap className="w-4 h-4 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-widest">
-              {anomaly.status}
-            </span>
-          </div>
-        </div>
+          <div className="grid grid-cols-2 gap-6 mb-8">
+            <div className="space-y-1">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
+                Current Value
+              </p>
+              <div className="flex items-center gap-2">
+                <span className="text-3xl font-black text-slate-900 leading-none">
+                  {anomaly.currentValue.toFixed(1)}
+                </span>
+                <span className="text-xs font-bold text-slate-400">{anomaly.unit}</span>
+                {anomaly.zScore > 0 ? (
+                  <ArrowUpRight className="w-5 h-5 text-red-500" />
+                ) : (
+                  <ArrowDownRight className="w-5 h-5 text-blue-500" />
+                )}
+              </div>
+            </div>
 
-        <div className="grid grid-cols-2 gap-6 mb-8">
-          <div className="space-y-1">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
-              Current Value
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="text-3xl font-black text-slate-900 leading-none">
-                {anomaly.currentValue.toFixed(1)}
-              </span>
-              <span className="text-xs font-bold text-slate-400">{anomaly.unit}</span>
-              {anomaly.zScore > 0 ? (
-                <ArrowUpRight className="w-5 h-5 text-red-500" />
-              ) : (
-                <ArrowDownRight className="w-5 h-5 text-blue-500" />
-              )}
+            <div className="space-y-1">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
+                AI Deviation (Z-Score)
+              </p>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-xl font-black ${anomaly.zScore > 2 ? 'text-red-600' : 'text-orange-600'}`}
+                >
+                  {anomaly.zScore > 0 ? '+' : ''}
+                  {anomaly.zScore.toFixed(2)}σ
+                </span>
+                <div className="h-4 w-[1px] bg-slate-200 mx-1" />
+                <span className="text-[10px] font-bold text-slate-400 uppercase">vs 30D Mean</span>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-1">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
-              AI Deviation (Z-Score)
-            </p>
-            <div className="flex items-center gap-2">
-              <span
-                className={`text-xl font-black ${anomaly.zScore > 2 ? 'text-red-600' : 'text-orange-600'}`}
-              >
-                {anomaly.zScore > 0 ? '+' : ''}
-                {anomaly.zScore.toFixed(2)}σ
-              </span>
-              <div className="h-4 w-[1px] bg-slate-200 mx-1" />
-              <span className="text-[10px] font-bold text-slate-400 uppercase">vs 30D Mean</span>
+          <div className="h-24 relative">
+            <Line data={chartData} options={options} />
+          </div>
+
+          <div className="mt-6 pt-6 border-t border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-slate-200" /> Mean:{' '}
+                {anomaly.mean.toFixed(1)}
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full border border-slate-200" /> SD:{' '}
+                {anomaly.stdDev.toFixed(1)}
+              </div>
             </div>
+            <button className="flex items-center gap-2 text-[10px] font-black text-ubuntu-orange uppercase tracking-widest hover:translate-x-1 transition-transform">
+              Detail Analytics <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
+      </motion.div>
+    );
+  }
+);
 
-        <div className="h-24 relative">
-          <Line data={chartData} options={options} />
-        </div>
-
-        <div className="mt-6 pt-6 border-t border-slate-100 flex items-center justify-between">
-          <div className="flex items-center gap-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-slate-200" /> Mean: {anomaly.mean.toFixed(1)}
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full border border-slate-200" /> SD:{' '}
-              {anomaly.stdDev.toFixed(1)}
-            </div>
-          </div>
-          <button className="flex items-center gap-2 text-[10px] font-black text-ubuntu-orange uppercase tracking-widest hover:translate-x-1 transition-transform">
-            Detail Analytics <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
+AnomalyCard.displayName = 'AnomalyCard';
 
 const format = (date: Date, pattern: string) => {
   // Simple format helper

@@ -80,11 +80,13 @@ export default defineConfig(async (_env) => {
           name: 'SIPOMA - Sistem Informasi Produksi dan Operasi',
           short_name: 'SIPOMA',
           description: 'Aplikasi manajemen produksi dan operasi pabrik',
-          theme_color: '#300a24',
-          background_color: '#ffffff',
+          theme_color: '#1e1e1e',
+          background_color: '#300a24',
           display: 'standalone',
+          orientation: 'portrait',
           start_url: '/', // ✅ disesuaikan dengan base /
           scope: '/', // ✅ disesuaikan dengan base /
+          categories: ['business', 'productivity'],
           icons: [
             {
               src: '/pwa-192x192.png', // Use absolute path with leading slash
@@ -95,6 +97,12 @@ export default defineConfig(async (_env) => {
               src: '/pwa-512x512.png', // Use absolute path with leading slash
               sizes: '512x512',
               type: 'image/png',
+            },
+            {
+              src: '/pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'maskable',
             },
           ],
         },

@@ -28,18 +28,18 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, t, onlineUsersC
           transition={{ duration: 0.4 }}
           className="flex flex-col"
         >
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#333333] dark:text-white">
+          <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+            <h1 className="text-xl md:text-3xl font-bold tracking-tight text-[#333333] dark:text-white">
               {greeting},{' '}
               <span className="text-[#E95420]">
                 {user?.name || user?.full_name || user?.username || 'Engineer'}
               </span>
             </h1>
-            <span className="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-[#772953] text-white">
+            <span className="px-2 py-0.5 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-widest bg-[#772953] text-white">
               {user?.role || 'Guest'}
             </span>
           </div>
-          <p className="text-[11px] text-[#808080] dark:text-slate-400 font-bold uppercase tracking-[0.2em] mt-1 pl-0.5">
+          <p className="text-[10px] md:text-[11px] text-[#808080] dark:text-slate-400 font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] mt-1 pl-0.5">
             {t.dashboard_welcome_message || 'SYSTEMS OPERATIONAL • READY FOR PRODUCTION'}
           </p>
         </motion.div>

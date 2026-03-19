@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useEffect, Suspense } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useCallback, useEffect, Suspense, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 // ...existing code...
 
 // Import ThemeProvider
@@ -21,6 +21,10 @@ const Header = React.lazy(() => import('./components/Header'));
 const SignOutConfirmModal = React.lazy(() => import('./components/SignOutConfirmModal'));
 const ServerPage = React.lazy(() => import('./pages/ServerPage'));
 const ChatbotWidget = React.lazy(() => import('./src/components/chatbot/ChatbotWidget'));
+
+// Mobile-specific components
+const MobileBottomNav = React.lazy(() => import('./components/mobile/MobileBottomNav'));
+const MobileHeader = React.lazy(() => import('./components/mobile/MobileHeader'));
 
 import { useUserStore } from './stores/userStore';
 import { useCurrentUser } from './hooks/useCurrentUser';
@@ -219,6 +223,25 @@ const App: React.FC = () => {
     }
   };
 
+  // ===== Scroll direction tracking for mobile header auto-hide =====
+  const mainContentRef = useRef<HTMLDivElement>(null);
+  const [mobileHeaderHidden, setMobileHeaderHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
+  const handleMobileScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const scrollTop = e.currentTarget.scrollTop;
+    const threshold = 10;
+
+    if (Math.abs(scrollTop - lastScrollY.current) < threshold) return;
+
+    if (scrollTop > lastScrollY.current && scrollTop > 60) {
+      setMobileHeaderHidden(true); // Scrolling down → hide header
+    } else {
+      setMobileHeaderHidden(false); // Scrolling up → show header
+    }
+    lastScrollY.current = scrollTop;
+  }, []);
+
   if (
     usersLoading ||
     plantUnitsLoading ||
@@ -293,6 +316,123 @@ const App: React.FC = () => {
     );
   }
 
+  // ===== Shared Page Content (used by both mobile and desktop layouts) =====
+  const renderPageContent = () => (
+    <LazyContainer
+      fallback={
+        <LoadingSkeleton
+          variant="rectangular"
+          height={200}
+          width="100%"
+          className="mx-auto mt-24"
+        />
+      }
+      errorFallback={
+        <div className="p-4 border border-red-400 bg-red-50 dark:bg-red-900/20 dark:border-red-600 rounded text-center mt-24">
+          <p className="text-red-700 dark:text-red-400">Failed to load content</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded transition-colors"
+          >
+            Reload
+          </button>
+        </div>
+      }
+    >
+      {/* Dashboard - Check permission */}
+      <PermissionGuard user={currentUser} feature="dashboard" requiredLevel="READ" fallback={null}>
+        {currentPage === 'dashboard' && (
+          <MainDashboardPage language={language} onNavigate={handleNavigate} t={t} />
+        )}
+      </PermissionGuard>
+
+      {/* User Management - Only for Super Admin */}
+      {currentPage === 'users' && currentUser?.role === 'Super Admin' && (
+        <>{activeSubPages.users === 'user_list' && <UserListPage />}</>
+      )}
+
+      {/* Settings - Accessible to all users */}
+      {currentPage === 'settings' && (
+        <SettingsPage
+          t={t}
+          user={currentUser}
+          onOpenProfileModal={handleOpenProfileModal}
+          currentLanguage={language}
+          onLanguageChange={setLanguage}
+        />
+      )}
+
+      {/* WhatsApp Reports - Accessible to all users */}
+      {currentPage === 'whatsapp-reports' && (
+        <React.Suspense
+          fallback={
+            <LoadingSkeleton variant="rectangular" height={200} width="100%" className="mt-4" />
+          }
+        >
+          <WhatsAppReportsPage />
+        </React.Suspense>
+      )}
+
+      {/* CM Plant Operations - Check permission */}
+      <PermissionGuard
+        user={currentUser}
+        feature="cm_plant_operations"
+        requiredLevel="READ"
+        fallback={null}
+      >
+        {currentPage === 'operations' && (
+          <PlantOperationsPage
+            section="CM"
+            activePage={activeSubPages.operations}
+            t={t}
+            plantData={{
+              loading: plantDataLoading,
+            }}
+          />
+        )}
+      </PermissionGuard>
+
+      {/* RKC Plant Operations - Check permission */}
+      <PermissionGuard
+        user={currentUser}
+        feature="rkc_plant_operations"
+        requiredLevel="READ"
+        fallback={null}
+      >
+        {currentPage === 'rkc_operations' && (
+          <PlantOperationsPage
+            section="RKC"
+            activePage={activeSubPages.rkc_operations}
+            t={t}
+            plantData={{
+              loading: plantDataLoading,
+            }}
+          />
+        )}
+      </PermissionGuard>
+
+      {/* Project Management */}
+      {currentPage === 'projects' && (
+        <ProjectManagementPage
+          activePage={activeSubPages.projects}
+          t={t}
+          onNavigate={(subpage: string) => handleNavigate('projects', subpage)}
+        />
+      )}
+
+      {/* Database Module */}
+      {currentPage === 'database' && <DatabasePage />}
+
+      {/* Server Module - Only for Super Admin */}
+      {currentPage === 'server' && currentUser?.role === 'Super Admin' && <ServerPage />}
+
+      {/* Inspection Module */}
+      <PermissionGuard user={currentUser} feature="inspection" requiredLevel="READ" fallback={null}>
+        {currentPage === 'inspection' && <InspectionPage />}
+      </PermissionGuard>
+    </LazyContainer>
+  );
+
   return (
     <SimpleErrorBoundary
       fallback={
@@ -308,172 +448,87 @@ const App: React.FC = () => {
           </div>
         }
       >
-        <div className="h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans compact transition-colors duration-300 flex">
-          <Sidebar
-            currentPage={currentPage}
-            onNavigate={handleNavigate}
-            t={t}
-            isOpen={isSidebarOpen}
-            onClose={handleCloseSidebar}
-            currentUser={currentUser}
-            isExpanded={isSidebarExpanded}
-            onToggleExpand={handleToggleExpand}
-          />
-          <div
-            className="flex flex-col flex-1 h-full min-w-0 transition-all duration-300"
-            style={{
-              marginLeft: isMobile ? '0' : isSidebarExpanded ? '280px' : '70px',
-            }}
-          >
-            <Header
+        {/* ====== MOBILE LAYOUT ====== */}
+        {isMobile ? (
+          <div className="h-screen flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300">
+            {/* Mobile Header - auto-hide on scroll */}
+            <MobileHeader
               pageTitle={getPageTitle()}
-              showAddUserButton={false}
-              onAddUser={handleOpenAddUserModal}
-              t={t}
-              onNavigate={handleNavigate}
-              onSignOut={handleSignOutClick}
               currentUser={currentUser}
-              onToggleSidebar={handleToggleSidebar}
-              currentLanguage={language}
-              onLanguageChange={setLanguage}
+              onSignOut={handleSignOutClick}
+              onNavigate={handleNavigate}
+              t={t}
+              isHidden={mobileHeaderHidden}
             />
-            <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30 dark:from-slate-900/50 dark:via-transparent dark:to-slate-800/30 page-transition relative">
-              <div className="w-full h-full pb-20">
-                <LazyContainer
-                  fallback={
-                    <LoadingSkeleton
-                      variant="rectangular"
-                      height={200}
-                      width="100%"
-                      className="mx-auto mt-24"
-                    />
-                  }
-                  errorFallback={
-                    <div className="p-4 border border-red-400 bg-red-50 dark:bg-red-900/20 dark:border-red-600 rounded text-center mt-24">
-                      <p className="text-red-700 dark:text-red-400">Failed to load content</p>
-                      <button
-                        onClick={() => window.location.reload()}
-                        className="mt-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded transition-colors"
-                      >
-                        Reload
-                      </button>
-                    </div>
-                  }
+
+            {/* Mobile Content Area */}
+            <main
+              ref={mainContentRef}
+              onScroll={handleMobileScroll}
+              className="flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30 dark:from-slate-900/50 dark:via-transparent dark:to-slate-800/30 page-transition relative"
+            >
+              {/* Page transition wrapper */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentPage}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                  className="w-full min-h-full p-3 pb-24"
                 >
-                  {/* Dashboard - Check permission */}
-                  <PermissionGuard
-                    user={currentUser}
-                    feature="dashboard"
-                    requiredLevel="READ"
-                    fallback={null}
-                  >
-                    {currentPage === 'dashboard' && (
-                      <MainDashboardPage language={language} onNavigate={handleNavigate} t={t} />
-                    )}
-                  </PermissionGuard>
-
-                  {/* User Management - Only for Super Admin */}
-                  {currentPage === 'users' && currentUser?.role === 'Super Admin' && (
-                    <>{activeSubPages.users === 'user_list' && <UserListPage />}</>
-                  )}
-
-                  {/* Settings - Accessible to all users */}
-                  {currentPage === 'settings' && (
-                    <SettingsPage
-                      t={t}
-                      user={currentUser}
-                      onOpenProfileModal={handleOpenProfileModal}
-                      currentLanguage={language}
-                      onLanguageChange={setLanguage}
-                    />
-                  )}
-
-                  {/* WhatsApp Reports - Accessible to all users */}
-                  {currentPage === 'whatsapp-reports' && (
-                    <React.Suspense
-                      fallback={
-                        <LoadingSkeleton
-                          variant="rectangular"
-                          height={200}
-                          width="100%"
-                          className="mt-4"
-                        />
-                      }
-                    >
-                      <WhatsAppReportsPage />
-                    </React.Suspense>
-                  )}
-
-                  {/* CM Plant Operations - Check permission */}
-                  <PermissionGuard
-                    user={currentUser}
-                    feature="cm_plant_operations"
-                    requiredLevel="READ"
-                    fallback={null}
-                  >
-                    {currentPage === 'operations' && (
-                      <PlantOperationsPage
-                        section="CM"
-                        activePage={activeSubPages.operations}
-                        t={t}
-                        plantData={{
-                          loading: plantDataLoading,
-                        }}
-                      />
-                    )}
-                  </PermissionGuard>
-
-                  {/* RKC Plant Operations - Check permission */}
-                  <PermissionGuard
-                    user={currentUser}
-                    feature="rkc_plant_operations"
-                    requiredLevel="READ"
-                    fallback={null}
-                  >
-                    {currentPage === 'rkc_operations' && (
-                      <PlantOperationsPage
-                        section="RKC"
-                        activePage={activeSubPages.rkc_operations}
-                        t={t}
-                        plantData={{
-                          loading: plantDataLoading,
-                        }}
-                      />
-                    )}
-                  </PermissionGuard>
-
-                  {/* Project Management */}
-                  {currentPage === 'projects' && (
-                    <ProjectManagementPage
-                      activePage={activeSubPages.projects}
-                      t={t}
-                      onNavigate={(subpage: string) => handleNavigate('projects', subpage)}
-                    />
-                  )}
-
-                  {/* Database Module */}
-                  {currentPage === 'database' && <DatabasePage />}
-
-                  {/* Server Module - Only for Super Admin */}
-                  {currentPage === 'server' && currentUser?.role === 'Super Admin' && (
-                    <ServerPage />
-                  )}
-
-                  {/* Inspection Module */}
-                  <PermissionGuard
-                    user={currentUser}
-                    feature="inspection"
-                    requiredLevel="READ"
-                    fallback={null}
-                  >
-                    {currentPage === 'inspection' && <InspectionPage />}
-                  </PermissionGuard>
-                </LazyContainer>
-              </div>
+                  {renderPageContent()}
+                </motion.div>
+              </AnimatePresence>
             </main>
+
+            {/* Mobile Bottom Navigation */}
+            <MobileBottomNav
+              currentPage={currentPage}
+              onNavigate={handleNavigate}
+              currentUser={currentUser}
+              t={t}
+            />
           </div>
-        </div>
-        {/* Optimized Modals Loading */}
+        ) : (
+          /* ====== DESKTOP LAYOUT (unchanged) ====== */
+          <div className="h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans compact transition-colors duration-300 flex">
+            <Sidebar
+              currentPage={currentPage}
+              onNavigate={handleNavigate}
+              t={t}
+              isOpen={isSidebarOpen}
+              onClose={handleCloseSidebar}
+              currentUser={currentUser}
+              isExpanded={isSidebarExpanded}
+              onToggleExpand={handleToggleExpand}
+            />
+            <div
+              className="flex flex-col flex-1 h-full min-w-0 transition-all duration-300"
+              style={{
+                marginLeft: isSidebarExpanded ? '280px' : '70px',
+              }}
+            >
+              <Header
+                pageTitle={getPageTitle()}
+                showAddUserButton={false}
+                onAddUser={handleOpenAddUserModal}
+                t={t}
+                onNavigate={handleNavigate}
+                onSignOut={handleSignOutClick}
+                currentUser={currentUser}
+                onToggleSidebar={handleToggleSidebar}
+                currentLanguage={language}
+                onLanguageChange={setLanguage}
+              />
+              <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30 dark:from-slate-900/50 dark:via-transparent dark:to-slate-800/30 page-transition relative">
+                <div className="w-full h-full pb-20">{renderPageContent()}</div>
+              </main>
+            </div>
+          </div>
+        )}
+
+        {/* ====== SHARED MODALS & OVERLAYS ====== */}
         <Suspense fallback={null}>
           {isUserModalOpen && (
             <UserForm

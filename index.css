@@ -139,4 +139,73 @@
   }
 }
 
+/* ===== MOBILE PWA ANDROID-LIKE STYLES ===== */
+
+/* Safe Area Support */
+@supports (padding: env(safe-area-inset-top)) {
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Touch optimization for mobile */
+@media (max-width: 768px) {
+  /* Ensure all buttons and links have proper touch targets */
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Prevent overscroll/bounce on iOS */
+  html,
+  body {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Mobile-optimized cards */
+  .card,
+  .glass-card {
+    border-radius: 16px !important;
+  }
+
+  /* Hide desktop scrollbar on mobile */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  * {
+    scrollbar-width: none;
+  }
+
+  /* Smoother transitions on mobile */
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Standalone PWA mode specific styles */
+@media (display-mode: standalone) {
+  /* Remove any browser-specific chrome */
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Allow text selection in inputs and content areas */
+  input,
+  textarea,
+  [contenteditable="true"],
+  .selectable {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
+
 /* Animations included in tailwind.config.js, this is just legacy backup if needed */

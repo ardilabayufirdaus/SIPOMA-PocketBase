@@ -28,7 +28,7 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
   }, [clearQueryCache]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 relative overflow-hidden font-ubuntu">
+    <div className="min-h-screen bg-slate-50 text-slate-900 relative overflow-hidden font-ubuntu pb-20 md:pb-0">
       {/* Background Elements - Ubuntu Style */}
       <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-ubuntu-aubergine/5 blur-[120px] rounded-full" />
       <div
@@ -37,26 +37,28 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
       />
 
       {/* Main Content */}
-      <div className="relative z-10 p-4 md:p-8 max-w-[1600px] mx-auto">
-        {/* Server Health Mini Monitoring */}
-        <ServerHealthHeader />
+      <div className="relative z-10 p-3 md:p-8 max-w-[1600px] mx-auto">
+        {/* Server Health Mini Monitoring - Hidden on very small screens or made more compact */}
+        <div className="hidden sm:block">
+          <ServerHealthHeader />
+        </div>
 
         {/* Header Section */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
             className="relative"
           >
-            <div className="absolute -left-4 top-0 w-1 h-full bg-gradient-to-b from-ubuntu-orange to-transparent rounded-full" />
-            <span className="text-[10px] font-black text-ubuntu-orange uppercase tracking-[0.3em] mb-2 block ml-2">
+            <div className="absolute -left-3 md:-left-4 top-0 w-1 h-full bg-gradient-to-b from-ubuntu-orange to-transparent rounded-full" />
+            <span className="text-[10px] font-black text-ubuntu-orange uppercase tracking-[.3em] mb-1.5 block ml-3 md:ml-2">
               Plant Operations
             </span>
-            <h1 className="text-5xl font-black text-ubuntu-aubergine tracking-tighter font-display">
+            <h1 className="text-3xl md:text-5xl font-black text-ubuntu-aubergine tracking-tighter font-display ml-3 md:ml-0">
               {section} Operations
             </h1>
-            <p className="text-ubuntu-warmGrey text-sm mt-2 ml-2 font-medium flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-ubuntu-orange animate-pulse" />
+            <p className="text-ubuntu-warmGrey text-[11px] md:text-sm mt-1 ml-3 md:ml-2 font-medium flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-ubuntu-orange animate-pulse" />
               Real-time Monitoring & Analytics
             </p>
           </motion.div>
@@ -110,23 +112,26 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
         {/* Main Dashboard Content */}
         <main>
           {/* OEE Section */}
-          <section className="mb-20">
-            <div className="flex items-center gap-4 mb-10">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-ubuntu-aubergine to-ubuntu-darkAubergine flex items-center justify-center shadow-lg shadow-ubuntu-aubergine/20">
-                <BarChart3 className="w-6 h-6 text-white" />
+          <section className="mb-12 md:mb-20">
+            <div className="flex items-center gap-3 md:gap-4 mb-8 md:mb-10">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-ubuntu-aubergine to-ubuntu-darkAubergine flex items-center justify-center shadow-lg shadow-ubuntu-aubergine/20 flex-shrink-0">
+                <BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-slate-800 tracking-tight font-display">
-                  Plant Performance Analytics
+                <h2 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight font-display">
+                  Performance Analytics
                 </h2>
-                <div className="flex items-center gap-3 mt-1">
+                <div className="flex items-center gap-2 md:gap-3 mt-0.5">
                   <div className="flex gap-0.5">
                     {[1, 2, 3].map((i) => (
-                      <div key={i} className="w-1.5 h-1.5 rounded-full bg-ubuntu-orange/40" />
+                      <div
+                        key={i}
+                        className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-ubuntu-orange/40"
+                      />
                     ))}
                   </div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">
-                    Core Efficiency Metrics
+                  <span className="text-[9px] md:text-[10px] uppercase font-bold text-slate-400 tracking-widest">
+                    Core Metrics
                   </span>
                 </div>
               </div>
