@@ -223,6 +223,7 @@ const en = {
 
   // Plant Operations Dropdown & Page
   op_dashboard: 'Dashboard',
+  op_people_champion: 'People Champion',
   op_optimized_dashboard: 'Optimized Dashboard',
   op_report: 'Report',
   op_wag_report: 'WhatsApp Group Report',
@@ -632,6 +633,7 @@ const en = {
 
   // Access Control
   access_denied: '',
+  database_dashboard: 'Database Dashboard',
   back_to_dashboard: 'Back to Dashboard',
 
   // COP Analysis

@@ -190,6 +190,7 @@ const id = {
 
   // Plant Operations Dropdown & Page
   op_dashboard: 'Dasbor',
+  op_people_champion: 'People Champion',
   op_optimized_dashboard: 'Dasbor Teroptimasi',
   op_report: 'Laporan',
   op_wag_report: 'Laporan WhatsApp Group',
@@ -524,6 +525,7 @@ const id = {
 
   // Access Control
   access_denied: 'Akses Ditolak',
+  database_dashboard: 'Dasbor Database',
   back_to_dashboard: 'Kembali ke Dashboard',
 
   // COP Analysis
