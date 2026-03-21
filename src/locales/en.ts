@@ -484,6 +484,8 @@ const en = {
   save_parameter_order_profile_title: 'Save Parameter Order Profile',
   load_parameter_order_profile_title: 'Load Parameter Order Profile',
   delete_parameter_order_profile_title: 'Delete Parameter Order Profile',
+  ccr_delete_profile_confirm_message:
+    'Are you sure you want to delete profile "{name}"? This action cannot be undone.',
 
   // CCR Data Entry Section Descriptions
   ccr_silo_data_description: 'CCR silo data for capacity monitoring',

@@ -607,6 +607,8 @@ const id = {
   save_parameter_order_profile_title: 'Simpan Profil Urutan Parameter',
   load_parameter_order_profile_title: 'Muat Profil Urutan Parameter',
   delete_parameter_order_profile_title: 'Hapus Profil Urutan Parameter',
+  ccr_delete_profile_confirm_message:
+    'Anda yakin ingin menghapus profil "{name}"? Tindakan ini tidak dapat dibatalkan.',
 
   // CCR Data Entry Section Descriptions
   ccr_silo_data_description: 'Data silo CCR untuk monitoring kapasitas',
