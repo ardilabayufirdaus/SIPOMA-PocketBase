@@ -17,10 +17,13 @@ async function generateReview() {
     console.log('Authenticating...');
     await pb.admins.authWithPassword(PB_EMAIL, PB_PASSWORD);
 
-    // 2. Get Dates (Yesterday)
+    // 2. Get Dates (Yesterday) using local timezone
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const dateStr = yesterday.toISOString().split('T')[0];
+    const year = yesterday.getFullYear();
+    const month = String(yesterday.getMonth() + 1).padStart(2, '0');
+    const day = String(yesterday.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
     console.log(`Target Date: ${dateStr}`);
 
     // 3. Get x.AI API Key
