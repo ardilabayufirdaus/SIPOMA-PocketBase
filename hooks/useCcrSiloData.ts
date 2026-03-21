@@ -100,6 +100,8 @@ export const useCcrSiloData = () => {
           filter,
           sort: 'created',
           expand: 'silo_id',
+          fields:
+            'id,date,silo_id,shift1_empty_space,shift1_content,shift2_empty_space,shift2_content,shift3_empty_space,shift3_content,expand.silo_id.id,expand.silo_id.silo_name,expand.silo_id.capacity,expand.silo_id.unit',
         });
 
         // Enhance data with capacities
@@ -156,6 +158,8 @@ export const useCcrSiloData = () => {
           filter,
           sort: 'created',
           expand: 'silo_id', // Always expand silo_id to get capacity and name
+          fields:
+            'id,date,silo_id,shift1_empty_space,shift1_content,shift2_empty_space,shift2_content,shift3_empty_space,shift3_content,expand.silo_id.id,expand.silo_id.silo_name,expand.silo_id.capacity,expand.silo_id.unit',
         });
 
         // Filter by unit on client-side using expanded silo data for better type safety

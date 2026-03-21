@@ -300,7 +300,7 @@ export const useCcrOfflineSync = (options: UseCcrOfflineSyncOptions): UseCcrOffl
 
             // Normalize value: handle Indonesian decimal format and types
             let normalizedValue: string | number | null =
-              value === '' || value === null ? null : value;
+              value === '' || value === null ? null : (value as string | number);
             if (typeof normalizedValue === 'string') {
               // Try to parse as number if it looks like one (handle both dot and comma)
               const sanitized = normalizedValue.replace(',', '.');
@@ -369,7 +369,7 @@ export const useCcrOfflineSync = (options: UseCcrOfflineSyncOptions): UseCcrOffl
             const { id: downtimeId, ...downtimeData } = op.data as Record<string, unknown>;
             const { pb: pbDowntime } = await import('../utils/pocketbase-simple');
 
-            if (downtimeId && !downtimeId.startsWith('temp-')) {
+            if (downtimeId && typeof downtimeId === 'string' && !downtimeId.startsWith('temp-')) {
               // Update existing
               await pbDowntime
                 .collection('ccr_downtime_data')

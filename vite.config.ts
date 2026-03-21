@@ -179,41 +179,20 @@ export default defineConfig(async (_env) => {
             }
 
             // Application chunks - split pages more granularly
-            if (id.includes('pages/') && !id.includes('test')) {
-              // Plant operations pages
-              if (id.includes('PlantOperationsPage') || id.includes('plant_operations/')) {
-                return 'page-plant-ops';
+            if (id.includes('pages/')) {
+              // Only group the common shell or small pages
+              if (id.includes('PlaceholderPage')) {
+                return 'page-shell';
               }
-              // User management pages
-              if (
-                id.includes('UserListPage') ||
-                id.includes('UserRolesPage') ||
-                id.includes('UserActivityPage')
-              ) {
-                return 'page-users';
-              }
-              // Project management pages
-              if (
-                id.includes('ProjectDashboardPage') ||
-                id.includes('ProjectDetailPage') ||
-                id.includes('ProjectListPage') ||
-                id.includes('project_management/')
-              ) {
-                return 'page-projects';
-              }
-              // Settings pages
-              if (id.includes('SettingsPage') || id.includes('Settings/')) {
-                return 'page-settings';
-              }
-              // Dashboard pages
-              if (id.includes('MainDashboardPage')) {
-                return 'page-dashboard';
-              }
-              // Auth pages
-              if (id.includes('LoginPage')) {
-                return 'page-auth';
-              }
-              return 'pages-misc';
+              // Let Vite generate individual chunks for most sub-pages
+              // This ensures clicking "Dashboard" doesn't download "Reports" if not opened.
+            }
+
+            // Locale chunks
+            if (id.includes('src/locales/')) {
+              if (id.includes('/en.ts')) return 'locale-en';
+              if (id.includes('/id.ts')) return 'locale-id';
+              return 'locales-misc';
             }
 
             // Component chunks

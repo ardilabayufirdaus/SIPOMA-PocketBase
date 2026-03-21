@@ -1,0 +1,41 @@
+﻿components/ccr/CcrDataActions.tsx(54,11): error TS2322: Type '{ children: any; style: { background: string; color: string; }; size: "lg"; onClick: () => void; disabled: boolean; leftIcon: Element; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'style' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+components/ccr/CcrDataActions.tsx(83,11): error TS2322: Type '{ children: any; variant: "primary"; size: "lg"; onClick: () => void; disabled: boolean; leftIcon: Element; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'leftIcon' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+pages/plant_operations/CcrDataEntryPage.tsx(3906,23): error TS2322: Type '{ children: Element; size: "sm"; onClick: () => Promise<void>; disabled: boolean; variant: "ghost"; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+pages/plant_operations/CcrDataEntryPage.tsx(3946,21): error TS2322: Type '{ children: Element[]; size: "sm"; onClick: () => void; variant: "ghost"; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+pages/plant_operations/CcrDataEntryPage.tsx(3991,21): error TS2322: Type '{ children: Element[]; size: "sm"; onClick: () => void; disabled: boolean; variant: "ghost"; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+pages/plant_operations/CcrDataEntryPage.tsx(4040,27): error TS2322: Type '{ children: Element[]; size: "sm"; onClick: () => void; disabled: boolean; variant: "ghost"; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+pages/plant_operations/CcrDataEntryPage.tsx(4060,23): error TS2322: Type '{ children: Element[]; size: "sm"; onClick: () => Promise<void>; disabled: boolean; variant: "ghost"; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+pages/plant_operations/CcrDataEntryPage.tsx(4078,23): error TS2322: Type '{ children: Element[]; size: "sm"; onClick: () => Promise<void>; disabled: boolean; variant: "ghost"; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+pages/plant_operations/CcrDataEntryPage.tsx(4100,23): error TS2322: Type '{ children: (string | Element)[]; size: "sm"; onClick: () => Promise<void>; disabled: boolean; variant: "ghost"; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+pages/plant_operations/CcrDataEntryPage.tsx(4116,23): error TS2322: Type '{ children: (string | Element)[]; size: "sm"; onClick: () => Promise<void>; disabled: boolean; variant: "ghost"; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+pages/plant_operations/PlantOperationsMasterData.tsx(1414,66): error TS2339: Property 'target' does not exist on type 'string'.
+pages/plant_operations/RkcCcrDataEntryPage.tsx(3909,23): error TS2322: Type '{ children: Element; size: "sm"; onClick: () => Promise<void>; disabled: boolean; variant: "ghost"; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+pages/plant_operations/RkcCcrDataEntryPage.tsx(3949,21): error TS2322: Type '{ children: Element[]; size: "sm"; onClick: () => void; variant: "ghost"; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+pages/plant_operations/RkcCcrDataEntryPage.tsx(3994,21): error TS2322: Type '{ children: Element[]; size: "sm"; onClick: () => void; disabled: boolean; variant: "ghost"; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+pages/plant_operations/RkcCcrDataEntryPage.tsx(4043,27): error TS2322: Type '{ children: Element[]; size: "sm"; onClick: () => void; disabled: boolean; variant: "ghost"; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+pages/plant_operations/RkcCcrDataEntryPage.tsx(4063,23): error TS2322: Type '{ children: Element[]; size: "sm"; onClick: () => Promise<void>; disabled: boolean; variant: "ghost"; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+pages/plant_operations/RkcCcrDataEntryPage.tsx(4081,23): error TS2322: Type '{ children: Element[]; size: "sm"; onClick: () => Promise<void>; disabled: boolean; variant: "ghost"; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+pages/plant_operations/RkcCcrDataEntryPage.tsx(4103,23): error TS2322: Type '{ children: (string | Element)[]; size: "sm"; onClick: () => Promise<void>; disabled: boolean; variant: "ghost"; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+pages/plant_operations/RkcCcrDataEntryPage.tsx(4119,23): error TS2322: Type '{ children: (string | Element)[]; size: "sm"; onClick: () => Promise<void>; disabled: boolean; variant: "ghost"; className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+pages/plant_operations/WhatsAppGroupReportPage.tsx(2375,19): error TS2322: Type '{ children: string; onClick: () => Promise<void>; variant: "primary" | "success"; size: "lg"; leftIcon: Element; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'leftIcon' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.
+pages/plant_operations/WhatsAppGroupReportPage.tsx(2398,19): error TS2322: Type '{ children: string; onClick: () => Window; variant: "success"; size: "lg"; leftIcon: Element; }' is not assignable to type 'IntrinsicAttributes & EnhancedButtonProps'.
+  Property 'leftIcon' does not exist on type 'IntrinsicAttributes & EnhancedButtonProps'.

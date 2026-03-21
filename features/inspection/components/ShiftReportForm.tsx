@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import XMarkIcon from '../../../components/icons/XMarkIcon';
 import ClipboardCheckIcon from '../../../components/icons/ClipboardCheckIcon';
+import ChevronDownIcon from '../../../components/icons/ChevronDownIcon';
 import { useAuth } from '../../../hooks/useAuth';
 import { useUserStore } from '../../../stores/userStore';
 import { useEffect } from 'react';

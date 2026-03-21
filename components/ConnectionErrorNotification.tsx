@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Alert, AlertTitle, Button, Snackbar } from '@mui/material';
-import { translations } from '../translations';
+import en from '../src/locales/en';
+const translations = { en };
 
 // Use English translations
 const enTranslations = translations.en;
@@ -110,5 +111,3 @@ const ConnectionErrorNotification: React.FC = () => {
 };
 
 export default ConnectionErrorNotification;
-
-

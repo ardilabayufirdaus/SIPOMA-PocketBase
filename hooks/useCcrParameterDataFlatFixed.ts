@@ -326,6 +326,8 @@ export const useCcrParameterDataFlat = () => {
             const result = await pb.collection('ccr_parameter_data').getFullList({
               filter: filter,
               sort: '-created',
+              fields:
+                'id,parameter_id,date,name,plant_unit,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24,hour1_user,hour2_user,hour3_user,hour4_user,hour5_user,hour6_user,hour7_user,hour8_user,hour9_user,hour10_user,hour11_user,hour12_user,hour13_user,hour14_user,hour15_user,hour16_user,hour17_user,hour18_user,hour19_user,hour20_user,hour21_user,hour22_user,hour23_user,hour24_user',
             });
 
             // Map PocketBase response to flat data structure
@@ -447,6 +449,8 @@ export const useCcrParameterDataFlat = () => {
         const result = await pb.collection('ccr_parameter_data').getList(page, pageSize, {
           filter: filter,
           sort: '-created',
+          fields:
+            'id,parameter_id,date,name,plant_unit,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24,hour1_user,hour2_user,hour3_user,hour4_user,hour5_user,hour6_user,hour7_user,hour8_user,hour9_user,hour10_user,hour11_user,hour12_user,hour13_user,hour14_user,hour15_user,hour16_user,hour17_user,hour18_user,hour19_user,hour20_user,hour21_user,hour22_user,hour23_user,hour24_user',
         });
 
         // Filter parameters based on plant unit if specified

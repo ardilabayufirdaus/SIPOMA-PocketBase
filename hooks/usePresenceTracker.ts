@@ -22,7 +22,7 @@ export const usePresenceTracker = () => {
         sort: '-updated',
       });
 
-      const promises = onlineRecords.map(async (record) => {
+      const promises = onlineRecords.map(async (record): Promise<PresenceUser | null> => {
         try {
           if (!record.user_id) return null;
 
@@ -41,6 +41,7 @@ export const usePresenceTracker = () => {
             return {
               id: record.user_id,
               username: 'Rekan SIPOMA',
+              full_name: 'Rekan SIPOMA', // Add required full_name
               role: 'Unknown',
               last_seen: new Date(record.updated),
               is_online: true,

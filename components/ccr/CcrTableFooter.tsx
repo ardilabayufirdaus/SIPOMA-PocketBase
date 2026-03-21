@@ -295,4 +295,4 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
   );
 };
 
-export default CcrTableFooter;
+export default React.memo(CcrTableFooter);

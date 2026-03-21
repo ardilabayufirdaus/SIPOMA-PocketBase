@@ -1,5 +1,8 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { translations } from '../translations';
+import en from '../src/locales/en';
+import id from '../src/locales/id';
+
+const translations = { en, id };
 
 interface Props {
   children: ReactNode;
@@ -114,5 +117,3 @@ class ErrorBoundary extends Component<Props, State> {
 }
 
 export default ErrorBoundary;
-
-
