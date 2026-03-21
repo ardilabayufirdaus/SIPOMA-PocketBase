@@ -390,21 +390,30 @@ export const useCcrParameterData = () => {
             await pb.collection('ccr_parameter_data').delete(existing.id);
           }
         } else {
-          // Prepare upsert data - always include name for backward compatibility
-          const upsertData: any = {
-            date,
-            parameter_id,
-            hourly_values: updatedHourlyValues,
-            name: userName, // Keep for backward compatibility, but per-hour tracking is in hourly_values
-          };
+          // Find plant unit for this parameter
+          const currentParam = parameters.find((p) => p.id === parameter_id);
+          const plantUnit = currentParam?.unit || 'Unknown';
 
-          // Prepare data for PocketBase
-          const recordData = {
+          // Map values to flat columns instead of hourly_values JSON
+          const hourField = `hour${hour}`;
+          const userField = `hour${hour}_user`;
+
+          // Prepare data for PocketBase using individual columns
+          const recordData: any = {
             date,
             parameter_id,
-            hourly_values: updatedHourlyValues,
+            plant_unit: plantUnit,
             name: userName, // Keep for backward compatibility
           };
+
+          // Update specifically the changed hour and user columns
+          if (value === '' || value === null || value === undefined) {
+            recordData[hourField] = '';
+            recordData[userField] = '';
+          } else {
+            recordData[hourField] = String(value);
+            recordData[userField] = userName;
+          }
 
           // Update or create record
           if (existing) {
@@ -420,7 +429,7 @@ export const useCcrParameterData = () => {
         throw error; // Re-throw untuk error handling di component
       }
     },
-    []
+    [parameters]
   );
 
   const getDataForDateRange = useCallback(
