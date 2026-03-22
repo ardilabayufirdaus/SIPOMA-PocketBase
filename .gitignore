@@ -1,8 +1,37 @@
+# Secrets and Configs
 config.json
+secret.json
+
+# Galaxy God Logs and Temporary
 *.log
 *.png
 *.csv
-node_modules/
-.DS_Store
-__pycache__/
 *.pid
+watchdog_sys.log
+watchdog.log
+god_trader.log
+snap.png
+chart.png
+test.png
+
+# PocketBase and System
+pb_data/
+pb_migrations/
+*.db
+*.db-shm
+*.db-wal
+
+# Build and Dependencies
+dist/
+node_modules/
+.next/
+out/
+build/
+
+# IDE and OS
+.DS_Store
+.vscode/
+.idea/
+__pycache__/
+*.swp
+*.bak
