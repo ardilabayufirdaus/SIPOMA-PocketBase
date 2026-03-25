@@ -18,11 +18,18 @@ async function generateReview() {
     await pb.admins.authWithPassword(PB_EMAIL, PB_PASSWORD);
 
     // 2. Get Dates (Yesterday) using local timezone
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const year = yesterday.getFullYear();
-    const month = String(yesterday.getMonth() + 1).padStart(2, '0');
-    const day = String(yesterday.getDate()).padStart(2, '0');
+    // 2. Get Dates (Support TARGET_DATE override)
+    let targetDate = new Date();
+    if (process.env.TARGET_DATE) {
+      targetDate = new Date(process.env.TARGET_DATE);
+      console.log(`Using OVERRIDE Date: ${process.env.TARGET_DATE}`);
+    } else {
+      targetDate.setDate(targetDate.getDate() - 1);
+    }
+    
+    const year = targetDate.getFullYear();
+    const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const day = String(targetDate.getDate()).padStart(2, '0');
     const dateStr = `${year}-${month}-${day}`;
     console.log(`Target Date: ${dateStr}`);
 
