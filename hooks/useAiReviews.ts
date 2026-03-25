@@ -30,8 +30,8 @@ export const useAiReviews = (date?: string) => {
         targetDate = `${year}-${month}-${day}`;
       }
 
-      // Filter specifically for that target date (using prefix match for robustness)
-      const filter = `date >= "${targetDate} 00:00:00" && date <= "${targetDate} 23:59:59"`;
+      // Filter specifically for that target date using prefix match
+      const filter = `date ~ "${targetDate}"`;
       const records = await pb.collection('operational_ai_reviews').getFullList({
         filter: filter,
         sort: 'plant_unit', // Sort by unit name for consistent carousel order

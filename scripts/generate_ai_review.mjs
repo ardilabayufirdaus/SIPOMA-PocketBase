@@ -222,10 +222,18 @@ async function generateReview() {
         metrics_summary: review.metrics_summary
       };
 
-      if (existing.length > 0) {
-        await pb.collection('operational_ai_reviews').update(existing[0].id, payload);
+      // Check for existing review for this unit and date
+      console.log(`Checking for existing review for: ${review.plant_unit}`);
+      const existingRecords = await pb.collection('operational_ai_reviews').getList(1, 1, {
+          filter: `plant_unit = "${review.plant_unit}" && date ~ "${dateStr}"`,
+      });
+
+      if (existingRecords.items.length > 0) {
+          console.log(`Updating existing review for: ${review.plant_unit}`);
+          await pb.collection('operational_ai_reviews').update(existingRecords.items[0].id, payload);
       } else {
-        await pb.collection('operational_ai_reviews').create(payload);
+          console.log(`Creating new review for: ${review.plant_unit}`);
+          await pb.collection('operational_ai_reviews').create(payload);
       }
     }
 
