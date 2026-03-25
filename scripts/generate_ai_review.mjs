@@ -26,9 +26,9 @@ async function generateReview() {
     const dateStr = `${year}-${month}-${day}`;
     console.log(`Target Date: ${dateStr}`);
 
-    // 3. Get x.AI API Key
+    // 3. Get x.AI API Key (Using broader filter for robustness)
     console.log('Fetching x.AI API Key...');
-    const xaiRecord = await pb.collection('api_key').getFirstListItem('provider="xai"');
+    const xaiRecord = await pb.collection('api_key').getFirstListItem('provider ~ "xai"');
     const apiKey = xaiRecord.key;
 
     // 4. Get Plant Units
