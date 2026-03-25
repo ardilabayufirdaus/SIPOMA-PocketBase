@@ -21,15 +21,13 @@ export const useAiReviews = (date?: string) => {
       let targetDate = date;
 
       if (!targetDate) {
-        // Find the latest available date first from the collection
-        const latest = await pb.collection('operational_ai_reviews').getList(1, 1, {
-          sort: '-date',
-        });
-
-        if (latest.items.length === 0) return [];
-
-        // PocketBase usually returns date as "YYYY-MM-DD HH:MM:SS.mmmZ"
-        targetDate = latest.items[0].date.split(' ')[0];
+        // Calculate H-1 (Yesterday) based on current system time
+        const date = new Date();
+        date.setDate(date.getDate() - 1);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        targetDate = `${year}-${month}-${day}`;
       }
 
       // Filter specifically for that target date (using prefix match for robustness)
