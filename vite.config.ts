@@ -11,8 +11,8 @@ export default defineConfig(async (_env) => {
     try {
       const { default: PocketBase } = await import('pocketbase');
       const pb = new PocketBase('https://db.sipoma.online');
-      // Attempt to fetch without auth
-      const record = await pb.collection('api_key').getFirstListItem('provider="xai"');
+      // Attempt to fetch using broader filter for robustness (contains "xai")
+      const record = await pb.collection('api_key').getFirstListItem('provider ~ "xai"');
       xAiApiKey = record.key;
       console.log('✅ x.AI API Key loaded successfully from PocketBase');
     } catch (e) {

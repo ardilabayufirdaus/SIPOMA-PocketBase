@@ -23,9 +23,8 @@ export default async function handler(req, res) {
     const PocketBase = (await import('pocketbase')).default;
     const pb = new PocketBase('https://db.sipoma.online');
 
-    // Attempt to fetch without auth (assuming public read or specific API rule)
-    // If strict rules apply, we would need admin auth here.
-    const record = await pb.collection('api_key').getFirstListItem('provider="xai"');
+    // Attempt to fetch using broader filter for robustness (contains "xai")
+    const record = await pb.collection('api_key').getFirstListItem('provider ~ "xai"');
     apiKey = record.key;
   } catch (error) {
     console.error('Failed to fetch API key from PocketBase:', error);
