@@ -1,20 +1,11 @@
-import os
-import time
-import json
-import sqlite3
-import logging
-import asyncio
-import httpx
-import hashlib
-import math
+import os, time, json, sqlite3, logging, asyncio, hashlib, math, httpx
 from datetime import datetime, timezone, timedelta
+from pathlib import Path
 from openai import OpenAI
 from dotenv import load_dotenv
 
-# V13.1 Modular Imports
-import version_config as vcfg
-import news_filter
-import risk_manager
+# Internal Modules (Optimized V13.1)
+import news_filter, risk_manager, pair_evaluator
 
 load_dotenv()
 XAI_API_KEY = os.getenv('XAI_API_KEY')
@@ -22,8 +13,9 @@ TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('CHAT_ID')
 
 # V13.1 Core Info
-VERSION = vcfg.VERSION
-FULL_NAME = vcfg.FULL_NAME
+FULL_NAME = "SAC V13.1 OMNI-PREDATOR"
+VERSION = "13.1.0"
+BUILD = "Institutional Grade"
 MODEL_ID = 'grok-4-1-fast-reasoning'
 FALLBACK_MODEL_ID = 'grok-4-1-fast-non-reasoning'
 
@@ -422,28 +414,22 @@ def fallback_decision_v2(ind, tr_h4, session, pair, setup_hash, intermarket):
     if score >= 7: return ("BUY" if tr_h4 == "BULLISH" else "SELL"), score/10, 85
     return "HOLD", 0, 0
 
-# ══════ SYSTEM PROMPT V12.8 INSTITUTIONAL EFFICIENCY ══════
+# ══════ SYSTEM PROMPT V13.1 INSTITUTIONAL OPTIMIZER ══════
 SYSTEM_PROMPT = """You are SAC V13.1 INSTITUTIONAL OPTIMIZER.
-Focus on HIGH-PROBABILITY precision with 'Institutional Smart Money' logic:
-1. DIVERGENCE: Absolute requirement. Check if price makes new high/low but RSI/Stoch does NOT. If Divergence is against the trend, HOLD or WAIT. 
-2. EXHAUSTION: Reject entries if ADX > 65 or price is extremely overextended from EMA21.
-3. LIQUIDITY & VOLUME: Prioritize 'Volume at Value'. Only enter if a clear 'L0 Sweep' or 'Volume Spike' (>1.5) confirms institutional activity.
-4. RISK: Provide 'tp_pips' and 'sl_pips'. SL should be defensive (min 15 pips or 1.5x ATR). 
-5. CONFIDENCE: Suggest BUY/SELL ONLY if confidence is >= 80%. Multi-layer confirmation preferred.
-
-RESPONSE FORMAT: JSON only.
+Prioritize DIVERGENCE and LIQUIDITY. Only suggest action if Confidence > 90%.
+Avoid exhaustion zones where ADX > 65.
+Detail trade reasoning based on Smart Money Concepts (SMC).
+Response MUST BE JSON:
 {
-  "action": "BUY" | "SELL" | "HOLD",
-  "score": 0.0-1.0, 
-  "confidence": 0-100,
-  "tp_pips": float,
+  "action": "BUY/SELL/WAIT",
+  "confidence": float (0-100),
   "sl_pips": float,
-  "reason": "Divergence+Climax+Liquidity check results"
+  "reason": "Institutional Optimizer: Liquidity Grab + MTF H4/H1 Convergence"
 }"""
 
 # ══════ WATCHDOG (1s) ══════
 async def watchdog_task():
-    logging.info("V12.8 Watchdog Active")
+    logging.info("V13.1 Watchdog Active")
     while True:
         try:
             if os.path.exists(iSTATS_PATH):
@@ -536,8 +522,8 @@ async def watchdog_task():
 # ══════ SCANNER (30s) ══════
 async def scanner_task():
     init_db()
-    logging.info("V12.8 Scanner Active (30s)")
-    await send_telegram("SAC V12.8 INSTITUTIONAL EFFICIENCY\nHard Rules Restored | MTF Mandatory | Profit-First")
+    logging.info("V13.1 Scanner Active (30s)")
+    await send_telegram("🚀 *SAC V13.1 OMNI-PREDATOR ACTIVE*\nInstitutional Grade | 60pts L0 Threshold | Liquidity Search")
     while True:
         try:
             if os.path.exists(iRESULTS_PATH):
@@ -649,18 +635,7 @@ async def scanner_task():
                         logging.info(f"SKIP {pair}: Price at {round(ind['price'],5)} (Box: {round(box['low'],5)}-{round(box['high'],5)}) - Mid Range")
                         continue
 
-                # V12.8: Mandatory Multi-Timeframe Confirmation
-                if session != 'TOKYO' and mtf_trend == 'NEUTRAL':
-                    logging.info("SKIP " + pair + ": MTF not aligned " + str(mtf_details))
-                    continue
-                
-                # V12.1: Regime Filter
-                if ind['regime'] == 'CHOPPY':
-                    logging.info("SKIP " + pair + ": CHOPPY (ADX=" + str(round(ind['adx'], 1)) + ")")
-                    continue
-
-                sp = specs.get(pair, {'spread': 2.0, 'point': 0.0001, 'daily_high': 0, 'daily_low': 0})
-                # V12.6: Fix spread divisor for 3/5 digit brokers
+                sp = specs.get(pair, {'spread': 20.0, 'point': 0.0001})
                 divisor = 10.0 if sp['point'] in [0.00001, 0.001] else 1.0
                 spread_pips = sp.get('spread', 20.0) / divisor
                 spread_level = "LOW" if spread_pips < 1.5 else ("MED" if spread_pips < 3.0 else "HIGH")
@@ -712,7 +687,6 @@ async def scanner_task():
                     dec = str(res.get('action', 'HOLD')).upper()
                     sc = int(abs(float(str(res.get('score', 0)).replace('%',''))) * 10)
                     cf = float(str(res.get('confidence', 0)).replace('%',''))
-                    # V12.9: Extract AI levels
                     ai_tp = float(res.get('tp_pips', 0))
                     ai_sl = float(res.get('sl_pips', 0))
                 except Exception as api_err:
@@ -732,29 +706,43 @@ async def scanner_task():
                         res = {'reason': 'Fallback V2: ' + dec + ' [regime=' + ind['regime'] + ', sweep=' + ind['sweep'] + ']'}
                         ai_tp, ai_sl = 0, 0
 
+                # ══════ V13.1: POINT & PIP CALCULATION MATRIX ══════
+                p_point = 0.0001
+                p_divisor = 1.0
+                if 'JPY' in pair or ind['price'] > 500: # JPY Pairs or Gold/Indices
+                    p_point = 0.01
+                    p_divisor = 1.0 # Cent account already 2 digits
+                if 'XAU' in pair and ind['price'] > 1000: # Gold Standard
+                    p_point = 0.1
+                    p_divisor = 1.0
+
+                # ATR-Enforced SL (Max(1.5*ATR, 15 Pips)) - V13.1
+                atr_sl_pips = (ind['atr'] * 1.5) / p_point
+                final_sl_pips = max(atr_sl_pips, 15.0)
+                sl_dist = final_sl_pips * p_point
+                
+                sl = ind['price'] - sl_dist if dec == "BUY" else ind['price'] + sl_dist
+                
+                # Logic Point
+                ai_tp = res.get('tp_pips', 30.0) 
+                ai_sl = res.get('sl_pips', final_sl_pips)
+                
+                # V13.1: Risk Manager (Kelly Modified)
+                sl = round(sl, 5) if p_point == 0.0001 else round(sl, 2)
+                tp_dist = ai_tp * p_point
+                tp = ind['price'] + tp_dist if dec == "BUY" else ind['price'] - tp_dist
+                tp = round(tp, 5) if p_point == 0.0001 else round(tp, 2)
+
                 log_grok_decision(pair, session, payload, res)
                 cf += pattern_boost
                 logging.info(pair + " [" + session + "|" + ind['regime'] + "]: " + dec + " Sc=" + str(sc) + " Cf=" + str(cf) + " Sweep=" + ind['sweep'] + " MTF=" + str(mtf_details))
 
                 # V13.1: Institutional Confidence Threshold (from SESSION_CONFIG)
                 if dec != 'HOLD' and cf >= current_threshold:
-                    # Calculate absolute levels from AI pips
-                    p_point = sp.get('point', 0.0001)
-                    p_divisor = 10.0 if p_point in [0.00001, 0.001] else 1.0
+                    # sl and tp are already calculated in the V13.1 block above
                     
-                    # V13.1: ATR-Enforced Defensive Stop (Min 1.5x ATR)
-                    atr_sl = 1.5 * ind['atr']
-                    if ai_sl > 0: 
-                        sl_val = ai_sl * p_divisor * p_point
-                        sl = max(sl_val, atr_sl)
-                    else: 
-                        sl = max(s_cfg['sl_mult'] * ind['atr'], atr_sl)
-                    
-                    if ai_tp > 0: tp = ai_tp * p_divisor * p_point
-                    else: tp = s_cfg['tp_mult'] * ind['atr']
-                    
-                    # V13.1: Cent Account Lot Enforcement
-                    sl_pips = sl / (p_point * p_divisor)
+                    # Calculate sl_pips for risk manager
+                    sl_pips = abs(sl - ind['price']) / (p_point * p_divisor)
                     risk = risk_manager.calculate_lot(equity, KELLY_HARD_CAP_PCT, sl_pips, pair)
                     
                     with open(SIGNAL_PATH, 'w') as f: f.write(pair + "|" + dec + "_MARKET|" + str(ind['price']) + "|" + str(sl) + "|" + str(tp) + "|" + str(risk))
