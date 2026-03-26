@@ -476,6 +476,10 @@ async def watchdog_task():
                             pnl = closed_trade['profit']
                             outcome = 'PROFIT' if pnl > 0 else 'LOSS'
                             logging.info("CLOSED: " + p + " PnL: " + str(pnl))
+                            # V13.1 Telegram: Order Closed
+                            close_msg = f"📉 *ORDER CLOSED*\nPair: {p}\nTicket: #{closed_trade['ticket']}\nResult: {outcome}\nPnL: ${round(pnl, 2)}"
+                            asyncio.create_task(send_telegram(close_msg))
+                            
                             # Update DB outcome
                             conn = sqlite3.connect(DB_PATH)
                             conn.execute('UPDATE trade_history SET result=?, outcome=?, pips_result=? WHERE pair=? AND ticket=?', (outcome, outcome, pnl, p, closed_trade['ticket']))
@@ -485,6 +489,7 @@ async def watchdog_task():
 
                     CURRENT_STATS["open_trades"] = new_open
             specs = get_symbol_specs()
+            price_data = read_price_data()
             for pair, trade in CURRENT_STATS["open_trades"].items():
                 key = pair + "_M5"
                 if key not in price_data or price_data[key].empty: continue
@@ -758,7 +763,17 @@ async def scanner_task():
                     conn.commit(); conn.close()
                     update_pattern_memory(setup_hash, pair, session, ind['regime'], 'PENDING')
                     set_cooldown(pair); total_open += 1
-                    msg = f"{FULL_NAME} [{session}|{ind['regime']}]\n{dec} {pair}\nConf: {round(cf, 1)}% Sc: {round(sc, 1)}\nTP: {ai_tp} SL: {ai_sl} Pips\nATR-SL: {round(sl_pips, 1)} Pips\nLot: {risk}"
+                    
+                    # V13.1 Telegram: Execution Detail
+                    reason_text = res.get('reason', 'Institutional Convergence').replace('_', ' ')
+                    msg = (f"🚀 *ORDER EXECUTED*\n"
+                           f"Pair: {pair} ({dec})\n"
+                           f"Entry: {ind['price']}\n"
+                           f"SL: {round(sl, 5)} ({round(sl_pips, 1)} pips)\n"
+                           f"TP: {round(tp, 5)}\n"
+                           f"Lot: {risk}\n"
+                           f"Score: {round(sc, 1)}/100\n"
+                           f"Reason: {reason_text}")
                     await send_telegram(msg); await asyncio.sleep(5)
 
             await asyncio.sleep(30)
