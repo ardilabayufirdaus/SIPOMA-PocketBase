@@ -43,11 +43,7 @@ COOLDOWN_MINUTES = 5
 MAX_DAILY_LOSS_PCT = 3.0
 DRAWDOWN_LOCK_PCT = 5.0
 EQUITY_CURVE_DROP_PCT = 5.0
-KELLY_HARD_CAP_PCT = 2.0  
-
-# V12.8.4: Session-Aware Intelligence (Per-Pair Asian Range)
-ADX_THRESHOLDS = {"TOKYO": 15, "LONDON": 22, "OVERLAP": 25, "NEWYORK": 22, "OFF": 100}
-ASIAN_RANGE = {} # pair -> {"high": h, "low": l, "captured": True, "date": "..."}
+KELLY_HARD_CAP_PCT = 2.0  # V12.1: Hard cap
 
 CORRELATION_CLUSTERS = {
     'USD': ['EURUSD','GBPUSD','USDJPY','USDCAD','USDCHF','AUDUSD','NZDUSD'],
@@ -70,8 +66,6 @@ INTERMARKET_CACHE = {"data": {}, "last_update": datetime.min.replace(tzinfo=time
 PEAK_EQUITY_WEEK = 0.0
 PEAK_EQUITY_TS = datetime.min
 SESSION_PNL = {}
-
-PRICE_STORAGE = {}
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -98,36 +92,32 @@ def get_session():
     elif 16 <= utc_hour < 21: return 'NEWYORK'
     else: return 'OFF'
 
-# ══════ V12.8: Robust News Scraper ══════
-def scrape_calendar():
-    """V12.8: Use JSON endpoint for reliability (avoid 403)."""
+# ══════ V12.2: ForexFactory Calendar Scraper ══════
+def scrape_forexfactory_calendar():
+    """Scrape today's high-impact events from ForexFactory."""
     now = datetime.now(timezone.utc)
-    if (now - CALENDAR_CACHE["last_update"]).total_seconds() < 3600 and CALENDAR_CACHE["events"]:
+    if (now - CALENDAR_CACHE["last_update"]).total_seconds() < 1800 and CALENDAR_CACHE["events"]:
         return CALENDAR_CACHE["events"]
+    events = []
     try:
-        # User defined source: nfs.faireconomy.media/ff_calendar_thisweek.json
-        resp = httpx.get('https://nfs.faireconomy.media/ff_calendar_thisweek.json', timeout=10)
-        events = resp.json()
+        # Note: In production use a real scraper or API. Here we simulate or use a simple HTML parser if available.
+        # For simplicity in this environment, we'll return an empty list or implement a basic fetch.
+        resp = httpx.get('https://www.forexfactory.com/calendar', headers={'User-Agent': 'Mozilla/5.0'}, timeout=10)
+        # Parse logic would go here.
         CALENDAR_CACHE["events"] = events
         CALENDAR_CACHE["last_update"] = now
-        return events
-    except Exception as e:
-        logging.error(f"Calendar Scrape Error: {e}")
-        return CALENDAR_CACHE["events"]
+    except: pass
+    return events
 
 def check_news_block(pair):
-    """V12.1: Block trading 30 mins before/after high-impact news."""
-    events = scrape_calendar()
+    """V12.1: Block trading 15 mins before/after high-impact news."""
+    events = scrape_forexfactory_calendar()
     now = datetime.now(timezone.utc)
-    cur1, cur2 = pair[:3], pair[3:]
     for ev in events:
-        if ev.get('impact') == 'High' and (cur1 in ev.get('country', '') or cur2 in ev.get('country', '')):
-            try:
-                # FF JSON uses UTC datetime string
-                ev_time = datetime.fromisoformat(ev['date'].replace('Z', '+00:00'))
-                diff = abs((now - ev_time).total_seconds() / 60)
-                if diff < 30: return ev.get('title', 'High Impact News')
-            except: pass
+        if ev['impact'] == 'High' and (pair[:3] in ev['currency'] or pair[3:] in ev['currency']):
+            ev_time = datetime.fromisoformat(ev['time'])
+            diff = abs((now - ev_time).total_seconds() / 60)
+            if diff < 15: return ev['event']
     return None
 
 def get_streak():
@@ -172,29 +162,8 @@ def check_equity_curve():
     global PEAK_EQUITY_WEEK, PEAK_EQUITY_TS
     eq = CURRENT_STATS["equity"]
     now = datetime.now()
-    
-    # Load from DB if 0
-    if PEAK_EQUITY_WEEK == 0:
-        try:
-            conn = sqlite3.connect(DB_PATH)
-            row = conn.execute('SELECT peak_equity FROM equity_tracker ORDER BY id DESC LIMIT 1').fetchone()
-            if row: PEAK_EQUITY_WEEK = row[0]
-            conn.close()
-        except: pass
-
-    if now - PEAK_EQUITY_TS > timedelta(days=7): 
-        PEAK_EQUITY_WEEK = eq
-        PEAK_EQUITY_TS = now
-    
-    if eq > PEAK_EQUITY_WEEK: 
-        PEAK_EQUITY_WEEK = eq
-        # Persist to DB
-        try:
-            conn = sqlite3.connect(DB_PATH)
-            conn.execute('INSERT OR REPLACE INTO equity_tracker (date, peak_equity, current_equity) VALUES (?, ?, ?)', (now.strftime('%Y-%m-%d'), PEAK_EQUITY_WEEK, eq))
-            conn.commit(); conn.close()
-        except: pass
-
+    if now - PEAK_EQUITY_TS > timedelta(days=7): PEAK_EQUITY_WEEK = eq; PEAK_EQUITY_TS = now
+    if eq > PEAK_EQUITY_WEEK: PEAK_EQUITY_WEEK = eq
     if PEAK_EQUITY_WEEK > 0 and (PEAK_EQUITY_WEEK - eq) / PEAK_EQUITY_WEEK * 100 > EQUITY_CURVE_DROP_PCT: return True
     return False
 
@@ -210,50 +179,15 @@ def get_symbol_specs():
     return specs
 
 def read_price_data():
-    """V12.8.4: Robust price loader with I/O Collision Shield & Cache."""
-    global PRICE_STORAGE
-    if not os.path.exists(iPRICE_PATH): return PRICE_STORAGE
-    
-    new_data = {}
-    try:
-        # Retry up to 5 times if file is being written (empty)
-        lines = []
-        for _ in range(5):
-            try:
-                with open(iPRICE_PATH, 'r') as f:
-                    lines = f.readlines()
-                if lines: break
-            except: pass
-            time.sleep(0.05)
-        
-        if not lines: return PRICE_STORAGE # Return Last Known Good
-        
-        for line in lines:
-            parts = line.strip().split('|')
-            if len(parts) < 8: continue
-            try:
-                p, tf = parts[0], parts[1]
-                o, h, l, c = float(parts[3]), float(parts[4]), float(parts[5]), float(parts[6])
-                # Junk Volume Shield + Numeric Validator
-                vol_str = parts[7].strip()
-                if not vol_str.isdigit() or len(vol_str) > 50: vol = 0.0
-                else: vol = float(vol_str)
-                
-                k = f"{p}_{tf}"
-                if k not in new_data: new_data[k] = []
-                new_data[k].append({'open': o, 'high': h, 'low': l, 'close': c, 'vol': vol})
-            except: continue
-            
-        if new_data:
+    data = {}
+    if os.path.exists(iPRICE_PATH):
+        try:
             import pandas as pd
-            for k in new_data:
-                # Store as DataFrame for calculate_indicators compat
-                PRICE_STORAGE[k] = pd.DataFrame(new_data[k][::-1]) 
-            
-    except Exception as e:
-        logging.error(f"PRICE_IO_SHIELD Error: {e}")
-        
-    return PRICE_STORAGE
+            df = pd.read_csv(iPRICE_PATH, sep='|', names=['pair_tf', 'time', 'open', 'high', 'low', 'close', 'vol'])
+            for (ptf), group in df.groupby('pair_tf'):
+                data[ptf] = group.sort_values('time')
+        except: pass
+    return data
 
 def read_candle_patterns():
     patterns = {}
@@ -290,6 +224,7 @@ def calculate_indicators(df):
     std20 = df['close'].rolling(window=20).std()
     upper = sma20 + (2 * std20)
     lower = sma20 - (2 * std20)
+    # V12.5: Store bb_pct as float for logic comparisons
     bb_pct = (c[-1] - lower.iloc[-1]) / (upper.iloc[-1] - lower.iloc[-1]) if (upper.iloc[-1] - lower.iloc[-1]) != 0 else 0.5
     bb_pos = "UPPER" if bb_pct > 0.8 else ("LOWER" if bb_pct < 0.2 else "MID")
     
@@ -321,19 +256,19 @@ def calculate_indicators(df):
     plus_di = 100 * np.sum(plus_dm[-14:]) / tr_sum if tr_sum != 0 else 0
     minus_di = 100 * np.sum(minus_dm[-14:]) / tr_sum if tr_sum != 0 else 0
     dx = 100 * abs(plus_di - minus_di) / (plus_di + minus_di) if (plus_di + minus_di) != 0 else 0
+    # regime
     regime = "TRENDING" if dx > 25 else ("RANGING" if dx > 15 else "CHOPPY")
 
     return {'ema7': ema7, 'ema21': ema21, 'rsi': rsi, 'bb_upper': upper.iloc[-1], 'bb_lower': lower.iloc[-1], 'bb_pos': bb_pos, 'bb_pct': bb_pct, 'stok': stok, 'stod': stod, 'stoch_cross': stoch_cross, 'atr': atr, 'vol_spike': vol_spike, 'sweep': sweep, 'adx': dx, 'regime': regime, 'price': c[-1]}
 
-def get_mtf_alignment(price_data, pair, c_p, session):
+def get_mtf_alignment(price_data, pair, c_p):
+    """V12.1: H4 -> H1 -> M15 Trend Confluence. V12.8: Relaxed for Pullbacks."""
     trends = {}
-    intervals = ['H4', 'H1', 'M15']
-    if session == 'TOKYO': intervals = ['H1', 'M15']
-    
-    for tf in intervals:
+    for tf in ['H4', 'H1', 'M15']:
         key = pair + "_" + tf
         if key in price_data and len(price_data[key]) > 25:
             df = price_data[key]
+            # V12.8: Pullback Friendly Logic — Required Price > EMA21 and EMA7 > EMA21 (Golden Cross)
             e7 = df['close'].ewm(span=7).mean().iloc[-1]
             e21 = df['close'].ewm(span=21).mean().iloc[-1]
             cp = df['close'].iloc[-1]
@@ -342,19 +277,17 @@ def get_mtf_alignment(price_data, pair, c_p, session):
             else: trends[tf] = 'NEUTRAL'
         else: trends[tf] = 'UNKNOWN'
     
-    if session == 'TOKYO':
-        if trends.get('H1') == 'BULLISH' and trends.get('M15') == 'BULLISH': return 'BULLISH', trends
-        if trends.get('H1') == 'BEARISH' and trends.get('M15') == 'BEARISH': return 'BEARISH', trends
-        return 'NEUTRAL', trends
-
-    if trends.get('H4') == 'BULLISH' and trends.get('H1') != 'BEARISH': return 'BULLISH', trends
-    if trends.get('H4') == 'BEARISH' and trends.get('H1') != 'BULLISH': return 'BEARISH', trends
+    # Consensus
+    if trends['H4'] == 'BULLISH' and trends['H1'] != 'BEARISH': return 'BULLISH', trends
+    if trends['H4'] == 'BEARISH' and trends['H1'] != 'BULLISH': return 'BEARISH', trends
     return 'NEUTRAL', trends
 
 def get_intermarket():
+    """V12.1: Intermarket cache."""
     now = datetime.now(timezone.utc)
     if (now - INTERMARKET_CACHE["last_update"]).total_seconds() < 300 and INTERMARKET_CACHE["data"]:
         return INTERMARKET_CACHE["data"]
+    # Mock for local env
     data = {"dxy_trend": "UP", "gold_trend": "DOWN", "us10y_trend": "UP"}
     INTERMARKET_CACHE["data"] = data
     INTERMARKET_CACHE["last_update"] = now
@@ -375,15 +308,19 @@ def get_daily_pnl_from_history():
     return res if res else 0.0
 
 def kelly_lot_size(ind, equity, sl_dist, s_cfg):
+    """V12.0: Dynamic sizing via Half-Kelly."""
     if sl_dist == 0: return 0.01
-    win_rate = 0.55 
+    win_rate = 0.55 # Baseline
     risk_reward = 1.5
     kelly = win_rate - ((1 - win_rate) / risk_reward)
     half_kelly = kelly / 2
+    # Cap at 2% or session limit
     risk_pct = max(0.1, min(half_kelly * 100, KELLY_HARD_CAP_PCT, s_cfg['max_loss_pct']))
     return risk_pct
 
 def fallback_decision_v2(ind, tr_h4, session, pair, setup_hash, intermarket):
+    """V12.1: Rich local fallback if API fails."""
+    # Logic based on indicator synergy
     score = 0
     if ind['regime'] == "TRENDING":
         if tr_h4 == "BULLISH" and ind['bb_pct'] < 0.4: score += 4
@@ -394,29 +331,26 @@ def fallback_decision_v2(ind, tr_h4, session, pair, setup_hash, intermarket):
     if score >= 7: return ("BUY" if tr_h4 == "BULLISH" else "SELL"), score/10, 85
     return "HOLD", 0, 0
 
-# ══════ SYSTEM PROMPT V12.9 SCALPING COMMANDER ══════
-SYSTEM_PROMPT = """You are SAC V12.9 SCALPING COMMANDER.
-You are an expert FX strategy commander. Your role is to provide a final institutional-grade verification for technical setups focused on SCALPING.
+# ══════ SYSTEM PROMPT V12.8 INSTITUTIONAL EFFICIENCY ══════
+SYSTEM_PROMPT = """You are SAC V12.8 INSTITUTIONAL EFFICIENCY.
+You are an expert FX strategy commander. Your role is to provide a final institutional-grade verification for technical setups.
 
 CORE PRINCIPLES:
-1. TREND ALIGNMENT: MTF alignment is mandatory. If H4 and H1 are not aligned, DO NOT BUY/SELL unless in high-volatility Tokyo Range.
-2. LIQUIDITY: Prioritize Volume Spikes and Liquidity Sweeps.
-3. RISK: You MUST provide 'tp_pips' and 'sl_pips' (absolute distance from entry). Default to conservative 1:2 RR if unsure.
-4. CONFIDENCE: Only suggest BUY/SELL if confidence is >= 90%.
+1. TREND ALIGNMENT: MTF alignment is mandatory for trend-following setups. If H4 and H1 are not aligned, DO NOT BUY/SELL unless in Tokyo Range Reflex mode.
+2. LIQUIDITY: Look for Volume Spikes and Liquidity Sweeps as entry triggers.
+3. RISK: Always respect the News Block and Regime filters provided in the data.
 
 RESPONSE FORMAT: JSON only.
 {
   "action": "BUY" | "SELL" | "HOLD",
-  "score": 0.0-1.0, 
+  "score": 0.0-1.0,
   "confidence": 0-100,
-  "tp_pips": float,
-  "sl_pips": float,
   "reason": "Technical + Institutional rationale"
 }"""
 
 # ══════ WATCHDOG (1s) ══════
 async def watchdog_task():
-    logging.info("V12.9 Watchdog Active")
+    logging.info("V12.8 Watchdog Active (1s)")
     while True:
         try:
             if os.path.exists(iSTATS_PATH):
@@ -424,64 +358,42 @@ async def watchdog_task():
                     new_open = {}
                     for line in f:
                         p = line.strip().split('|')
-                        if len(p) == 5:
-                            try:
-                                CURRENT_STATS['balance'] = float(p[0])
-                                CURRENT_STATS['equity'] = float(p[1])
-                                CURRENT_STATS['m_level'] = float(p[4])
-                            except: pass
-                        elif len(p) >= 10:
+                        if len(p) >= 10:
                             pair = p[0]
+                            # Watchdog V12.3: Outcome tracking
                             profit = float(p[4])
+                            if pair in CURRENT_STATS["open_trades"] and profit != CURRENT_STATS["open_trades"][pair]['profit']:
+                                pass # potential profit update
                             new_open[pair] = {'type': int(p[1]), 'entry': float(p[2]), 'sl': float(p[3]), 'profit': profit, 'ticket': int(p[8])}
                     
+                    # Detect closed trades
                     for p in list(CURRENT_STATS["open_trades"].keys()):
                         if p not in new_open:
                             closed_trade = CURRENT_STATS["open_trades"][p]
                             pnl = closed_trade['profit']
                             outcome = 'PROFIT' if pnl > 0 else 'LOSS'
                             logging.info("CLOSED: " + p + " PnL: " + str(pnl))
+                            # Update DB outcome
                             conn = sqlite3.connect(DB_PATH)
                             conn.execute('UPDATE trade_history SET result=?, outcome=?, pips_result=? WHERE pair=? AND ticket=?', (outcome, outcome, pnl, p, closed_trade['ticket']))
                             conn.commit(); conn.close()
+                            # async task for journal
                             asyncio.create_task(run_trade_journal(p, closed_trade['type'], closed_trade['entry'], 0, pnl, get_session(), {}))
 
                     CURRENT_STATS["open_trades"] = new_open
-            specs = get_symbol_specs()
             price_data = read_price_data()
             for pair, trade in CURRENT_STATS["open_trades"].items():
                 key = pair + "_M5"
                 if key not in price_data or price_data[key].empty: continue
                 ind = calculate_indicators(price_data[key].copy())
-                if not ind: continue
-                
-                sp = specs.get(pair, {'point': 0.0001})
-                p_point = sp['point']
-                p_divisor = 10.0 if p_point in [0.00001, 0.001] else 1.0
-                
-                if trade['type'] == 0: pips = (ind['price'] - trade['entry']) / (p_point * p_divisor)
-                else: pips = (trade['entry'] - ind['price']) / (p_point * p_divisor)
-                
-                close_it = False
-                reason = ""
-                
-                if pips > 10 and (trade['type'] == 0 and ind['price'] < trade['entry'] + (2 * p_point * p_divisor)):
-                    close_it, reason = True, "BREAKEVEN_LOCK"
-                elif pips > 10 and (trade['type'] == 1 and ind['price'] > trade['entry'] - (2 * p_point * p_divisor)):
-                    close_it, reason = True, "BREAKEVEN_LOCK"
-                elif pips > 20 and pips < 10: 
-                    close_it, reason = True, "TRAIL_EXIT"
-                
-                if trade['profit'] > 1.0:
-                    if trade['type'] == 0 and (ind['ema7'] < ind['ema21'] or (ind['stok'] > 80 and ind['stok'] < ind['stod'])): 
-                        close_it, reason = True, "TECH_REVERSAL"
-                    elif trade['type'] == 1 and (ind['ema7'] > ind['ema21'] or (ind['stok'] < 20 and ind['stok'] > ind['stod'])): 
-                        close_it, reason = True, "TECH_REVERSAL"
-                
-                if close_it:
-                    with open(iCLOSE_PATH, 'w') as cl: cl.write(pair + "\n")
-                    set_cooldown(pair)
-                    await send_telegram(f"V12.9 {reason}\n{pair} ${round(trade['profit'], 2)} ({round(pips,1)} pips)")
+                if trade['profit'] > 1.0 and ind:
+                    close_it = False
+                    if trade['type'] == 0 and (ind['ema7'] < ind['ema21'] or (ind['stok'] > 80 and ind['stok'] < ind['stod'])): close_it = True
+                    elif trade['type'] == 1 and (ind['ema7'] > ind['ema21'] or (ind['stok'] < 20 and ind['stok'] > ind['stod'])): close_it = True
+                    if close_it:
+                        with open(iCLOSE_PATH, 'w') as cl: cl.write(pair + "\n")
+                        set_cooldown(pair)
+                        await send_telegram("V12.9 PROFIT LOCK\n" + pair + " $" + str(round(trade['profit'], 2)))
             await asyncio.sleep(1)
         except Exception as e:
             logging.error("Watchdog: " + str(e)); await asyncio.sleep(1)
@@ -489,8 +401,8 @@ async def watchdog_task():
 # ══════ SCANNER (30s) ══════
 async def scanner_task():
     init_db()
-    logging.info("V12.9 Scanner Active (30s)")
-    await send_telegram("SAC V12.9 OMNI PREDATOR - AI SUPREME\nFull Authority x.AI | OVR-Logic | MTF Flex\nx.AI Scalping Flow | 90% Confidence")
+    logging.info("V12.8 Scanner Active (30s)")
+    await send_telegram("SAC V12.8 INSTITUTIONAL EFFICIENCY\nHard Rules Restored | MTF Mandatory | Profit-First")
     while True:
         try:
             if os.path.exists(iRESULTS_PATH):
@@ -509,96 +421,88 @@ async def scanner_task():
             total_open = len(CURRENT_STATS["open_trades"])
             equity = CURRENT_STATS.get("equity", 0)
 
-            now_wita = datetime.now(timezone.utc) + timedelta(hours=8)
-            today_str = now_wita.strftime('%Y-%m-%d')
-            
-            for p in s_cfg['pairs']:
-                if p not in ASIAN_RANGE or ASIAN_RANGE[p].get("date") != today_str:
-                    ASIAN_RANGE[p] = {"high": 0, "low": 0, "captured": False, "date": today_str}
-                if not ASIAN_RANGE[p]["captured"] or (7 <= now_wita.hour < 10):
-                    k = p + "_M5"
-                    if k in price_data:
-                        df_m5 = price_data[k]
-                        if 7 <= now_wita.hour < 10:
-                            h, l = df_m5['high'].max(), df_m5['low'].min()
-                            ASIAN_RANGE[p].update({"high": h, "low": l, "captured": True})
-                        elif now_wita.hour >= 10:
-                            h, l = df_m5['high'].iloc[:72].max(), df_m5['low'].iloc[:72].min()
-                            ASIAN_RANGE[p].update({"high": h, "low": l, "captured": True})
+            logging.info("Session=" + session + " Style=" + s_cfg['style'] + " PnL=" + str(round(daily_pnl, 2)) + " Eq=" + str(round(equity, 2)) + " Open=" + str(total_open))
 
-            if equity > 0 and (daily_pnl < -(equity * MAX_DAILY_LOSS_PCT / 100) or check_equity_curve()):
-                logging.info("DAILY LOSS LOCK or EQUITY CURVE LOCK"); await asyncio.sleep(30); continue
+            if equity > 0 and daily_pnl < -(equity * MAX_DAILY_LOSS_PCT / 100):
+                logging.info("DAILY LOSS LOCK: " + str(round(daily_pnl, 2))); await asyncio.sleep(30); continue
+            s_key = session + "_" + datetime.now().strftime('%Y%m%d')
+            if s_key not in SESSION_PNL: SESSION_PNL[s_key] = 0
+            if equity > 0 and SESSION_PNL.get(s_key, 0) < -(equity * s_cfg['max_loss_pct'] / 100):
+                logging.info("SESSION LOCK [" + session + "]"); await asyncio.sleep(30); continue
             if streak_count >= 3 and streak_dir == "LOSS":
                 logging.info("3-LOSS STREAK LOCK"); await asyncio.sleep(30); continue
+            if check_equity_curve():
+                logging.info("EQUITY CURVE LOCK"); await asyncio.sleep(30); continue
+            if CURRENT_STATS["balance"] > 0:
+                dd = ((CURRENT_STATS["balance"] - equity) / CURRENT_STATS["balance"]) * 100
+                if dd > DRAWDOWN_LOCK_PCT: logging.info("DRAWDOWN LOCK: " + str(round(dd, 1)) + "%"); await asyncio.sleep(30); continue
             if session == 'OFF':
                 logging.info("OFF-HOURS"); await asyncio.sleep(30); continue
-            
-            current_max_orders = MAX_SIMULTANEOUS_ORDERS
-            current_threshold = s_cfg['threshold']
-            if session == 'OVERLAP':
-                current_max_orders = 3
-                current_threshold = 91
 
             news_headlines = get_news_headlines()
 
             for pair in s_cfg['pairs']:
-                logging.info(f"Scan {pair} [{session}]")
-                if total_open >= current_max_orders or pair in CURRENT_STATS["open_trades"]: continue
-                if check_cooldown(pair) or check_penalty(pair): continue
+                logging.info("Scan " + pair + " [" + session + "]")
+                if total_open >= MAX_SIMULTANEOUS_ORDERS: continue
+                if pair in CURRENT_STATS["open_trades"]: continue
                 blocked_cluster = check_cluster_exposure(pair, CURRENT_STATS["open_trades"])
                 if blocked_cluster: logging.info("SKIP " + pair + ": Cluster " + blocked_cluster); continue
+                if check_cooldown(pair): continue
+                if check_penalty(pair): continue
 
+                # V12.1: News Calendar Block
                 news_block = check_news_block(pair)
                 if news_block:
                     logging.info("SKIP " + pair + ": NEWS BLOCK (" + news_block + ")")
                     continue
 
-                if session == 'LONDON' and now_wita.hour == 15 and now_wita.minute < 15:
-                    logging.info(f"SKIP {pair}: London Open Spike Protect"); continue
-                if session == 'NEWYORK' and now_wita.hour == 3 and now_wita.minute >= 30:
-                    logging.info(f"SKIP {pair}: NY Close Filter"); continue
-
                 m5_key, h4_key = pair + "_M5", pair + "_H4"
                 if m5_key not in price_data or h4_key not in price_data: continue
                 ind = calculate_indicators(price_data[m5_key])
                 if not ind: continue
+                c_p = ind['price']
+
+                # V12.1: Multi-Timeframe Confirmation
+                mtf_trend, mtf_details = get_mtf_alignment(price_data, pair, c_p)
                 
-                adx_limit = ADX_THRESHOLDS.get(session, 25)
-                if ind['adx'] < adx_limit: continue
-
-                mtf_trend, mtf_details = get_mtf_alignment(price_data, pair, ind['price'], session)
-                
-                box = ASIAN_RANGE.get(pair)
-                if session == 'TOKYO' and now_wita.hour >= 10 and box and box["captured"]:
-                    is_edge_or_breakout = (ind['price'] >= box["high"] - (ind['atr'] * 0.5)) or \
-                                          (ind['price'] <= box["low"] + (ind['atr'] * 0.5))
-                    if not is_edge_or_breakout: continue
-
-                if session != 'TOKYO' and mtf_trend == 'NEUTRAL': continue
-                if ind['regime'] == 'CHOPPY': continue
-
                 sp = specs.get(pair, {'spread': 2.0, 'point': 0.0001, 'daily_high': 0, 'daily_low': 0})
+                # V12.6: Fix spread divisor for 3/5 digit brokers
                 divisor = 10.0 if sp['point'] in [0.00001, 0.001] else 1.0
                 spread_pips = sp.get('spread', 20.0) / divisor
                 spread_level = "LOW" if spread_pips < 1.5 else ("MED" if spread_pips < 3.0 else "HIGH")
                 cp_data = candle_patterns.get(pair, {'m5': 'NONE', 'm15': 'NONE'})
                 dxy_bias = "WEAK" if intermarket.get('dxy_trend') == "DOWN" else "STRONG"
 
+                # V12.2: Pattern Memory
                 tr_h4 = mtf_details.get('H4', 'NEUTRAL')
                 setup_hash = make_setup_hash(pair, tr_h4, ind['bb_pos'], ind['stoch_cross'], ind['regime'], session, dxy_bias, spread_level)
                 pattern_boost = get_pattern_boost(setup_hash)
 
-                tech_factors = [
-                    (ind['bb_pct'] >= 0.8 or ind['bb_pct'] <= 0.2), 
-                    (ind['stoch_cross'] != "NONE"), 
-                    (ind['sweep'] != "NONE"), 
-                    (ind['vol_spike'] > 1.5), 
+                # V12.8: Mandatory Multi-Timeframe Confirmation
+                if session != 'TOKYO' and mtf_trend == 'NEUTRAL':
+                    logging.info("SKIP " + pair + ": MTF not aligned " + str(mtf_details))
+                    continue
+                
+                # V12.1: Regime Filter
+                if ind['regime'] == 'CHOPPY':
+                    logging.info("SKIP " + pair + ": CHOPPY (ADX=" + str(round(ind['adx'], 1)) + ")")
+                    continue
+
+                # V12.5: Token Optimizer L0
+                is_potential_setup = (
+                    (ind['bb_pct'] >= 0.8 or ind['bb_pct'] <= 0.2) or 
+                    (ind['stoch_cross'] != "NONE") or 
+                    (ind['sweep'] != "NONE") or 
+                    (ind['vol_spike'] > 1.5) or 
                     (pattern_boost != 0)
-                ]
-                if sum(tech_factors) < 2: continue
+                )
+
+                if not is_potential_setup:
+                    logging.info("HOLD " + pair + ": No Technical Setup (API Saved)")
+                    continue
 
                 payload = {
-                    "pair": pair, "price": round(float(ind['price']), 5),
+                    "pair": pair, "price": round(float(c_p), 5),
                     "L1_TECHNICAL": {"h4_trend": tr_h4, "rsi": round(float(ind['rsi']), 1), "stoch_k": round(float(ind['stok']), 1), "stoch_d": round(float(ind['stod']), 1), "stoch_cross": ind['stoch_cross'], "ema7_vs_21": "UP" if ind['ema7'] > ind['ema21'] else "DOWN", "bb_upper": round(float(ind['bb_upper']), 5), "bb_lower": round(float(ind['bb_lower']), 5), "bb_position": ind['bb_pos'], "atr": round(float(ind['atr']), 5)},
                     "mtf_alignment": mtf_details,
                     "mtf_summary": mtf_trend,
@@ -621,8 +525,6 @@ async def scanner_task():
                     dec = str(res.get('action', 'HOLD')).upper()
                     sc = int(abs(float(str(res.get('score', 0)).replace('%',''))) * 10)
                     cf = float(str(res.get('confidence', 0)).replace('%',''))
-                    ai_tp = float(res.get('tp_pips', 0))
-                    ai_sl = float(res.get('sl_pips', 0))
                 except Exception as api_err:
                     logging.warning("Reasoning timeout, switching to fast model: " + str(api_err))
                     try:
@@ -631,34 +533,37 @@ async def scanner_task():
                         dec = str(res.get('action', 'HOLD')).upper()
                         sc = int(abs(float(str(res.get('score', 0)).replace('%',''))) * 10)
                         cf = float(str(res.get('confidence', 0)).replace('%',''))
-                        ai_tp = float(res.get('tp_pips', 0))
-                        ai_sl = float(res.get('sl_pips', 0))
                         res['reason'] = '[FAST-MODEL] ' + res.get('reason', '')
                     except Exception as api_err2:
                         logging.error("Both models failed → Fallback V2: " + str(api_err2))
                         dec, sc, cf = fallback_decision_v2(ind, tr_h4, session, pair, setup_hash, intermarket)
                         res = {'reason': 'Fallback V2: ' + dec + ' [regime=' + ind['regime'] + ', sweep=' + ind['sweep'] + ']'}
-                        ai_tp, ai_sl = 0, 0
 
                 log_grok_decision(pair, session, payload, res)
                 cf += pattern_boost
                 logging.info(pair + " [" + session + "|" + ind['regime'] + "]: " + dec + " Sc=" + str(sc) + " Cf=" + str(cf) + " Sweep=" + ind['sweep'] + " MTF=" + str(mtf_details))
 
-                if dec != 'HOLD' and cf >= 90:
-                    p_point = sp.get('point', 0.0001)
-                    p_divisor = 10.0 if p_point in [0.00001, 0.001] else 1.0
-                    if ai_sl > 0: sl = ai_sl * p_divisor * p_point
-                    else: sl = s_cfg['sl_mult'] * ind['atr']
-                    if ai_tp > 0: tp = ai_tp * p_divisor * p_point
-                    else: tp = s_cfg['tp_mult'] * ind['atr']
-                    risk = kelly_lot_size(ind, equity, sl, s_cfg)
-                    with open(SIGNAL_PATH, 'w') as f: f.write(pair + "|" + dec + "_MARKET|" + str(ind['price']) + "|" + str(sl) + "|" + str(tp) + "|" + str(risk))
+                threshold = s_cfg['threshold']
+                # V12.9: AI Supreme execution. Trust the AI if confidence meets threshold.
+                is_valid = (dec != 'HOLD' and cf >= threshold)
+                
+                if is_valid and sc >= 8 and cf >= threshold:
+                    sl_dist = s_cfg['sl_mult'] * ind['atr']
+                    tp_dist = s_cfg['tp_mult'] * ind['atr']
+                    risk_pct = kelly_lot_size(ind, equity, sl_dist, s_cfg)
+                    with open(SIGNAL_PATH, 'w') as f:
+                        f.write(pair + "|" + dec + "_MARKET|" + str(c_p) + "|" + str(sl_dist) + "|" + str(tp_dist) + "|" + str(risk_pct))
+                    confirmed = False
+                    for _ in range(10):
+                        await asyncio.sleep(1)
+                        if os.path.exists(iRESULTS_PATH): confirmed = True; break
+                    if not confirmed: logging.warning("ORDER NOT CONFIRMED: " + pair)
                     conn = sqlite3.connect(DB_PATH)
-                    conn.execute('INSERT INTO trade_history (pair,action,entry,sl,tp,risk,timestamp,reason,score,style,session,regime,mtf_alignment,pattern_hash,confidence) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (pair, dec, ind['price'], sl, tp, risk, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), res.get('reason',''), sc, 'V12.9-'+session, session, ind['regime'], str(mtf_details), setup_hash, round(cf, 1)))
+                    conn.execute('INSERT INTO trade_history (id,pair,action,entry,sl,tp,risk,timestamp,reason,score,style,session,regime,mtf_alignment,pattern_hash,confidence,outcome) VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (pair, dec, float(c_p), float(sl_dist), float(tp_dist), float(risk_pct), datetime.now().strftime('%Y-%m-%d %H:%M:%S'), res.get('reason', ''), int(sc), 'V12.8-' + session, session, ind['regime'], str(mtf_details), setup_hash, round(cf, 1), 'PENDING'))
                     conn.commit(); conn.close()
                     update_pattern_memory(setup_hash, pair, session, ind['regime'], 'PENDING')
                     set_cooldown(pair); total_open += 1
-                    msg = "SAC V12.9 [" + session + "|" + ind['regime'] + "]\n" + dec + " " + pair + "\nConf:" + str(round(cf, 1)) + "% Sc:" + str(round(sc, 1)) + "\nTP:" + str(ai_tp) + " SL:" + str(ai_sl) + " Pips\nMTF:" + str(mtf_details)
+                    msg = "SAC V12.8 [" + session + "|" + ind['regime'] + "]\n" + dec + " " + pair + "\nConf:" + str(round(cf, 1)) + "% Sc:" + str(round(sc, 1)) + "\nKelly:" + str(round(risk_pct, 1)) + "% MTF:" + str(mtf_details)
                     await send_telegram(msg); await asyncio.sleep(5)
 
             await asyncio.sleep(30)
@@ -668,19 +573,19 @@ async def scanner_task():
 def get_news_headlines():
     try:
         import xml.etree.ElementTree as ET
+        # V12.9: Use /feed/ to avoid 301
         resp = httpx.get('https://www.forexlive.com/feed/', timeout=5, follow_redirects=True)
-        content = resp.text.encode('utf-8')
-        root = ET.fromstring(content)
+        root = ET.fromstring(resp.text)
         return [item.find('title').text for item in root.findall('.//item')[:5] if item.find('title') is not None]
-    except Exception as e:
-        logging.warning(f"News Headline Error: {e}")
-        return []
+    except: return []
 
+# V12.1: Pattern Memory (richer hash)
 def make_setup_hash(pair, tr_h4, bb_pos, stoch_cross, regime, session, dxy_bias, spread_level):
     raw = pair + tr_h4 + bb_pos + stoch_cross + regime + session + dxy_bias + spread_level
     return hashlib.md5(raw.encode()).hexdigest()[:16]
 
 def get_pattern_boost(setup_hash):
+    """V12.2: Pattern Memory with exponential decay."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.execute('SELECT wins, losses, last_used FROM pattern_memory WHERE setup_hash=?', (setup_hash,))
     row = cursor.fetchone(); conn.close()
@@ -712,6 +617,9 @@ def log_grok_decision(pair, session, payload, response):
 
 async def run_trade_journal(pair, action, entry, exit_price, pnl, session, indicators):
     try:
+        # Trade Journal AI V12.0
+        payload = {"pair": pair, "action": "BUY" if action==0 else "SELL", "pnl": pnl, "session": session}
+        # In a real system, we'd call Grok to reflect on the trade.
         with open(JOURNAL_LOG, 'a') as f:
             f.write(datetime.now().strftime('%Y-%m-%d %H:%M:%S') + " | " + pair + " | PnL: " + str(pnl) + "\n")
     except: pass
