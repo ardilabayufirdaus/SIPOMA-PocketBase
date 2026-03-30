@@ -4,7 +4,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2026, AI Commander"
 #property link      "https://sipoma.online"
-#property version   "8.3"
+#property version   "13.1"
 #property strict
 
 extern string SymbolsToWatch = "XAUUSD,EURUSD,GBPUSD,GBPJPY,USDJPY";
@@ -20,6 +20,7 @@ void OnTimer() {
    WriteAccountStats(); 
    WriteAccountHistory();
    CheckForSignals(); 
+   CheckForModifySignals();
    CheckForCloseSignals();
    if(EnableTrailing) ApplyTrailingStop();
 }
@@ -62,18 +63,38 @@ void CheckForSignals() {
    if(handle != INVALID_HANDLE) {
       string pair = FileReadString(handle);
       string action = FileReadString(handle);
-      double entry_unused = FileReadNumber(handle);
-      double sl_dist_price = FileReadNumber(handle);
-      double tp_dist_price = FileReadNumber(handle);
-      double risk_percent = FileReadNumber(handle);
+      double price = FileReadNumber(handle);
+      double sl = FileReadNumber(handle);
+      double tp = FileReadNumber(handle);
+      double lot = FileReadNumber(handle);
       FileClose(handle);
       FileDelete("trades.txt");
-      if(pair != "" && action != "") ExecuteTradeV83(pair, action, sl_dist_price, tp_dist_price, risk_percent);
+      if(pair != "" && action != "") ExecuteTradeV13(pair, action, price, sl, tp, lot);
+   }
+}
+
+void CheckForModifySignals() {
+   int handle = FileOpen("modify_orders.txt", FILE_READ|FILE_CSV|FILE_ANSI, "|");
+   if(handle != INVALID_HANDLE) {
+      string pair = FileReadString(handle);
+      string cmd = FileReadString(handle);
+      double new_sl = FileReadNumber(handle);
+      FileClose(handle);
+      FileDelete("modify_orders.txt");
+      if(pair != "" && cmd == "MODIFY_SL") {
+         for(int i=OrdersTotal()-1; i>=0; i--) {
+            if(OrderSelect(i, SELECT_BY_POS) && OrderSymbol() == pair) {
+               int dg = (int)MarketInfo(pair, MODE_DIGITS);
+               bool res = OrderModify(OrderTicket(), OrderOpenPrice(), NormalizeDouble(new_sl, dg), OrderTakeProfit(), 0, clrYellow);
+               if(!res) Print("Modify failed: ", GetLastError());
+            }
+         }
+      }
    }
 }
 
 void CheckForCloseSignals() {
-   int handle = FileOpen("close_signal.txt", FILE_READ|FILE_CSV|FILE_ANSI, "|");
+   int handle = FileOpen("close_orders.txt", FILE_READ|FILE_CSV|FILE_ANSI, "|");
    if(handle != INVALID_HANDLE) {
       string pair_to_close = FileReadString(handle);
       FileClose(handle);
@@ -83,29 +104,20 @@ void CheckForCloseSignals() {
             if(OrderSelect(i, SELECT_BY_POS) && (OrderSymbol() == pair_to_close || pair_to_close == "ALL")) {
                double close_price = OrderType()==OP_BUY?MarketInfo(OrderSymbol(), MODE_BID):MarketInfo(OrderSymbol(), MODE_ASK);
                bool res = OrderClose(OrderTicket(), OrderLots(), close_price, 10, clrOrange);
-               if(!res) { /* Silent fail or print error */ }
+               if(!res) Print("Close failed: ", GetLastError());
             }
          }
       }
    }
 }
 
-void ExecuteTradeV83(string pair, string action, double sl_dist, double tp_dist, double risk_percent) {
+void ExecuteTradeV13(string pair, string action, double price, double sl, double tp, double lot) {
    int type = (action == "BUY_MARKET") ? OP_BUY : ((action == "SELL_MARKET") ? OP_SELL : -1);
    if(type == -1) return;
    
-   double price = (type == OP_BUY) ? MarketInfo(pair, MODE_ASK) : MarketInfo(pair, MODE_BID);
+   double exec_price = (type == OP_BUY) ? MarketInfo(pair, MODE_ASK) : MarketInfo(pair, MODE_BID);
    int dg = (int)MarketInfo(pair, MODE_DIGITS);
    
-   double sl_val = (type == OP_BUY) ? price - sl_dist : price + sl_dist;
-   double tp_val = (type == OP_BUY) ? price + tp_dist : price - tp_dist;
-   
-   double risk_amount = AccountEquity() * (MathMin(risk_percent, 3.0) / 100.0);
-   double tick_val = MarketInfo(pair, MODE_TICKVALUE);
-   double tick_size = MarketInfo(pair, MODE_TICKSIZE);
-   if(sl_dist <= 0 || tick_val <= 0) return;
-   
-   double lot = risk_amount / ((sl_dist / tick_size) * tick_val);
    double min_lot = MarketInfo(pair, MODE_MINLOT);
    double max_lot = MarketInfo(pair, MODE_MAXLOT);
    double lot_step = MarketInfo(pair, MODE_LOTSTEP);
@@ -113,8 +125,8 @@ void ExecuteTradeV83(string pair, string action, double sl_dist, double tp_dist,
    
    if(AccountFreeMarginCheck(pair, type, lot) <= 0) return;
    
-   int ticket = OrderSend(pair, type, lot, price, 10, NormalizeDouble(sl_val, dg), NormalizeDouble(tp_val, dg), "SAC AI TRADE V8.3", 0, 0, (type==OP_BUY)?clrBlue:clrRed);
-   if(ticket < 0) { /* Silent fail or print error */ }
+   int ticket = OrderSend(pair, type, lot, exec_price, 10, NormalizeDouble(sl, dg), NormalizeDouble(tp, dg), "SAC V13.1 Institutional", 0, 0, (type==OP_BUY)?clrBlue:clrRed);
+   if(ticket < 0) Print("OrderSend failed: ", GetLastError());
 }
 
 void ApplyTrailingStop() {
