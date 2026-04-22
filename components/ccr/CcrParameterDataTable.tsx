@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ParameterSetting, CcrParameterData, ParameterDataType } from '../../types';
+import {
+  parseIndonesianNumber,
+  getPrecisionForParameter,
+  formatIndonesianInput,
+} from '../../utils/formatters';
+import { parseIndonesianNumber, getPrecisionForParameter } from '../../utils/formatters';
 
 interface CcrParameterDataTableProps {
   t: Record<string, string>;
@@ -18,8 +24,8 @@ interface CcrParameterDataTableProps {
     currentCol: number
   ) => void;
   shouldHighlightColumn: (param: ParameterSetting) => boolean;
-  formatInputValue: (value: number | string | null | undefined, precision?: number) => string;
-  parseInputValue: (value: string) => number | null;
+  formatIndonesianInput: (value: number | string | null | undefined, precision?: number) => string;
+  parseIndonesianNumber: (value: string) => number | null;
   formatStatValue: (value: number | undefined, precision?: number) => string;
   parameterShiftFooterData: Record<string, Record<string, number | undefined>>;
   parameterFooterData: Record<string, Record<string, number | undefined>>;
@@ -38,8 +44,8 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
     setInputRef,
     handleKeyDown,
     shouldHighlightColumn,
-    formatInputValue,
-    parseInputValue,
+    formatIndonesianInput,
+    parseIndonesianNumber,
     // formatStatValue, parameterShiftFooterData, parameterFooterData - passed for future use
     currentUserName,
   }) => {
@@ -85,31 +91,6 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
     };
 
     // Helper function to determine precision based on unit
-    const getPrecisionForUnit = (unit: string): number => {
-      if (!unit) return 1;
-
-      // Units that typically need 2 decimal places
-      const highPrecisionUnits = ['bar', 'psi', 'kPa', 'MPa', 'm³/h', 'kg/h', 't/h', 'L/h', 'mL/h'];
-      // Units that typically need 1 decimal place
-      const mediumPrecisionUnits = ['°C', '°F', '°K', '%', 'kg', 'ton', 'm³', 'L', 'mL'];
-      // Units that typically need 0 decimal places (whole numbers)
-      const lowPrecisionUnits = ['unit', 'pcs', 'buah', 'batch', 'shift'];
-
-      const lowerUnit = unit.toLowerCase();
-
-      if (highPrecisionUnits.some((u) => lowerUnit.includes(u.toLowerCase()))) {
-        return 2;
-      }
-      if (mediumPrecisionUnits.some((u) => lowerUnit.includes(u.toLowerCase()))) {
-        return 1;
-      }
-      if (lowPrecisionUnits.some((u) => lowerUnit.includes(u.toLowerCase()))) {
-        return 0;
-      }
-
-      // Default to 1 decimal place for unknown units
-      return 1;
-    };
 
     // Helper function to determine color based on value vs min/max
     const getValueColor = (
@@ -474,12 +455,15 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                                   }
                                   defaultValue={
                                     param.data_type === ParameterDataType.NUMBER
-                                      ? formatInputValue(value, getPrecisionForUnit(param.unit))
+                                      ? formatIndonesianInput(
+                                          value,
+                                          getPrecisionForParameter(param.parameter, param.unit)
+                                        )
                                       : value
                                   }
                                   onChange={(e) => {
                                     if (param.data_type === ParameterDataType.NUMBER) {
-                                      const parsed = parseInputValue(e.target.value);
+                                      const parsed = parseIndonesianNumber(e.target.value);
                                       handleParameterDataChange(
                                         param.id,
                                         hour,
@@ -491,11 +475,11 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                                   }}
                                   onBlur={(e) => {
                                     if (param.data_type === ParameterDataType.NUMBER) {
-                                      const parsed = parseInputValue(e.target.value);
+                                      const parsed = parseIndonesianNumber(e.target.value);
                                       if (parsed !== null) {
-                                        e.target.value = formatInputValue(
+                                        e.target.value = formatIndonesianInput(
                                           parsed,
-                                          getPrecisionForUnit(param.unit)
+                                          getPrecisionForParameter(param.parameter, param.unit)
                                         );
                                       }
                                     }

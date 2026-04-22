@@ -1,13 +1,14 @@
 import React from 'react';
 import { CcrSiloData, SiloCapacity } from '../../types';
 
+import { parseIndonesianNumber, formatIndonesianInput } from '../../utils/formatters';
 interface CcrSiloDataTableProps {
   t: Record<string, string>;
   loading: boolean;
   dailySiloData: CcrSiloData[];
   siloMasterMap: Map<string, SiloCapacity>;
-  formatInputValue: (value: number | string, precision?: number) => string;
-  parseInputValue: (value: string) => number | null;
+  formatIndonesianInput: (value: number | string, precision?: number) => string;
+  parseIndonesianNumber: (value: string) => number | null;
   handleSiloDataChange: (
     siloId: string,
     shift: 'shift1' | 'shift2' | 'shift3',
@@ -36,8 +37,8 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
     loading,
     dailySiloData,
     siloMasterMap,
-    formatInputValue,
-    parseInputValue,
+    formatIndonesianInput,
+    parseIndonesianNumber,
     handleSiloDataChange,
     handleSiloDataBlur,
     getInputRef,
@@ -147,9 +148,9 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                                   setInputRef(refKey, el);
                                 }}
                                 type="text"
-                                defaultValue={formatInputValue(siloData[shift]?.emptySpace, 1)}
+                                defaultValue={formatIndonesianInput(siloData[shift]?.emptySpace, 1)}
                                 onChange={(e) => {
-                                  const parsed = parseInputValue(e.target.value);
+                                  const parsed = parseIndonesianNumber(e.target.value);
                                   handleSiloDataChange(
                                     siloData.silo_id,
                                     shift,
@@ -180,9 +181,9 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                                   setInputRef(refKey, el);
                                 }}
                                 type="text"
-                                defaultValue={formatInputValue(content, 1)}
+                                defaultValue={formatIndonesianInput(content, 1)}
                                 onChange={(e) => {
-                                  const parsed = parseInputValue(e.target.value);
+                                  const parsed = parseIndonesianNumber(e.target.value);
                                   handleSiloDataChange(
                                     siloData.silo_id,
                                     shift,

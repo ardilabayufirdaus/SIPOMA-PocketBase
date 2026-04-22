@@ -46,6 +46,9 @@ import {
   formatNumber,
   formatNumberWithPrecision,
   formatNumberIndonesian,
+  parseIndonesianNumber,
+  getPrecisionForParameter,
+  formatIndonesianInput,
 } from '../../utils/formatters';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useFooterCalculations } from '../../hooks/useFooterCalculations';
@@ -1468,103 +1471,6 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
   };
 
   // Helper function to determine precision based on unit
-  const getPrecisionForUnit = (unit: string): number => {
-    if (!unit) return 1;
-
-    // Units that typically need 2 decimal places
-    const highPrecisionUnits = ['bar', 'psi', 'kPa', 'MPa', 'm�/h', 'kg/h', 't/h', 'L/h', 'mL/h'];
-    // Units that typically need 1 decimal place
-    const mediumPrecisionUnits = ['�C', '�F', '�K', '%', 'kg', 'ton', 'm�', 'L', 'mL'];
-    // Units that typically need 0 decimal places (whole numbers)
-    const lowPrecisionUnits = ['unit', 'pcs', 'buah', 'batch', 'shift'];
-
-    const lowerUnit = unit.toLowerCase();
-
-    if (highPrecisionUnits.some((u) => lowerUnit.includes(u.toLowerCase()))) {
-      return 2;
-    }
-    if (mediumPrecisionUnits.some((u) => lowerUnit.includes(u.toLowerCase()))) {
-      return 1;
-    }
-    if (lowPrecisionUnits.some((u) => lowerUnit.includes(u.toLowerCase()))) {
-      return 0;
-    }
-
-    // Default to 1 decimal place for unknown units
-    return 1;
-  };
-
-  // Helper functions for input value formatting
-  const formatInputValue = (
-    value: number | string | null | undefined,
-    precision: number = 1,
-    forcePrecision: boolean = true
-  ): string => {
-    if (value === null || value === undefined || value === '') {
-      return '';
-    }
-
-    // Use parseInputValue to handle Indonesian format if it's a string
-    const numValue = typeof value === 'string' ? parseInputValue(value) : value;
-    if (numValue === null || isNaN(numValue)) {
-      // If parsing fails but it's a string, return as-is for typing support
-      return typeof value === 'string' ? value : '';
-    }
-
-    if (!forcePrecision) {
-      // For on-typing format, only use dot as thousand separator without forcing decimals
-      const parts = numValue.toString().split('.');
-      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-      let result = parts.length > 1 ? parts[0] + ',' + parts[1] : parts[0];
-
-      // Important: Preserve trailing comma or dot during typing to allow numpad dot to work
-      // and prevent the separator from disappearing on next render
-      if (
-        typeof value === 'string' &&
-        (value.endsWith(',') || value.endsWith('.')) &&
-        !result.includes(',')
-      ) {
-        result += ',';
-      }
-
-      return result;
-    }
-
-    return formatNumberWithPrecision(numValue, precision);
-  };
-
-  const parseInputValue = (formattedValue: string): number | null => {
-    if (!formattedValue || formattedValue.trim() === '') return null;
-
-    let normalized = formattedValue.trim();
-
-    // 1. Jika ada koma, maka dipastikan format Indonesia: titik=ribuan, koma=desimal
-    if (normalized.includes(',')) {
-      normalized = normalized.replace(/\./g, ''); // Hapus semua titik ribuan
-      normalized = normalized.replace(',', '.'); // Ganti koma dengan titik desimal
-    } else {
-      // 2. Jika tidak ada koma, namun ada titik:
-      // Kita harus hati-hati apakah titik ini ribuan (1.000) atau desimal (255.2)
-      const dotCount = (normalized.match(/\./g) || []).length;
-      if (dotCount > 1) {
-        // Lebih dari satu titik pasti ribuan (misal 1.000.000)
-        normalized = normalized.replace(/\./g, '');
-      } else if (dotCount === 1) {
-        const parts = normalized.split('.');
-        // Jika bagian setelah titik tepat 3 digit dan bagian sebelum titik bukan '0',
-        // kemungkinan besar itu adalah titik ribuan (misal 1.000)
-        if (parts[1].length === 3 && parts[0] !== '0' && parts[0] !== '') {
-          normalized = normalized.replace(/\./g, '');
-        } else {
-          // Biarkan titiknya sebagai desimal (format JS/International atau 0.xxx)
-        }
-      }
-    }
-
-    const parsed = parseFloat(normalized);
-    return isNaN(parsed) ? null : parsed;
-  };
-
   const updateSiloDataWithCreate = useCallback(
     async (
       date: string,
@@ -2548,16 +2454,23 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
 
             if (typeof hourValue === 'object' && hourValue !== null && 'value' in hourValue) {
               const rawVal = hourValue.value;
-              const numVal = typeof rawVal === 'string' ? parseInputValue(rawVal) : rawVal;
+              const numVal = typeof rawVal === 'string' ? parseIndonesianNumber(rawVal) : rawVal;
               paramValue =
                 param.data_type === ParameterDataType.NUMBER && numVal !== null
-                  ? formatNumberWithPrecision(numVal, getPrecisionForUnit(param.unit))
+                  ? formatNumberWithPrecision(
+                      numVal,
+                      getPrecisionForParameter(param.parameter, param.unit)
+                    )
                   : String(rawVal);
             } else if (typeof hourValue === 'string' || typeof hourValue === 'number') {
-              const numVal = typeof hourValue === 'string' ? parseInputValue(hourValue) : hourValue;
+              const numVal =
+                typeof hourValue === 'string' ? parseIndonesianNumber(hourValue) : hourValue;
               paramValue =
                 param.data_type === ParameterDataType.NUMBER && numVal !== null
-                  ? formatNumberWithPrecision(numVal, getPrecisionForUnit(param.unit))
+                  ? formatNumberWithPrecision(
+                      numVal,
+                      getPrecisionForParameter(param.parameter, param.unit)
+                    )
                   : String(hourValue);
             }
 
@@ -4472,12 +4385,12 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
 
                             // Simply convert the value if it exists
                             if (hourValue !== undefined && hourValue !== null) {
-                              // Use formatInputValue for numbers to show Indonesian locale (dots for thousands, commas for decimal)
+                              // Use formatIndonesianInput for numbers to show Indonesian locale (dots for thousands, commas for decimal)
                               value =
                                 param.data_type === ParameterDataType.NUMBER
-                                  ? formatInputValue(
+                                  ? formatIndonesianInput(
                                       hourValue,
-                                      getPrecisionForUnit(param.unit),
+                                      getPrecisionForParameter(param.parameter, param.unit),
                                       false // Don't force precision while rendering for input to prevent jumping
                                     )
                                   : String(hourValue);
@@ -4498,7 +4411,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                               !isProductTypeParameter
                             ) {
                               // Parse value - handle Indonesian local format correctly
-                              const numValue = parseInputValue(value);
+                              const numValue = parseIndonesianNumber(value);
                               if (numValue !== null) {
                                 const isBelowMin =
                                   param.min_value !== undefined && numValue < param.min_value;
@@ -4644,11 +4557,11 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                       onBlur={async (e) => {
                                         // Reformat nilai numerik dan simpan ke database saat berpindah sel
                                         if (param.data_type === ParameterDataType.NUMBER) {
-                                          const parsed = parseInputValue(e.target.value);
+                                          const parsed = parseIndonesianNumber(e.target.value);
                                           if (parsed !== null) {
-                                            e.target.value = formatInputValue(
+                                            e.target.value = formatIndonesianInput(
                                               parsed,
-                                              getPrecisionForUnit(param.unit)
+                                              getPrecisionForParameter(param.parameter, param.unit)
                                             );
                                           }
                                         }
@@ -4656,8 +4569,8 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                         // Get final value to save
                                         const value =
                                           param.data_type === ParameterDataType.NUMBER
-                                            ? parseInputValue(e.target.value) !== null
-                                              ? parseInputValue(e.target.value)?.toString()
+                                            ? parseIndonesianNumber(e.target.value) !== null
+                                              ? parseIndonesianNumber(e.target.value)?.toString()
                                               : ''
                                             : e.target.value;
 
@@ -4870,12 +4783,12 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                         setInputRef(refKey, el);
                                       }}
                                       type="text"
-                                      defaultValue={formatInputValue(
+                                      defaultValue={formatIndonesianInput(
                                         siloData[shift]?.emptySpace,
                                         1
                                       )}
                                       onChange={(e) => {
-                                        const parsed = parseInputValue(e.target.value);
+                                        const parsed = parseIndonesianNumber(e.target.value);
                                         handleSiloDataChange(
                                           siloData.silo_id,
                                           shift,
@@ -4905,9 +4818,9 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                         setInputRef(refKey, el);
                                       }}
                                       type="text"
-                                      defaultValue={formatInputValue(content, 1)}
+                                      defaultValue={formatIndonesianInput(content, 1)}
                                       onChange={(e) => {
-                                        const parsed = parseInputValue(e.target.value);
+                                        const parsed = parseIndonesianNumber(e.target.value);
                                         handleSiloDataChange(
                                           siloData.silo_id,
                                           shift,

@@ -8,6 +8,7 @@ import { useOfflineStatus } from './useOfflineStatus';
 import { getData as getIndexedDBData, storeData, STORES } from '../utils/indexedDB';
 import { syncPendingOperations } from '../utils/syncManager';
 import { useProductionCapacity } from './useProductionCapacity';
+import { parseIndonesianNumber } from '../utils/formatters';
 
 // Define a common type for hour values to ensure consistency
 export type HourValueType = string | number | null;
@@ -571,16 +572,18 @@ export const useCcrParameterDataFlat = () => {
             updateFields[hourField] = null;
             // Masih simpan informasi user meskipun nilai dihapus
             updateFields[userField] = safeUserName;
+            // Update juga field name untuk kompatibilitas dengan data lama
+            updateFields.name = safeUserName;
           } else {
             // Validate numeric values if they should be numbers
-            const numericValue = typeof value === 'string' ? parseFloat(value) : value;
-            if (!isNaN(numericValue) && isFinite(numericValue)) {
+            // Use parseIndonesianNumber to handle commas in decimal values
+            const numericValue = parseIndonesianNumber(value);
+            if (numericValue !== null) {
               updateFields[hourField] = numericValue;
             } else {
               updateFields[hourField] = value;
             }
             updateFields[userField] = safeUserName;
-
             // Update juga field name untuk kompatibilitas dengan data lama
             updateFields.name = safeUserName;
           }
@@ -615,8 +618,9 @@ export const useCcrParameterDataFlat = () => {
             createFields[`hour${hour}`] = null;
           } else {
             // Validate numeric values if they should be numbers
-            const numericValue = typeof value === 'string' ? parseFloat(value) : value;
-            if (!isNaN(numericValue) && isFinite(numericValue)) {
+            // Use parseIndonesianNumber to handle commas in decimal values
+            const numericValue = parseIndonesianNumber(value);
+            if (numericValue !== null) {
               createFields[`hour${hour}`] = numericValue;
             } else {
               createFields[`hour${hour}`] = value;

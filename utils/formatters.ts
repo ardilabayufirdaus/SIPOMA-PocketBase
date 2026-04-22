@@ -189,3 +189,100 @@ export const formatBudgetCompact = (amount: number): string => {
     return `Rp ${Math.round(amount)}`;
   }
 };
+
+/**
+ * Memparse string angka format Indonesia (koma desimal, titik ribuan) menjadi number
+ */
+export const parseIndonesianNumber = (value: string | number | null | undefined): number | null => {
+  if (value === null || value === undefined || value === '') return null;
+  if (typeof value === 'number') return value;
+
+  let normalized = value.trim();
+
+  // 1. Jika ada koma, maka dipastikan format Indonesia: titik=ribuan, koma=desimal
+  if (normalized.includes(',')) {
+    normalized = normalized.replace(/\./g, ''); // Hapus semua titik ribuan
+    normalized = normalized.replace(',', '.'); // Ganti koma dengan titik desimal
+  } else {
+    // 2. Jika tidak ada koma, namun ada titik:
+    const dotCount = (normalized.match(/\./g) || []).length;
+
+    if (dotCount > 1) {
+      normalized = normalized.replace(/\./g, '');
+    } else if (dotCount === 1) {
+      const parts = normalized.split('.');
+      if (parts[1].length === 3 && parts[0] !== '0' && parts[0] !== '') {
+        normalized = normalized.replace(/\./g, '');
+      }
+    }
+  }
+
+  const parsed = parseFloat(normalized);
+  return isNaN(parsed) ? null : parsed;
+};
+
+/**
+ * Menentukan jumlah angka di belakang koma berdasarkan satuan atau nama parameter
+ */
+export const getPrecisionForParameter = (parameterName: string, unitName: string = ''): number => {
+  const searchString = `${parameterName} ${unitName}`.toLowerCase();
+
+  const highPrecision = [
+    'bar',
+    'psi',
+    'kpa',
+    'mpa',
+    'm³/h',
+    'kg/h',
+    't/h',
+    'l/h',
+    'ml/h',
+    'pcc',
+    'opc',
+    'ppc',
+  ];
+  const mediumPrecision = ['°c', '°f', '°k', '%', 'kg', 'ton', 'm³', 'l', 'ml', 'amp', 'kw'];
+  const lowPrecision = ['unit', 'pcs', 'buah', 'batch', 'shift', 'rit'];
+
+  if (highPrecision.some((u) => searchString.includes(u))) return 2;
+  if (mediumPrecision.some((u) => searchString.includes(u))) return 1;
+  if (lowPrecision.some((u) => searchString.includes(u))) return 0;
+
+  return 1;
+};
+
+/**
+ * Memformat nilai input untuk tampilan (Indonesian locale)
+ */
+export const formatIndonesianInput = (
+  value: number | string | null | undefined,
+  precision: number = 1,
+  forcePrecision: boolean = true
+): string => {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+
+  const numValue = typeof value === 'string' ? parseIndonesianNumber(value) : value;
+  if (numValue === null || isNaN(numValue)) {
+    return typeof value === 'string' ? value : '';
+  }
+
+  if (!forcePrecision) {
+    const parts = numValue.toString().split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    let result = parts.length > 1 ? parts[0] + ',' + parts[1] : parts[0];
+
+    if (
+      typeof value === 'string' &&
+      (value.endsWith(',') || value.endsWith('.')) &&
+      !result.includes(',')
+    ) {
+      result += ',';
+    }
+
+    return result;
+  }
+
+  return formatNumberWithPrecision(numValue, precision);
+};
