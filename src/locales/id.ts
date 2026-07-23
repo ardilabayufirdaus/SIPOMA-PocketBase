@@ -3,7 +3,9 @@ const id = {
   appSubtitle: 'Sistem Informasi Produksi Manajemen',
   header_welcome: 'Selamat Datang',
   mainDashboard: 'Dasbor Utama',
-  plantOperations: 'Operasi Pabrik',
+  plantOperations: 'CM Plant Operations',
+  cmPlantOperations: 'CM Plant Operations',
+  rkcPlantOperations: 'RKC Plant Operations',
 
   projectManagement: 'Manajemen Proyek',
   userManagement: 'Manajemen Pengguna',

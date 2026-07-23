@@ -18,6 +18,7 @@ interface CcrQuickActionsProps {
   onRefresh: () => void;
   onExport: () => void;
   onImport: () => void;
+  onMonthlyExportImport?: () => void;
   onDeleteAll: () => void;
 }
 
@@ -33,6 +34,7 @@ const CcrQuickActions: React.FC<CcrQuickActionsProps> = memo(
     onRefresh,
     onExport,
     onImport,
+    onMonthlyExportImport,
     onDeleteAll,
   }) => {
     const isDisabled = !selectedCategory || !selectedUnit || !selectedDate;
@@ -129,6 +131,20 @@ const CcrQuickActions: React.FC<CcrQuickActionsProps> = memo(
               >
                 <DocumentArrowUpIcon className="w-5 h-5" />
                 <span className="font-bold tracking-wide">{t.import || 'Import'}</span>
+              </motion.button>
+            )}
+
+            {/* Monthly Export/Import Button */}
+            {onMonthlyExportImport && (
+              <motion.button
+                whileHover={{ scale: 1.05, translateY: -2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onMonthlyExportImport}
+                className="flex items-center gap-2.5 px-5 py-3 bg-gradient-to-br from-[#772953] to-[#E95420] text-white rounded-xl hover:shadow-xl hover:shadow-[#772953]/30 transition-all duration-300"
+                title="Ekspor & Impor Data Bulanan"
+              >
+                <DocumentArrowDownIcon className="w-5 h-5" />
+                <span className="font-bold tracking-wide">Bulanan (Excel)</span>
               </motion.button>
             )}
 

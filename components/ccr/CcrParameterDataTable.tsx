@@ -6,7 +6,6 @@ import {
   getPrecisionForParameter,
   formatIndonesianInput,
 } from '../../utils/formatters';
-import { parseIndonesianNumber, getPrecisionForParameter } from '../../utils/formatters';
 
 interface CcrParameterDataTableProps {
   t: Record<string, string>;

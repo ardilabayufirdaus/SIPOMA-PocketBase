@@ -37,7 +37,9 @@ const en = {
   appSubtitle: 'Production Management Information System',
   header_welcome: 'Welcome',
   mainDashboard: 'Main Dashboard',
-  plantOperations: 'Plant Operations',
+  plantOperations: 'CM Plant Operations',
+  cmPlantOperations: 'CM Plant Operations',
+  rkcPlantOperations: 'RKC Plant Operations',
 
   projectManagement: 'Project Management',
   userManagement: 'User Management',

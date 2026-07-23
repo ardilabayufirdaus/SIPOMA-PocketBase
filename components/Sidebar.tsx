@@ -381,7 +381,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <NavigationItem
                 ref={operationsButtonRef}
                 icon={<FactoryIcon className={iconClass} />}
-                label={t.plantOperations}
+                label={t.cmPlantOperations || t.plantOperations || 'CM Plant Operations'}
                 isActive={currentPage === 'operations'}
                 onClick={() => handleDropdownToggle('operations', operationsButtonRef)}
                 hasDropdown={!isExpanded}
@@ -395,7 +395,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <NavigationItem
                 ref={rkcOperationsButtonRef}
                 icon={<FireIcon className={iconClass} />}
-                label={t.rkcPlantOperations}
+                label={t.rkcPlantOperations || 'RKC Plant Operations'}
                 isActive={currentPage === 'rkc_operations'}
                 onClick={() => handleDropdownToggle('rkc_operations', rkcOperationsButtonRef)}
                 hasDropdown={!isExpanded}

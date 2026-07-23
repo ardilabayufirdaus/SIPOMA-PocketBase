@@ -55,7 +55,7 @@ import { useCcrFooterData } from '../../hooks/useCcrFooterData';
 import { useCcrInformationData } from '../../hooks/useCcrInformationData';
 import { useCcrMaterialUsage } from '../../hooks/useCcrMaterialUsage';
 import { usePermissions } from '../../utils/permissions';
-import { isSuperAdmin } from '../../utils/roleHelpers';
+import { isSuperAdmin, canAccessMonthlyExportImport } from '../../utils/roleHelpers';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { usePlantOperationsAccess } from '../../hooks/usePlantOperationsAccess';
 
@@ -83,6 +83,7 @@ import { Button } from '../../components/ui';
 import CcrFilters from '../../components/ccr/filters/CcrFilters';
 import CcrQuickActions from '../../components/ccr/actions/CcrQuickActions';
 import InformationSection from '../../components/ccr/sections/InformationSection';
+import MonthlyExportImportModal from '../../components/ccr/modals/MonthlyExportImportModal';
 
 // Import Offline Sync & Connection Status
 import { useCcrOfflineSync } from '../../hooks/useCcrOfflineSync';
@@ -93,6 +94,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showNavigationHelp, setShowNavigationHelp] = useState(false);
+  const [showMonthlyModal, setShowMonthlyModal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
 
@@ -3918,6 +3920,11 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               onRefresh={refreshData}
               onExport={handleExport}
               onImport={() => fileInputRef.current?.click()}
+              onMonthlyExportImport={
+                canAccessMonthlyExportImport(loggedInUser?.role || pb.authStore.model?.role)
+                  ? () => setShowMonthlyModal(true)
+                  : undefined
+              }
               onDeleteAll={deleteAllParameters}
             />
           </div>
@@ -5607,6 +5614,17 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           isVisible={showNavigationHelp}
           onClose={() => setShowNavigationHelp(false)}
           t={t}
+        />
+
+        {/* Monthly Export & Import Modal */}
+        <MonthlyExportImportModal
+          isOpen={showMonthlyModal}
+          onClose={() => setShowMonthlyModal(false)}
+          selectedUnit={selectedUnit}
+          t={t}
+          onSuccess={() => {
+            refreshData();
+          }}
         />
       </div>
     </div>

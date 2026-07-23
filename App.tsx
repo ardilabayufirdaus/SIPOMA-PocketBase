@@ -207,9 +207,18 @@ const App: React.FC = () => {
       case 'settings':
         return t.header_settings;
       case 'operations':
-        return t[activeSubPages.operations as keyof typeof t] || t.plantOperations;
+        return (
+          t[activeSubPages.operations as keyof typeof t] ||
+          t.cmPlantOperations ||
+          t.plantOperations ||
+          'CM Plant Operations'
+        );
       case 'rkc_operations':
-        return t[activeSubPages.rkc_operations as keyof typeof t] || t.rkcPlantOperations;
+        return (
+          t[activeSubPages.rkc_operations as keyof typeof t] ||
+          t.rkcPlantOperations ||
+          'RKC Plant Operations'
+        );
       case 'projects':
         if (activeSubPages.projects === 'proj_detail') return t.project_overview_title;
         return t[activeSubPages.projects as keyof typeof t] || t.projectManagement;

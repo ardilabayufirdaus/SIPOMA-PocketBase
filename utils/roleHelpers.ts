@@ -62,3 +62,13 @@ export const isTonasaOperator = (_role: UserRole | undefined | null): boolean =>
 export const getTonasaPlantCategory = (_role: UserRole | undefined | null): string | null => {
   return null; // No more Tonasa-specific roles
 };
+
+/**
+ * Check if a user role can access monthly export/import feature
+ * Allowed roles: Autonomous, Manager, Admin, Super Admin
+ */
+export const canAccessMonthlyExportImport = (role: string | undefined | null): boolean => {
+  if (!role) return false;
+  const allowedRoles = ['Autonomous', 'Manager', 'Admin', 'Super Admin'];
+  return allowedRoles.includes(role);
+};
