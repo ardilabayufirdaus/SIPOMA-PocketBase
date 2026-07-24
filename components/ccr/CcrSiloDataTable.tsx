@@ -56,29 +56,29 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
             className="min-w-full divide-y divide-slate-200 border border-slate-200 text-xs"
             aria-label="Silo Data Table"
           >
-            <thead className="bg-slate-50 text-center">
+            <thead className="bg-slate-600 dark:bg-slate-700 text-center">
               <tr>
                 <th
                   rowSpan={2}
-                  className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-r align-middle"
+                  className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider border-r align-middle"
                 >
                   {t.silo_name}
                 </th>
                 <th
                   colSpan={3}
-                  className="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider border-r border-b"
+                  className="px-4 py-3 text-xs font-semibold text-white uppercase tracking-wider border-r border-b"
                 >
                   {t.shift_1}
                 </th>
                 <th
                   colSpan={3}
-                  className="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider border-r border-b"
+                  className="px-4 py-3 text-xs font-semibold text-white uppercase tracking-wider border-r border-b"
                 >
                   {t.shift_2}
                 </th>
                 <th
                   colSpan={3}
-                  className="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider border-b"
+                  className="px-4 py-3 text-xs font-semibold text-white uppercase tracking-wider border-b"
                 >
                   {t.shift_3}
                 </th>
@@ -87,19 +87,19 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                 {[...Array(3)].flatMap((_, i) => [
                   <th
                     key={`es-${i}`}
-                    className="px-2 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider border-r"
+                    className="px-2 py-3 text-xs font-semibold text-white uppercase tracking-wider border-r"
                   >
                     {t.empty_space}
                   </th>,
                   <th
                     key={`c-${i}`}
-                    className="px-2 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider border-r"
+                    className="px-2 py-3 text-xs font-semibold text-white uppercase tracking-wider border-r"
                   >
                     {t.content}
                   </th>,
                   <th
                     key={`p-${i}`}
-                    className={`px-2 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider ${
+                    className={`px-2 py-3 text-xs font-semibold text-white uppercase tracking-wider ${
                       i < 2 ? 'border-r' : ''
                     }`}
                   >

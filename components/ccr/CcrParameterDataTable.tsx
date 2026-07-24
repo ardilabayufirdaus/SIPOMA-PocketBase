@@ -234,12 +234,9 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                 </colgroup>
                 <thead className="sticky top-0 z-20 shadow-lg" role="rowgroup">
                   {/* Main Header Row */}
-                  <tr
-                    className="bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-600"
-                    role="row"
-                  >
+                  <tr className="bg-secondary-800" role="row">
                     <th
-                      className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider border-r border-white/20 sticky left-0 bg-gradient-to-br from-slate-800 via-slate-700 to-indigo-800 z-30 shadow-lg"
+                      className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider border-r border-white/20 sticky left-0 bg-secondary-900 z-30 shadow-lg"
                       style={{ width: '90px' }}
                       role="columnheader"
                       scope="col"
@@ -250,7 +247,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                       </div>
                     </th>
                     <th
-                      className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider border-r border-white/20 sticky left-24 bg-gradient-to-br from-slate-800 via-slate-700 to-indigo-800 z-30 shadow-lg"
+                      className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider border-r border-white/20 sticky left-24 bg-secondary-900 z-30 shadow-lg"
                       style={{ width: '140px' }}
                       role="columnheader"
                       scope="col"
@@ -261,7 +258,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                       </div>
                     </th>
                     <th
-                      className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider border-r border-white/20 sticky left-56 bg-gradient-to-br from-slate-800 via-slate-700 to-indigo-800 z-30 shadow-lg"
+                      className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider border-r border-white/20 sticky left-56 bg-secondary-900 z-30 shadow-lg"
                       style={{ width: '200px' }}
                       role="columnheader"
                       scope="col"

@@ -19,13 +19,13 @@ const SignOutConfirmModal: React.FC<SignOutConfirmModalProps> = ({
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          {/* Backdrop with Ubuntu Aubergine Tint */}
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-[#1a0513]/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
           />
 
           {/* Modal Content */}
@@ -34,10 +34,10 @@ const SignOutConfirmModal: React.FC<SignOutConfirmModalProps> = ({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-md overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-secondary-900 via-secondary-800 to-secondary-950 border border-white/10 shadow-2xl shadow-black/50 font-ubuntu"
+            className="relative w-full max-w-md overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-secondary-900 via-secondary-800 to-secondary-950 border border-white/10 shadow-2xl shadow-black/50 font-sans"
           >
             {/* Header / Accent Bar */}
-            <div className="h-1.5 w-full bg-gradient-to-r from-ubuntu-orange via-ubuntu-orange/80 to-ubuntu-orange" />
+            <div className="h-1.5 w-full bg-gradient-to-r from-primary-600 via-emerald-500 to-primary-600" />
 
             <div className="p-8">
               {/* Icon Container */}
@@ -49,9 +49,9 @@ const SignOutConfirmModal: React.FC<SignOutConfirmModalProps> = ({
                       opacity: [0.3, 0.6, 0.3],
                     }}
                     transition={{ duration: 3, repeat: Infinity }}
-                    className="absolute inset-0 bg-ubuntu-orange blur-2xl rounded-full"
+                    className="absolute inset-0 bg-primary-600 blur-2xl rounded-full"
                   />
-                  <div className="relative w-20 h-20 rounded-[1.25rem] bg-gradient-to-br from-ubuntu-orange to-orange-600 flex items-center justify-center shadow-lg transform rotate-3">
+                  <div className="relative w-20 h-20 rounded-[1.25rem] bg-gradient-to-br from-primary-600 to-emerald-600 flex items-center justify-center shadow-lg transform rotate-3">
                     <svg
                       className="w-10 h-10 text-white"
                       fill="none"
@@ -82,12 +82,8 @@ const SignOutConfirmModal: React.FC<SignOutConfirmModalProps> = ({
 
               {/* Details Panel */}
               <div className="mt-8 p-4 rounded-2xl bg-white/5 border border-white/5 flex items-start gap-4 transition-all hover:bg-white/10">
-                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-ubuntu-aubergine border border-white/10 flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-ubuntu-orange"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
+                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-slate-900 border border-white/10 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-primary-400" fill="currentColor" viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"
                       d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
@@ -108,10 +104,10 @@ const SignOutConfirmModal: React.FC<SignOutConfirmModalProps> = ({
               {/* Actions */}
               <div className="mt-10 flex flex-col gap-3">
                 <motion.button
-                  whileHover={{ scale: 1.02, backgroundColor: 'rgba(233, 84, 32, 1)' }}
+                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={onConfirm}
-                  className="w-full py-4 rounded-2xl bg-ubuntu-orange text-white font-bold text-sm uppercase tracking-[0.15em] shadow-xl shadow-ubuntu-orange/20 transition-all border border-white/10"
+                  className="w-full py-4 rounded-2xl bg-primary-600 text-white font-bold text-sm uppercase tracking-[0.15em] shadow-xl shadow-emerald-500/20 transition-all border border-white/10"
                 >
                   {t.header_sign_out || 'Sign Out Now'}
                 </motion.button>
@@ -127,7 +123,7 @@ const SignOutConfirmModal: React.FC<SignOutConfirmModalProps> = ({
               </div>
             </div>
 
-            {/* Ubuntu Bottom Bar Style */}
+            {/* Bottom Bar Style */}
             <div className="bg-black/20 px-8 py-3 flex justify-center">
               <div className="w-16 h-1 rounded-full bg-white/10" />
             </div>

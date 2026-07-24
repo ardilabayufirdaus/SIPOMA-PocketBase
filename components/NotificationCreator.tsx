@@ -68,15 +68,15 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 font-ubuntu">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 font-sans">
       <div className="bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] w-full max-w-md overflow-hidden transform transition-all border border-white/10">
-        {/* Ubuntu Desktop Header Style */}
-        <div className="relative bg-gradient-to-r from-[#300a24] to-[#5e2750] p-4 flex items-center justify-between border-b border-white/10 shadow-md">
+        {/* Desktop Header Style */}
+        <div className="relative bg-gradient-to-r from-slate-900 via-slate-800 to-secondary-900 p-4 flex items-center justify-between border-b border-white/10 shadow-md">
           {/* Subtle Noise Texture overlay could go here if supported, simplified for now */}
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shadow-inner ring-1 ring-white/20">
               <svg
-                className="w-4 h-4 text-[#E95420]"
+                className="w-4 h-4 text-primary-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -103,7 +103,7 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({
               if (onClose) onClose();
               else setIsOpen(false);
             }}
-            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white/60 hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#E95420]/50"
+            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white/60 hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500/50"
             aria-label="Close"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,7 +127,7 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm text-[#333333] placeholder:text-gray-400 focus:outline-none focus:border-[#E95420] focus:ring-1 focus:ring-[#E95420] transition-all duration-200 resize-none shadow-sm group-hover:border-gray-400"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm text-[#333333] placeholder:text-gray-400 focus:outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-all duration-200 resize-none shadow-sm group-hover:border-gray-400"
                 rows={4}
                 placeholder="Type your broadcast message here..."
                 required
@@ -155,7 +155,7 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({
                 <select
                   value={severity}
                   onChange={(e) => setSeverity(e.target.value as AlertSeverity)}
-                  className="w-full appearance-none px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-[#333333] focus:outline-none focus:border-[#E95420] focus:ring-1 focus:ring-[#E95420] transition-all hover:border-gray-400 cursor-pointer shadow-sm font-medium"
+                  className="w-full appearance-none px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-[#333333] focus:outline-none focus:border-[#059669] focus:ring-1 focus:ring-[#059669] transition-all hover:border-gray-400 cursor-pointer shadow-sm font-medium"
                 >
                   {severityOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -207,7 +207,7 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({
                         | 'security'
                     )
                   }
-                  className="w-full appearance-none px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-[#333333] focus:outline-none focus:border-[#E95420] focus:ring-1 focus:ring-[#E95420] transition-all hover:border-gray-400 cursor-pointer shadow-sm font-medium capitalize"
+                  className="w-full appearance-none px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-[#333333] focus:outline-none focus:border-[#059669] focus:ring-1 focus:ring-[#059669] transition-all hover:border-gray-400 cursor-pointer shadow-sm font-medium capitalize"
                 >
                   {categoryOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -249,7 +249,7 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({
               disabled={!message.trim()}
               variant="primary"
               size="sm"
-              className="px-6 py-2.5 bg-[#E95420] hover:bg-[#c2410c] text-white rounded-lg font-bold text-sm tracking-wide shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transform active:scale-95"
+              className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-bold text-sm tracking-wide shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transform active:scale-95"
               ariaLabel="Send Broadcast"
             >
               <span className="relative flex h-2 w-2 mr-1">

@@ -1,4 +1,4 @@
-/* Ubuntu Desktop Inspired Header Styles */
+/* Modern Glassmorphic Header Styles */
 .glass-header {
   backdrop-filter: blur(12px) saturate(160%);
   -webkit-backdrop-filter: blur(12px) saturate(160%);
@@ -16,22 +16,22 @@
 }
 
 /* Header Action Buttons */
-.ubuntu-action-btn {
+.header-action-btn {
   @apply relative p-2.5 rounded-lg transition-all duration-200 flex items-center justify-center;
   color: rgba(255, 255, 255, 0.7);
 }
 
-.ubuntu-action-btn:hover {
+.header-action-btn:hover {
   background-color: rgba(255, 255, 255, 0.1);
   color: #ffffff;
 }
 
-.ubuntu-action-btn.active {
-  background-color: #e95420;
+.header-action-btn.active {
+  background-color: #059669;
   color: #ffffff;
 }
 
-.ubuntu-action-btn.warning:hover {
+.header-action-btn.warning:hover {
   @apply bg-red-500/10 text-red-500;
 }
 
@@ -69,8 +69,8 @@
 }
 
 /* Status Indicator Dot */
-.ubuntu-status-dot {
-  @apply absolute top-1 right-1 w-2.5 h-2.5 rounded-full border-2 border-[#1e1e1e];
+.header-status-dot {
+  @apply absolute top-1 right-1 w-2.5 h-2.5 rounded-full border-2 border-slate-900;
 }
 
 /* Typography Enhancements */
@@ -84,6 +84,6 @@
 }
 
 /* Divider */
-.ubuntu-divider {
+.header-divider {
   @apply w-px h-6 bg-white/10 mx-2;
 }

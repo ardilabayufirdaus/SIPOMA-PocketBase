@@ -232,10 +232,10 @@ const PicSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCancel, t
         {/* Helper Text */}
         <motion.div
           variants={fieldVariants}
-          className="text-sm text-[#555555] bg-[#F9F9F9] p-3 rounded-lg border border-[#AEA79F]/20"
+          className="text-sm text-[#555555] bg-[#F9F9F9] p-3 rounded-lg border border-[#94a3b8]/20"
         >
           <div className="flex items-start gap-2">
-            <User className="w-4 h-4 text-[#E95420] flex-shrink-0 mt-0.5" />
+            <User className="w-4 h-4 text-[#059669] flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium text-[#333333] mb-1">
                 {t.form_help_title || 'PIC Setting Guidelines'}
@@ -253,7 +253,7 @@ const PicSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCancel, t
       {/* Form Actions */}
       <motion.div
         variants={fieldVariants}
-        className="bg-[#F9F9F9] px-6 py-4 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-[#AEA79F]/20"
+        className="bg-[#F9F9F9] px-6 py-4 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-[#94a3b8]/20"
       >
         <EnhancedButton
           type="submit"

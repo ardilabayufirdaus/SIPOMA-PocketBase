@@ -25,47 +25,47 @@ interface RankCardProps {
 }
 
 const RankCard: React.FC<RankCardProps> = ({ operator, onClick }) => {
-  // Ubuntu Theme configuration based on Rank
+  // Theme configuration based on Rank
   const rankTheme = useMemo(() => {
     switch (operator.rank) {
       case 1:
         return {
           bg: 'bg-white',
-          border: 'border-[#E95420]', // Ubuntu Orange
-          shadow: 'shadow-lg shadow-[#E95420]/20 hover:shadow-[#E95420]/30',
-          title: 'text-[#E95420]',
-          badge: 'bg-[#E95420] text-white shadow-md shadow-[#E95420]/40',
+          border: 'border-[#059669]', // Vibrant Emerald
+          shadow: 'shadow-lg shadow-[#059669]/20 hover:shadow-[#059669]/30',
+          title: 'text-[#059669]',
+          badge: 'bg-[#059669] text-white shadow-md shadow-[#059669]/40',
           icon: '🥇',
-          iconBg: 'bg-[#E95420]/10',
-          glow: 'after:absolute after:inset-0 after:rounded-2xl after:shadow-[0_0_20px_rgba(233,84,32,0.15)] after:pointer-events-none',
-          progressTrack: 'bg-[#E95420]/20',
-          progressColor: 'bg-[#E95420]',
+          iconBg: 'bg-[#059669]/10',
+          glow: 'after:absolute after:inset-0 after:rounded-2xl after:shadow-[0_0_20px_rgba(5,150,105,0.15)] after:pointer-events-none',
+          progressTrack: 'bg-[#059669]/20',
+          progressColor: 'bg-[#059669]',
         };
       case 2:
         return {
           bg: 'bg-white',
-          border: 'border-[#772953]', // Ubuntu Aubergine
-          shadow: 'shadow-md shadow-[#772953]/10 hover:shadow-[#772953]/20',
-          title: 'text-[#772953]',
-          badge: 'bg-[#772953] text-white shadow-md shadow-[#772953]/30',
+          border: 'border-[#111827]', // Deep Charcoal
+          shadow: 'shadow-md shadow-[#111827]/10 hover:shadow-[#111827]/20',
+          title: 'text-[#111827]',
+          badge: 'bg-[#111827] text-white shadow-md shadow-[#111827]/30',
           icon: '🥈',
-          iconBg: 'bg-[#772953]/10',
+          iconBg: 'bg-[#111827]/10',
           glow: '',
-          progressTrack: 'bg-[#772953]/20',
-          progressColor: 'bg-[#772953]',
+          progressTrack: 'bg-[#111827]/20',
+          progressColor: 'bg-[#111827]',
         };
       case 3:
         return {
           bg: 'bg-white',
-          border: 'border-[#AEA79F]', // Ubuntu Warm Grey
-          shadow: 'shadow-sm shadow-[#AEA79F]/20 hover:shadow-[#AEA79F]/30',
-          title: 'text-[#333333]', // Cool Grey
-          badge: 'bg-[#AEA79F] text-white shadow-md shadow-[#AEA79F]/30',
+          border: 'border-[#6b7280]', // Slate Neutral
+          shadow: 'shadow-sm shadow-[#6b7280]/20 hover:shadow-[#6b7280]/30',
+          title: 'text-[#374151]',
+          badge: 'bg-[#6b7280] text-white shadow-md shadow-[#6b7280]/30',
           icon: '🥉',
-          iconBg: 'bg-[#AEA79F]/20',
+          iconBg: 'bg-[#6b7280]/20',
           glow: '',
-          progressTrack: 'bg-[#AEA79F]/30',
-          progressColor: 'bg-[#AEA79F]',
+          progressTrack: 'bg-[#6b7280]/30',
+          progressColor: 'bg-[#6b7280]',
         };
       default:
         return {
@@ -128,7 +128,7 @@ const RankCard: React.FC<RankCardProps> = ({ operator, onClick }) => {
           className={`font-bold leading-tight mb-2 line-clamp-2 ${
             operator.rank === 1 ? 'text-xl' : 'text-lg'
           } ${rankTheme.title}`}
-          style={{ fontFamily: 'Ubuntu, sans-serif' }}
+          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
         >
           {operator.operatorName}
         </h3>

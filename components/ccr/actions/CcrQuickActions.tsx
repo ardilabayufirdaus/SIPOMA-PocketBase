@@ -66,12 +66,12 @@ const CcrQuickActions: React.FC<CcrQuickActionsProps> = memo(
 
     return (
       <div className="relative group h-full">
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-[#772953]/20 to-[#E95420]/20 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-slate-900/20 to-primary-600/20 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
         <div className="relative backdrop-blur-xl bg-white/40 border border-white/60 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] p-6 transition-all duration-300 h-full">
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#772953] to-[#E95420] flex items-center justify-center shadow-lg shadow-[#772953]/30 ring-4 ring-[#772953]/10">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-secondary-900 flex items-center justify-center shadow-lg shadow-emerald-500/20 ring-4 ring-primary-500/10">
               <svg
-                className="w-6 h-6 text-white"
+                className="w-6 h-6 text-emerald-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -140,10 +140,10 @@ const CcrQuickActions: React.FC<CcrQuickActionsProps> = memo(
                 whileHover={{ scale: 1.05, translateY: -2 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onMonthlyExportImport}
-                className="flex items-center gap-2.5 px-5 py-3 bg-gradient-to-br from-[#772953] to-[#E95420] text-white rounded-xl hover:shadow-xl hover:shadow-[#772953]/30 transition-all duration-300"
+                className="flex items-center gap-2.5 px-5 py-3 bg-gradient-to-br from-slate-900 to-secondary-900 text-white rounded-xl hover:shadow-xl hover:shadow-slate-900/30 transition-all duration-300 border border-emerald-500/30"
                 title="Ekspor & Impor Data Bulanan"
               >
-                <DocumentArrowDownIcon className="w-5 h-5" />
+                <DocumentArrowDownIcon className="w-5 h-5 text-emerald-400" />
                 <span className="font-bold tracking-wide">Bulanan (Excel)</span>
               </motion.button>
             )}

@@ -399,7 +399,7 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
           >
             <div className="flex items-center justify-between mb-8 px-2">
               <div className="flex items-center gap-3">
-                <div className="w-1.5 h-6 bg-ubuntu-orange rounded-full" />
+                <div className="w-1.5 h-6 bg-primary-600 rounded-full" />
                 <h3 className="text-xl font-black text-slate-800 tracking-tight">
                   {m.unit} — OEE Trend (30D)
                 </h3>

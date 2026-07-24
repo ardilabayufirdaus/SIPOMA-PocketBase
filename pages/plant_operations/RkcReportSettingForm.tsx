@@ -258,7 +258,7 @@ const RkcReportSettingForm: React.FC<FormProps> = ({
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.3 }}
-        className="bg-gradient-to-r from-[#772953] to-[#2C001E] px-6 py-4"
+        className="bg-gradient-to-r from-[#111827] to-[#0f172a] px-6 py-4"
       >
         <div className="flex items-center space-x-3">
           <FileText className="h-6 w-6 text-white" />
@@ -281,10 +281,10 @@ const RkcReportSettingForm: React.FC<FormProps> = ({
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
-              className="bg-[#F9F9F9] border border-[#AEA79F]/20 rounded-lg p-4 mb-6"
+              className="bg-[#F9F9F9] border border-[#94a3b8]/20 rounded-lg p-4 mb-6"
             >
               <div className="flex items-center space-x-2">
-                <Filter className="h-4 w-4 text-[#E95420]" />
+                <Filter className="h-4 w-4 text-[#059669]" />
                 <span className="text-sm font-medium text-[#333333]">Filter Applied</span>
               </div>
               <p className="text-sm text-[#555555] mt-1">
@@ -320,8 +320,8 @@ const RkcReportSettingForm: React.FC<FormProps> = ({
               onBlur={handleBlur}
               required
               disabled={availableParameters.length === 0 || isSubmitting}
-              className={`block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm disabled:bg-[#F2F2F2] disabled:text-[#AEA79F] ${
-                errors.parameter_id ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
+              className={`block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all duration-200 sm:text-sm disabled:bg-[#F2F2F2] disabled:text-[#94a3b8] ${
+                errors.parameter_id ? 'border-[#C7162B]' : 'border-[#94a3b8]/50'
               }`}
             >
               <option value="">
@@ -390,8 +390,8 @@ const RkcReportSettingForm: React.FC<FormProps> = ({
               required
               disabled={isSubmitting}
               placeholder="e.g. Production, Quality..."
-              className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm disabled:bg-slate-50 disabled:text-slate-500 ${
-                errors.category ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
+              className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all duration-200 sm:text-sm disabled:bg-slate-50 disabled:text-slate-500 ${
+                errors.category ? 'border-[#C7162B]' : 'border-[#94a3b8]/50'
               }`}
             />
             <AnimatePresence>
@@ -416,7 +416,7 @@ const RkcReportSettingForm: React.FC<FormProps> = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.3 }}
-          className="mt-8 flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 pt-6 border-t border-[#AEA79F]/20"
+          className="mt-8 flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 pt-6 border-t border-[#94a3b8]/20"
         >
           <AnimatePresence>
             {isSubmitting && (
@@ -458,7 +458,7 @@ const RkcReportSettingForm: React.FC<FormProps> = ({
                   !formData.parameter_id ||
                   !formData.category.trim()
                 }
-                className="px-6 py-2 bg-[#E95420] hover:bg-[#d94612] text-white border-transparent"
+                className="px-6 py-2 bg-[#059669] hover:bg-[#d94612] text-white border-transparent"
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
                 {recordToEdit ? t.save_button || 'Save Changes' : t.add_button || 'Add Parameter'}

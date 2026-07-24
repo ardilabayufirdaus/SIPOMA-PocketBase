@@ -259,18 +259,18 @@ const App: React.FC = () => {
   ) {
     return (
       <div
-        className="h-screen w-screen flex items-center justify-center bg-ubuntu-aubergine"
+        className="h-screen w-screen flex items-center justify-center bg-slate-950"
         data-testid="loading-indicator"
       >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-ubuntu-orange/10 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-600/10 rounded-full blur-[120px] animate-pulse" />
           <div
-            className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-ubuntu-darkAubergine/20 rounded-full blur-[120px] animate-pulse"
+            className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary-900/40 rounded-full blur-[120px] animate-pulse"
             style={{ animationDelay: '1s' }}
           />
         </div>
 
-        <div className="relative z-10 text-center font-ubuntu">
+        <div className="relative z-10 text-center font-sans">
           <div className="relative mb-10">
             <motion.div
               className="w-24 h-24 mx-auto rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl"
@@ -292,29 +292,31 @@ const App: React.FC = () => {
             </motion.div>
             <div className="absolute inset-[-20px] flex items-center justify-center pointer-events-none">
               <div
-                className="w-32 h-32 rounded-full border-2 border-transparent border-t-ubuntu-orange border-r-ubuntu-orange/30 animate-spin"
+                className="w-32 h-32 rounded-full border-2 border-transparent border-t-primary-500 border-r-primary-500/30 animate-spin"
                 style={{ animationDuration: '1s' }}
               />
             </div>
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-white tracking-widest uppercase">SIPOMA</h2>
+            <h2 className="text-3xl font-bold text-white tracking-widest uppercase font-display">
+              SIPOMA
+            </h2>
             <div className="flex flex-col items-center gap-1">
               <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">
                 SISTEM INFORMASI PRODUKSI & MONITORING
               </p>
               <div className="flex justify-center gap-2 mt-4">
                 <span
-                  className="w-1.5 h-1.5 rounded-full bg-ubuntu-orange animate-bounce"
+                  className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-bounce"
                   style={{ animationDelay: '0ms' }}
                 />
                 <span
-                  className="w-1.5 h-1.5 rounded-full bg-ubuntu-orange animate-bounce"
+                  className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-bounce"
                   style={{ animationDelay: '150ms' }}
                 />
                 <span
-                  className="w-1.5 h-1.5 rounded-full bg-ubuntu-orange animate-bounce"
+                  className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-bounce"
                   style={{ animationDelay: '300ms' }}
                 />
               </div>

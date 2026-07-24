@@ -329,19 +329,19 @@ const Sidebar: React.FC<SidebarProps> = ({
         role="navigation"
         aria-label="Main navigation"
       >
-        {/* Ubuntu Aubergine Background - High End Style */}
-        <div className="absolute inset-0 bg-[#300a24] shadow-[4px_0_24px_rgba(0,0,0,0.4)] transition-all duration-500" />
+        {/* Obsidian Slate Background - High End Industrial Style */}
+        <div className="absolute inset-0 bg-slate-900 dark:bg-slate-950 border-r border-slate-800/80 shadow-[4px_0_24px_rgba(0,0,0,0.4)] transition-all duration-500" />
 
         {/* Subtle Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col h-full font-ubuntu">
+        <div className="relative z-10 flex flex-col h-full font-sans">
           <SidebarHeader isMobile={isMobile} onClose={onClose} isExpanded={isExpanded} />
 
           {!isMobile && onToggleExpand && (
             <motion.button
               onClick={onToggleExpand}
-              className="absolute -right-3 top-[70px] z-50 w-6 h-6 rounded-full border border-white/10 shadow-xl cursor-pointer flex items-center justify-center hover:bg-white/10 hover:border-white/20 hover:text-ubuntu-orange transition-all duration-300 bg-[#300a24] text-white/40 group"
+              className="absolute -right-3 top-[70px] z-50 w-6 h-6 rounded-full border border-slate-700 shadow-xl cursor-pointer flex items-center justify-center hover:bg-slate-800 hover:border-slate-600 hover:text-primary-400 transition-all duration-300 bg-slate-900 text-white/50 group"
               aria-label={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
               initial={false}
               animate={{ rotate: isExpanded ? 0 : 180 }}
@@ -488,7 +488,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               className={`transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 scale-95 translate-y-2 h-0 overflow-hidden'}`}
             >
               <div className="bg-white/5 rounded-xl p-3 flex items-center gap-3 border border-white/5">
-                <div className="w-9 h-9 rounded-lg bg-ubuntu-orange/10 flex items-center justify-center text-ubuntu-orange">
+                <div className="w-9 h-9 rounded-lg bg-primary-600/10 flex items-center justify-center text-primary-500">
                   <ClockIcon className="w-5 h-5" />
                 </div>
                 <div className="flex flex-col">

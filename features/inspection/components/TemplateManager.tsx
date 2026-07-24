@@ -50,19 +50,19 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
   };
 
   return (
-    <div className="space-y-8 p-4 font-ubuntu">
+    <div className="space-y-8 p-4 font-sans">
       <div className="flex items-center justify-between mb-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-8 rounded-3xl border border-slate-200 dark:border-white/10 shadow-soft">
         <div>
-          <h3 className="text-2xl font-bold text-ubuntu-coolGrey dark:text-white tracking-tight text-balance">
+          <h3 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight text-balance">
             Structure Editor
           </h3>
-          <p className="text-[11px] font-bold text-ubuntu-warmGrey uppercase tracking-widest mt-1">
+          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">
             Manage groups, equipment, and checkpoints
           </p>
         </div>
         <button
           onClick={onAddGroup}
-          className="group flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-ubuntu-orange to-orange-600 hover:from-orange-500 hover:to-orange-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 transition-all active:scale-95"
+          className="group flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-primary-600 to-emerald-600 hover:from-primary-700 hover:to-emerald-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all active:scale-95"
         >
           <PlusIcon className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
           Add Group
@@ -89,16 +89,16 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
                   <input
                     value={group.name}
                     onChange={(e) => onUpdateGroup(group.id, e.target.value)}
-                    className="bg-transparent font-bold text-ubuntu-coolGrey dark:text-white outline-none w-full italic text-xl tracking-tight focus:ring-2 ring-ubuntu-orange/20 rounded-xl px-3 transition-all placeholder:text-slate-300"
+                    className="bg-transparent font-bold text-slate-800 dark:text-white outline-none w-full italic text-xl tracking-tight focus:ring-2 ring-primary-500/20 rounded-xl px-3 transition-all placeholder:text-slate-300"
                     placeholder="Group Name..."
                   />
-                  <div className="absolute bottom-0 left-3 right-3 h-0.5 bg-ubuntu-orange/0 group-focus-within/input:bg-ubuntu-orange/50 transition-all rounded-full"></div>
+                  <div className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary-600/0 group-focus-within/input:bg-primary-600/50 transition-all rounded-full"></div>
                 </div>
               </div>
               <div className="flex items-center gap-3 pr-2">
                 <button
                   onClick={() => onAddEquipment(group.id)}
-                  className="p-3 text-slate-400 hover:text-ubuntu-orange hover:bg-ubuntu-orange/10 rounded-xl transition-all shadow-sm active:scale-90"
+                  className="p-3 text-slate-400 hover:text-primary-600 hover:bg-primary-600/10 rounded-xl transition-all shadow-sm active:scale-90"
                   title="Add Equipment"
                 >
                   <PlusIcon className="w-6 h-6" />
@@ -139,14 +139,14 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
                             <input
                               value={eq.name}
                               onChange={(e) => onUpdateEquipment(eq.id, e.target.value)}
-                              className="bg-transparent font-bold text-ubuntu-coolGrey dark:text-white outline-none w-full focus:ring-2 ring-ubuntu-orange/20 rounded-xl px-3 text-base transition-all placeholder:text-slate-300 italic"
+                              className="bg-transparent font-bold text-slate-800 dark:text-white outline-none w-full focus:ring-2 ring-primary-500/20 rounded-xl px-3 text-base transition-all placeholder:text-slate-300 italic"
                               placeholder="Equipment Name..."
                             />
                           </div>
                           <div className="flex items-center gap-2 pr-2">
                             <button
                               onClick={() => onAddCheckpoint(eq.id)}
-                              className="p-2.5 text-slate-400 hover:text-ubuntu-orange hover:bg-ubuntu-orange/10 rounded-xl transition-all"
+                              className="p-2.5 text-slate-400 hover:text-primary-600 hover:bg-primary-600/10 rounded-xl transition-all"
                             >
                               <PlusIcon className="w-6 h-6" />
                             </button>
@@ -172,11 +172,11 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
                                   key={cp.id}
                                   className="flex items-center gap-5 group/row transition-all duration-200"
                                 >
-                                  <div className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-600 group-hover/row:bg-ubuntu-orange group-hover/row:scale-125 transition-all shadow-sm" />
+                                  <div className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-600 group-hover/row:bg-primary-600 group-hover/row:scale-125 transition-all shadow-sm" />
                                   <input
                                     value={cp.name}
                                     onChange={(e) => onUpdateCheckpoint(cp.id, e.target.value)}
-                                    className="bg-transparent text-sm font-bold text-slate-500 dark:text-slate-400 outline-none flex-1 focus:ring-2 ring-ubuntu-orange/20 rounded-xl px-3 group-hover/row:text-ubuntu-coolGrey dark:group-hover/row:text-white transition-all placeholder:text-slate-200"
+                                    className="bg-transparent text-sm font-bold text-slate-500 dark:text-slate-400 outline-none flex-1 focus:ring-2 ring-primary-500/20 rounded-xl px-3 group-hover/row:text-slate-800 dark:group-hover/row:text-white transition-all placeholder:text-slate-200"
                                     placeholder="Checkpoint description..."
                                   />
                                   <button

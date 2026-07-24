@@ -555,8 +555,8 @@ const ServerPage: React.FC = () => {
     <div className="relative flex flex-col h-full min-h-screen text-[#333333] dark:text-slate-100 font-sans bg-[#F7F7F7] dark:bg-slate-950">
       {/* Background Overlay */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-30">
-        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-[#E95420]/5 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-0 left-0 w-[50%] h-[50%] bg-[#772953]/5 rounded-full blur-[120px]"></div>
+        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-primary-600/5 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-0 left-0 w-[50%] h-[50%] bg-secondary-900/5 rounded-full blur-[120px]"></div>
       </div>
 
       <div className="relative z-10 flex-1 flex flex-col p-4 lg:p-6 gap-6 max-w-[1700px] mx-auto w-full">
@@ -567,7 +567,7 @@ const ServerPage: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center gap-3"
           >
-            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 text-[#E95420]">
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 text-primary-600">
               <Server className="w-8 h-8" />
             </div>
             <div>
@@ -576,7 +576,7 @@ const ServerPage: React.FC = () => {
               </h1>
               <p className="text-[#808080] dark:text-slate-400 text-sm font-medium flex items-center gap-2">
                 <span>{stats?.battery || 'Power Safe'}</span>
-                {stats?.temp && <span className="text-[#E95420]">• {stats.temp}</span>}
+                {stats?.temp && <span className="text-primary-600">• {stats.temp}</span>}
                 {lastUpdated && (
                   <span className="opacity-60 text-xs">
                     • Upd: {lastUpdated.toLocaleTimeString()}
@@ -590,7 +590,7 @@ const ServerPage: React.FC = () => {
           <div className="relative">
             <button
               onClick={() => setShowNotificationCenter(!showNotificationCenter)}
-              className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 relative hover:text-[#E95420] transition-colors"
+              className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 relative hover:text-primary-600 transition-colors"
             >
               <Zap className="w-6 h-6" />
               {alerts.length > 0 && (
@@ -668,7 +668,7 @@ const ServerPage: React.FC = () => {
                   fetchNetStats();
                 }
               }}
-              className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-[#E95420] hover:text-white transition-all shadow-sm"
+              className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-[#059669] hover:text-white transition-all shadow-sm"
               title="Refresh Data"
             >
               <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
@@ -715,7 +715,7 @@ const ServerPage: React.FC = () => {
                         flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide transition-all flex items-center justify-center gap-2
                         ${
                           activeTab === tab.id
-                            ? 'bg-[#E95420] text-white shadow-md'
+                            ? 'bg-[#059669] text-white shadow-md'
                             : 'text-[#808080] hover:bg-white dark:hover:bg-slate-700'
                         }
                     `}
@@ -740,7 +740,7 @@ const ServerPage: React.FC = () => {
               {/* Status Overview Row */}
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {/* User Online Widget */}
-                <div className="col-span-2 bg-gradient-to-br from-[#E95420] to-[#C7162B] text-white p-5 rounded-xl shadow-lg relative overflow-hidden flex flex-col justify-between">
+                <div className="col-span-2 bg-gradient-to-br from-slate-900 via-slate-800 to-secondary-900 text-white p-5 rounded-xl shadow-lg relative overflow-hidden flex flex-col justify-between">
                   <div className="flex justify-between items-start z-10">
                     <div>
                       <h4 className="text-white/70 font-bold text-xs uppercase tracking-wider">
@@ -750,11 +750,11 @@ const ServerPage: React.FC = () => {
                         {stats?.user_online_count || 0}
                       </div>
                     </div>
-                    <Users className="w-8 h-8 text-white/40" />
+                    <Users className="w-8 h-8 text-emerald-400" />
                   </div>
                   <div className="text-xs text-white/50 z-10 mt-2">Active now in SIPOMA</div>
                   {/* Decorative bubbles */}
-                  <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+                  <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-primary-600/10 rounded-full blur-xl"></div>
                   <div className="absolute top-0 left-0 w-32 h-32 bg-black/5 rounded-full blur-xl"></div>
                 </div>
 
@@ -827,39 +827,39 @@ const ServerPage: React.FC = () => {
                 {/* CPU Card with Chart */}
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xs font-bold text-[#808080] uppercase tracking-widest border-l-2 border-[#E95420] pl-2">
+                    <h3 className="text-xs font-bold text-[#808080] uppercase tracking-widest border-l-2 border-primary-600 pl-2">
                       CPU Load
                     </h3>
-                    <Cpu className="w-5 h-5 text-[#E95420]" />
+                    <Cpu className="w-5 h-5 text-primary-600" />
                   </div>
                   <div className="flex items-baseline gap-2 mb-4">
                     <span className="text-3xl font-black">{loadData.one}</span>
                     <span className="text-xs font-bold text-[#808080] uppercase">1m avg</span>
                   </div>
                   <div className="h-10 w-full opacity-50 group-hover:opacity-100 transition-opacity">
-                    <Sparkline data={cpuHistory} color="#E95420" />
+                    <Sparkline data={cpuHistory} color="#059669" />
                   </div>
                 </div>
 
                 {/* Memory Card with Chart */}
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xs font-bold text-[#808080] uppercase tracking-widest border-l-2 border-[#772953] pl-2">
+                    <h3 className="text-xs font-bold text-[#808080] uppercase tracking-widest border-l-2 border-[#111827] pl-2">
                       RAM Usage
                     </h3>
-                    <Activity className="w-5 h-5 text-[#772953]" />
+                    <Activity className="w-5 h-5 text-[#111827]" />
                   </div>
                   <div className="flex items-baseline gap-2 mb-2">
                     <span className="text-3xl font-black">{memData.percent}%</span>
                   </div>
                   <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 mb-2 overflow-hidden">
                     <div
-                      className="bg-[#772953] h-full rounded-full transition-all duration-500"
+                      className="bg-[#111827] h-full rounded-full transition-all duration-500"
                       style={{ width: `${memData.percent}%` }}
                     ></div>
                   </div>
                   <div className="h-8 w-full opacity-30 group-hover:opacity-100 transition-opacity">
-                    <Sparkline data={ramHistory} color="#772953" />
+                    <Sparkline data={ramHistory} color="#111827" />
                   </div>
                 </div>
 
@@ -1116,7 +1116,7 @@ const ServerPage: React.FC = () => {
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs md:text-sm">
-                  <thead className="bg-slate-100 dark:bg-slate-800 uppercase text-slate-500 font-bold">
+                  <thead className="bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 uppercase text-slate-700 dark:text-slate-200 font-bold">
                     <tr>
                       <th className="px-4 py-3">PID</th>
                       <th className="px-4 py-3">User</th>
@@ -1193,23 +1193,23 @@ const ServerPage: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               key="logs"
-              className="bg-[#300a24] rounded-xl overflow-hidden shadow-medium border border-[#5e2750] flex flex-col h-[600px]"
+              className="bg-[#0f172a] rounded-xl overflow-hidden shadow-medium border border-[#1e293b] flex flex-col h-[600px]"
             >
-              <div className="bg-[#1a0513] px-4 py-3 flex items-center justify-between border-b border-[#5e2750]">
+              <div className="bg-[#1a0513] px-4 py-3 flex items-center justify-between border-b border-[#1e293b]">
                 <div className="flex items-center gap-2 text-slate-300">
-                  <Terminal className="w-4 h-4 text-[#E95420]" />
-                  <span className="text-xs font-bold font-mono text-[#AEA79F] uppercase">
+                  <Terminal className="w-4 h-4 text-primary-500" />
+                  <span className="text-xs font-bold font-mono text-[#94a3b8] uppercase">
                     ~/pb/pb.log (Last 100 lines)
                   </span>
                 </div>
               </div>
-              <div className="p-6 font-mono text-xs md:text-sm text-slate-200 overflow-auto flex-1 whitespace-pre scrollbar-thin scrollbar-thumb-[#5e2750] scrollbar-track-transparent">
+              <div className="p-6 font-mono text-xs md:text-sm text-slate-200 overflow-auto flex-1 whitespace-pre scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
                 {logs || 'Waiting for logs...'}
               </div>
             </motion.div>
           )}
 
-          {/* 5. BACKUPS (Existing) */}
+          {/* 5. BACKUPS */}
           {activeTab === 'backups' && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -1222,7 +1222,7 @@ const ServerPage: React.FC = () => {
                 <button
                   onClick={createBackup}
                   disabled={loading}
-                  className="px-6 py-2 bg-[#E95420] text-white rounded-lg font-bold shadow-lg hover:shadow-orange-500/20 hover:-translate-y-1 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-2 bg-primary-600 text-white rounded-lg font-bold shadow-lg hover:shadow-emerald-500/20 hover:-translate-y-1 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Database className="w-4 h-4" />
                   Buat Backup Baru
@@ -1231,18 +1231,18 @@ const ServerPage: React.FC = () => {
 
               <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-[#F7F7F7] dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                  <thead className="bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
                     <tr>
-                      <th className="px-6 py-4 font-bold text-[#808080] uppercase tracking-wider">
+                      <th className="px-6 py-4 font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider">
                         File Name
                       </th>
-                      <th className="px-6 py-4 font-bold text-[#808080] uppercase tracking-wider">
+                      <th className="px-6 py-4 font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider">
                         Date Created
                       </th>
-                      <th className="px-6 py-4 font-bold text-[#808080] uppercase tracking-wider">
+                      <th className="px-6 py-4 font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider">
                         Size
                       </th>
-                      <th className="px-6 py-4 font-bold text-[#808080] uppercase tracking-wider text-right">
+                      <th className="px-6 py-4 font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider text-right">
                         Actions
                       </th>
                     </tr>
@@ -1273,7 +1273,7 @@ const ServerPage: React.FC = () => {
                                   'Fitur download via browser belum diaktifkan demi keamanan. Silakan ambil via SFTP.'
                                 )
                               }
-                              className="inline-flex items-center gap-1 text-[#E95420] font-bold hover:underline"
+                              className="inline-flex items-center gap-1 text-primary-600 font-bold hover:underline"
                             >
                               <Download className="w-4 h-4" /> Download
                             </a>
@@ -1287,7 +1287,7 @@ const ServerPage: React.FC = () => {
             </motion.div>
           )}
 
-          {/* 6. DB TOOLS (Existing) */}
+          {/* 6. DB TOOLS */}
           {activeTab === 'database' && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -1298,7 +1298,7 @@ const ServerPage: React.FC = () => {
             >
               <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
                 <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                  <Database className="text-orange-500" /> SQLite Maintenance
+                  <Database className="text-primary-600" /> SQLite Maintenance
                 </h3>
                 <p className="text-slate-500 text-sm mb-6">
                   Utilities to maintain health of PocketBase SQLite data file.
@@ -1310,7 +1310,7 @@ const ServerPage: React.FC = () => {
                     className="w-full p-4 bg-slate-50 dark:bg-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center justify-between border border-slate-200 dark:border-slate-700"
                   >
                     <span className="font-bold">VACUUM Database</span>
-                    <span className="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded">
+                    <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded">
                       Rebuild & Shrink
                     </span>
                   </button>
@@ -1338,13 +1338,13 @@ const ServerPage: React.FC = () => {
               className="grid grid-cols-1 lg:grid-cols-3 gap-6"
             >
               {/* Command Runner */}
-              <div className="lg:col-span-2 bg-[#1a0513] rounded-xl shadow-lg border border-[#5e2750] flex flex-col h-[500px]">
-                <div className="px-4 py-3 border-b border-[#5e2750] bg-[#300a24] flex items-center justify-between">
+              <div className="lg:col-span-2 bg-slate-950 rounded-xl shadow-lg border border-slate-800 flex flex-col h-[500px]">
+                <div className="px-4 py-3 border-b border-slate-800 bg-slate-900 flex items-center justify-between">
                   <h3 className="text-white font-bold flex items-center gap-2">
-                    <Terminal className="w-5 h-5 text-[#E95420]" />
+                    <Terminal className="w-5 h-5 text-primary-500" />
                     Remote Command Runner
                   </h3>
-                  <span className="text-xs text-[#AEA79F]">Super Admin Access Only</span>
+                  <span className="text-xs text-slate-400">Super Admin Access Only</span>
                 </div>
 
                 <div className="flex-1 p-4 overflow-auto font-mono text-sm">
@@ -1353,10 +1353,10 @@ const ServerPage: React.FC = () => {
 
                 <form
                   onSubmit={runCommand}
-                  className="p-2 bg-[#300a24] border-t border-[#5e2750] flex gap-2"
+                  className="p-2 bg-slate-900 border-t border-slate-800 flex gap-2"
                 >
                   <div className="flex-1 relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#E95420] font-bold">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-500 font-bold">
                       $
                     </span>
                     <input
@@ -1364,14 +1364,13 @@ const ServerPage: React.FC = () => {
                       value={cmdInput}
                       onChange={(e) => setCmdInput(e.target.value)}
                       placeholder="Enter command (e.g. ls -la, whoami, crontab -l)..."
-                      className="w-full bg-slate-950 text-white pl-8 pr-4 py-2 rounded-lg border border-[#5e2750] focus:border-[#E95420] focus:outline-none font-mono text-sm placeholder-slate-500"
-                      style={{ backgroundColor: '#100510', color: '#ffffff' }}
+                      className="w-full bg-slate-950 text-white pl-8 pr-4 py-2 rounded-lg border border-slate-800 focus:border-primary-500 focus:outline-none font-mono text-sm placeholder-slate-500"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={loading || !cmdInput}
-                    className="px-4 py-2 bg-[#E95420] text-white rounded-lg hover:bg-orange-600 disabled:opacity-50"
+                    className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-500 disabled:opacity-50"
                   >
                     <Play className="w-4 h-4" />
                   </button>

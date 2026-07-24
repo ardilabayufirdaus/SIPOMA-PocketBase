@@ -95,13 +95,13 @@ const ProjectDashboardPage: React.FC<{
       );
 
       let status = t.proj_status_on_track,
-        statusColor = 'text-[#0E8420]'; // Canonical Green
+        statusColor = 'text-emerald-600';
       if (overallProgress >= 100) {
         status = t.proj_status_completed;
-        statusColor = 'text-[#77216F]'; // Ubuntu Light Aubergine
+        statusColor = 'text-indigo-600';
       } else if (new Date() > projectEndDate) {
         status = t.proj_status_delayed;
-        statusColor = 'text-[#E95420]'; // Ubuntu Orange
+        statusColor = 'text-rose-600';
       }
 
       return { ...project, progress: overallProgress, status, statusColor };
@@ -168,9 +168,9 @@ const ProjectDashboardPage: React.FC<{
     const delayed = projectsSummary.filter((p) => p.status === t.proj_status_delayed).length;
     const completed = projectsSummary.filter((p) => p.status === t.proj_status_completed).length;
     return [
-      { label: t.projects_on_track, value: onTrack, color: '#0E8420' },
-      { label: t.projects_delayed, value: delayed, color: '#E95420' },
-      { label: t.projects_completed_count, value: completed, color: '#77216F' },
+      { label: t.projects_on_track, value: onTrack, color: '#059669' },
+      { label: t.projects_delayed, value: delayed, color: '#F43F5E' },
+      { label: t.projects_completed_count, value: completed, color: '#1E293B' },
     ];
   }, [projectsSummary, t]);
 
@@ -299,14 +299,14 @@ const ProjectDashboardPage: React.FC<{
   return (
     <div className="min-h-screen bg-[#F7F7F7]">
       <div className="w-full p-4 lg:p-6 space-y-6">
-        <div className="relative overflow-hidden bg-gradient-to-r from-[#2c001e] via-[#5E2750] to-[#77216F] rounded-2xl shadow-xl border border-[#2c001e]/20">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent"></div>
+        <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-secondary-900 rounded-2xl shadow-xl border border-white/10">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-600/20 via-transparent to-transparent"></div>
           <div className="relative p-6 lg:p-8">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
-                    <PresentationChartLineIcon className="w-7 h-7 text-[#E95420]" />
+                    <PresentationChartLineIcon className="w-7 h-7 text-primary-400" />
                   </div>
                   <div>
                     <h1 className="text-2xl lg:text-3xl font-bold text-white mb-1">
@@ -382,7 +382,7 @@ const ProjectDashboardPage: React.FC<{
                     variant="custom"
                     size="sm"
                     onClick={handleExport}
-                    className="bg-[#E95420] hover:bg-[#D34610] text-white border-transparent"
+                    className="bg-primary-600 hover:bg-primary-500 text-white border-transparent"
                   >
                     <DocumentArrowDownIcon className="w-4 h-4 mr-2" />
                     Export PDF
@@ -416,7 +416,7 @@ const ProjectDashboardPage: React.FC<{
                 placeholder="Search projects..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-4 pr-10 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:ring-2 focus:ring-[#E95420] outline-none"
+                className="w-full pl-4 pr-10 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:ring-2 focus:ring-primary-500 outline-none"
               />
               <div className="absolute right-3 top-2.5 text-slate-400">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -448,31 +448,31 @@ const ProjectDashboardPage: React.FC<{
               {
                 title: t.total_projects,
                 value: overallMetrics.totalProjects,
-                icon: <ClipboardDocumentListIcon className="w-5 h-5 text-[#2c001e]" />,
+                icon: <ClipboardDocumentListIcon className="w-5 h-5 text-slate-700" />,
                 color: 'bg-slate-50',
               },
               {
                 title: t.overall_progress_all,
                 value: overallMetrics.avgProgress,
-                icon: <PresentationChartLineIcon className="w-5 h-5 text-[#E95420]" />,
-                color: 'bg-orange-50',
+                icon: <PresentationChartLineIcon className="w-5 h-5 text-primary-600" />,
+                color: 'bg-emerald-50',
               },
               {
                 title: t.projects_completed_count,
                 value: overallMetrics.completedProjects,
-                icon: <CheckBadgeIcon className="w-5 h-5 text-[#0E8420]" />,
+                icon: <CheckBadgeIcon className="w-5 h-5 text-emerald-600" />,
                 color: 'bg-green-50',
               },
               {
                 title: t.projects_delayed,
                 value: overallMetrics.delayedProjects,
-                icon: <ExclamationTriangleIcon className="w-5 h-5 text-[#E95420]" />,
-                color: 'bg-orange-50',
+                icon: <ExclamationTriangleIcon className="w-5 h-5 text-rose-600" />,
+                color: 'bg-rose-50',
               },
               {
                 title: t.active_tasks,
                 value: overallMetrics.activeTasks,
-                icon: <ClockIcon className="w-5 h-5 text-[#2c001e]" />,
+                icon: <ClockIcon className="w-5 h-5 text-[#0f172a]" />,
                 color: 'bg-purple-50',
               },
               {
@@ -503,7 +503,7 @@ const ProjectDashboardPage: React.FC<{
 
           <div className="col-span-12 lg:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-[#2c001e]">
+              <h3 className="text-lg font-bold text-[#0f172a]">
                 {t.tasks_forecast || 'Tasks Forecast'}
               </h3>
               <span className="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
@@ -516,7 +516,7 @@ const ProjectDashboardPage: React.FC<{
           </div>
 
           <div className="col-span-12 lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
-            <h3 className="text-lg font-bold text-[#2c001e] mb-6">{t.projects_by_status}</h3>
+            <h3 className="text-lg font-bold text-[#0f172a] mb-6">{t.projects_by_status}</h3>
             <div className="flex-1 flex flex-col items-center justify-center min-h-[280px]">
               <div className="scale-125 mb-8">
                 <DonutChart ref={donutChartInstRef} data={statusCounts} t={t} />
@@ -542,7 +542,7 @@ const ProjectDashboardPage: React.FC<{
           </div>
 
           <div className="col-span-12 lg:col-span-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
-            <h3 className="text-lg font-bold text-[#2c001e] mb-6 flex items-center gap-2">
+            <h3 className="text-lg font-bold text-[#0f172a] mb-6 flex items-center gap-2">
               <CurrencyDollarIcon className="w-6 h-6 text-[#0E8420]" />
               {t.financial_overview || 'Financial Overview'}
             </h3>
@@ -551,15 +551,15 @@ const ProjectDashboardPage: React.FC<{
                 <p className="text-xs font-semibold text-[#0E8420] mb-1 uppercase tracking-wider">
                   {t.total_budget || 'Total Budget'}
                 </p>
-                <p className="text-lg font-bold text-[#2c001e] truncate">
+                <p className="text-lg font-bold text-[#0f172a] truncate">
                   {overallMetrics.totalBudget ? formatRupiah(overallMetrics.totalBudget) : 'Rp 0'}
                 </p>
               </div>
-              <div className="p-4 rounded-xl bg-[#77216F]/5 border border-[#77216F]/10">
-                <p className="text-xs font-semibold text-[#77216F] mb-1 uppercase tracking-wider">
+              <div className="p-4 rounded-xl bg-[#1e293b]/5 border border-[#1e293b]/10">
+                <p className="text-xs font-semibold text-[#1e293b] mb-1 uppercase tracking-wider">
                   {t.budget_utilization || 'Utilization'}
                 </p>
-                <p className="text-lg font-bold text-[#2c001e]">
+                <p className="text-lg font-bold text-[#0f172a]">
                   {(
                     (overallMetrics.completedProjects / Math.max(overallMetrics.totalProjects, 1)) *
                     100
@@ -574,8 +574,8 @@ const ProjectDashboardPage: React.FC<{
           </div>
 
           <div className="col-span-12 lg:col-span-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
-            <h3 className="text-lg font-bold text-[#2c001e] mb-6 flex items-center gap-2">
-              <ExclamationTriangleIcon className="w-6 h-6 text-[#E95420]" />
+            <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <ExclamationTriangleIcon className="w-6 h-6 text-rose-500" />
               {t.critical_issues || 'Attention Needed'}
             </h3>
             <div className="space-y-3 max-h-[220px] overflow-y-auto">
@@ -605,15 +605,15 @@ const ProjectDashboardPage: React.FC<{
 
           <div className="col-span-12 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-[#2c001e] flex items-center gap-2">
-                <ClipboardDocumentListIcon className="w-6 h-6 text-[#77216F]" />
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <ClipboardDocumentListIcon className="w-6 h-6 text-primary-600" />
                 {t.project_list || 'Project Performance List'}
               </h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase">
+                  <tr className="bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 uppercase">
                     <th className="px-6 py-4">Project Name</th>
                     <th className="px-6 py-4">Status</th>
                     <th className="px-6 py-4">Progress</th>
@@ -644,7 +644,7 @@ const ProjectDashboardPage: React.FC<{
                       <td className="px-6 py-4">
                         <div className="w-full max-w-[100px] bg-slate-100 rounded-full h-1.5 overflow-hidden">
                           <div
-                            className="h-full bg-[#E95420]"
+                            className="h-full bg-primary-600"
                             style={{ width: `${project.progress}%` }}
                           ></div>
                         </div>
@@ -657,7 +657,7 @@ const ProjectDashboardPage: React.FC<{
                       </td>
                       <td className="px-6 py-4 text-right">
                         <button
-                          className="text-[#E95420] text-xs font-bold hover:underline"
+                          className="text-primary-600 text-xs font-bold hover:underline"
                           onClick={(e) => {
                             e.stopPropagation();
                             onNavigateToDetail(project.id);

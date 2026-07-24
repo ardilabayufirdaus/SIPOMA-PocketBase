@@ -69,7 +69,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = React.memo(
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setIsNotifMenuOpen(true)}
                 className={`relative p-2.5 rounded-xl transition-colors touch-manipulation ${
-                  unreadCount > 0 ? 'text-ubuntu-orange' : 'text-white/60'
+                  unreadCount > 0 ? 'text-primary-400' : 'text-white/60'
                 }`}
                 aria-label="Notifications"
               >

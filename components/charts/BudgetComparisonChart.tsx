@@ -44,16 +44,16 @@ export const BudgetComparisonChart = React.forwardRef<any, BudgetComparisonChart
         {
           label: t.planned_budget || 'Planned',
           data: data.map((item) => item.planned),
-          backgroundColor: 'rgba(119, 33, 111, 0.2)', // Ubuntu Light Aubergine (Transparent)
-          borderColor: '#77216F',
+          backgroundColor: 'rgba(30, 41, 59, 0.2)', // Deep Slate
+          borderColor: '#1E293B',
           borderWidth: 1,
           borderRadius: 4,
         },
         {
           label: t.utilized_budget || 'Utilized (Est.)',
           data: data.map((item) => item.actual),
-          backgroundColor: '#E95420', // Ubuntu Orange
-          borderColor: '#E95420',
+          backgroundColor: '#059669', // Emerald Green
+          borderColor: '#059669',
           borderWidth: 1,
           borderRadius: 4,
         },

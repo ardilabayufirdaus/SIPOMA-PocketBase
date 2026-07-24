@@ -20,8 +20,20 @@ const Modal: React.FC<ModalProps> = ({
   maxWidth = 'max-w-5xl',
   description,
 }) => {
+  // Add Escape key handling for accessibility
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isOpen, onClose]);
+
   // Map custom maxWidth props to tailwind classes if needed, or pass directly
-  // Assuming maxWidth is passed as a class string like 'max-w-2xl' or just '2xl'
   const maxWidthClass = maxWidth.startsWith('max-w-') ? maxWidth : `max-w-${maxWidth}`;
 
   return (
@@ -30,7 +42,7 @@ const Modal: React.FC<ModalProps> = ({
         <>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm dark:bg-slate-900/80"
+            className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md dark:bg-black/75"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

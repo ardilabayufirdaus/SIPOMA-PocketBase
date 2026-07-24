@@ -99,20 +99,20 @@ const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate }) => {
           className={`
             relative flex flex-col items-center justify-center gap-3 p-4 rounded-lg 
             bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800
-            hover:border-[#E95420] dark:hover:border-[#E95420]/50
+            hover:border-primary-600 dark:hover:border-primary-600/50
             shadow-sm hover:shadow-md transition-all duration-200 text-center group h-auto min-h-[110px] overflow-hidden
           `}
         >
           {/* Subtle Indicator */}
-          <div className="absolute top-0 left-0 w-1 h-0 group-hover:h-full bg-[#E95420] transition-all duration-200"></div>
+          <div className="absolute top-0 left-0 w-1 h-0 group-hover:h-full bg-primary-600 transition-all duration-200"></div>
 
           <div
-            className={`relative z-10 p-2.5 rounded ${action.color.includes('amber') || action.color.includes('orange') ? 'bg-[#E95420] text-white' : 'bg-[#772953] text-white'} transition-transform group-hover:scale-110 duration-200`}
+            className={`relative z-10 p-2.5 rounded ${action.color.includes('amber') || action.color.includes('orange') ? 'bg-primary-600 text-white' : 'bg-slate-900 text-white'} transition-transform group-hover:scale-110 duration-200`}
           >
             {action.icon}
           </div>
           <div className="relative z-10">
-            <span className="block font-bold text-[#333333] dark:text-slate-200 text-[11px] leading-tight uppercase tracking-wider group-hover:text-[#E95420] transition-colors">
+            <span className="block font-bold text-[#333333] dark:text-slate-200 text-[11px] leading-tight uppercase tracking-wider group-hover:text-primary-600 transition-colors">
               {action.label}
             </span>
           </div>

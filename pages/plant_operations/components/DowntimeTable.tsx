@@ -11,8 +11,8 @@ export const DowntimeTable: React.FC<DowntimeTableProps> = ({ downtimeData, t })
   return (
     <div className="bg-white overflow-hidden">
       <div className="p-4 border-b border-slate-200 bg-[#F9F9F9]">
-        <h3 className="text-sm font-bold text-[#E95420] flex items-center gap-2 uppercase tracking-wider">
-          <div className="w-1.5 h-4 bg-[#772953] rounded-full"></div>
+        <h3 className="text-sm font-bold text-[#059669] flex items-center gap-2 uppercase tracking-wider">
+          <div className="w-1.5 h-4 bg-[#111827] rounded-full"></div>
           {t.downtime_report_title || 'Downtime Report'}
         </h3>
       </div>
@@ -20,23 +20,23 @@ export const DowntimeTable: React.FC<DowntimeTableProps> = ({ downtimeData, t })
       <div className="overflow-x-auto max-w-full">
         <table className="w-full text-sm min-w-max">
           <thead>
-            <tr className="bg-[#AEA79F] text-white">
-              <th className="px-3 py-3 text-left font-semibold border-r border-white/20 align-middle">
+            <tr className="bg-secondary-800 text-white">
+              <th className="px-3 py-3 text-left font-semibold border-r border-white/20 align-middle text-xs uppercase">
                 {t.start_time || 'Start Time'}
               </th>
-              <th className="px-3 py-3 text-left font-semibold border-r border-white/20 align-middle">
+              <th className="px-3 py-3 text-left font-semibold border-r border-white/20 align-middle text-xs uppercase">
                 {t.end_time || 'End Time'}
               </th>
-              <th className="px-3 py-3 text-left font-semibold border-r border-white/20 align-middle">
+              <th className="px-3 py-3 text-left font-semibold border-r border-white/20 align-middle text-xs uppercase">
                 {t.duration || 'Duration'}
               </th>
-              <th className="px-3 py-3 text-left font-semibold border-r border-white/20 align-middle">
+              <th className="px-3 py-3 text-left font-semibold border-r border-white/20 align-middle text-xs uppercase">
                 {t.pic || 'PIC'}
               </th>
-              <th className="px-3 py-3 text-left font-semibold border-r border-white/20 align-middle min-w-[180px]">
+              <th className="px-3 py-3 text-left font-semibold border-r border-white/20 align-middle min-w-[180px] text-xs uppercase">
                 {t.problem || 'Problem'}
               </th>
-              <th className="px-3 py-3 text-left font-semibold align-middle min-w-[180px]">
+              <th className="px-3 py-3 text-left font-semibold align-middle min-w-[180px] text-xs uppercase">
                 {t.action || 'Action'}
               </th>
             </tr>

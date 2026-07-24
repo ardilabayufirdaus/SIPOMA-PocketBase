@@ -211,7 +211,7 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         aria-label="Mobile navigation"
       >
         {/* Glassmorphism background */}
-        <div className="absolute inset-0 bg-[#1a0513]/95 backdrop-blur-xl border-t border-white/10" />
+        <div className="absolute inset-0 bg-slate-900/95 backdrop-blur-xl border-t border-slate-800" />
 
         <div
           className="relative flex items-stretch justify-around"
@@ -232,7 +232,7 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   {isActive && (
                     <motion.div
                       layoutId="mobileNavPill"
-                      className="absolute top-1 w-16 h-8 rounded-full bg-ubuntu-orange/15 border border-ubuntu-orange/20"
+                      className="absolute top-1 w-16 h-8 rounded-full bg-primary-500/15 border border-primary-500/20"
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
@@ -245,7 +245,7 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 <AnimatePresence>
                   {isActive && (
                     <motion.div
-                      className="absolute top-0 w-12 h-[3px] rounded-b-full bg-ubuntu-orange shadow-[0_0_12px_rgba(233,84,32,0.6)]"
+                      className="absolute top-0 w-12 h-[3px] rounded-b-full bg-primary-500 shadow-[0_0_12px_rgba(59,130,246,0.6)]"
                       initial={{ scaleX: 0, opacity: 0 }}
                       animate={{ scaleX: 1, opacity: 1 }}
                       exit={{ scaleX: 0, opacity: 0 }}
@@ -256,14 +256,14 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
                 <div
                   className={`relative z-10 transition-all duration-200 ${
-                    isActive ? 'text-ubuntu-orange scale-110' : 'text-white/50'
+                    isActive ? 'text-primary-400 scale-110' : 'text-slate-400'
                   }`}
                 >
                   {tab.icon}
                 </div>
                 <span
                   className={`relative z-10 text-[9px] mt-0.5 font-bold tracking-wide uppercase transition-all duration-200 ${
-                    isActive ? 'text-ubuntu-orange' : 'text-white/40'
+                    isActive ? 'text-primary-400' : 'text-slate-400'
                   }`}
                 >
                   {tab.label}
@@ -282,7 +282,7 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             <AnimatePresence>
               {isMoreActive && (
                 <motion.div
-                  className="absolute top-0 w-12 h-[3px] rounded-b-full bg-ubuntu-orange shadow-[0_0_12px_rgba(233,84,32,0.6)]"
+                  className="absolute top-0 w-12 h-[3px] rounded-b-full bg-primary-500 shadow-[0_0_12px_rgba(59,130,246,0.6)]"
                   initial={{ scaleX: 0, opacity: 0 }}
                   animate={{ scaleX: 1, opacity: 1 }}
                   exit={{ scaleX: 0, opacity: 0 }}
@@ -291,7 +291,7 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             </AnimatePresence>
 
             <div
-              className={`relative z-10 transition-all duration-200 ${isMoreActive || showMoreSheet ? 'text-ubuntu-orange scale-110' : 'text-white/50'}`}
+              className={`relative z-10 transition-all duration-200 ${isMoreActive || showMoreSheet ? 'text-primary-400 scale-110' : 'text-slate-400'}`}
             >
               <motion.div
                 animate={{ rotate: showMoreSheet ? 45 : 0 }}
@@ -309,7 +309,7 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               </motion.div>
             </div>
             <span
-              className={`relative z-10 text-[9px] mt-0.5 font-bold tracking-wide uppercase transition-all duration-200 ${isMoreActive || showMoreSheet ? 'text-ubuntu-orange' : 'text-white/40'}`}
+              className={`relative z-10 text-[9px] mt-0.5 font-bold tracking-wide uppercase transition-all duration-200 ${isMoreActive || showMoreSheet ? 'text-primary-400' : 'text-slate-400'}`}
             >
               Lainnya
             </span>
@@ -370,16 +370,16 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                         }}
                         className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all active:scale-95 touch-manipulation ${
                           isActive
-                            ? 'bg-ubuntu-orange/15 border border-ubuntu-orange/25'
+                            ? 'bg-primary-600/15 border border-primary-500/25'
                             : 'bg-white/5 border border-white/5 active:bg-white/10'
                         }`}
                         whileTap={{ scale: 0.92 }}
                       >
-                        <div className={`${isActive ? 'text-ubuntu-orange' : 'text-white/60'}`}>
+                        <div className={`${isActive ? 'text-primary-400' : 'text-white/60'}`}>
                           {item.icon}
                         </div>
                         <span
-                          className={`text-[10px] font-bold tracking-tight ${isActive ? 'text-ubuntu-orange' : 'text-white/50'}`}
+                          className={`text-[10px] font-bold tracking-tight ${isActive ? 'text-primary-400' : 'text-white/50'}`}
                         >
                           {item.label}
                         </span>

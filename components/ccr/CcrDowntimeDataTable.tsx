@@ -47,24 +47,24 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-200 border border-slate-200 text-xs">
-            <thead className="bg-slate-50">
+            <thead className="bg-slate-600 dark:bg-slate-700">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-r">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider border-r">
                   {t.start_time}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-r">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider border-r">
                   {t.end_time}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-r">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider border-r">
                   {t.duration}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-r">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider border-r">
                   {t.reason}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-r">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider border-r">
                   {t.action}
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                <th className="px-4 py-3 text-center text-xs font-semibold text-white uppercase tracking-wider">
                   {t.actions}
                 </th>
               </tr>

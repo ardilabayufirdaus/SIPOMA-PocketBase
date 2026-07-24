@@ -70,33 +70,33 @@ const MetricCard: React.FC<MetricCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay }}
       className={`
-        relative overflow-hidden rounded-lg 
+        relative overflow-hidden rounded-2xl 
         bg-white dark:bg-slate-900 
-        border border-slate-200 dark:border-slate-800
+        border border-slate-200/80 dark:border-slate-800
         shadow-sm hover:shadow-md transition-all duration-200
         group
         ${onClick ? 'cursor-pointer' : ''}
       `}
       onClick={onClick}
     >
-      {/* Ubuntu Orange Top Accent on Hover */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-[#E95420] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+      {/* Electric Cobalt Top Accent on Hover */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-primary-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
 
       <div className="p-5 relative z-10">
         <div className="flex justify-between items-start mb-4">
           <div
-            className={`p-2 rounded ${getStatusBg()} ${getStatusColor()} transition-colors border border-transparent group-hover:border-current`}
+            className={`p-2.5 rounded-xl ${getStatusBg()} ${getStatusColor()} transition-colors border border-transparent group-hover:border-current`}
           >
             {icon}
           </div>
           {trend && (
             <span
               className={`
-              text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-widest
+              text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider
               ${
                 trend.isPositive
-                  ? 'bg-emerald-50 text-[#38B000] dark:bg-emerald-900/30 dark:text-emerald-400'
-                  : 'bg-rose-50 text-[#EF2D56] dark:bg-rose-900/30 dark:text-rose-400'
+                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                  : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
               }
             `}
             >
@@ -107,18 +107,18 @@ const MetricCard: React.FC<MetricCardProps> = ({
 
         <div>
           <div className="flex items-baseline gap-1">
-            <h3 className="text-3xl font-bold text-[#333333] dark:text-white mb-1 tracking-tight">
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1 tracking-tight">
               {value}
             </h3>
           </div>
-          <p className="text-[11px] font-bold text-[#808080] dark:text-slate-500 tracking-widest uppercase">
+          <p className="text-xs font-bold text-slate-600 dark:text-slate-400 tracking-wider uppercase">
             {title}
           </p>
         </div>
 
         {subtitle && (
-          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <span className="text-[10px] text-[#AEA79F] dark:text-slate-500 font-bold uppercase tracking-tight">
+          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium tracking-tight">
               {subtitle}
             </span>
           </div>

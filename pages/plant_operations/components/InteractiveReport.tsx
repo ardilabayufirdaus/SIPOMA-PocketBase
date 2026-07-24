@@ -85,8 +85,8 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
       ref={reportRef}
       className="w-full space-y-6 overflow-hidden pb-8 bg-[#F7F7F7] min-h-screen p-6 font-sans"
     >
-      {/* Report Header - Ubuntu Theme */}
-      <div className="bg-gradient-to-r from-[#772953] to-[#E95420] rounded-xl shadow-lg p-6 border-b-4 border-[#E95420]">
+      {/* Report Header */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-secondary-900 rounded-xl shadow-lg p-6 border-b-4 border-primary-600">
         <div className="flex items-center justify-between">
           <div className="flex-shrink-0 bg-white/10 p-2 rounded-lg backdrop-blur-sm">
             <img src="/sipoma-logo.png" alt="Sipoma Logo" className="h-10 w-auto" />

@@ -317,18 +317,18 @@ const InspectionPage: React.FC = () => {
   }, [filteredReports]);
 
   return (
-    <div className="min-h-full flex flex-col gap-6 relative font-ubuntu">
+    <div className="min-h-full flex flex-col gap-6 relative font-sans">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200 dark:border-white/10 shadow-soft">
         <div className="flex items-center gap-6">
-          <div className="p-4 bg-gradient-to-br from-ubuntu-orange to-orange-600 rounded-2xl text-white shadow-lg shadow-orange-500/30">
+          <div className="p-4 bg-gradient-to-br from-primary-600 to-emerald-600 rounded-2xl text-white shadow-lg shadow-emerald-500/20">
             <ClipboardCheckIcon className="w-8 h-8" />
           </div>
           <div>
             <motion.h1
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="text-3xl font-bold text-ubuntu-coolGrey dark:text-white tracking-tight"
+              className="text-3xl font-bold text-slate-800 dark:text-white tracking-tight"
             >
               Inspection
             </motion.h1>
@@ -336,9 +336,9 @@ const InspectionPage: React.FC = () => {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-ubuntu-warmGrey dark:text-slate-400 mt-1 font-medium flex items-center gap-2"
+              className="text-slate-500 dark:text-slate-400 mt-1 font-medium flex items-center gap-2"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-ubuntu-orange"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
               {viewMode === 'reports'
                 ? 'Manage daily production shift reports.'
                 : 'Configure dynamic report templates (Grup > Alat > Point).'}
@@ -356,8 +356,8 @@ const InspectionPage: React.FC = () => {
             onClick={() => setViewMode(viewMode === 'reports' ? 'templates' : 'reports')}
             className={`group flex items-center gap-2.5 px-5 py-2.5 border rounded-xl text-sm font-bold transition-all duration-300 shadow-sm ${
               viewMode === 'templates'
-                ? 'bg-ubuntu-warmGrey text-white border-transparent'
-                : 'bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-white/10 text-ubuntu-coolGrey dark:text-slate-200'
+                ? 'bg-slate-700 text-white border-transparent'
+                : 'bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200'
             }`}
           >
             <FunnelIcon className="w-4 h-4 group-hover:rotate-12 transition-transform" />
@@ -367,7 +367,7 @@ const InspectionPage: React.FC = () => {
           {isSuperAdmin && (
             <button
               onClick={() => setIsUnitManagerOpen(true)}
-              className="group flex items-center gap-2.5 px-5 py-2.5 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 text-ubuntu-coolGrey dark:text-slate-200 rounded-xl text-sm font-bold shadow-sm hover:bg-white dark:hover:bg-slate-700 transition-all"
+              className="group flex items-center gap-2.5 px-5 py-2.5 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 rounded-xl text-sm font-bold shadow-sm hover:bg-white dark:hover:bg-slate-700 transition-all"
             >
               <CogIcon className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" />
               Manage Units
@@ -377,7 +377,7 @@ const InspectionPage: React.FC = () => {
           {viewMode === 'reports' && (
             <button
               onClick={() => setIsFormOpen(true)}
-              className="group flex items-center gap-2.5 px-5 py-2.5 bg-ubuntu-orange hover:bg-orange-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all active:scale-95"
+              className="group flex items-center gap-2.5 px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all active:scale-95"
             >
               <PlusIcon className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
               New Shift Report
@@ -399,14 +399,14 @@ const InspectionPage: React.FC = () => {
               className={`px-6 py-2.5 text-xs font-bold uppercase tracking-widest transition-all relative whitespace-nowrap rounded-xl ${
                 activeUnitId === unit.id
                   ? 'text-white'
-                  : 'text-ubuntu-coolGrey hover:text-ubuntu-orange dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-800/50'
+                  : 'text-slate-700 hover:text-primary-600 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-800/50'
               }`}
             >
               <span className="relative z-10">{unit.name}</span>
               {activeUnitId === unit.id && (
                 <motion.div
                   layoutId="activeUnitTab"
-                  className="absolute inset-0 bg-ubuntu-aubergine dark:bg-ubuntu-orange shadow-md rounded-xl"
+                  className="absolute inset-0 bg-secondary-900 dark:bg-primary-600 shadow-md rounded-xl"
                   transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                 />
               )}
@@ -434,7 +434,7 @@ const InspectionPage: React.FC = () => {
                 {activeSubUnitId === null && (
                   <motion.div
                     layoutId="activeSubTab"
-                    className="absolute inset-0 bg-ubuntu-warmGrey dark:bg-slate-700 rounded-lg shadow-sm"
+                    className="absolute inset-0 bg-slate-700 dark:bg-slate-700 rounded-lg shadow-sm"
                     transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
                   />
                 )}
@@ -454,7 +454,7 @@ const InspectionPage: React.FC = () => {
                   {activeSubUnitId === sub.id && (
                     <motion.div
                       layoutId="activeSubTab"
-                      className="absolute inset-0 bg-ubuntu-warmGrey dark:bg-slate-700 rounded-lg shadow-sm"
+                      className="absolute inset-0 bg-slate-700 dark:bg-slate-700 rounded-lg shadow-sm"
                       transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
                     />
                   )}
@@ -479,8 +479,8 @@ const InspectionPage: React.FC = () => {
                 onClick={() => setActiveAreaId('')}
                 className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
                   !activeAreaId
-                    ? 'bg-ubuntu-orange text-white shadow-md'
-                    : 'bg-white/50 dark:bg-slate-800/50 text-slate-500 hover:text-ubuntu-orange'
+                    ? 'bg-primary-600 text-white shadow-md'
+                    : 'bg-white/50 dark:bg-slate-800/50 text-slate-500 hover:text-primary-600'
                 }`}
               >
                 SEMUA AREA
@@ -493,8 +493,8 @@ const InspectionPage: React.FC = () => {
                     onClick={() => setActiveAreaId(area.id)}
                     className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all whitespace-nowrap ${
                       activeAreaId === area.id
-                        ? 'bg-ubuntu-orange text-white shadow-md'
-                        : 'bg-white/50 dark:bg-slate-800/50 text-slate-500 hover:text-ubuntu-orange'
+                        ? 'bg-primary-600 text-white shadow-md'
+                        : 'bg-white/50 dark:bg-slate-800/50 text-slate-500 hover:text-primary-600'
                     }`}
                   >
                     {area.name.toUpperCase()}
@@ -514,13 +514,13 @@ const InspectionPage: React.FC = () => {
               animate={{ opacity: 1, scale: 1 }}
               className="group p-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-soft hover:-translate-y-1 transition-all duration-300 overflow-hidden relative"
             >
-              <div className="absolute top-0 right-0 p-12 bg-ubuntu-orange/5 rounded-full -mr-10 -mt-10 group-hover:bg-ubuntu-orange/10 transition-colors"></div>
+              <div className="absolute top-0 right-0 p-12 bg-primary-600/5 rounded-full -mr-10 -mt-10 group-hover:bg-primary-600/10 transition-colors"></div>
               <div className="flex items-center justify-between relative z-10">
                 <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-ubuntu-warmGrey uppercase tracking-[0.2em]">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                     {stats[0].label}
                   </p>
-                  <h3 className="text-4xl font-bold text-ubuntu-coolGrey dark:text-white">
+                  <h3 className="text-4xl font-bold text-slate-800 dark:text-white">
                     {stats[0].value}
                   </h3>
                 </div>
@@ -567,13 +567,13 @@ const InspectionPage: React.FC = () => {
             {/* Toolbar */}
             <div className="p-6 border-b border-slate-200 dark:border-white/10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-slate-50/50 dark:bg-slate-800/50">
               <div className="relative flex-1 max-w-lg">
-                <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-ubuntu-orange transition-colors" />
+                <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
                 <input
                   type="text"
                   placeholder="Search by inspector or date..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-ubuntu-coolGrey dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/20 focus:border-ubuntu-orange transition-all shadow-sm"
+                  className="w-full pl-12 pr-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all shadow-sm"
                 />
               </div>
               <div className="flex items-center gap-4">
@@ -585,7 +585,7 @@ const InspectionPage: React.FC = () => {
                   <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    className="bg-transparent text-sm font-bold text-ubuntu-coolGrey dark:text-white focus:outline-none cursor-pointer pr-4 border-none !ring-0 !p-0"
+                    className="bg-transparent text-sm font-bold text-slate-800 dark:text-white focus:outline-none cursor-pointer pr-4 border-none !ring-0 !p-0"
                   >
                     <option className="bg-white dark:bg-slate-900">All Status</option>
                     <option className="bg-white dark:bg-slate-900">Pending</option>
@@ -600,7 +600,7 @@ const InspectionPage: React.FC = () => {
               {filteredReports.length > 0 ? (
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="text-[10px] font-bold text-ubuntu-warmGrey uppercase tracking-[0.2em] border-b border-slate-200 dark:border-white/10 bg-slate-50/80 dark:bg-slate-800/80">
+                    <tr className="text-[10px] font-bold text-white uppercase tracking-[0.2em] border-b border-slate-700 bg-slate-600 dark:bg-slate-700">
                       <th className="px-8 py-4">Report Date</th>
                       <th className="px-8 py-4">Inspector</th>
                       <th className="px-8 py-4 text-center">Status</th>
@@ -615,7 +615,7 @@ const InspectionPage: React.FC = () => {
                         className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200 cursor-pointer"
                       >
                         <td className="px-8 py-5">
-                          <span className="font-bold text-ubuntu-coolGrey dark:text-white group-hover:text-ubuntu-orange transition-colors">
+                          <span className="font-bold text-slate-800 dark:text-white group-hover:text-primary-600 transition-colors">
                             {new Date(report.date).toLocaleDateString(undefined, {
                               weekday: 'short',
                               year: 'numeric',
@@ -630,7 +630,7 @@ const InspectionPage: React.FC = () => {
                               <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center font-bold text-xs shadow-sm border border-slate-200 dark:border-white/10">
                                 {report.personnel.s1.tender.charAt(0)}
                               </div>
-                              <span className="font-bold text-ubuntu-coolGrey dark:text-slate-200">
+                              <span className="font-bold text-slate-800 dark:text-slate-200">
                                 {report.personnel.s1.tender}
                               </span>
                             </div>
@@ -655,7 +655,7 @@ const InspectionPage: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-8 py-5 text-right">
-                          <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center ml-auto group-hover:bg-ubuntu-orange group-hover:text-white transition-all duration-300 shadow-sm">
+                          <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center ml-auto group-hover:bg-primary-600 group-hover:text-white transition-all duration-300 shadow-sm">
                             <MagnifyingGlassIcon className="w-4 h-4" />
                           </div>
                         </td>
@@ -668,7 +668,7 @@ const InspectionPage: React.FC = () => {
                   <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 border border-slate-100 dark:border-white/5">
                     <ClipboardCheckIcon className="w-10 h-10 text-slate-300" />
                   </div>
-                  <h3 className="text-xl font-bold text-ubuntu-coolGrey dark:text-white">
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-white">
                     No Reports Found
                   </h3>
                   <p className="text-slate-400 mt-2 font-medium text-sm">
@@ -735,19 +735,19 @@ const InspectionPage: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed right-0 top-0 h-full w-full max-w-7xl bg-white dark:bg-slate-900 shadow-2xl z-[101] flex flex-col border-l border-slate-200 dark:border-white/10 font-ubuntu"
+              className="fixed right-0 top-0 h-full w-full max-w-7xl bg-white dark:bg-slate-900 shadow-2xl z-[101] flex flex-col border-l border-slate-200 dark:border-white/10 font-sans"
             >
               <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-white/50 dark:bg-slate-900/50 backdrop-blur-md">
                 <div className="flex items-center gap-6">
-                  <div className="p-3 bg-gradient-to-br from-ubuntu-orange to-orange-600 rounded-2xl text-white shadow-lg shadow-orange-500/20">
+                  <div className="p-3 bg-gradient-to-br from-primary-600 to-emerald-600 rounded-2xl text-white shadow-lg shadow-emerald-500/20">
                     <ClipboardCheckIcon className="w-8 h-8" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-ubuntu-coolGrey dark:text-white tracking-tight">
+                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
                       Daily Shift Report Details
                     </h3>
                     <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mt-1">
-                      <span className="w-2 h-2 rounded-full bg-ubuntu-orange animate-pulse"></span>
+                      <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse"></span>
                       {currentContextName} •{' '}
                       {new Date(selectedReport.date).toLocaleDateString(undefined, {
                         weekday: 'long',
@@ -771,7 +771,7 @@ const InspectionPage: React.FC = () => {
                 <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-white/10 shadow-soft overflow-hidden">
                   <table className="w-full text-xs sm:text-sm text-left border-collapse">
                     <thead>
-                      <tr className="bg-slate-50 dark:bg-slate-800 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 border-b border-slate-200 dark:border-white/10">
+                      <tr className="bg-slate-600 dark:bg-slate-700 text-[10px] font-bold uppercase tracking-[0.2em] text-white border-b border-slate-700">
                         <th className="px-6 py-4 w-16 text-center">No.</th>
                         <th className="px-6 py-4 min-w-[250px]">Check Point</th>
                         <th className="px-3 py-4 text-center w-28">Shift 1</th>
@@ -786,10 +786,10 @@ const InspectionPage: React.FC = () => {
                           <tr className="bg-slate-50/50 dark:bg-slate-800/20">
                             <td
                               colSpan={6}
-                              className="px-8 py-4 font-bold text-ubuntu-coolGrey dark:text-slate-200 uppercase tracking-[0.2em] text-[11px]"
+                              className="px-8 py-4 font-bold text-slate-800 dark:text-slate-200 uppercase tracking-[0.2em] text-[11px]"
                             >
                               <div className="flex items-center gap-4">
-                                <span className="w-1.5 h-6 bg-ubuntu-orange rounded-full"></span>
+                                <span className="w-1.5 h-6 bg-primary-600 rounded-full"></span>
                                 {group.name}
                               </div>
                             </td>
@@ -797,11 +797,11 @@ const InspectionPage: React.FC = () => {
                           {group.equipments.map((eq, eIdx) => (
                             <React.Fragment key={eq.id}>
                               <tr className="bg-white dark:bg-slate-900 group/eq border-b border-slate-100 dark:border-white/5">
-                                <td className="px-6 py-4 text-center font-bold text-slate-400 group-hover/eq:text-ubuntu-orange transition-colors">
+                                <td className="px-6 py-4 text-center font-bold text-slate-400 group-hover/eq:text-primary-600 transition-colors">
                                   {eIdx + 1}
                                 </td>
                                 <td
-                                  className="px-6 py-4 font-bold text-ubuntu-coolGrey dark:text-slate-200 group-hover/eq:text-ubuntu-orange transition-colors"
+                                  className="px-6 py-4 font-bold text-slate-800 dark:text-slate-200 group-hover/eq:text-primary-600 transition-colors"
                                   colSpan={5}
                                 >
                                   {eq.name}
@@ -854,18 +854,18 @@ const InspectionPage: React.FC = () => {
                           transition={{ delay: s * 0.1 }}
                           className="flex flex-col items-center p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-white/5 shadow-sm relative overflow-hidden group/card"
                         >
-                          <div className="absolute top-0 right-0 p-10 bg-ubuntu-orange/5 rounded-full -mr-8 -mt-8 group-hover/card:bg-ubuntu-orange/10 transition-colors"></div>
+                          <div className="absolute top-0 right-0 p-10 bg-primary-600/5 rounded-full -mr-8 -mt-8 group-hover/card:bg-primary-600/10 transition-colors"></div>
 
-                          <p className="text-[10px] font-bold text-ubuntu-warmGrey uppercase mb-6 tracking-[0.2em] text-center relative z-10 w-full border-b border-slate-200 dark:border-white/10 pb-2">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase mb-6 tracking-[0.2em] text-center relative z-10 w-full border-b border-slate-200 dark:border-white/10 pb-2">
                             SHIFT {s}
                           </p>
 
                           <div className="w-full space-y-6 relative z-10">
                             <div className="flex flex-col items-center">
-                              <div className="w-12 h-12 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center text-ubuntu-coolGrey dark:text-white font-bold text-lg mb-2 shadow-sm border border-slate-100 dark:border-white/5">
+                              <div className="w-12 h-12 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center text-slate-800 dark:text-white font-bold text-lg mb-2 shadow-sm border border-slate-100 dark:border-white/5">
                                 {p.tender ? p.tender.charAt(0) : '?'}
                               </div>
-                              <p className="text-sm font-bold text-ubuntu-coolGrey dark:text-white text-center">
+                              <p className="text-sm font-bold text-slate-800 dark:text-white text-center">
                                 {p.tender || 'Not Assigned'}
                               </p>
                               <p className="text-[9px] text-slate-400 uppercase tracking-wider">
@@ -876,7 +876,7 @@ const InspectionPage: React.FC = () => {
                             <div className="flex flex-col items-center relative w-full pt-4 border-t border-slate-200 dark:border-white/5">
                               {/* Karu Name & Verification Badge */}
                               <div className="flex items-center gap-1.5 mb-1">
-                                <p className="text-sm font-bold text-ubuntu-coolGrey dark:text-white text-center">
+                                <p className="text-sm font-bold text-slate-800 dark:text-white text-center">
                                   {p.karu || '-'}
                                 </p>
                                 {selectedReport.approvals[shiftKey] && (
@@ -895,7 +895,7 @@ const InspectionPage: React.FC = () => {
                                 currentUser?.username === p.karu ? (
                                   <button
                                     onClick={() => handleApproveShift(selectedReport.id, shiftKey)}
-                                    className="w-full py-2.5 bg-gradient-to-r from-ubuntu-orange to-orange-600 hover:from-orange-500 hover:to-orange-500 text-white text-[10px] font-bold rounded-xl transition-all shadow-lg shadow-orange-500/20 active:scale-95 flex items-center justify-center gap-2"
+                                    className="w-full py-2.5 bg-gradient-to-r from-primary-600 to-emerald-600 hover:from-primary-700 hover:to-emerald-700 text-white text-[10px] font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-2"
                                   >
                                     <CheckBadgeIcon className="w-4 h-4" />
                                     APPROVE SHIFT
@@ -924,7 +924,7 @@ const InspectionPage: React.FC = () => {
               <div className="p-6 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900">
                 <button
                   onClick={() => setSelectedReport(null)}
-                  className="w-full py-3.5 bg-ubuntu-coolGrey hover:bg-slate-700 text-white rounded-xl font-bold transition-all shadow-md active:scale-[0.98] tracking-widest text-xs uppercase"
+                  className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold transition-all shadow-md active:scale-[0.98] tracking-widest text-xs uppercase"
                 >
                   Close Report
                 </button>

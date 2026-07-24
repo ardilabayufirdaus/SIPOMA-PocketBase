@@ -154,7 +154,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
 
   const statusColorMap: { [key: string]: string } = {
     on_track: 'bg-success-50 text-success-700 border border-success-200',
-    delayed: 'bg-primary-50 text-primary-600 border border-primary-200', // Ubuntu Orange
+    delayed: 'bg-primary-50 text-primary-600 border border-primary-200',
     completed: 'bg-blue-50 text-blue-700 border border-blue-200',
   };
 
@@ -202,7 +202,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
           <div className="bg-white rounded-2xl shadow-medium border border-slate-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-100">
-                <thead className="bg-secondary-900">
+                <thead className="bg-secondary-800 dark:bg-secondary-900 border-b border-secondary-700">
                   <tr>
                     {tableHeaders.map((header, index) => (
                       <th
@@ -317,12 +317,11 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
           </div>
         </div>
 
-        {/* Project Form Modal - Ubuntu Styled */}
+        {/* Project Form Modal - Emerald & Slate Styled */}
         <Modal
           isOpen={isProjectFormModalOpen}
           onClose={() => setProjectFormModalOpen(false)}
           title={editingProject ? t.edit_project || 'Edit Project' : t.add_project || 'Add Project'}
-          // Note: Modal component might need its own styling updates, but passing props is limited here.
         >
           <div className="p-1">
             <ProjectForm
@@ -334,7 +333,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
           </div>
         </Modal>
 
-        {/* Delete Confirmation Modal - Ubuntu Styled */}
+        {/* Delete Confirmation Modal - Emerald & Slate Styled */}
         <Modal
           isOpen={isDeleteModalOpen}
           onClose={() => setDeleteModalOpen(false)}

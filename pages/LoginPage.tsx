@@ -63,17 +63,17 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden font-sans selection:bg-ubuntu-orange selection:text-white">
-      {/* Ubuntu-style Advanced Background Gradient */}
+    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden font-sans selection:bg-primary-600 selection:text-white">
+      {/* Advanced Background Gradient */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[#300a24]" /> {/* Base Aubergine */}
+        <div className="absolute inset-0 bg-[#0b0f17]" /> {/* Base Charcoal */}
         <div
           className="absolute inset-0 opacity-60"
           style={{
             backgroundImage: `
-              radial-gradient(circle at 100% 100%, #E95420 0%, transparent 50%),
-              radial-gradient(circle at 0% 0%, #772953 0%, transparent 50%),
-              radial-gradient(circle at 50% 50%, #5e2750 0%, transparent 100%)
+              radial-gradient(circle at 100% 100%, #059669 0%, transparent 50%),
+              radial-gradient(circle at 0% 0%, #111827 0%, transparent 50%),
+              radial-gradient(circle at 50% 50%, #047857 0%, transparent 100%)
             `,
           }}
         />
@@ -90,7 +90,7 @@ const LoginPage: React.FC = () => {
             y: [0, -30, 0],
           }}
           transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-          className="absolute -top-24 -left-24 w-96 h-96 bg-ubuntu-midAubergine/20 rounded-full blur-[100px]"
+          className="absolute -top-24 -left-24 w-96 h-96 bg-primary-700/20 rounded-full blur-[100px]"
         />
         <motion.div
           animate={{
@@ -99,7 +99,7 @@ const LoginPage: React.FC = () => {
             y: [0, 60, 0],
           }}
           transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-          className="absolute -bottom-32 -right-32 w-[500px] h-[500px] bg-ubuntu-orange/10 rounded-full blur-[120px]"
+          className="absolute -bottom-32 -right-32 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-[120px]"
         />
       </div>
 
@@ -118,7 +118,7 @@ const LoginPage: React.FC = () => {
           <h1 className="text-5xl lg:text-7xl font-bold text-white mb-6 tracking-tight">SIPOMA</h1>
           <p className="text-xl lg:text-2xl text-white/80 leading-relaxed font-light max-w-xl">
             Sistem Informasi Produksi & Operasional Manajemen
-            <span className="block mt-2 font-normal text-ubuntu-orange">
+            <span className="block mt-2 font-normal text-primary-400">
               Modern. Reliable. High Performance.
             </span>
           </p>
@@ -162,7 +162,7 @@ const LoginPage: React.FC = () => {
                   {t.login_username_label}
                 </label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ubuntu-orange transition-colors">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary-400 transition-colors">
                     <User size={20} />
                   </div>
                   <input
@@ -172,7 +172,7 @@ const LoginPage: React.FC = () => {
                     onChange={(e) => setIdentifier(e.target.value)}
                     required
                     autoFocus
-                    className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder:text-white/40 focus:bg-white focus:text-slate-900 focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/50 transition-all duration-300 font-medium"
+                    className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder:text-white/40 focus:bg-white focus:text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all duration-300 font-medium"
                     placeholder="Enter your username"
                   />
                 </div>
@@ -187,7 +187,7 @@ const LoginPage: React.FC = () => {
                   {t.login_password_label}
                 </label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ubuntu-orange transition-colors">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary-400 transition-colors">
                     <Lock size={20} />
                   </div>
                   <input
@@ -197,13 +197,13 @@ const LoginPage: React.FC = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
                     required
-                    className="w-full pl-12 pr-12 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder:text-white/40 focus:bg-white focus:text-slate-900 focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/50 transition-all duration-300 font-medium"
+                    className="w-full pl-12 pr-12 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder:text-white/40 focus:bg-white focus:text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all duration-300 font-medium"
                     placeholder="••••••••"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-ubuntu-orange hover:text-white transition-colors"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-primary-400 hover:text-white transition-colors"
                   >
                     {showPassword ? (
                       <EyeSlashIcon className="h-5 w-5" />
@@ -235,7 +235,7 @@ const LoginPage: React.FC = () => {
                 disabled={isSubmitting || loading}
                 loading={isSubmitting || loading}
                 fullWidth
-                className="!h-14 !text-lg !bg-ubuntu-orange hover:!bg-[#fb6430] !text-white !rounded-2xl !shadow-2xl !border-none !transform hover:!scale-[1.02] active:!scale-[0.98] transition-all duration-300 flex items-center justify-center gap-3 font-bold"
+                className="!h-14 !text-lg !bg-primary-600 hover:!bg-primary-700 !text-white !rounded-2xl !shadow-2xl !border-none !transform hover:!scale-[1.02] active:!scale-[0.98] transition-all duration-300 flex items-center justify-center gap-3 font-bold"
               >
                 {isSubmitting || loading ? (
                   t.login_logging_in
@@ -256,7 +256,7 @@ const LoginPage: React.FC = () => {
                 Developed by Digital Transformation Team
               </p>
               <div className="flex gap-4">
-                <div className="w-1.5 h-1.5 rounded-full bg-ubuntu-orange shadow-[0_0_8px_#E95420]" />
+                <div className="w-1.5 h-1.5 rounded-full bg-primary-500 shadow-[0_0_8px_#059669]" />
                 <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
                 <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
               </div>

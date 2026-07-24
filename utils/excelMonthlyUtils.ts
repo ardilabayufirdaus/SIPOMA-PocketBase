@@ -43,7 +43,7 @@ export async function exportMonthlyCcrData(
   }
 
   const parameters = await pb.collection('parameter_settings').getFullList<ParameterSetting>({
-    filter: paramSettingsFilter || undefined,
+    filter: paramSettingsFilter || '',
     sort: 'parameter',
   });
 
@@ -99,7 +99,7 @@ export async function exportMonthlyCcrData(
     cell.fill = {
       type: 'pattern',
       pattern: 'solid',
-      fgColor: { argb: colNum <= 2 ? 'FF772953' : 'FFE95420' }, // Ubuntu Aubergine for Date/Hour, Orange for Parameters
+      fgColor: { argb: colNum <= 2 ? 'FF111827' : 'FF059669' }, // Deep Charcoal for Date/Hour, Vibrant Emerald for Parameters
     };
     cell.font = {
       name: 'Arial',

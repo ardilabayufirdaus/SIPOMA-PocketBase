@@ -20,7 +20,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ role, content }) => {
       <div className={`flex max-w-[85%] ${isAssistant ? 'flex-row' : 'flex-row-reverse'}`}>
         <div
           className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${
-            isAssistant ? 'bg-ubuntu-orange text-white' : 'bg-ubuntu-darkAubergine text-white'
+            isAssistant ? 'bg-primary-600 text-white' : 'bg-slate-800 text-white'
           } ${isAssistant ? 'mr-2' : 'ml-2'} shadow-md`}
         >
           {isAssistant ? (
@@ -34,7 +34,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ role, content }) => {
           className={`relative px-4 py-2 rounded-2xl shadow-sm border ${
             isAssistant
               ? 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-tl-none'
-              : 'bg-ubuntu-orange text-white border-ubuntu-orange rounded-tr-none'
+              : 'bg-primary-600 text-white border-primary-600 rounded-tr-none'
           }`}
         >
           <div className="prose prose-sm dark:prose-invert max-w-none">

@@ -31,8 +31,8 @@ export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
   return (
     <div className="bg-white overflow-hidden">
       <div className="p-4 border-b border-slate-200 bg-[#F9F9F9]">
-        <h3 className="text-sm font-bold text-[#E95420] flex items-center gap-2 uppercase tracking-wider">
-          <div className="w-1.5 h-4 bg-[#772953] rounded-full"></div>
+        <h3 className="text-sm font-bold text-[#059669] flex items-center gap-2 uppercase tracking-wider">
+          <div className="w-1.5 h-4 bg-[#111827] rounded-full"></div>
           {t.silo_stock_report_title || 'SILO STOCK REPORT'}
         </h3>
       </div>
@@ -41,10 +41,10 @@ export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
         <table className="w-full text-sm table-auto border-collapse">
           <thead>
             {/* Main Header */}
-            <tr className="bg-[#772953] text-white">
+            <tr className="bg-secondary-800 text-white">
               <th
                 rowSpan={2}
-                className="px-3 py-3 text-left font-bold border-r border-white/20 sticky left-0 bg-[#772953] z-10 min-w-32 align-middle text-xs uppercase"
+                className="px-3 py-3 text-left font-bold border-r border-white/20 sticky left-0 bg-secondary-800 z-10 min-w-32 align-middle text-xs uppercase"
               >
                 {t.silo_name || 'SILO NAME'}
               </th>
@@ -68,7 +68,7 @@ export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
               </th>
             </tr>
             {/* Sub Header */}
-            <tr className="bg-[#8A3B66] text-white">
+            <tr className="bg-primary-700 text-white">
               {['shift1', 'shift2', 'shift3'].map((shiftKey) => (
                 <React.Fragment key={shiftKey}>
                   <th className="px-3 py-2 text-center font-semibold border-r border-white/20 align-middle text-[10px] uppercase">
@@ -117,7 +117,7 @@ export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
                       <td
                         className={`px-3 py-3 text-center align-middle font-bold text-xs ${
                           shiftIndex === 2 ? '' : 'border-r border-slate-200'
-                        } ${percentage > 90 ? 'text-[#E95420]' : 'text-[#772953]'}`}
+                        } ${percentage > 90 ? 'text-[#059669]' : 'text-[#111827]'}`}
                       >
                         {percentage > 0 ? `${percentage.toFixed(1)}%` : '-'}
                       </td>

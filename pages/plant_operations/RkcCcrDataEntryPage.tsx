@@ -3606,11 +3606,11 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
           transition={{ duration: 0.5 }}
           className="space-y-4"
         >
-          {/* Title Card - Ubuntu Gradient */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-[#772953] to-[#E95420] rounded-2xl shadow-xl border border-[#772953]/20 p-6">
+          {/* Title Card */}
+          <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-secondary-900 rounded-2xl shadow-xl border border-white/10 p-6">
             {/* Background Pattern */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#E95420]/20 via-transparent to-transparent"></div>
-            <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-400/5 rounded-full -translate-y-20 translate-x-20"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-600/20 via-transparent to-transparent"></div>
+            <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-400/5 rounded-full -translate-y-20 translate-x-20"></div>
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-slate-400/5 rounded-full translate-y-16 -translate-x-16"></div>
 
             <div className="relative flex items-center gap-4">
@@ -3812,7 +3812,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
         <EnhancedCard className="backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl shadow-2xl p-6 space-y-4">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 flex-wrap">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#772953] to-[#E95420] flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#111827] to-[#059669] flex items-center justify-center flex-shrink-0">
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"
@@ -3828,7 +3828,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                 </svg>
               </div>
               <div className="min-w-0">
-                <h3 className="text-xl font-bold bg-gradient-to-r from-[#772953] to-[#E95420] bg-clip-text text-transparent truncate">
+                <h3 className="text-xl font-bold bg-gradient-to-r from-[#111827] to-[#059669] bg-clip-text text-transparent truncate">
                   {t.ccr_parameter_data_entry_title}
                 </h3>
                 <p className="text-sm text-neutral-600 mt-1 truncate">
@@ -4168,12 +4168,12 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                     ))}
                   </colgroup>
                   <thead
-                    className="bg-gradient-to-r from-[#772953] via-[#A83D55] to-[#E95420] text-white backdrop-blur-sm text-center sticky top-0 z-20 shadow-xl border-b-2 border-[#772953]/50"
+                    className="bg-secondary-800 text-white text-center sticky top-0 z-20 shadow-sm border-b-2 border-secondary-700"
                     role="rowgroup"
                   >
                     <tr className="border-b border-secondary-300/30" role="row">
                       <th
-                        className="px-2 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-[#772953]/50 sticky left-0 bg-[#772953] z-30 sticky-col-header shadow-lg"
+                        className="px-2 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-secondary-700 sticky left-0 bg-secondary-900 z-30 sticky-col-header shadow-lg"
                         style={{ width: '60px' }}
                         role="columnheader"
                         scope="col"
@@ -4199,7 +4199,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                       {filteredParameterSettings.map((param) => (
                         <th
                           key={param.id}
-                          className={`px-2 py-3 text-xs font-bold border-r border-[#772953]/50 text-center bg-transparent backdrop-blur-sm text-white ${
+                          className={`px-2 py-3 text-xs font-bold border-r border-[#111827]/50 text-center bg-transparent backdrop-blur-sm text-white ${
                             shouldHighlightColumn(param) ? 'filtered-column' : ''
                           }`}
                           style={{ width: '80px', minWidth: '80px' }}
@@ -4250,12 +4250,12 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                           scope="col"
                         >
                           <div className="text-center space-y-1">
-                            <div className="text-[6px] leading-tight text-[#772953] font-medium">
+                            <div className="text-[6px] leading-tight text-[#111827] font-medium">
                               {param.min_value !== undefined
                                 ? `Min: ${formatNumberIndonesian(param.min_value, 1)}`
                                 : '-'}
                             </div>
-                            <div className="text-[6px] leading-tight text-[#772953] font-medium">
+                            <div className="text-[6px] leading-tight text-[#111827] font-medium">
                               {param.max_value !== undefined
                                 ? `Max: ${formatNumberIndonesian(param.max_value, 1)}`
                                 : '-'}
@@ -4272,7 +4272,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                           key={hour}
                           className={`border-b border-neutral-200/50 group ${
                             hour % 2 === 0 ? 'bg-white/40' : 'bg-neutral-50/30'
-                          } hover:bg-gradient-to-r hover:from-[#772953]/5 hover:to-[#E95420]/5 transition-all duration-150`}
+                          } hover:bg-gradient-to-r hover:from-[#111827]/5 hover:to-[#059669]/5 transition-all duration-150`}
                           role="row"
                         >
                           <td
@@ -4292,7 +4292,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                             role="gridcell"
                           >
                             <div className="flex items-center h-8">
-                              <span className="px-2 py-1 rounded-md bg-[#772953]/10 text-[#772953] font-medium text-xs">
+                              <span className="px-2 py-1 rounded-md bg-[#111827]/10 text-[#111827] font-medium text-xs">
                                 {getShiftForHour(hour)}
                               </span>
                             </div>
@@ -4682,7 +4682,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                   className="min-w-full divide-y divide-neutral-200 border border-neutral-200"
                   aria-label="Silo Data Table"
                 >
-                  <thead className="bg-gradient-to-r from-[#772953] via-[#A83D55] to-[#E95420] text-white shadow-xl">
+                  <thead className="bg-secondary-800 text-white shadow-sm">
                     <tr>
                       <th
                         rowSpan={2}
@@ -4882,7 +4882,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
             {/* CCR Material Usage Entry */}
             <EnhancedCard className="backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl shadow-2xl p-6 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#772953] to-[#E95420] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#111827] to-[#059669] flex items-center justify-center">
                   <svg
                     className="w-5 h-5 text-white"
                     fill="none"
@@ -4898,7 +4898,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold bg-gradient-to-r from-[#772953] to-[#E95420] bg-clip-text text-transparent">
+                  <h3 className="text-xl font-bold bg-gradient-to-r from-[#111827] to-[#059669] bg-clip-text text-transparent">
                     {t.ccr_material_usage_entry_title}
                   </h3>
                   <p className="text-sm text-neutral-600">{t.ccr_material_usage_description}</p>
@@ -4920,7 +4920,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
             {/* Information */}
             <EnhancedCard className="backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl shadow-2xl p-6 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#772953] to-[#E95420] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#111827] to-[#059669] flex items-center justify-center">
                   <svg
                     className="w-5 h-5 text-white"
                     fill="none"
@@ -4936,7 +4936,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold bg-gradient-to-r from-[#772953] to-[#E95420] bg-clip-text text-transparent">
+                  <h3 className="text-xl font-bold bg-gradient-to-r from-[#111827] to-[#059669] bg-clip-text text-transparent">
                     {t.ccr_information_title}
                   </h3>
                   <p className="text-sm text-neutral-600 mt-1">{t.ccr_information_description}</p>
@@ -4975,7 +4975,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
             <EnhancedCard className="backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl shadow-2xl p-6 space-y-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#772953] to-[#E95420] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#111827] to-[#059669] flex items-center justify-center">
                     <svg
                       className="w-5 h-5 text-white"
                       fill="none"
@@ -4991,7 +4991,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold bg-gradient-to-r from-[#772953] to-[#E95420] bg-clip-text text-transparent">
+                    <h3 className="text-xl font-bold bg-gradient-to-r from-[#111827] to-[#059669] bg-clip-text text-transparent">
                       {t.ccr_downtime_title}
                     </h3>
                     <br className="hidden" />
@@ -5027,7 +5027,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                       !canWrite
                     }
                     aria-label={t.add_downtime_button}
-                    className="group relative overflow-hidden flex items-center gap-2 h-9 px-4 bg-gradient-to-r from-[#772953] to-[#E95420] hover:from-[#8a3061] hover:to-[#f06e3b] shadow-md transition-all"
+                    className="group relative overflow-hidden flex items-center gap-2 h-9 px-4 bg-gradient-to-r from-[#111827] to-[#059669] hover:from-[#8a3061] hover:to-[#f06e3b] shadow-md transition-all"
                   >
                     <PlusIcon className="w-4 h-4 text-white" />
                     <span className="relative z-10 text-sm font-medium text-white">
@@ -5038,7 +5038,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
-                  <thead className="bg-gradient-to-r from-[#772953] via-[#A83D55] to-[#E95420] text-white shadow-xl">
+                  <thead className="bg-secondary-800 text-white shadow-sm">
                     <tr>
                       <th className="px-4 py-3 text-left font-bold border-b border-slate-700/50">
                         {t.start_time}
@@ -5079,7 +5079,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                           key={downtime.id}
                           className={`border-b border-neutral-200/50 group ${
                             idx % 2 === 0 ? 'bg-white/40' : 'bg-neutral-50/30'
-                          } hover:bg-gradient-to-r hover:from-[#772953]/5 hover:to-[#E95420]/5 transition-all duration-150`}
+                          } hover:bg-gradient-to-r hover:from-[#111827]/5 hover:to-[#059669]/5 transition-all duration-150`}
                         >
                           <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-semibold text-neutral-800">
                             {downtime.start_time}
@@ -5088,7 +5088,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                             {downtime.end_time}
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-neutral-700">
-                            <span className="px-2 py-1 rounded-md bg-[#E95420]/10 text-[#E95420] font-medium text-xs">
+                            <span className="px-2 py-1 rounded-md bg-[#059669]/10 text-[#059669] font-medium text-xs">
                               {downtime.unit}
                             </span>
                           </td>

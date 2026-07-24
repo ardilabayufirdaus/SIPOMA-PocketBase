@@ -36,7 +36,7 @@ const UserMenuButton: React.FC<UserMenuButtonProps> = ({ currentUser, onNavigate
               <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[#1e1e1e]"></div>
             </div>
           ) : (
-            <div className="relative w-full h-full rounded-full bg-[#E95420] flex items-center justify-center shadow-inner group-hover:bg-[#f06437] transition-colors">
+            <div className="relative w-full h-full rounded-full bg-slate-900 flex items-center justify-center shadow-inner group-hover:bg-slate-700 transition-colors">
               <UserIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-[#1e1e1e] rounded-full"></div>
             </div>

@@ -57,12 +57,12 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
         <div className="flex flex-col bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden group hover:shadow-md transition-shadow">
           <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-[#F7F7F7] dark:bg-slate-900/50">
             <h3 className="text-[11px] font-bold text-[#333333] dark:text-slate-300 uppercase tracking-widest flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-[#772953] rounded-full"></span>{' '}
+              <span className="w-1.5 h-1.5 bg-slate-900 rounded-full"></span>{' '}
               {t.unit_cm_title || 'CM Operations'}
             </h3>
             <button
               onClick={() => onNavigate('operations', 'op_dashboard')}
-              className="text-[10px] font-bold text-[#E95420] hover:underline uppercase tracking-tight"
+              className="text-[10px] font-bold text-primary-600 hover:underline uppercase tracking-tight"
             >
               {t.unit_view_all || 'VIEW ALL'}
             </button>
@@ -74,7 +74,7 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
               ))}
             </div>
             {cmUnits.length === 0 && (
-              <p className="text-xs text-[#AEA79F] italic text-center py-5">
+              <p className="text-xs text-[#94a3b8] italic text-center py-5">
                 {t.unit_no_units || 'No units found'}
               </p>
             )}
@@ -85,12 +85,12 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
         <div className="flex flex-col bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden group hover:shadow-md transition-shadow">
           <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-[#F7F7F7] dark:bg-slate-900/50">
             <h3 className="text-[11px] font-bold text-[#333333] dark:text-slate-300 uppercase tracking-widest flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-[#E95420] rounded-full"></span>{' '}
+              <span className="w-1.5 h-1.5 bg-primary-600 rounded-full"></span>{' '}
               {t.unit_rkc_title || 'RKC Operations'}
             </h3>
             <button
               onClick={() => onNavigate('rkc_operations', 'op_dashboard')}
-              className="text-[10px] font-bold text-[#E95420] hover:underline uppercase tracking-tight"
+              className="text-[10px] font-bold text-primary-600 hover:underline uppercase tracking-tight"
             >
               {t.unit_view_all || 'VIEW ALL'}
             </button>
@@ -102,7 +102,7 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
               ))}
             </div>
             {rkcUnits.length === 0 && (
-              <p className="text-xs text-[#AEA79F] italic text-center py-5">
+              <p className="text-xs text-[#94a3b8] italic text-center py-5">
                 {t.unit_no_units || 'No units found'}
               </p>
             )}
@@ -130,14 +130,14 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
                   className="flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-default"
                 >
                   <div
-                    className={`w-1 h-8 rounded-full flex-shrink-0 ${downtime.isRkc ? 'bg-[#E95420]' : 'bg-[#772953]'} opacity-40 group-hover:opacity-100 transition-opacity`}
+                    className={`w-1 h-8 rounded-full flex-shrink-0 ${downtime.isRkc ? 'bg-primary-600' : 'bg-slate-900'} opacity-40 group-hover:opacity-100 transition-opacity`}
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-baseline mb-1">
                       <span className="text-xs font-bold text-[#333333] dark:text-slate-200 uppercase tracking-tight">
                         {downtime.unit}
                       </span>
-                      <span className="text-[10px] font-bold text-[#AEA79F] uppercase">
+                      <span className="text-[10px] font-bold text-[#94a3b8] uppercase">
                         {t.unit_today || 'Today'}
                       </span>
                     </div>
@@ -149,7 +149,7 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-[#AEA79F] p-10 gap-3">
+            <div className="flex flex-col items-center justify-center h-full text-[#94a3b8] p-10 gap-3">
               <div className="w-12 h-12 rounded-full bg-[#F7F7F7] dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700">
                 <svg
                   className="w-6 h-6 opacity-40"

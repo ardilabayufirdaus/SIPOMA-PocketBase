@@ -796,14 +796,14 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
   return (
     <div className="space-y-6 font-sans">
-      {/* Header Title Section - Ubuntu Theme */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#772953] to-[#E95420] rounded-xl shadow-lg border-b-4 border-[#E95420] p-6">
+      {/* Header Title Section */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-secondary-900 rounded-xl shadow-lg border border-white/10 p-6">
         <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.05)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.05)_50%,rgba(255,255,255,0.05)_75%,transparent_75%,transparent)] bg-[length:24px_24px] opacity-20"></div>
 
         <div className="relative flex items-center gap-4">
           <div className="w-14 h-14 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20 shadow-inner">
             <svg
-              className="w-7 h-7 text-white"
+              className="w-7 h-7 text-primary-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -825,14 +825,14 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         </div>
       </div>
 
-      {/* Filter Section - Ubuntu Theme Card */}
-      <div className="bg-white rounded-xl shadow-md border-t-4 border-[#E95420] p-6">
+      {/* Filter Section */}
+      <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6">
         <div className="flex flex-wrap items-end gap-6">
           {/* Plant Category */}
           <div className="flex-1 min-w-[200px]">
             <label
               htmlFor="report-category"
-              className="flex items-center gap-1.5 text-xs font-bold text-[#772953] uppercase tracking-wider mb-2"
+              className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
             >
               {t.plant_category_label || 'PLANT CATEGORY'}
             </label>
@@ -841,7 +841,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 id="report-category"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full appearance-none px-4 py-2.5 bg-[#F7F7F7] border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-transparent text-sm font-medium transition-all duration-200 hover:bg-slate-50 cursor-pointer"
+                className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-sm font-medium transition-all duration-200 hover:bg-slate-100 cursor-pointer"
               >
                 {plantCategories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -857,7 +857,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           <div className="flex-1 min-w-[200px]">
             <label
               htmlFor="report-unit"
-              className="flex items-center gap-1.5 text-xs font-bold text-[#772953] uppercase tracking-wider mb-2"
+              className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
             >
               {t.unit_label || 'UNIT NAME'}
             </label>
@@ -867,7 +867,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 value={selectedUnit}
                 onChange={(e) => setSelectedUnit(e.target.value)}
                 disabled={unitsForCategory.length === 0}
-                className="w-full appearance-none px-4 py-2.5 bg-[#F7F7F7] border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-transparent disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-sm font-medium transition-all duration-200 hover:bg-slate-50 cursor-pointer"
+                className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-sm font-medium transition-all duration-200 hover:bg-slate-100 cursor-pointer"
               >
                 {unitsForCategory.map((unit) => (
                   <option key={unit} value={unit}>
@@ -883,7 +883,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           <div className="w-[200px]">
             <label
               htmlFor="report-date"
-              className="flex items-center gap-1.5 text-xs font-bold text-[#772953] uppercase tracking-wider mb-2"
+              className="flex items-center gap-1.5 text-xs font-bold text-[#111827] uppercase tracking-wider mb-2"
             >
               {t.select_date || 'REPORT DATE'}
             </label>
@@ -892,7 +892,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               id="report-date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full px-4 py-2.5 bg-[#F7F7F7] border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-transparent text-sm font-medium transition-all duration-200 hover:bg-slate-50 cursor-pointer"
+              className="w-full px-4 py-2.5 bg-[#F7F7F7] border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm font-medium transition-all duration-200 hover:bg-slate-50 cursor-pointer"
             />
           </div>
 
@@ -903,7 +903,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               disabled={isLoading || reportConfig.length === 0}
               variant="ghost"
               size="sm"
-              className="px-6 py-2.5 h-[42px] text-sm font-bold !bg-[#E95420] hover:!bg-[#D74515] !text-white shadow-md hover:shadow-lg transition-all !border-0 rounded-lg tracking-wide"
+              className="px-6 py-2.5 h-[42px] text-sm font-bold !bg-primary-600 hover:!bg-primary-500 !text-white shadow-md hover:shadow-lg transition-all !border-0 rounded-lg tracking-wide"
               ariaLabel={t.generate_report_button}
               loading={isLoading}
             >
@@ -917,7 +917,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               disabled={isLoading || simpleReportConfig.length === 0}
               variant="ghost"
               size="sm"
-              className="px-6 py-2.5 h-[42px] text-sm font-bold !border-2 !border-[#E95420] !text-[#E95420] hover:!bg-[#E95420]/10 rounded-lg tracking-wide"
+              className="px-6 py-2.5 h-[42px] text-sm font-bold !border-2 !border-primary-600 !text-primary-600 hover:!bg-primary-600/10 rounded-lg tracking-wide"
               ariaLabel={t.generate_simple_data_button}
             >
               SIMPLE
@@ -934,7 +934,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   className={`px-4 py-2.5 h-[42px] text-sm font-bold shadow-md hover:shadow-lg transition-all rounded-lg border-0 ${
                     copySuccess
                       ? 'bg-green-600 hover:bg-green-700 text-white'
-                      : 'bg-[#772953] hover:bg-[#5E2142] text-white'
+                      : 'bg-[#111827] hover:bg-[#5E2142] text-white'
                   }`}
                   ariaLabel="Copy report as image"
                   disabled={isCopying}
@@ -961,7 +961,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       <div className="bg-[#F7F7F7] p-8 rounded-xl min-h-[60vh] flex items-center justify-center border border-slate-200">
         {reportConfig.length === 0 && (
           <div className="text-center text-slate-500">
-            <h3 className="text-2xl font-bold text-[#772953] mb-4">{t.no_report_parameters}</h3>
+            <h3 className="text-2xl font-bold text-[#111827] mb-4">{t.no_report_parameters}</h3>
             <p className="text-lg">
               Please configure parameters in Plant Operations - Master Data.
             </p>
@@ -969,8 +969,8 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         )}
         {isLoading && (
           <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#E95420] mx-auto mb-6"></div>
-            <p className="text-xl font-bold text-[#E95420] animate-pulse uppercase tracking-widest">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary-600 mx-auto mb-6"></div>
+            <p className="text-xl font-bold text-primary-600 animate-pulse uppercase tracking-widest">
               {t.generating_report_message || 'GENERATING REPORT...'}
             </p>
           </div>
@@ -1013,8 +1013,8 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <h3 className="text-xl font-bold text-[#333333] mb-2">No Report Generated</h3>
             <p className="text-slate-500">
               Select your filters above and click{' '}
-              <span className="font-bold text-[#E95420]">GENERATE REPORT</span> to view operational
-              data.
+              <span className="font-bold text-primary-600">GENERATE REPORT</span> to view
+              operational data.
             </p>
           </div>
         )}
@@ -1023,8 +1023,8 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       {/* Floating Loading Overlay for Copy Image */}
       {isCopying && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="bg-white rounded-xl shadow-2xl p-8 flex flex-col items-center gap-4 min-w-[300px] border-t-4 border-[#E95420]">
-            <LoadingSpinner size="lg" className="border-[#E95420]" />
+          <div className="bg-white rounded-xl shadow-2xl p-8 flex flex-col items-center gap-4 min-w-[300px] border-t-4 border-primary-600">
+            <LoadingSpinner size="lg" className="border-primary-600" />
             <div className="text-center">
               <h3 className="text-lg font-bold text-[#333333] mb-1">Copying Report Image</h3>
               <p className="text-slate-500 text-sm">Please wait while we prepare your image...</p>

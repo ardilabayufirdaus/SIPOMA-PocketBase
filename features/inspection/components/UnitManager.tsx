@@ -149,18 +149,18 @@ const UnitManager: React.FC<UnitManagerProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 backdrop-blur-3xl font-ubuntu">
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 backdrop-blur-3xl font-sans">
       <div className="p-6 border-b border-slate-200 dark:border-white/10 flex items-center justify-between bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-20 shadow-sm">
         <div className="flex items-center gap-6">
-          <div className="p-3 bg-gradient-to-br from-ubuntu-orange to-orange-600 rounded-2xl text-white shadow-lg shadow-orange-500/20">
+          <div className="p-3 bg-gradient-to-br from-primary-600 to-emerald-600 rounded-2xl text-white shadow-lg shadow-emerald-500/20">
             <ClipboardCheckIcon className="w-8 h-8" />
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-ubuntu-coolGrey dark:text-white tracking-tight">
+            <h3 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
               Inspection Manager
             </h3>
-            <p className="text-[11px] font-bold text-ubuntu-warmGrey uppercase tracking-widest flex items-center gap-1.5 mt-1">
-              <span className="w-2 h-2 rounded-full bg-ubuntu-orange animate-pulse"></span>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mt-1">
+              <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse"></span>
               Super Admin Control
             </p>
           </div>
@@ -183,7 +183,7 @@ const UnitManager: React.FC<UnitManagerProps> = ({
             }}
             className={`px-8 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${
               activeTab === 'units'
-                ? 'bg-white dark:bg-slate-700 text-ubuntu-coolGrey dark:text-white shadow-sm'
+                ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm'
                 : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
             }`}
           >
@@ -196,7 +196,7 @@ const UnitManager: React.FC<UnitManagerProps> = ({
             }}
             className={`px-8 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${
               activeTab === 'areas'
-                ? 'bg-white dark:bg-slate-700 text-ubuntu-coolGrey dark:text-white shadow-sm'
+                ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm'
                 : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
             }`}
           >
@@ -213,8 +213,8 @@ const UnitManager: React.FC<UnitManagerProps> = ({
             onSubmit={handleSubmit}
             className="p-10 bg-white dark:bg-slate-900 backdrop-blur-md rounded-3xl border border-slate-200 dark:border-white/10 shadow-soft space-y-8"
           >
-            <h4 className="text-xl font-bold text-ubuntu-coolGrey dark:text-white mb-4 flex items-center gap-3">
-              <span className="w-1.5 h-8 bg-ubuntu-orange rounded-full"></span>
+            <h4 className="text-xl font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-3">
+              <span className="w-1.5 h-8 bg-primary-600 rounded-full"></span>
               {editingItem
                 ? `Edit ${activeTab === 'units' ? 'Unit' : 'Area'}`
                 : `Add New ${activeTab === 'units' ? 'Unit' : 'Area'}`}
@@ -222,7 +222,7 @@ const UnitManager: React.FC<UnitManagerProps> = ({
 
             <div className="space-y-6">
               <div>
-                <label className="block text-[10px] font-bold text-ubuntu-warmGrey uppercase tracking-[0.2em] mb-3 ml-1">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">
                   Name / Label
                 </label>
                 <input
@@ -233,21 +233,21 @@ const UnitManager: React.FC<UnitManagerProps> = ({
                   placeholder={
                     activeTab === 'units' ? 'e.g., Unit of Production' : 'e.g., Area 1 - Raw Mill'
                   }
-                  className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-2xl text-base font-bold outline-none focus:ring-2 focus:ring-ubuntu-orange/20 focus:border-ubuntu-orange transition-all shadow-inner text-ubuntu-coolGrey dark:text-white"
+                  className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-2xl text-base font-bold outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all shadow-inner text-slate-800 dark:text-white"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-6">
                 {activeTab === 'units' ? (
                   <div>
-                    <label className="block text-[10px] font-bold text-ubuntu-warmGrey uppercase tracking-[0.2em] mb-3 ml-1">
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">
                       Parent Unit (Optional)
                     </label>
                     <div className="relative">
                       <select
                         value={formData.parent_id}
                         onChange={(e) => setFormData({ ...formData, parent_id: e.target.value })}
-                        className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-2xl text-base font-bold outline-none focus:ring-2 focus:ring-ubuntu-orange/20 focus:border-ubuntu-orange transition-all appearance-none shadow-inner text-ubuntu-coolGrey dark:text-white"
+                        className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-2xl text-base font-bold outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all appearance-none shadow-inner text-slate-800 dark:text-white"
                       >
                         <option value="" className="bg-white dark:bg-slate-900">
                           None (Top Level)
@@ -267,7 +267,7 @@ const UnitManager: React.FC<UnitManagerProps> = ({
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-[10px] font-bold text-ubuntu-warmGrey uppercase tracking-[0.2em] mb-3 ml-1">
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">
                       Associated Unit
                     </label>
                     <div className="relative">
@@ -275,7 +275,7 @@ const UnitManager: React.FC<UnitManagerProps> = ({
                         required
                         value={formData.unit}
                         onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                        className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-2xl text-base font-bold outline-none focus:ring-2 focus:ring-ubuntu-orange/20 focus:border-ubuntu-orange transition-all appearance-none shadow-inner text-ubuntu-coolGrey dark:text-white"
+                        className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-2xl text-base font-bold outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all appearance-none shadow-inner text-slate-800 dark:text-white"
                       >
                         <option value="" className="bg-white dark:bg-slate-900">
                           Select Unit...
@@ -293,7 +293,7 @@ const UnitManager: React.FC<UnitManagerProps> = ({
                   </div>
                 )}
                 <div>
-                  <label className="block text-[10px] font-bold text-ubuntu-warmGrey uppercase tracking-[0.2em] mb-3 ml-1">
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 ml-1">
                     Sort Order
                   </label>
                   <input
@@ -302,7 +302,7 @@ const UnitManager: React.FC<UnitManagerProps> = ({
                     onChange={(e) =>
                       setFormData({ ...formData, sort_order: Number(e.target.value) })
                     }
-                    className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-2xl text-base font-bold outline-none focus:ring-2 focus:ring-ubuntu-orange/20 focus:border-ubuntu-orange transition-all shadow-inner text-ubuntu-coolGrey dark:text-white"
+                    className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-2xl text-base font-bold outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all shadow-inner text-slate-800 dark:text-white"
                   />
                 </div>
               </div>
@@ -318,7 +318,7 @@ const UnitManager: React.FC<UnitManagerProps> = ({
               </button>
               <button
                 type="submit"
-                className="flex-[2] py-5 bg-gradient-to-r from-ubuntu-orange to-orange-600 hover:from-orange-500 hover:to-orange-500 text-white rounded-2xl font-bold uppercase tracking-[0.2em] transition-all shadow-xl shadow-orange-500/30 hover:shadow-orange-500/50 active:scale-[0.98]"
+                className="flex-[2] py-5 bg-gradient-to-r from-primary-600 to-emerald-600 hover:from-primary-700 hover:to-emerald-700 text-white rounded-2xl font-bold uppercase tracking-[0.2em] transition-all shadow-xl shadow-emerald-500/30 hover:shadow-emerald-500/50 active:scale-[0.98]"
               >
                 {editingItem ? 'Update Changes' : 'Create Item'}
               </button>
@@ -327,12 +327,12 @@ const UnitManager: React.FC<UnitManagerProps> = ({
         ) : (
           <div className="space-y-8">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-ubuntu-warmGrey uppercase tracking-[0.2em] ml-2">
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">
                 Existing {activeTab === 'units' ? 'Hierarchy' : 'Areas'}
               </h4>
               <button
                 onClick={() => setIsAdding(true)}
-                className="flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-ubuntu-orange to-orange-600 hover:from-orange-500 hover:to-orange-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-orange-500/20 transition-all active:scale-95 uppercase tracking-widest"
+                className="flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-primary-600 to-emerald-600 hover:from-primary-700 hover:to-emerald-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition-all active:scale-95 uppercase tracking-widest"
               >
                 <PlusIcon className="w-5 h-5" />
                 Add New {activeTab === 'units' ? 'Unit' : 'Area'}
@@ -359,14 +359,14 @@ const UnitManager: React.FC<UnitManagerProps> = ({
                             <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 flex items-center justify-center font-bold text-sm border border-slate-200 dark:border-white/5">
                               {unit.sort_order || 0}
                             </div>
-                            <span className="font-bold text-ubuntu-coolGrey dark:text-white text-lg tracking-tight italic">
+                            <span className="font-bold text-slate-800 dark:text-white text-lg tracking-tight italic">
                               {unit.name}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => startEdit(unit)}
-                              className="p-3 text-slate-400 hover:text-ubuntu-orange hover:bg-ubuntu-orange/10 rounded-2xl transition-all shadow-sm active:scale-90"
+                              className="p-3 text-slate-400 hover:text-primary-600 hover:bg-primary-600/10 rounded-2xl transition-all shadow-sm active:scale-90"
                             >
                               <PencilIcon className="w-5 h-5" />
                             </button>
@@ -386,15 +386,15 @@ const UnitManager: React.FC<UnitManagerProps> = ({
                                 className="flex items-center justify-between p-4 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm"
                               >
                                 <div className="flex items-center gap-4">
-                                  <div className="w-2.5 h-2.5 rounded-full bg-ubuntu-orange shadow-lg shadow-orange-500/50 animate-pulse" />
-                                  <span className="text-sm font-bold text-ubuntu-coolGrey dark:text-white italic">
+                                  <div className="w-2.5 h-2.5 rounded-full bg-primary-600 shadow-lg shadow-emerald-500/50 animate-pulse" />
+                                  <span className="text-sm font-bold text-slate-800 dark:text-white italic">
                                     {sub.name}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <button
                                     onClick={() => startEdit(sub)}
-                                    className="p-2 text-slate-400 hover:text-ubuntu-orange hover:bg-ubuntu-orange/10 rounded-xl transition-all"
+                                    className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-600/10 rounded-xl transition-all"
                                   >
                                     <PencilIcon className="w-4 h-4" />
                                   </button>
@@ -439,21 +439,21 @@ const UnitManager: React.FC<UnitManagerProps> = ({
                                 <div className="w-9 h-9 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-400 flex items-center justify-center text-xs font-bold border border-slate-200 dark:border-white/5">
                                   {area.sort_order || 0}
                                 </div>
-                                <span className="text-base font-bold text-ubuntu-coolGrey dark:text-white tracking-tight">
+                                <span className="text-base font-bold text-slate-800 dark:text-white tracking-tight">
                                   {area.name}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
                                 <button
                                   onClick={() => setTemplateAreaId(area.id)}
-                                  className="p-3 text-slate-500 hover:text-ubuntu-orange hover:bg-ubuntu-orange/10 rounded-2xl transition-all shadow-sm active:scale-90"
+                                  className="p-3 text-slate-500 hover:text-primary-600 hover:bg-primary-600/10 rounded-2xl transition-all shadow-sm active:scale-90"
                                   title="Manage Template"
                                 >
                                   <ClipboardCheckIcon className="w-5 h-5" />
                                 </button>
                                 <button
                                   onClick={() => startEdit(area)}
-                                  className="p-3 text-slate-400 hover:text-ubuntu-orange hover:bg-ubuntu-orange/10 rounded-2xl transition-all shadow-sm active:scale-90"
+                                  className="p-3 text-slate-400 hover:text-primary-600 hover:bg-primary-600/10 rounded-2xl transition-all shadow-sm active:scale-90"
                                 >
                                   <PencilIcon className="w-5 h-5" />
                                 </button>
@@ -507,20 +507,20 @@ const UnitManager: React.FC<UnitManagerProps> = ({
             initial={{ opacity: 0, scale: 1.1 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.1 }}
-            className="absolute inset-0 z-50 bg-slate-50 dark:bg-slate-900 backdrop-blur-3xl flex flex-col pt-24 font-ubuntu"
+            className="absolute inset-0 z-50 bg-slate-50 dark:bg-slate-900 backdrop-blur-3xl flex flex-col pt-24 font-sans"
           >
             <div className="flex items-center justify-between p-8 px-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10 shadow-soft">
               <div className="flex items-center gap-6">
-                <div className="p-3 bg-gradient-to-br from-ubuntu-orange to-orange-600 rounded-2xl text-white">
+                <div className="p-3 bg-gradient-to-br from-primary-600 to-emerald-600 rounded-2xl text-white">
                   <ClipboardCheckIcon className="w-8 h-8" />
                 </div>
                 <div>
-                  <h4 className="text-2xl font-bold text-ubuntu-coolGrey dark:text-white tracking-tight">
+                  <h4 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
                     Area Template Editor
                   </h4>
-                  <p className="text-[11px] font-bold text-ubuntu-warmGrey uppercase tracking-widest mt-1">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">
                     Area:{' '}
-                    <span className="text-ubuntu-coolGrey dark:text-white">
+                    <span className="text-slate-800 dark:text-white">
                       {areas.find((a) => a.id === templateAreaId)?.name}
                     </span>
                   </p>
@@ -528,7 +528,7 @@ const UnitManager: React.FC<UnitManagerProps> = ({
               </div>
               <button
                 onClick={() => setTemplateAreaId(null)}
-                className="px-8 py-3.5 bg-gradient-to-r from-ubuntu-coolGrey to-slate-700 hover:from-slate-600 hover:to-slate-600 text-white rounded-[2rem] font-bold text-xs uppercase tracking-widest flex items-center gap-3 active:scale-95 shadow-xl shadow-slate-500/20"
+                className="px-8 py-3.5 bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white rounded-[2rem] font-bold text-xs uppercase tracking-widest flex items-center gap-3 active:scale-95 shadow-xl shadow-slate-500/20"
               >
                 <XMarkIcon className="w-5 h-5 group-hover:rotate-90 transition-transform" />
                 DASHBOARD
@@ -575,7 +575,7 @@ const UnitManager: React.FC<UnitManagerProps> = ({
       <div className="p-10 border-t border-slate-200 dark:border-white/10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
         <button
           onClick={onClose}
-          className="w-full py-5 bg-gradient-to-r from-ubuntu-coolGrey to-slate-800 hover:from-slate-700 hover:to-slate-700 text-white rounded-[2rem] font-bold transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] tracking-[0.2em] text-xs uppercase"
+          className="w-full py-5 bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white rounded-[2rem] font-bold transition-all shadow-2xl shadow-slate-900/20 active:scale-[0.98] tracking-[0.2em] text-xs uppercase"
         >
           Close Manager
         </button>

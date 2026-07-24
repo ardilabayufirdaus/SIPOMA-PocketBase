@@ -56,34 +56,34 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({
         <div className="p-6 space-y-6">
           {/* Downtime Details Section */}
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-            <h3 className="text-lg font-bold text-ubuntu-aubergine mb-4">{t.downtime_details}</h3>
+            <h3 className="text-lg font-bold text-slate-900 mb-4">{t.downtime_details}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div className="flex flex-col space-y-1">
-                <span className="text-ubuntu-coolGrey font-bold">{t.date}:</span>
+                <span className="text-slate-700 font-bold">{t.date}:</span>
                 <span className="text-slate-800 font-mono bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm">
                   {formatDate(recordToEdit.date)}
                 </span>
               </div>
               <div className="flex flex-col space-y-1">
-                <span className="text-ubuntu-coolGrey font-bold">{t.unit}:</span>
+                <span className="text-slate-700 font-bold">{t.unit}:</span>
                 <span className="text-slate-800 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm">
                   {recordToEdit.unit}
                 </span>
               </div>
               <div className="flex flex-col space-y-1">
-                <span className="text-ubuntu-coolGrey font-bold">{t.start_time}:</span>
+                <span className="text-slate-700 font-bold">{t.start_time}:</span>
                 <span className="text-slate-800 font-mono bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm">
                   {recordToEdit.start_time}
                 </span>
               </div>
               <div className="flex flex-col space-y-1">
-                <span className="text-ubuntu-coolGrey font-bold">{t.end_time}:</span>
+                <span className="text-slate-700 font-bold">{t.end_time}:</span>
                 <span className="text-slate-800 font-mono bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm">
                   {recordToEdit.end_time}
                 </span>
               </div>
               <div className="sm:col-span-2 flex flex-col space-y-1">
-                <span className="text-ubuntu-coolGrey font-bold">{t.problem}:</span>
+                <span className="text-slate-700 font-bold">{t.problem}:</span>
                 <span className="text-slate-800 bg-white border border-slate-200 px-3 py-2 rounded-lg min-h-[2.5rem] flex items-center shadow-sm">
                   {recordToEdit.problem}
                 </span>
@@ -96,7 +96,7 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({
             <div className="space-y-2">
               <label
                 htmlFor="action"
-                className="block text-sm font-bold text-ubuntu-coolGrey uppercase tracking-wider"
+                className="block text-sm font-bold text-slate-700 uppercase tracking-wider"
               >
                 {t.action}
               </label>
@@ -107,7 +107,7 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({
                   value={formData.action}
                   onChange={handleChange}
                   rows={3}
-                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange transition-all duration-300 hover:border-ubuntu-orange/50 text-slate-800 font-medium resize-none shadow-sm"
+                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 transition-all duration-300 hover:border-primary-500/50 text-slate-800 font-medium resize-none shadow-sm"
                   placeholder={t.action_placeholder || 'Enter action taken...'}
                   disabled={readOnly}
                 />
@@ -117,7 +117,7 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({
             <div className="space-y-2">
               <label
                 htmlFor="corrective_action"
-                className="block text-sm font-bold text-ubuntu-coolGrey uppercase tracking-wider"
+                className="block text-sm font-bold text-slate-700 uppercase tracking-wider"
               >
                 {t.corrective_action}
               </label>
@@ -128,7 +128,7 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({
                   value={formData.corrective_action}
                   onChange={handleChange}
                   rows={3}
-                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange transition-all duration-300 hover:border-ubuntu-orange/50 text-slate-800 font-medium resize-none shadow-sm"
+                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 transition-all duration-300 hover:border-primary-500/50 text-slate-800 font-medium resize-none shadow-sm"
                   placeholder={t.corrective_action_placeholder || 'Enter corrective action...'}
                   disabled={readOnly}
                 />
@@ -138,7 +138,7 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({
             <div className="space-y-2">
               <label
                 htmlFor="status"
-                className="block text-sm font-bold text-ubuntu-coolGrey uppercase tracking-wider"
+                className="block text-sm font-bold text-slate-700 uppercase tracking-wider"
               >
                 {t.status}
               </label>
@@ -148,7 +148,7 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({
                   id="status"
                   value={formData.status}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange transition-all duration-300 hover:border-ubuntu-orange/50 text-slate-800 font-medium appearance-none shadow-sm cursor-pointer"
+                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 transition-all duration-300 hover:border-primary-500/50 text-slate-800 font-medium appearance-none shadow-sm cursor-pointer"
                   disabled={readOnly}
                 >
                   {Object.values(DowntimeStatus).map((s) => (
@@ -179,7 +179,7 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({
             size="md"
             type="button"
             onClick={onCancel}
-            className="bg-white hover:bg-slate-100 border border-ubuntu-warmGrey/60 text-ubuntu-coolGrey font-bold rounded-xl px-6 py-2 transition-all duration-200 bg-none shadow-sm hover:shadow"
+            className="bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-bold rounded-xl px-6 py-2 transition-all duration-200 shadow-sm hover:shadow"
             aria-label={t.cancel_button || 'Cancel downtime form'}
           >
             {t.cancel_button}
@@ -190,7 +190,7 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({
               variant="primary"
               size="md"
               type="submit"
-              className="bg-ubuntu-orange bg-none hover:bg-[#d84615] text-white font-bold rounded-xl px-6 py-2 shadow-md hover:shadow-lg transition-all duration-200 border border-transparent"
+              className="bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl px-6 py-2 shadow-md hover:shadow-lg transition-all duration-200 border border-transparent"
               aria-label={t.save_button || 'Save downtime record'}
             >
               {t.save_button}

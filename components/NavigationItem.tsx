@@ -94,29 +94,29 @@ export const NavigationItem = React.forwardRef<HTMLButtonElement, IconButtonProp
           whileHover={{ x: isSidebarExpanded ? 4 : 0, scale: isSidebarExpanded ? 1 : 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          {/* Ubuntu Style Hover highlight */}
+          {/* Hover highlight */}
           {!isActive && (
             <div className="absolute inset-x-2 inset-y-1 bg-white/0 group-hover/nav-wrapper:bg-white/10 rounded-[10px] transition-all duration-300 -z-10" />
           )}
 
-          {/* Ubuntu style active highlight/dot */}
+          {/* Active highlight/dot */}
           {isActive && (
             <motion.div
               layoutId="activeNavIndicator"
-              className="absolute inset-x-2 inset-y-1 bg-gradient-to-r from-ubuntu-orange/20 to-ubuntu-orange/5 border border-ubuntu-orange/30 rounded-[10px] -z-10"
+              className="absolute inset-x-2 inset-y-1 bg-gradient-to-r from-primary-600/20 to-primary-600/5 border border-primary-500/30 rounded-[10px] -z-10"
               initial={false}
               transition={{ type: 'spring', stiffness: 400, damping: 30 }}
             />
           )}
 
-          {/* Left indicator bar (Ubuntu style) */}
+          {/* Left indicator bar */}
           <AnimatePresence>
             {isActive && (
               <motion.div
                 initial={{ opacity: 0, scaleY: 0 }}
                 animate={{ opacity: 1, scaleY: 1 }}
                 exit={{ opacity: 0, scaleY: 0 }}
-                className="absolute left-[-4px] top-1/2 -translate-y-1/2 w-1.5 h-6 bg-ubuntu-orange rounded-r-full shadow-[0_0_12px_rgba(233,84,32,0.8)]"
+                className="absolute left-[-4px] top-1/2 -translate-y-1/2 w-1.5 h-6 bg-primary-600 rounded-r-full shadow-[0_0_12px_rgba(5,150,105,0.8)]"
               />
             )}
           </AnimatePresence>
@@ -124,63 +124,65 @@ export const NavigationItem = React.forwardRef<HTMLButtonElement, IconButtonProp
           <div
             className={`transition-all duration-300 relative z-10 flex items-center justify-center ${
               isActive
-                ? 'scale-110 text-ubuntu-orange'
+                ? 'scale-110 text-primary-400'
                 : 'text-white/60 group-hover/nav-wrapper:scale-110 group-hover/nav-wrapper:text-white'
             }`}
           >
             {icon}
           </div>
 
-          {isSidebarExpanded && (
-            <div className="flex-1 flex items-center justify-between overflow-hidden relative z-10">
-              <span
-                className={`text-sm tracking-tight transition-colors duration-300 ${
+          <AnimatePresence mode="wait">
+            {isSidebarExpanded && (
+              <motion.span
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+                className={`text-xs font-semibold tracking-wide transition-colors whitespace-nowrap overflow-hidden text-ellipsis ${
                   isActive
                     ? 'text-white font-bold'
-                    : 'text-white/70 group-hover/nav-wrapper:text-white font-medium'
+                    : 'text-slate-300 group-hover/nav-wrapper:text-white'
                 }`}
               >
                 {label}
-              </span>
-              {hasDropdown && (
-                <svg
-                  className={`w-3.5 h-3.5 transition-transform duration-300 ${
-                    isActive
-                      ? 'text-ubuntu-orange'
-                      : 'text-white/40 group-hover/nav-wrapper:text-ubuntu-orange'
-                  } ${isExpanded ? 'rotate-180' : ''}`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              )}
-            </div>
-          )}
-        </motion.button>
+              </motion.span>
+            )}
+          </AnimatePresence>
 
-        {showTooltip && (
-          <AnimatePresence>
+          {hasDropdown && isSidebarExpanded && (
             <motion.div
-              initial={{ opacity: 0, x: -10, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -10, scale: 0.95 }}
-              className="fixed z-[100] px-3 py-1.5 text-white text-[12px] font-bold rounded-md shadow-2xl border border-white/10 pointer-events-none whitespace-nowrap bg-[#333333] font-ubuntu"
+              animate={{ rotate: isExpanded ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+              className={`ml-auto transition-colors ${
+                isActive
+                  ? 'text-primary-400'
+                  : 'text-white/40 group-hover/nav-wrapper:text-primary-400'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </motion.div>
+          )}
+
+          {/* Custom Floating Tooltip for Collapsed Sidebar */}
+          {!isSidebarExpanded && showTooltip && (
+            <div
+              className="fixed z-[100] px-3 py-1.5 text-white text-[12px] font-bold rounded-md shadow-2xl border border-white/10 pointer-events-none whitespace-nowrap bg-slate-900 font-sans"
               style={{
                 top: `${getTooltipPosition().top}px`,
                 left: `${getTooltipPosition().left}px`,
-                transform:
-                  tooltipPosition === 'right' || tooltipPosition === 'left'
-                    ? 'translateY(-50%)'
-                    : 'translateX(-50%) translateY(-100%)',
               }}
             >
               {label}
-            </motion.div>
-          </AnimatePresence>
-        )}
+            </div>
+          )}
+        </motion.button>
       </div>
     );
   }
@@ -194,35 +196,23 @@ export interface FloatingDropdownItem {
   icon: React.ReactElement;
 }
 
-interface FloatingDropdownProps {
-  items: FloatingDropdownItem[];
+export interface FloatingDropdownProps {
+  items: Array<{ key: string; label: string; icon: React.ReactNode }>;
   position: { top: number; left: number };
+  onSelect: (item: { key: string; label: string }) => void;
   onClose: () => void;
-  onSelect: (item: FloatingDropdownItem) => void;
 }
 
 export const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
   items,
   position,
-  onClose,
   onSelect,
+  onClose,
 }) => {
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const [focusedIndex, setFocusedIndex] = useState(0);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    };
-
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowDown') {
         event.preventDefault();
@@ -232,27 +222,22 @@ export const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
         setFocusedIndex((prev) => (prev - 1 + items.length) % items.length);
       } else if (event.key === 'Enter') {
         event.preventDefault();
-        onSelect(items[focusedIndex]);
+        onSelect(items[focusedIndex] as any);
+        onClose();
+      } else if (event.key === 'Escape') {
         onClose();
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
     document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [onClose, items, focusedIndex, onSelect]);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [items, focusedIndex, onSelect, onClose]);
 
   return (
     <AnimatePresence mode="wait">
       <motion.div
         ref={dropdownRef}
-        className="fixed z-[110] bg-[#300a24] border border-white/10 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] py-2 min-w-[240px] font-ubuntu overflow-hidden"
+        className="fixed z-[110] bg-slate-900 border border-slate-800 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] py-2 min-w-[240px] font-sans overflow-hidden"
         style={{
           top: `${position.top}px`,
           left: `${position.left}px`,
@@ -276,7 +261,7 @@ export const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
           <button
             key={item.key}
             onClick={() => {
-              onSelect(item);
+              onSelect(item as any);
               onClose();
             }}
             className={`w-full px-4 py-3 text-left flex items-center gap-3 transition-all duration-200 group relative z-10 ${
@@ -288,15 +273,15 @@ export const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
             {_index === focusedIndex && (
               <motion.div
                 layoutId="dropdownHoverIndicator"
-                className="absolute inset-y-2 left-1.5 w-1 bg-ubuntu-orange rounded-full shadow-[0_0_8px_rgba(233,84,32,0.6)]"
+                className="absolute inset-y-2 left-1.5 w-1 bg-primary-500 rounded-full shadow-[0_0_8px_rgba(5,150,105,0.6)]"
               />
             )}
 
             <div
               className={`flex-shrink-0 w-4.5 h-4.5 transition-colors duration-200 ${
                 _index === focusedIndex
-                  ? 'text-ubuntu-orange'
-                  : 'text-white/50 group-hover:text-ubuntu-orange'
+                  ? 'text-primary-400'
+                  : 'text-white/50 group-hover:text-primary-400'
               }`}
             >
               {item.icon}

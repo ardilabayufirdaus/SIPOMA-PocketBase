@@ -163,12 +163,12 @@ interface OptimizedTableHeaderProps {
 export const OptimizedTableHeader = React.memo(
   ({ fields, renderHeader, className = '' }: OptimizedTableHeaderProps) => {
     return (
-      <thead className={`bg-gray-50 ${className}`}>
+      <thead className={`bg-slate-600 dark:bg-slate-700 ${className}`}>
         <tr>
           {fields.map((field) => (
             <th
               key={field}
-              className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider"
             >
               {renderHeader ? renderHeader(field) : field}
             </th>
@@ -261,5 +261,3 @@ export const TablePagination: React.FC<TablePaginationProps> = ({
 };
 
 export default VirtualTable;
-
-

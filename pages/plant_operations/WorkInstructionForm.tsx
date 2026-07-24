@@ -103,7 +103,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({
             value={formData.activity}
             onChange={handleChange}
             required
-            className="mt-1 block w-full px-3 py-2.5 border border-[#AEA79F] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm text-[#333333]"
+            className="mt-1 block w-full px-3 py-2.5 border border-[#94a3b8] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] sm:text-sm text-[#333333]"
             disabled={readOnly}
           />
         </div>
@@ -120,7 +120,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({
               value={formData.doc_code}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2.5 border border-[#AEA79F] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm text-[#333333]"
+              className="mt-1 block w-full px-3 py-2.5 border border-[#94a3b8] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] sm:text-sm text-[#333333]"
               disabled={readOnly}
             />
           </div>
@@ -136,7 +136,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({
               value={formData.doc_title}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2.5 border border-[#AEA79F] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm text-[#333333]"
+              className="mt-1 block w-full px-3 py-2.5 border border-[#94a3b8] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] sm:text-sm text-[#333333]"
               disabled={readOnly}
             />
           </div>
@@ -152,7 +152,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({
             onChange={handleChange}
             rows={3}
             required
-            className="mt-1 block w-full px-3 py-2.5 border border-[#AEA79F] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm text-[#333333]"
+            className="mt-1 block w-full px-3 py-2.5 border border-[#94a3b8] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] sm:text-sm text-[#333333]"
             disabled={readOnly}
           />
         </div>
@@ -168,7 +168,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({
             onChange={handleChange}
             placeholder="https://example.com/doc"
             required
-            className="mt-1 block w-full px-3 py-2.5 border border-[#AEA79F] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm text-[#333333]"
+            className="mt-1 block w-full px-3 py-2.5 border border-[#94a3b8] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] sm:text-sm text-[#333333]"
             disabled={readOnly}
           />
         </div>
@@ -183,7 +183,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({
               value={formData.plant_category}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2.5 border border-[#AEA79F] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm text-[#333333]"
+              className="mt-1 block w-full px-3 py-2.5 border border-[#94a3b8] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] sm:text-sm text-[#333333]"
               disabled={readOnly}
             >
               <option value="">Select Category</option>
@@ -204,7 +204,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({
               value={formData.plant_unit}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2.5 border border-[#AEA79F] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm text-[#333333]"
+              className="mt-1 block w-full px-3 py-2.5 border border-[#94a3b8] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] sm:text-sm text-[#333333]"
               disabled={readOnly}
             >
               <option value="">Select Unit</option>
@@ -221,11 +221,11 @@ const WorkInstructionForm: React.FC<FormProps> = ({
           </div>
         </div>
       </div>
-      <div className="bg-[#F9F9F9] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-[#AEA79F]/20">
+      <div className="bg-[#F9F9F9] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-[#94a3b8]/20">
         {!readOnly && (
           <button
             type="submit"
-            className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2.5 bg-[#E95420] text-base font-medium text-white hover:bg-[#d94612] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#E95420] sm:ml-3 sm:w-auto sm:text-sm min-h-[44px]"
+            className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2.5 bg-[#059669] text-base font-medium text-white hover:bg-[#d94612] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#059669] sm:ml-3 sm:w-auto sm:text-sm min-h-[44px]"
             aria-label={t.save_button || 'Save work instruction'}
           >
             {t.save_button}
@@ -234,7 +234,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({
         <button
           type="button"
           onClick={onCancel}
-          className="mt-3 w-full inline-flex justify-center rounded-lg border border-[#AEA79F] shadow-sm px-4 py-2.5 bg-white text-base font-medium text-[#333333] hover:bg-[#F0F0F0] sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm min-h-[44px]"
+          className="mt-3 w-full inline-flex justify-center rounded-lg border border-[#94a3b8] shadow-sm px-4 py-2.5 bg-white text-base font-medium text-[#333333] hover:bg-[#F0F0F0] sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm min-h-[44px]"
           aria-label={t.cancel_button || 'Cancel'}
         >
           {t.cancel_button}

@@ -174,11 +174,11 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
   return (
     <div className="min-h-screen bg-slate-50 p-6 font-sans">
       <div className="w-full space-y-6">
-        {/* Header Section - Ubuntu Theme */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-darkAubergine rounded-2xl shadow-xl border border-white/10 p-6">
+        {/* Header Section */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 to-secondary-900 rounded-2xl shadow-xl border border-white/10 p-6">
           {/* Background Pattern */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(233,84,32,0.15),_transparent_40%)]"></div>
-          <div className="absolute -top-10 -right-10 w-40 h-40 bg-ubuntu-orange/10 rounded-full blur-2xl"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(5,150,105,0.15),_transparent_40%)]"></div>
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary-600/10 rounded-full blur-2xl"></div>
 
           <div className="relative flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20 shadow-inner">
@@ -211,9 +211,9 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
         {/* Filter Section */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
           <div className="flex items-center gap-2 mb-4">
-            <div className="p-1.5 rounded-md bg-ubuntu-warmGrey/20">
+            <div className="p-1.5 rounded-md bg-slate-200/50">
               <svg
-                className="w-5 h-5 text-ubuntu-coolGrey"
+                className="w-5 h-5 text-slate-700"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -226,7 +226,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-ubuntu-coolGrey">{t.filters}</h3>
+            <h3 className="text-lg font-bold text-slate-800">{t.filters}</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -234,7 +234,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
             <div className="group">
               <label
                 htmlFor="auto-filter-category"
-                className="flex items-center gap-1.5 text-xs font-bold text-ubuntu-coolGrey uppercase tracking-wider mb-2"
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
               >
                 {t.plant_category_label}
               </label>
@@ -243,7 +243,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                   id="auto-filter-category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-sm font-medium transition-all duration-200 hover:border-ubuntu-orange/50 cursor-pointer"
+                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-sm font-medium transition-all duration-200 hover:border-primary-500/50 cursor-pointer"
                 >
                   {plantCategories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -252,7 +252,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                   ))}
                 </select>
                 <svg
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none group-hover:text-ubuntu-orange transition-colors"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none group-hover:text-primary-500 transition-colors"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -271,7 +271,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
             <div className="group">
               <label
                 htmlFor="auto-filter-month"
-                className="flex items-center gap-1.5 text-xs font-bold text-ubuntu-coolGrey uppercase tracking-wider mb-2"
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
               >
                 {t.filter_by_month}
               </label>
@@ -280,7 +280,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                   id="auto-filter-month"
                   value={filterMonth}
                   onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-sm font-medium transition-all duration-200 hover:border-ubuntu-orange/50 cursor-pointer"
+                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-sm font-medium transition-all duration-200 hover:border-primary-500/50 cursor-pointer"
                 >
                   {monthOptions.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -289,7 +289,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                   ))}
                 </select>
                 <svg
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none group-hover:text-ubuntu-orange transition-colors"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none group-hover:text-primary-500 transition-colors"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -308,7 +308,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
             <div className="group">
               <label
                 htmlFor="auto-filter-year"
-                className="flex items-center gap-1.5 text-xs font-bold text-ubuntu-coolGrey uppercase tracking-wider mb-2"
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
               >
                 {t.filter_by_year}
               </label>
@@ -317,7 +317,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                   id="auto-filter-year"
                   value={filterYear}
                   onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-sm font-medium transition-all duration-200 hover:border-ubuntu-orange/50 cursor-pointer"
+                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-sm font-medium transition-all duration-200 hover:border-primary-500/50 cursor-pointer"
                 >
                   {yearOptions.map((y) => (
                     <option key={y} value={y}>
@@ -326,7 +326,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                   ))}
                 </select>
                 <svg
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none group-hover:text-ubuntu-orange transition-colors"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none group-hover:text-primary-500 transition-colors"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -345,9 +345,9 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
 
         {/* Downtime Follow-up Section */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="bg-[#f2f2f2] border-b border-slate-200 px-5 py-4">
+          <div className="bg-[#f8fafc] border-b border-slate-200 px-5 py-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-ubuntu-orange flex items-center justify-center shadow-sm">
+              <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center shadow-sm">
                 <svg
                   className="w-4 h-4 text-white"
                   fill="none"
@@ -362,7 +362,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                   />
                 </svg>
               </div>
-              <h2 className="text-lg font-bold text-ubuntu-coolGrey">
+              <h2 className="text-lg font-bold text-slate-800">
                 {t.autonomous_downtime_follow_up}
               </h2>
             </div>
@@ -370,33 +370,33 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
 
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-200">
-              <thead className="bg-slate-50">
+              <thead className="bg-slate-600 dark:bg-slate-700">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                     {t.date}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                     {t.start_time}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                     {t.end_time}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                     {t.duration}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                     {t.unit}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                     {t.problem}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                     {t.action}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                     {t.corrective_action}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                     {t.status}
                   </th>
                   <th className="relative px-4 py-3">
@@ -420,7 +420,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600 font-mono">
                           {d.end_time}
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-ubuntu-orange">
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-primary-600">
                           {duration}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 font-medium">
@@ -440,7 +440,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                             className={`px-2.5 py-1 inline-flex text-xs leading-5 font-bold rounded-full ${
                               d.status === DowntimeStatus.CLOSE
                                 ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                                : 'bg-orange-100 text-orange-700 border border-orange-200'
+                                : 'bg-amber-100 text-amber-700 border border-amber-200'
                             }`}
                           >
                             {d.status || DowntimeStatus.OPEN}
@@ -452,7 +452,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                             size="xs"
                             onClick={() => handleOpenEditDowntime(d)}
                             aria-label={`Edit downtime record for ${d.unit}`}
-                            className="text-slate-500 hover:text-ubuntu-orange hover:bg-orange-50"
+                            className="text-slate-500 hover:text-primary-600 hover:bg-emerald-50"
                           >
                             <EditIcon />
                           </EnhancedButton>
@@ -474,10 +474,10 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
 
         {/* Risk Management Section */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="bg-[#f2f2f2] border-b border-slate-200 px-5 py-4">
+          <div className="bg-[#f8fafc] border-b border-slate-200 px-5 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-ubuntu-midAubergine flex items-center justify-center shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-secondary-900 flex items-center justify-center shadow-sm">
                   <svg
                     className="w-4 h-4 text-white"
                     fill="none"
@@ -492,9 +492,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                     />
                   </svg>
                 </div>
-                <h2 className="text-lg font-bold text-ubuntu-coolGrey">
-                  {t.autonomous_risk_management}
-                </h2>
+                <h2 className="text-lg font-bold text-slate-800">{t.autonomous_risk_management}</h2>
               </div>
               {canWrite && (
                 <EnhancedButton
@@ -502,7 +500,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                   size="sm"
                   onClick={handleOpenAddRisk}
                   aria-label={t.add_risk_button || 'Add new risk'}
-                  className="bg-ubuntu-orange bg-none hover:bg-[#d84615] text-white font-bold shadow-md hover:shadow-lg transition-all duration-200 border border-transparent"
+                  className="bg-primary-600 hover:bg-primary-700 text-white font-bold shadow-md hover:shadow-lg transition-all duration-200 border border-transparent"
                 >
                   <PlusIcon className="w-4 h-4 mr-2" />
                   {t.add_risk_button}
@@ -513,24 +511,24 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
 
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-200">
-              <thead className="bg-slate-50">
+              <thead className="bg-slate-600 dark:bg-slate-700">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                     {t.date}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                     {t.unit}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                     {t.potential_disruption}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                     {t.preventive_action}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                     {t.mitigation_plan}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                     {t.status}
                   </th>
                   <th className="relative px-4 py-3">
@@ -576,7 +574,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                           size="xs"
                           onClick={() => handleOpenEditRisk(risk)}
                           aria-label={`Edit risk for ${risk.unit}`}
-                          className="text-slate-500 hover:text-ubuntu-orange hover:bg-orange-50"
+                          className="text-slate-500 hover:text-primary-600 hover:bg-emerald-50"
                         >
                           <EditIcon />
                         </EnhancedButton>

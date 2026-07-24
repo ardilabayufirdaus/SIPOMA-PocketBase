@@ -24,28 +24,28 @@ const SiloCapacityForm: React.FC<FormProps> = ({
   // Theme configuration
   const themeConfig = {
     red: {
-      gradient: 'from-[#772953] to-[#2C001E]',
+      gradient: 'from-[#111827] to-[#0f172a]',
       text: 'text-[#333333]',
       bg_light: 'bg-[#F0F0F0]',
-      border_focus: 'focus:border-[#E95420]',
-      ring_focus: 'focus:ring-[#E95420]',
-      button_primary: 'bg-[#E95420] hover:bg-[#d94612] text-white',
-      button_secondary: 'text-[#333333] hover:bg-[#E95420]/10',
-      icon_color: 'text-[#E95420]',
+      border_focus: 'focus:border-[#059669]',
+      ring_focus: 'focus:ring-[#059669]',
+      button_primary: 'bg-[#059669] hover:bg-[#d94612] text-white',
+      button_secondary: 'text-[#333333] hover:bg-[#059669]/10',
+      icon_color: 'text-[#059669]',
       subtle_text: 'text-white/80',
-      border_light: 'border-[#AEA79F]/20',
+      border_light: 'border-[#94a3b8]/20',
     },
     indigo: {
-      gradient: 'from-[#772953] to-[#2C001E]',
+      gradient: 'from-[#111827] to-[#0f172a]',
       text: 'text-[#333333]',
       bg_light: 'bg-[#F0F0F0]',
-      border_focus: 'focus:border-[#E95420]',
-      ring_focus: 'focus:ring-[#E95420]',
-      button_primary: 'bg-[#E95420] hover:bg-[#d94612] text-white',
-      button_secondary: 'text-[#333333] hover:bg-[#E95420]/10',
-      icon_color: 'text-[#E95420]',
+      border_focus: 'focus:border-[#059669]',
+      ring_focus: 'focus:ring-[#059669]',
+      button_primary: 'bg-[#059669] hover:bg-[#d94612] text-white',
+      button_secondary: 'text-[#333333] hover:bg-[#059669]/10',
+      icon_color: 'text-[#059669]',
       subtle_text: 'text-white/80',
-      border_light: 'border-[#AEA79F]/20',
+      border_light: 'border-[#94a3b8]/20',
     },
   };
 
@@ -152,13 +152,13 @@ const SiloCapacityForm: React.FC<FormProps> = ({
 
   const getInputClass = (error?: string) => `
     block w-full px-4 py-3 bg-white border rounded-xl shadow-sm 
-    text-[#333333] placeholder-[#AEA79F]
+    text-[#333333] placeholder-[#94a3b8]
     focus:outline-none focus:ring-2 focus:ring-offset-1 
     transition-all duration-200 sm:text-sm
     ${
       error
         ? 'border-[#C7162B] focus:border-[#C7162B] focus:ring-[#C7162B]/20'
-        : `border-[#AEA79F]/50 ${colors.border_focus} ${colors.ring_focus} focus:ring-opacity-50 hover:border-[#AEA79F]`
+        : `border-[#94a3b8]/50 ${colors.border_focus} ${colors.ring_focus} focus:ring-opacity-50 hover:border-[#94a3b8]`
     }
   `;
 

@@ -12,17 +12,17 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ isMobile, onClose,
     <div
       className={`flex items-center ${
         isExpanded ? 'justify-between px-5' : 'justify-center'
-      } h-[60px] border-b border-white/5 relative z-20 bg-ubuntu-aubergine/10`}
+      } h-[60px] border-b border-white/5 relative z-20 bg-slate-950/40`}
     >
       <motion.div
         className="flex items-center gap-3"
         initial={false}
         animate={{ x: isExpanded ? 0 : 0 }}
       >
-        {/* Logo Container - Ubuntu Style Icon */}
+        {/* Logo Container */}
         <div className="relative group cursor-pointer">
           <motion.div
-            className="w-9 h-9 flex items-center justify-center p-1.5 bg-gradient-to-br from-[#E95420] to-[#FF6331] rounded-[10px] shadow-lg transition-all group-hover:shadow-orange-500/30"
+            className="w-9 h-9 flex items-center justify-center p-1.5 bg-gradient-to-br from-primary-600 to-emerald-600 rounded-[10px] shadow-lg transition-all group-hover:shadow-emerald-500/30"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -33,11 +33,11 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ isMobile, onClose,
             />
           </motion.div>
           {!isExpanded && (
-            <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-ubuntu-aubergine rounded-full shadow-sm" />
+            <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-slate-900 rounded-full shadow-sm" />
           )}
         </div>
 
-        {/* Title - Ubuntu Font Style */}
+        {/* Title */}
         {isExpanded && (
           <motion.div
             className="flex flex-col"
@@ -45,10 +45,10 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ isMobile, onClose,
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <span className="font-bold text-lg text-white tracking-tight leading-none font-ubuntu">
+            <span className="font-bold text-lg text-white tracking-tight leading-none font-sans">
               SIPOMA
             </span>
-            <span className="text-[9px] text-ubuntu-orange font-bold tracking-widest mt-0.5 uppercase">
+            <span className="text-[9px] text-primary-400 font-bold tracking-widest mt-0.5 uppercase">
               Production System
             </span>
           </motion.div>

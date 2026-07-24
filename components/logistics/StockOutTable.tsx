@@ -25,7 +25,7 @@ export const StockOutTable: React.FC<StockOutTableProps> = ({
     <h3 className="text-lg font-semibold text-slate-800 mb-4">{t.detailed_stock_out_table}</h3>
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-slate-200 text-sm">
-        <thead className="bg-slate-50">
+        <thead className="bg-slate-600 dark:bg-slate-700">
           <tr>
             {tableData.headers.map((header, i) => {
               const isSelected = typeof header === 'number' && header === selectedDay;
@@ -99,5 +99,3 @@ export const StockOutTable: React.FC<StockOutTableProps> = ({
     </div>
   </div>
 );
-
-

@@ -78,25 +78,23 @@ const ChatbotWidget: React.FC = () => {
             }`}
           >
             {/* Header */}
-            <div className="bg-ubuntu-aubergine p-4 flex items-center justify-between text-white">
+            <div className="bg-slate-900 p-4 flex items-center justify-between text-white border-b border-slate-800">
               <div className="flex items-center gap-3">
-                <div className="bg-ubuntu-orange p-1.5 rounded-xl shadow-inner">
+                <div className="bg-primary-600 p-1.5 rounded-xl shadow-inner">
                   <SparklesIcon className="h-5 w-5 text-white animate-pulse" />
                 </div>
                 <div>
                   <h3 className="font-bold text-sm tracking-wide">SIPOMA Assistant</h3>
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                    <span className="text-[10px] text-white/70 uppercase font-medium">
-                      Grok x.AI Powered
-                    </span>
+                    <span className="text-[10px] text-white/70 uppercase font-medium">Aktif</span>
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setIsExpanded(!isExpanded)}
-                  className="p-1.5 hover:bg-white/10 rounded-lg transition-colors hidden sm:block"
+                  className="p-1.5 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors"
                 >
                   {isExpanded ? (
                     <ArrowsPointingInIcon className="h-5 w-5" />
@@ -106,7 +104,7 @@ const ChatbotWidget: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-1.5 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-colors"
+                  className="p-1.5 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors"
                 >
                   <XMarkIcon className="h-5 w-5" />
                 </button>
@@ -126,15 +124,15 @@ const ChatbotWidget: React.FC = () => {
                 <div className="flex justify-start mb-4">
                   <div className="bg-white dark:bg-slate-800 p-3 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 dark:border-slate-700 flex gap-1">
                     <div
-                      className="w-1.5 h-1.5 rounded-full bg-ubuntu-orange animate-bounce"
+                      className="w-1.5 h-1.5 rounded-full bg-primary-600 animate-bounce"
                       style={{ animationDelay: '0ms' }}
                     />
                     <div
-                      className="w-1.5 h-1.5 rounded-full bg-ubuntu-orange animate-bounce"
+                      className="w-1.5 h-1.5 rounded-full bg-primary-600 animate-bounce"
                       style={{ animationDelay: '150ms' }}
                     />
                     <div
-                      className="w-1.5 h-1.5 rounded-full bg-ubuntu-orange animate-bounce"
+                      className="w-1.5 h-1.5 rounded-full bg-primary-600 animate-bounce"
                       style={{ animationDelay: '300ms' }}
                     />
                   </div>
@@ -152,14 +150,14 @@ const ChatbotWidget: React.FC = () => {
                   onKeyDown={handleKeyPress}
                   placeholder="Tanyakan sesuatu..."
                   rows={1}
-                  className="w-full pl-4 pr-12 py-3 bg-slate-100 dark:bg-slate-900/50 border-none rounded-2xl focus:ring-2 focus:ring-ubuntu-orange resize-none text-sm transition-all"
+                  className="w-full pl-4 pr-12 py-3 bg-slate-100 dark:bg-slate-900/50 border-none rounded-2xl focus:ring-2 focus:ring-primary-500 resize-none text-sm transition-all"
                 />
                 <button
                   onClick={handleSend}
                   disabled={!inputValue.trim() || isLoading}
                   className={`absolute right-2 p-2 rounded-xl transition-all ${
                     inputValue.trim() && !isLoading
-                      ? 'bg-ubuntu-orange text-white shadow-lg'
+                      ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/20'
                       : 'text-slate-400 cursor-not-allowed'
                   }`}
                 >
@@ -179,9 +177,9 @@ const ChatbotWidget: React.FC = () => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="pointer-events-auto p-4 bg-ubuntu-aubergine text-white rounded-2xl shadow-2xl flex items-center gap-3 group relative overflow-hidden"
+        className="pointer-events-auto p-4 bg-slate-900 text-white rounded-2xl shadow-2xl flex items-center gap-3 group relative overflow-hidden border border-slate-700"
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-ubuntu-orange/40 to-transparent translate-x-[-100%] group-hover:translate-x-[0%] transition-transform duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-600/40 to-transparent translate-x-[-100%] group-hover:translate-x-[0%] transition-transform duration-500" />
         <div className="relative z-10 flex items-center gap-3">
           <ChatBubbleLeftEllipsisIcon className="h-6 w-6" />
           <span className="font-bold tracking-tight text-sm pr-1">SIPOMA AI</span>

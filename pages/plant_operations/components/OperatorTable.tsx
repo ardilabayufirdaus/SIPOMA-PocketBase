@@ -16,8 +16,8 @@ export const OperatorTable: React.FC<OperatorTableProps> = ({ operatorData, t })
   return (
     <div className="bg-white overflow-hidden h-full">
       <div className="p-4 border-b border-slate-200 bg-[#F9F9F9]">
-        <h3 className="text-sm font-bold text-[#E95420] flex items-center gap-2 uppercase tracking-wider">
-          <div className="w-1.5 h-4 bg-[#772953] rounded-full"></div>
+        <h3 className="text-sm font-bold text-[#059669] flex items-center gap-2 uppercase tracking-wider">
+          <div className="w-1.5 h-4 bg-[#111827] rounded-full"></div>
           {t.operator_data || 'OPERATOR DATA'}
         </h3>
       </div>
@@ -25,7 +25,7 @@ export const OperatorTable: React.FC<OperatorTableProps> = ({ operatorData, t })
       <div className="overflow-x-auto max-w-full">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#772953] text-white">
+            <tr className="bg-secondary-800 text-white">
               <th className="px-3 py-3 text-left font-bold border-r border-white/20 align-middle text-xs uppercase">
                 {t.shift}
               </th>

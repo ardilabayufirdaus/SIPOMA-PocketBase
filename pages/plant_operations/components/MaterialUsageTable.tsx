@@ -54,8 +54,8 @@ export const MaterialUsageTable: React.FC<MaterialUsageTableProps> = ({ material
   return (
     <div className="bg-white overflow-hidden">
       <div className="p-4 border-b border-slate-200 bg-[#F9F9F9]">
-        <h3 className="text-sm font-bold text-[#E95420] flex items-center gap-2 uppercase tracking-wider">
-          <div className="w-1.5 h-4 bg-[#772953] rounded-full"></div>
+        <h3 className="text-sm font-bold text-[#059669] flex items-center gap-2 uppercase tracking-wider">
+          <div className="w-1.5 h-4 bg-[#111827] rounded-full"></div>
           {t.material_usage || 'MATERIAL USAGE'}
         </h3>
       </div>
@@ -63,7 +63,7 @@ export const MaterialUsageTable: React.FC<MaterialUsageTableProps> = ({ material
       <div className="overflow-x-auto max-w-full">
         <table className="w-full text-sm table-auto border-collapse">
           <thead>
-            <tr className="bg-[#772953] text-white">
+            <tr className="bg-secondary-800 text-white">
               <th className="px-3 py-3 text-left font-bold border-r border-white/20 align-middle text-xs uppercase">
                 SHIFT
               </th>
@@ -115,13 +115,13 @@ export const MaterialUsageTable: React.FC<MaterialUsageTableProps> = ({ material
           {sortedMaterialUsageData.length > 0 && (
             <tfoot className="bg-[#F2F2F2] border-t-2 border-slate-300">
               <tr>
-                <td className="px-3 py-3 text-xs font-bold text-[#E95420] border-r border-slate-300 uppercase">
+                <td className="px-3 py-3 text-xs font-bold text-[#059669] border-r border-slate-300 uppercase">
                   Total
                 </td>
                 {materialColumns.map((col) => (
                   <td
                     key={col.key}
-                    className="px-3 py-3 text-xs font-bold text-[#E95420] border-r border-slate-300 text-center whitespace-nowrap"
+                    className="px-3 py-3 text-xs font-bold text-[#059669] border-r border-slate-300 text-center whitespace-nowrap"
                   >
                     {totals[col.key] > 0 ? formatNumberIndonesian(totals[col.key]) : '-'}
                   </td>

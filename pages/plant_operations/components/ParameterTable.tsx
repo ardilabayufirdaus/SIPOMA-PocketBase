@@ -31,8 +31,8 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
   return (
     <div className="bg-white overflow-hidden">
       <div className="p-4 border-b border-slate-200 bg-[#F9F9F9]">
-        <h3 className="text-sm font-bold text-[#E95420] flex items-center gap-2 uppercase tracking-wider">
-          <div className="w-1.5 h-4 bg-[#772953] rounded-full"></div>
+        <h3 className="text-sm font-bold text-[#059669] flex items-center gap-2 uppercase tracking-wider">
+          <div className="w-1.5 h-4 bg-[#111827] rounded-full"></div>
           {t.parameter_data}
         </h3>
       </div>
@@ -41,10 +41,10 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
         <table className="w-full text-sm table-auto border-collapse">
           <thead>
             {/* Grouped Headers */}
-            <tr className="bg-[#772953] text-white">
+            <tr className="bg-secondary-800 text-white">
               <th
                 rowSpan={2}
-                className="px-1 py-1 font-bold border-r border-white/20 sticky left-0 bg-[#772953] z-10 w-8 align-middle text-sm"
+                className="px-1 py-1 font-bold border-r border-white/20 sticky left-0 bg-secondary-800 z-10 w-8 align-middle text-sm"
               >
                 <div
                   className="flex items-center justify-center w-full"
@@ -75,7 +75,7 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
               ))}
             </tr>
             {/* Parameter Headers */}
-            <tr className="bg-[#8A3B66] text-white">
+            <tr className="bg-primary-700 text-white">
               {allParams.map((param) => (
                 <th
                   key={param.id}
@@ -135,17 +135,17 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
                     <>
                       <td
                         colSpan={2}
-                        className="px-1 py-2 text-center text-[#772953] border-r border-slate-300 sticky left-0 bg-[#F2F2F2] z-10 align-middle font-bold text-xs uppercase"
+                        className="px-1 py-2 text-center text-[#111827] border-r border-slate-300 sticky left-0 bg-[#F2F2F2] z-10 align-middle font-bold text-xs uppercase"
                       >
                         {statName}
                       </td>
                     </>
                   ) : (
                     <>
-                      <td className="px-1 py-2 text-center text-[#772953] border-r border-slate-300 sticky left-0 bg-[#F2F2F2] z-10 align-middle font-bold text-xs">
+                      <td className="px-1 py-2 text-center text-[#111827] border-r border-slate-300 sticky left-0 bg-[#F2F2F2] z-10 align-middle font-bold text-xs">
                         {statName}
                       </td>
-                      <td className="px-1 py-2 text-center text-[#772953] border-r border-slate-300 align-middle font-bold text-xs">
+                      <td className="px-1 py-2 text-center text-[#111827] border-r border-slate-300 align-middle font-bold text-xs">
                         -
                       </td>
                     </>
@@ -155,7 +155,7 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
                     return (
                       <td
                         key={param.id}
-                        className="px-1 py-2 text-center text-[#772953] border-r border-slate-300 last:border-r-0 align-middle font-bold text-xs whitespace-nowrap"
+                        className="px-1 py-2 text-center text-[#111827] border-r border-slate-300 last:border-r-0 align-middle font-bold text-xs whitespace-nowrap"
                       >
                         {value}
                       </td>

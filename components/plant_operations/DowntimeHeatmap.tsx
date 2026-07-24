@@ -74,7 +74,7 @@ const DowntimeHeatmap: React.FC<DowntimeHeatmapProps> = ({ units, downtimeData }
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: hour * 0.01 }}
-                    className={`flex-1 h-8 rounded-sm ${getColor(val)} transition-all hover:ring-2 hover:ring-ubuntu-orange relative group/tile`}
+                    className={`flex-1 h-8 rounded-sm ${getColor(val)} transition-all hover:ring-2 hover:ring-primary-500 relative group/tile`}
                   >
                     {val > 0 && (
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-[9px] rounded-lg opacity-0 group-hover/tile:opacity-100 pointer-events-none z-50 whitespace-nowrap shadow-xl">

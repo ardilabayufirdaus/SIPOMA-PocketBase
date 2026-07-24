@@ -13,8 +13,8 @@ export const InformationTable: React.FC<InformationTableProps> = ({ informationD
   return (
     <div className="bg-white overflow-hidden">
       <div className="p-4 border-b border-slate-200 bg-[#F9F9F9]">
-        <h3 className="text-sm font-bold text-[#E95420] flex items-center gap-2 uppercase tracking-wider">
-          <div className="w-1.5 h-4 bg-[#772953] rounded-full"></div>
+        <h3 className="text-sm font-bold text-primary-600 flex items-center gap-2 uppercase tracking-wider">
+          <div className="w-1.5 h-4 bg-secondary-900 rounded-full"></div>
           {t.information || 'INFORMATION'}
         </h3>
       </div>

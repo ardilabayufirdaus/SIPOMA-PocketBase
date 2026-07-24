@@ -51,7 +51,7 @@ const PredictiveMaintenance: React.FC<PredictiveMaintenanceProps> = ({ plantUnit
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center p-12 bg-white/50 backdrop-blur-xl rounded-[2.5rem] border border-white/60">
-        <BrainCircuit className="w-12 h-12 text-ubuntu-orange animate-pulse mb-4" />
+        <BrainCircuit className="w-12 h-12 text-primary-500 animate-pulse mb-4" />
         <span className="text-slate-600 font-black tracking-widest uppercase text-xs">
           AI Analyzing Historical Patterns...
         </span>
@@ -60,9 +60,9 @@ const PredictiveMaintenance: React.FC<PredictiveMaintenanceProps> = ({ plantUnit
   }
 
   return (
-    <div className="space-y-8 font-ubuntu">
+    <div className="space-y-8 font-sans">
       {/* AI Header Card */}
-      <div className="relative group overflow-hidden bg-gradient-to-br from-[#300a24] to-[#5e2750] p-8 rounded-[2.5rem] shadow-2xl">
+      <div className="relative group overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-[2.5rem] shadow-2xl">
         <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:opacity-20 transition-opacity">
           <BrainCircuit className="w-40 h-40 text-white" />
         </div>
@@ -70,7 +70,7 @@ const PredictiveMaintenance: React.FC<PredictiveMaintenanceProps> = ({ plantUnit
         <div className="relative z-10 flex flex-col md:flex-row justify-between gap-8">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="px-3 py-1 bg-ubuntu-orange text-white text-[10px] font-black rounded-full tracking-widest uppercase">
+              <div className="px-3 py-1 bg-primary-600 text-white text-[10px] font-black rounded-full tracking-widest uppercase">
                 AI Powered
               </div>
               <div className="flex items-center gap-1.5 text-white/50 text-[10px] font-bold uppercase tracking-widest">
@@ -81,7 +81,7 @@ const PredictiveMaintenance: React.FC<PredictiveMaintenanceProps> = ({ plantUnit
 
             <h2 className="text-3xl font-black text-white tracking-tight leading-none">
               Predictive Maintenance <br />
-              <span className="text-ubuntu-orange">& Anomaly Detection</span>
+              <span className="text-primary-400">& Anomaly Detection</span>
             </h2>
             <p className="max-w-[500px] text-white/60 text-sm font-medium leading-relaxed">
               Our neural analysis engine monitors {plantUnit} sensor data to identify patterns that
@@ -150,12 +150,12 @@ const AnomalyCard = React.forwardRef<HTMLDivElement, { anomaly: AnomalyData; ind
         {
           label: 'Daily Avg',
           data: anomaly.history.map((h) => h.value),
-          borderColor: '#E95420',
-          backgroundColor: 'rgba(233, 84, 32, 0.05)',
+          borderColor: '#059669',
+          backgroundColor: 'rgba(5, 150, 105, 0.05)',
           borderWidth: 3,
           pointRadius: 4,
           pointBackgroundColor: '#fff',
-          pointBorderColor: '#E95420',
+          pointBorderColor: '#059669',
           tension: 0.4,
           fill: true,
         },
@@ -169,8 +169,8 @@ const AnomalyCard = React.forwardRef<HTMLDivElement, { anomaly: AnomalyData; ind
         legend: { display: false },
         tooltip: {
           backgroundColor: '#1e293b',
-          titleFont: { size: 12, family: 'Ubuntu', weight: 'bold' as const },
-          bodyFont: { size: 12, family: 'Ubuntu' },
+          titleFont: { size: 12, family: 'Plus Jakarta Sans', weight: 'bold' as const },
+          bodyFont: { size: 12, family: 'Plus Jakarta Sans' },
           padding: 12,
           cornerRadius: 12,
           displayColors: false,
@@ -199,7 +199,7 @@ const AnomalyCard = React.forwardRef<HTMLDivElement, { anomaly: AnomalyData; ind
                   Parameter Analysis
                 </span>
               </div>
-              <h3 className="text-lg font-black text-slate-900 group-hover:text-ubuntu-orange transition-colors">
+              <h3 className="text-lg font-black text-slate-900 group-hover:text-primary-600 transition-colors">
                 {anomaly.parameterName}
               </h3>
             </div>
@@ -268,7 +268,7 @@ const AnomalyCard = React.forwardRef<HTMLDivElement, { anomaly: AnomalyData; ind
                 {anomaly.stdDev.toFixed(1)}
               </div>
             </div>
-            <button className="flex items-center gap-2 text-[10px] font-black text-ubuntu-orange uppercase tracking-widest hover:translate-x-1 transition-transform">
+            <button className="flex items-center gap-2 text-[10px] font-black text-primary-600 uppercase tracking-widest hover:translate-x-1 transition-transform">
               Detail Analytics <ChevronRight className="w-4 h-4" />
             </button>
           </div>

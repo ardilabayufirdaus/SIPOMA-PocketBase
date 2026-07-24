@@ -13,73 +13,73 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Ubuntu Orange as Primary (Action Color)
+        // Option B: Vibrant Emerald as Primary (Action/Active Color)
         primary: {
-          50: '#fff7ed',
-          100: '#ffedd5',
-          200: '#fed7aa',
-          300: '#fdba74',
-          400: '#fb923c',
-          500: '#f97316',
-          600: '#E95420', // ubuntu.orange
-          700: '#c2410c',
-          800: '#9a3412',
-          900: '#7c2d12',
-          950: '#431407',
+          50: '#ecfdf5',
+          100: '#d1fae5',
+          200: '#a7f3d0',
+          300: '#6ee7b7',
+          400: '#34d399',
+          500: '#10b981',
+          600: '#059669', // Vibrant Emerald
+          700: '#047857',
+          800: '#065f46',
+          900: '#064e3b',
+          950: '#022c22',
         },
-        // Ubuntu Aubergine as Secondary (Brand/Header Color)
+        // Option B: Deep Charcoal Slate as Secondary (Header/Sidebar Color)
         secondary: {
-          50: '#fdf4f9',
-          100: '#fbe8f3',
-          200: '#f8d0e7',
-          300: '#f2a8d1',
-          400: '#e871b0',
-          500: '#d53f8c',
-          600: '#b83280',
-          700: '#772953', // ubuntu.midAubergine
-          800: '#5e2750', // ubuntu.darkAubergine
-          900: '#300a24', // ubuntu.aubergine
-          950: '#1a0513',
-        },
-        // Ubuntu Warm/Cool Greys for Neutrals
-        neutral: {
-          0: '#ffffff',
-          50: '#F7F7F7', // ubuntu light bg
+          50: '#f9fafb',
           100: '#f3f4f6',
           200: '#e5e7eb',
           300: '#d1d5db',
-          400: '#AEA79F', // ubuntu.warmGrey
+          400: '#9ca3af',
           500: '#6b7280',
-          600: '#555555', // ubuntu mid text
-          700: '#333333', // ubuntu.coolGrey (Primary text)
+          600: '#4b5563',
+          700: '#374151',
+          800: '#1f2937',
+          900: '#111827', // Deep Slate Charcoal
+          950: '#0b0f17',
+        },
+        // Eco-Industrial Slate Neutrals
+        neutral: {
+          0: '#ffffff',
+          50: '#f9fafb',
+          100: '#f3f4f6',
+          200: '#e5e7eb',
+          300: '#d1d5db',
+          400: '#9ca3af',
+          500: '#6b7280',
+          600: '#4b5563',
+          700: '#374151',
           800: '#1f2937',
           900: '#111827',
-          950: '#030712',
+          950: '#0b0f17',
         },
-        // Ubuntu Semantic Colors
+        // Telemetry Semantic Colors
         success: {
-          50: '#f0fdf4',
-          500: '#0E8420', // Ubuntu Green
-          600: '#0E8420',
-          700: '#15803d',
+          50: '#ecfdf5',
+          500: '#10b981',
+          600: '#059669',
+          700: '#047857',
         },
         warning: {
-          50: '#fefce8',
-          500: '#eab308',
-          700: '#a16207',
+          50: '#fffbebf',
+          500: '#f59e0b',
+          700: '#b45309',
         },
         error: {
-          50: '#fff1f2',
-          500: '#C7162B', // Ubuntu Red
-          600: '#C7162B',
-          700: '#be123c',
+          50: '#fef2f2',
+          500: '#ef4444',
+          600: '#dc2626',
+          700: '#b91c1c',
         },
         info: {
-          50: '#eff6ff',
-          500: '#3b82f6',
-          700: '#1d4ed8',
+          50: '#ecfeff',
+          500: '#06b6d4',
+          700: '#0e7490',
         },
-        // New Inspection Color Palette
+        // Inspection Color Palette
         inspection: {
           50: '#EBF4F6',
           100: '#E1F0F3',
@@ -93,20 +93,11 @@ export default {
           900: '#043B4B',
           950: '#02212B',
         },
-        // Ubuntu Desktop Theme Colors
-        ubuntu: {
-          aubergine: '#300a24',
-          darkAubergine: '#5e2750',
-          midAubergine: '#772953',
-          orange: '#E95420',
-          warmGrey: '#AEA79F',
-          coolGrey: '#333333',
-        },
       },
       fontFamily: {
-        sans: ['Ubuntu', 'Inter', 'system-ui', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
-        display: ['Ubuntu', 'Outfit', 'sans-serif'], // For Headings
+        display: ['Plus Jakarta Sans', 'Outfit', 'sans-serif'], // For Headings
       },
       fontSize: {
         xs: ['0.75rem', { lineHeight: '1rem' }],

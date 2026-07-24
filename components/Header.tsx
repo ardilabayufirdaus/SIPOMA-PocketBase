@@ -63,7 +63,7 @@ const Header: React.FC<HeaderProps> = React.memo(
         <SkipLinks />
 
         <motion.header
-          className="relative z-40 bg-[#1e1e1e] border-b border-white/5 shadow-md h-[60px] flex items-center font-ubuntu"
+          className="relative z-40 bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-800/80 shadow-md h-[60px] flex items-center font-sans"
           role="banner"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -99,10 +99,10 @@ const Header: React.FC<HeaderProps> = React.memo(
                         animate={{ opacity: 1, x: 0 }}
                         className="flex items-center gap-2 mt-0.5"
                       >
-                        <span className="text-[10px] text-white/40 uppercase font-bold tracking-widest">
+                        <span className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">
                           Sesi Aktif:
                         </span>
-                        <span className="text-[10px] text-ubuntu-orange font-bold uppercase tracking-wider">
+                        <span className="text-[10px] text-primary-400 font-bold uppercase tracking-wider">
                           {currentUser?.full_name || 'Administrator'}
                         </span>
                       </motion.div>
@@ -119,7 +119,7 @@ const Header: React.FC<HeaderProps> = React.memo(
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={onAddUser}
-                    className="flex items-center gap-2 bg-ubuntu-orange hover:bg-ubuntu-orange/90 text-white text-[11px] font-bold px-4 py-2 rounded-lg transition-all shadow-lg shadow-ubuntu-orange/20 mr-2 uppercase tracking-wide"
+                    className="flex items-center gap-2 bg-primary-600 hover:bg-primary-500 text-white text-[11px] font-bold px-4 py-2 rounded-lg transition-all shadow-lg shadow-emerald-500/20 mr-2 uppercase tracking-wide"
                   >
                     <PlusIcon className="w-3.5 h-3.5" />
                     <span>{t.add_user_button}</span>
@@ -134,7 +134,7 @@ const Header: React.FC<HeaderProps> = React.memo(
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setIsNotifMenuOpen(true)}
-                      className={`p-2 rounded-lg transition-colors ${unreadCount > 0 ? 'text-ubuntu-orange' : 'text-white/60 hover:text-white'}`}
+                      className={`p-2 rounded-lg transition-colors ${unreadCount > 0 ? 'text-primary-400' : 'text-white/60 hover:text-white'}`}
                       aria-label="Notifications"
                     >
                       {settings.browser ? (

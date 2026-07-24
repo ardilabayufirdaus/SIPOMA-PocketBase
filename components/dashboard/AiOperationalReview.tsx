@@ -53,18 +53,18 @@ const AiOperationalReview: React.FC<AiOperationalReviewProps> = ({ t }) => {
   return (
     <div className="relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
       {/* Decorative Gradient Header */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-right from-[#E95420] via-[#772953] to-[#E95420]"></div>
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-slate-900 to-emerald-500"></div>
 
       <div className="p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-100 dark:bg-orange-500/10 rounded-xl flex items-center justify-center text-[#E95420]">
+            <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-500/10 rounded-xl flex items-center justify-center text-primary-600">
               <Sparkles size={24} />
             </div>
             <div>
               <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                 {t.ai_review_title || 'Operational AI Review'}
-                <span className="text-[10px] font-bold bg-[#E95420] text-white px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                <span className="text-[10px] font-bold bg-primary-600 text-white px-2 py-0.5 rounded-full uppercase tracking-tighter">
                   PREMIUM
                 </span>
               </h3>
@@ -112,7 +112,7 @@ const AiOperationalReview: React.FC<AiOperationalReviewProps> = ({ t }) => {
             <div className="lg:col-span-2 space-y-6">
               <section>
                 <h4 className="text-[11px] font-bold text-[#808080] dark:text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                  <TrendingUp size={14} className="text-[#E95420]" />
+                  <TrendingUp size={14} className="text-primary-600" />
                   {t.ai_review_result || 'Hasil Review'}
                 </h4>
                 <div className="prose prose-sm dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50/50 dark:bg-slate-800/30 p-4 rounded-xl border border-slate-100 dark:border-slate-800/50">
@@ -162,8 +162,8 @@ const AiOperationalReview: React.FC<AiOperationalReviewProps> = ({ t }) => {
                 }
               />
 
-              <div className="mt-8 p-4 bg-[#772953]/5 dark:bg-[#772953]/10 rounded-xl border border-[#772953]/10 text-center">
-                <p className="text-[10px] text-[#772953] dark:text-pink-300/80 font-medium italic">
+              <div className="mt-8 p-4 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-xl border border-emerald-500/20 text-center">
+                <p className="text-[10px] text-primary-600 dark:text-emerald-400 font-medium italic">
                   "AI provided insights based on historical patterns and real-time production
                   metrics."
                 </p>
@@ -205,7 +205,7 @@ const MetricCard: React.FC<{
       case 'error':
         return 'bg-rose-500';
       default:
-        return 'bg-[#E95420]';
+        return 'bg-primary-600';
     }
   };
 

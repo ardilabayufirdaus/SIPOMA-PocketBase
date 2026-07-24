@@ -172,12 +172,12 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="relative w-full max-w-2xl bg-[#300a24] text-white border border-white/20 rounded-3xl shadow-2xl overflow-hidden font-ubuntu"
+          className="relative w-full max-w-2xl bg-slate-900 text-white border border-white/20 rounded-3xl shadow-2xl overflow-hidden font-sans"
         >
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 bg-gradient-to-r from-white/5 to-transparent">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#E95420] to-[#772953] flex items-center justify-center shadow-lg shadow-[#E95420]/30">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary-600 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
                 <DocumentDuplicateIcon className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -208,10 +208,10 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
                 <select
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                  className="w-full px-3 py-2.5 bg-black/40 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-[#E95420]"
+                  className="w-full px-3 py-2.5 bg-black/40 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-[#059669]"
                 >
                   {monthsList.map((m) => (
-                    <option key={m.value} value={m.value} className="bg-[#300a24] text-white">
+                    <option key={m.value} value={m.value} className="bg-[#0f172a] text-white">
                       {m.label}
                     </option>
                   ))}
@@ -225,10 +225,10 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
                 <select
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(Number(e.target.value))}
-                  className="w-full px-3 py-2.5 bg-black/40 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-[#E95420]"
+                  className="w-full px-3 py-2.5 bg-black/40 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-[#059669]"
                 >
                   {yearsList.map((y) => (
-                    <option key={y} value={y} className="bg-[#300a24] text-white">
+                    <option key={y} value={y} className="bg-[#0f172a] text-white">
                       {y}
                     </option>
                   ))}
@@ -242,13 +242,13 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
                 <select
                   value={unit}
                   onChange={(e) => setUnit(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-black/40 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-[#E95420]"
+                  className="w-full px-3 py-2.5 bg-black/40 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-[#059669]"
                 >
-                  <option value="ALL" className="bg-[#300a24] text-white">
+                  <option value="ALL" className="bg-[#0f172a] text-white">
                     Semua Unit (ALL)
                   </option>
                   {availableUnitNames.map((u) => (
-                    <option key={u} value={u} className="bg-[#300a24] text-white">
+                    <option key={u} value={u} className="bg-[#0f172a] text-white">
                       {u}
                     </option>
                   ))}
@@ -282,7 +282,7 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
                 onClick={() => setActiveTab('export')}
                 className={`flex-1 py-3 text-center text-sm font-bold border-b-2 transition duration-200 flex items-center justify-center gap-2 ${
                   activeTab === 'export'
-                    ? 'border-[#E95420] text-[#E95420]'
+                    ? 'border-[#059669] text-[#059669]'
                     : 'border-transparent text-white/50 hover:text-white'
                 }`}
               >
@@ -293,7 +293,7 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
                 onClick={() => setActiveTab('import')}
                 className={`flex-1 py-3 text-center text-sm font-bold border-b-2 transition duration-200 flex items-center justify-center gap-2 ${
                   activeTab === 'import'
-                    ? 'border-[#E95420] text-[#E95420]'
+                    ? 'border-[#059669] text-[#059669]'
                     : 'border-transparent text-white/50 hover:text-white'
                 }`}
               >
@@ -348,7 +348,7 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
                 </p>
 
                 {/* File Upload Dropzone */}
-                <div className="relative p-6 border-2 border-dashed border-white/20 hover:border-[#E95420]/60 rounded-2xl bg-black/20 text-center transition duration-200">
+                <div className="relative p-6 border-2 border-dashed border-white/20 hover:border-[#059669]/60 rounded-2xl bg-black/20 text-center transition duration-200">
                   <input
                     type="file"
                     accept=".xlsx, .xls"
@@ -357,7 +357,7 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
                   />
                   <div className="flex flex-col items-center gap-2">
-                    <DocumentArrowUpIcon className="w-10 h-10 text-[#E95420]" />
+                    <DocumentArrowUpIcon className="w-10 h-10 text-[#059669]" />
                     <span className="text-sm font-bold text-white">
                       Klik atau seret berkas Excel di sini
                     </span>
@@ -367,7 +367,7 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
 
                 {isParsing && (
                   <div className="flex items-center justify-center gap-3 p-4">
-                    <ArrowPathIcon className="w-5 h-5 animate-spin text-[#E95420]" />
+                    <ArrowPathIcon className="w-5 h-5 animate-spin text-[#059669]" />
                     <span className="text-sm font-medium text-white/70">
                       Membaca data dari Excel...
                     </span>
@@ -395,7 +395,7 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
                         </div>
                         <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-[#E95420] to-emerald-400 transition-all duration-200"
+                            className="h-full bg-gradient-to-r from-[#059669] to-emerald-400 transition-all duration-200"
                             style={{
                               width: `${(saveProgress.current / saveProgress.total) * 100}%`,
                             }}
@@ -437,7 +437,7 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
                     <button
                       onClick={handleSaveImport}
                       disabled={isSaving || importResult.validRows === 0}
-                      className="w-full py-3 bg-gradient-to-r from-[#E95420] to-[#772953] hover:from-[#E95420]/90 hover:to-[#772953]/90 text-white font-bold text-sm rounded-xl shadow-lg transition duration-200 disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="w-full py-3 bg-gradient-to-r from-[#059669] to-[#111827] hover:from-[#059669]/90 hover:to-[#111827]/90 text-white font-bold text-sm rounded-xl shadow-lg transition duration-200 disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {isSaving ? (
                         <ArrowPathIcon className="w-5 h-5 animate-spin" />

@@ -47,7 +47,7 @@ const OeeTrendChart: React.FC<OeeTrendChartProps> = ({ summaries, unitId }) => {
         {
           label: 'OEE %',
           data: oeeValues,
-          borderColor: '#E95420',
+          borderColor: '#059669',
           backgroundColor: 'rgba(233, 84, 32, 0.1)',
           fill: true,
           tension: 0.4,
@@ -60,7 +60,7 @@ const OeeTrendChart: React.FC<OeeTrendChartProps> = ({ summaries, unitId }) => {
         {
           label: 'Availability %',
           data: availValues,
-          borderColor: '#772953',
+          borderColor: '#111827',
           borderDash: [5, 5],
           backgroundColor: 'transparent',
           fill: false,

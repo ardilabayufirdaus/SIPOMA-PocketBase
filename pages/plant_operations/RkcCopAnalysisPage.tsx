@@ -2504,42 +2504,40 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F7F7] dark:bg-ubuntu-aubergine text-slate-900 dark:text-slate-100 font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
       <div className="max-w-full mx-auto space-y-4 sm:space-y-6 lg:space-y-8 pb-12">
-        {/* Premium Ubuntu Header */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-ubuntu-aubergine via-ubuntu-darkAubergine to-ubuntu-aubergine p-4 sm:p-6 lg:p-8 shadow-2xl rounded-2xl">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-ubuntu-orange opacity-10 rounded-full -mr-20 -mt-20 blur-3xl shadow-glow"></div>
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-ubuntu-midAubergine opacity-20 rounded-full -ml-10 -mb-10 blur-2xl"></div>
+        {/* Header Title Section */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-secondary-900 p-4 sm:p-6 lg:p-8 shadow-2xl rounded-2xl border border-white/10">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary-600 opacity-10 rounded-full -mr-20 -mt-20 blur-3xl shadow-glow"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-secondary-800 opacity-20 rounded-full -ml-10 -mb-10 blur-2xl"></div>
 
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
             <div className="animate-fade-in group">
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="p-2 sm:p-2.5 bg-ubuntu-orange rounded-xl shadow-lg shadow-ubuntu-orange/30 group-hover:scale-110 transition-transform duration-300">
+                <div className="p-2 sm:p-2.5 bg-primary-600 rounded-xl shadow-lg shadow-primary-600/30 group-hover:scale-110 transition-transform duration-300">
                   <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-display font-extrabold text-white tracking-tight">
                   {t.op_cop_analysis} (RKC)
                 </h1>
               </div>
-              <p className="text-ubuntu-warmGrey text-sm sm:text-base lg:text-lg max-w-2xl font-medium opacity-90">
+              <p className="text-slate-300 text-sm sm:text-base lg:text-lg max-w-2xl font-medium opacity-90">
                 RKC Comprehensive parameter performance monitoring and analytics.
               </p>
             </div>
-
-            {/* Global Sync Button - Removed */}
           </div>
         </div>
 
         {/* Sync Progress Modal */}
 
-        {/* Filter Section - Separate Card */}
-        <div className="bg-white/70 dark:bg-ubuntu-aubergine/40 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-white/10 p-4 sm:p-6 animate-scale-in">
+        {/* Filter Section */}
+        <div className="bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-white/10 p-4 sm:p-6 animate-scale-in">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {/* Plant Category */}
             <div className="space-y-1.5 sm:space-y-2 col-span-2 sm:col-span-1">
               <label
                 htmlFor="cop-filter-category"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <Layers className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Category
@@ -2549,7 +2547,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {plantCategories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -2557,7 +2555,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-ubuntu-orange transition-colors pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-primary-500 transition-colors pointer-events-none" />
               </div>
             </div>
 
@@ -2565,7 +2563,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-unit"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <Building2 className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Unit
@@ -2576,7 +2574,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   value={selectedUnit}
                   onChange={(e) => setSelectedUnit(e.target.value)}
                   disabled={unitsForCategory.length === 0}
-                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {unitsForCategory.map((unit) => (
                     <option key={unit} value={unit}>
@@ -2584,7 +2582,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-ubuntu-orange transition-colors pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-primary-500 transition-colors pointer-events-none" />
               </div>
             </div>
 
@@ -2592,7 +2590,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-month"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <Calendar className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Month
@@ -2602,7 +2600,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-month"
                   value={filterMonth}
                   onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {monthOptions.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -2610,7 +2608,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-ubuntu-orange transition-colors pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-primary-500 transition-colors pointer-events-none" />
               </div>
             </div>
 
@@ -2618,7 +2616,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-year"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <CalendarDays className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Year
@@ -2628,7 +2626,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-year"
                   value={filterYear}
                   onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {yearOptions.map((y) => (
                     <option key={y} value={y}>
@@ -2717,7 +2715,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               <h2 className="text-xl sm:text-2xl font-black text-blue-900 dark:text-blue-400 uppercase tracking-widest">
                 📊 Statistical Summary
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1.5 font-bold italic">
                 Advanced statistical breakdown of RKC parameters for the current month.
               </p>
             </div>
@@ -2727,7 +2725,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   key={stat.parameterId}
                   className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-5 sm:p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl group hover:shadow-2xl transition-all duration-300"
                 >
-                  <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-ubuntu-orange transition-colors truncate">
+                  <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-primary-600 transition-colors truncate">
                     {stat.parameter}
                   </h3>
                   <div className="space-y-2.5 font-mono text-[10px] sm:text-[11px]">
@@ -2767,7 +2765,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           stat.completeness >= 80
                             ? 'text-emerald-600'
                             : stat.completeness >= 60
-                              ? 'text-ubuntu-orange'
+                              ? 'text-primary-600'
                               : 'text-rose-600'
                         }`}
                       >
@@ -2787,7 +2785,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               <h2 className="text-xl sm:text-2xl font-black text-rose-900 dark:text-rose-400 uppercase tracking-widest">
                 ⚠️ Anomaly Detection
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1.5 font-bold italic">
                 Intelligent outlier detection using the advanced 3-sigma rule methodology.
               </p>
             </div>
@@ -2797,7 +2795,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   key={anomaly.parameterId}
                   className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-5 sm:p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl group hover:shadow-2xl transition-all duration-300"
                 >
-                  <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-ubuntu-orange transition-colors truncate">
+                  <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-primary-600 transition-colors truncate">
                     {anomaly.parameter}
                   </h3>
                   <div className="space-y-3">
@@ -2840,7 +2838,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               <h2 className="text-xl sm:text-2xl font-black text-purple-900 dark:text-purple-400 uppercase tracking-widest">
                 🔗 Parameter Correlation
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1.5 font-bold italic">
                 Identifying hidden dependencies and process relationships across RKC parameters.
               </p>
             </div>
@@ -2848,12 +2846,12 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               <div className="min-w-full inline-block align-middle">
                 <div className="overflow-hidden border border-white/20 rounded-3xl">
                   <table className="min-w-full divide-y divide-white/10">
-                    <thead className="bg-white/40 dark:bg-white/5 backdrop-blur-md">
+                    <thead className="bg-slate-600 dark:bg-slate-700">
                       <tr>
                         {['Parameter Pair', 'Correlation', 'Strength', 'Direction'].map((h) => (
                           <th
                             key={h}
-                            className="px-6 py-4 text-left text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest"
+                            className="px-6 py-4 text-left text-[10px] font-black text-white uppercase tracking-widest"
                           >
                             {h}
                           </th>
@@ -2865,7 +2863,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         <tr key={idx} className="hover:bg-white/20 transition-colors group">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex flex-col">
-                              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-ubuntu-orange transition-colors">
+                              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-primary-600 transition-colors">
                                 {corr.param1}
                               </span>
                               <span className="text-[10px] font-bold text-slate-500">
@@ -2918,7 +2916,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               <h2 className="text-xl sm:text-2xl font-black text-indigo-900 dark:text-indigo-400 uppercase tracking-[0.2em]">
                 🏆 Quality Metrics
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-2 font-bold italic opacity-80">
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2 font-bold italic opacity-80">
                 Advanced structural integrity and data compliance indicators for RKC operations.
               </p>
             </div>
@@ -2949,7 +2947,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   label: 'Data Points',
                   val: `${qualityMetrics.validDataPoints}/${qualityMetrics.totalDataPoints}`,
                   icon: '📈',
-                  color: 'text-ubuntu-orange',
+                  color: 'text-primary-600',
                   desc: 'Verified vs expected captures',
                 },
               ].map((m, i) => (
@@ -2985,7 +2983,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 <h2 className="text-xl sm:text-2xl font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-[0.2em]">
                   📈 Period Comparison
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-2 font-bold italic opacity-80">
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2 font-bold italic opacity-80">
                   Benchmarking real-time RKC performance against deep historical baselines.
                 </p>
               </div>
@@ -3033,7 +3031,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     key={comparison.parameterId}
                     className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl p-6 rounded-[2rem] border border-white/30 dark:border-white/5 shadow-xl group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
                   >
-                    <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mb-6 leading-tight group-hover:text-ubuntu-orange transition-colors truncate tracking-tight">
+                    <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mb-6 leading-tight group-hover:text-primary-600 transition-colors truncate tracking-tight">
                       {comparison.parameter}
                     </h3>
                     <div className="space-y-4 font-mono text-[10px] sm:text-[11px]">
@@ -3090,7 +3088,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               <h2 className="text-xl sm:text-2xl font-black text-orange-900 dark:text-orange-400 uppercase tracking-widest">
                 🔮 Predictive Insights
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1.5 font-bold italic">
                 Advanced AI-driven forecasting and risk assessment for the next 7 days.
               </p>
             </div>
@@ -3100,7 +3098,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   key={insight.parameterId}
                   className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-5 sm:p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl group hover:shadow-2xl transition-all duration-300"
                 >
-                  <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-ubuntu-orange transition-colors truncate">
+                  <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-primary-600 transition-colors truncate">
                     {insight.parameter}
                   </h3>
                   <div className="space-y-2.5 font-mono text-[10px] sm:text-[11px]">
@@ -3259,7 +3257,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     <h2 className="text-xl sm:text-2xl font-black bg-gradient-to-r from-indigo-600 to-indigo-900 dark:from-indigo-400 dark:to-blue-400 bg-clip-text text-transparent mb-2 uppercase tracking-widest">
                       COP Analysis Dashboard
                     </h2>
-                    <p className="text-slate-500 dark:text-ubuntu-warmGrey text-xs sm:text-sm font-bold italic">
+                    <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-bold italic">
                       Comprehensive parameter performance monitoring and analytics
                     </p>
                   </div>
@@ -3290,12 +3288,12 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 style={{ scrollbarWidth: 'thin' }}
               >
                 <table className="min-w-full text-xs border-collapse bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-950 text-white">
-                      <th className="sticky left-0 bg-indigo-950 z-30 px-4 py-6 text-left text-[10px] font-black uppercase tracking-widest border-r border-white/10 rounded-tl-3xl">
+                  <thead className="bg-secondary-800 text-white shadow-sm">
+                    <tr className="bg-secondary-800 text-white">
+                      <th className="sticky left-0 bg-secondary-900 z-30 px-4 py-6 text-left text-[10px] font-black uppercase tracking-widest border-r border-white/10 rounded-tl-3xl">
                         NO.
                       </th>
-                      <th className="sticky left-12 bg-indigo-950 z-30 px-4 py-6 text-left text-[10px] font-black uppercase tracking-widest border-r border-white/10 min-w-[140px]">
+                      <th className="sticky left-12 bg-secondary-900 z-30 px-4 py-6 text-left text-[10px] font-black uppercase tracking-widest border-r border-white/10 min-w-[140px]">
                         {t.parameter}
                       </th>
                       <th className="px-3 py-6 text-center text-[10px] font-black uppercase tracking-widest border-r border-white/10 bg-rose-900/40">
@@ -3312,7 +3310,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           {day}
                         </th>
                       ))}
-                      <th className="sticky right-0 bg-indigo-950 z-30 px-4 py-6 text-center text-[10px] font-black uppercase tracking-widest border-l border-white/10 rounded-tr-3xl">
+                      <th className="sticky right-0 bg-secondary-900 z-30 px-4 py-6 text-center text-[10px] font-black uppercase tracking-widest border-l border-white/10 rounded-tr-3xl">
                         AVG.
                       </th>
                     </tr>

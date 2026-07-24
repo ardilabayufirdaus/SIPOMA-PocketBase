@@ -232,7 +232,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.3 }}
-        className="bg-gradient-to-r from-[#772953] to-[#2C001E] px-6 py-4"
+        className="bg-gradient-to-r from-[#111827] to-[#0f172a] px-6 py-4"
       >
         <div className="flex items-center space-x-3">
           <BarChart3 className="h-6 w-6 text-white" />
@@ -276,8 +276,8 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                 onChange={handleChange}
                 required
                 placeholder={t.parameter_placeholder || 'Enter parameter name'}
-                className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm ${
-                  errors.parameter ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
+                className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all duration-200 sm:text-sm ${
+                  errors.parameter ? 'border-[#C7162B]' : 'border-[#94a3b8]/50'
                 }`}
               />
               <AnimatePresence>
@@ -312,7 +312,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
               id="data_type"
               value={formData.data_type}
               onChange={handleChange}
-              className="block w-full pl-3 pr-10 py-3 bg-white border border-[#AEA79F]/50 rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm"
+              className="block w-full pl-3 pr-10 py-3 bg-white border border-[#94a3b8]/50 rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all duration-200 sm:text-sm"
             >
               {Object.values(ParameterDataType).map((type) => (
                 <option key={type} value={type}>
@@ -338,8 +338,8 @@ const ParameterSettingForm: React.FC<FormProps> = ({
               value={formData.unit}
               onChange={handleChange}
               required
-              className={`block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm ${
-                errors.unit ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
+              className={`block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all duration-200 sm:text-sm ${
+                errors.unit ? 'border-[#C7162B]' : 'border-[#94a3b8]/50'
               }`}
             >
               <option value="" disabled>
@@ -384,8 +384,8 @@ const ParameterSettingForm: React.FC<FormProps> = ({
               value={formData.category}
               onChange={handleChange}
               required
-              className={`block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm ${
-                errors.category ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
+              className={`block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all duration-200 sm:text-sm ${
+                errors.category ? 'border-[#C7162B]' : 'border-[#94a3b8]/50'
               }`}
             >
               <option value="" disabled>
@@ -424,9 +424,9 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                 className="sm:col-span-2 space-y-6"
               >
                 {/* Basic Range Settings */}
-                <div className="bg-[#F9F9F9] rounded-lg p-4 border border-[#AEA79F]/20">
-                  <h4 className="text-lg font-medium text-[#772953] mb-4 flex items-center">
-                    <Settings className="h-5 w-5 mr-2 text-[#E95420]" />
+                <div className="bg-[#F9F9F9] rounded-lg p-4 border border-[#94a3b8]/20">
+                  <h4 className="text-lg font-medium text-[#111827] mb-4 flex items-center">
+                    <Settings className="h-5 w-5 mr-2 text-[#059669]" />
                     {t.basic_range_title || 'Basic Range Settings'}
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -444,8 +444,8 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                         value={formData.min_value?.toString() || ''}
                         onChange={handleChange}
                         placeholder="0"
-                        className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm ${
-                          errors.min_value ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
+                        className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all duration-200 sm:text-sm ${
+                          errors.min_value ? 'border-[#C7162B]' : 'border-[#94a3b8]/50'
                         }`}
                       />
                     </div>
@@ -463,8 +463,8 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                         value={formData.max_value?.toString() || ''}
                         onChange={handleChange}
                         placeholder="100"
-                        className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm ${
-                          errors.max_value ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
+                        className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all duration-200 sm:text-sm ${
+                          errors.max_value ? 'border-[#C7162B]' : 'border-[#94a3b8]/50'
                         }`}
                       />
                     </div>
@@ -472,9 +472,9 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                 </div>
 
                 {!hideCementSettings && (
-                  <div className="bg-[#E95420]/5 rounded-lg p-4">
+                  <div className="bg-[#059669]/5 rounded-lg p-4">
                     <h4 className="text-lg font-medium text-[#333333] mb-4 flex items-center">
-                      <BarChart3 className="h-5 w-5 mr-2 text-[#E95420]" />
+                      <BarChart3 className="h-5 w-5 mr-2 text-[#059669]" />
                       OPC Cement Settings
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -491,7 +491,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                           id="opc_min_value"
                           value={formData.opc_min_value?.toString() || ''}
                           onChange={handleChange}
-                          className="block w-full px-4 py-3 bg-white border border-[#AEA79F]/50 rounded-lg sm:text-sm"
+                          className="block w-full px-4 py-3 bg-white border border-[#94a3b8]/50 rounded-lg sm:text-sm"
                         />
                       </div>
                       <div className="space-y-2">
@@ -507,7 +507,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                           id="opc_max_value"
                           value={formData.opc_max_value?.toString() || ''}
                           onChange={handleChange}
-                          className="block w-full px-4 py-3 bg-white border border-[#AEA79F]/50 rounded-lg sm:text-sm"
+                          className="block w-full px-4 py-3 bg-white border border-[#94a3b8]/50 rounded-lg sm:text-sm"
                         />
                       </div>
                     </div>
@@ -517,18 +517,18 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                 {/* OEE Mapping Settings */}
                 <div className="bg-slate-50 rounded-lg p-5 border border-slate-200">
                   <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4 text-[#E95420]" />
+                    <BarChart3 className="h-4 w-4 text-[#059669]" />
                     OEE Analysis Mapping
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <label className="flex items-start gap-4 p-3 bg-white rounded-xl border border-slate-100 cursor-pointer hover:border-[#E95420]/50 transition-colors">
+                    <label className="flex items-start gap-4 p-3 bg-white rounded-xl border border-slate-100 cursor-pointer hover:border-[#059669]/50 transition-colors">
                       <input
                         type="checkbox"
                         checked={formData.is_oee_feeder}
                         onChange={(e) =>
                           setFormData((prev) => ({ ...prev, is_oee_feeder: e.target.checked }))
                         }
-                        className="w-5 h-5 text-[#E95420] border-slate-300 rounded"
+                        className="w-5 h-5 text-[#059669] border-slate-300 rounded"
                       />
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-slate-800 uppercase tracking-tight">
@@ -540,14 +540,14 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                       </div>
                     </label>
 
-                    <label className="flex items-start gap-4 p-3 bg-white rounded-xl border border-slate-100 cursor-pointer hover:border-[#772953]/50 transition-colors">
+                    <label className="flex items-start gap-4 p-3 bg-white rounded-xl border border-slate-100 cursor-pointer hover:border-[#111827]/50 transition-colors">
                       <input
                         type="checkbox"
                         checked={formData.is_oee_quality}
                         onChange={(e) =>
                           setFormData((prev) => ({ ...prev, is_oee_quality: e.target.checked }))
                         }
-                        className="w-5 h-5 text-[#772953] border-slate-300 rounded"
+                        className="w-5 h-5 text-[#111827] border-slate-300 rounded"
                       />
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-slate-800 uppercase tracking-tight">
@@ -565,9 +565,9 @@ const ParameterSettingForm: React.FC<FormProps> = ({
           </AnimatePresence>
         </motion.div>
 
-        <div className="mt-8 flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 pt-6 border-t border-[#AEA79F]/20">
+        <div className="mt-8 flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 pt-6 border-t border-[#94a3b8]/20">
           {isSubmitting && (
-            <div className="flex items-center justify-center space-x-2 text-[#E95420] bg-[#E95420]/10 px-4 py-2 rounded-lg mr-auto">
+            <div className="flex items-center justify-center space-x-2 text-[#059669] bg-[#059669]/10 px-4 py-2 rounded-lg mr-auto">
               <span className="text-sm font-medium">Saving...</span>
             </div>
           )}
@@ -578,7 +578,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
             type="submit"
             variant="primary"
             disabled={isSubmitting}
-            className="bg-[#E95420] hover:bg-[#d94612] text-white"
+            className="bg-[#059669] hover:bg-[#d94612] text-white"
           >
             <CheckCircle className="h-4 w-4 mr-2" />
             {t.save_button}

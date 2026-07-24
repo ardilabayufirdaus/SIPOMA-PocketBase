@@ -42,22 +42,22 @@ export const ResourceAllocationChart = React.forwardRef<any, ResourceAllocationC
         {
           label: 'Active',
           data: data.map((item) => item.active),
-          backgroundColor: '#E95420', // Ubuntu Orange
-          borderColor: '#E95420',
+          backgroundColor: '#059669', // Emerald Green
+          borderColor: '#059669',
           borderWidth: 1,
         },
         {
           label: 'Overdue',
           data: data.map((item) => item.overdue),
-          backgroundColor: '#5E2750', // Ubuntu Aubergine (Lighter)
-          borderColor: '#5E2750',
+          backgroundColor: '#F43F5E', // Rose/Red Overdue Accent
+          borderColor: '#F43F5E',
           borderWidth: 1,
         },
         {
           label: 'Completed',
           data: data.map((item) => item.completed),
-          backgroundColor: '#0E8420', // Ubuntu Green
-          borderColor: '#0E8420',
+          backgroundColor: '#1E293B', // Deep Slate
+          borderColor: '#1E293B',
           borderWidth: 1,
         },
       ],

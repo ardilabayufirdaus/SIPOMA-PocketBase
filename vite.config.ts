@@ -81,7 +81,7 @@ export default defineConfig(async (_env) => {
           short_name: 'SIPOMA',
           description: 'Aplikasi manajemen produksi dan operasi pabrik',
           theme_color: '#1e1e1e',
-          background_color: '#300a24',
+          background_color: '#0f172a',
           display: 'standalone',
           orientation: 'portrait',
           start_url: '/', // ✅ disesuaikan dengan base /

@@ -284,11 +284,11 @@ const DatabasePage: React.FC = () => {
   };
 
   return (
-    <div className="relative flex flex-col min-h-full text-[#333333] dark:text-slate-100 font-sans bg-[#F7F7F7] dark:bg-slate-950">
-      {/* Subtle Ubuntu Gradient Overlay (Mirrors Main Dashboard) */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-30">
-        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-[#E95420]/5 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-0 left-0 w-[50%] h-[50%] bg-[#772953]/5 rounded-full blur-[120px]"></div>
+    <div className="relative flex flex-col min-h-full text-slate-800 dark:text-slate-100 font-sans bg-slate-50 dark:bg-slate-950 p-4 md:p-6 transition-colors duration-300">
+      {/* Subtle Ambient Gradient Overlay */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-20 dark:opacity-30 overflow-hidden">
+        <div className="absolute -top-24 -right-24 w-[600px] h-[600px] bg-primary-500/10 rounded-full blur-[140px]"></div>
+        <div className="absolute -bottom-24 -left-24 w-[600px] h-[600px] bg-emerald-700/10 rounded-full blur-[140px]"></div>
       </div>
 
       <div className="relative z-10 flex-1 flex flex-col gap-4 lg:gap-6 max-w-[1700px] mx-auto w-full">
@@ -301,28 +301,28 @@ const DatabasePage: React.FC = () => {
           >
             <div className="flex items-center gap-3">
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#333333] dark:text-white">
-                Database <span className="text-[#E95420]">Management</span>
+                Database <span className="text-primary-600 dark:text-primary-400">Management</span>
               </h1>
-              <span className="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-[#E95420] text-white">
+              <span className="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-primary-600 text-white">
                 Admin Tools
               </span>
             </div>
-            <p className="text-[11px] text-[#808080] dark:text-slate-400 font-bold uppercase tracking-[0.2em] mt-1 pl-0.5">
+            <p className="text-[11px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-1 pl-0.5">
               CENTRALIZED DATA REPOSITORY • OPERATIONAL REPORTING
             </p>
           </motion.div>
 
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2.5 px-4 py-2 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 shadow-sm">
-              <Activity className="w-3.5 h-3.5 text-[#E95420]" />
-              <span className="text-xs font-bold text-[#333333] dark:text-slate-300 uppercase tracking-widest">
+              <Activity className="w-3.5 h-3.5 text-primary-600" />
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-300 uppercase tracking-widest">
                 Database Online
               </span>
             </div>
           </div>
         </div>
 
-        {/* Navigation Tabs - Dashboard Style */}
+        {/* Navigation Tabs */}
         <div className="flex-shrink-0 flex flex-wrap gap-2">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
@@ -334,8 +334,8 @@ const DatabasePage: React.FC = () => {
                   relative px-5 py-2.5 rounded text-[11px] font-bold uppercase tracking-widest transition-all duration-200 flex items-center gap-2 border
                   ${
                     isActive
-                      ? 'bg-[#E95420] text-white border-[#E95420] shadow-sm transform scale-105'
-                      : 'bg-white dark:bg-slate-900 text-[#333333] dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-[#E95420]/50'
+                      ? 'bg-primary-600 text-white border-primary-600 shadow-sm transform scale-105'
+                      : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-primary-500/50'
                   }
                 `}
               >
@@ -346,7 +346,7 @@ const DatabasePage: React.FC = () => {
           })}
         </div>
 
-        {/* Content Area - Scrollable like Dashboard Overview */}
+        {/* Content Area */}
         <div className="flex-1 min-h-0 overflow-y-auto pr-1 custom-scrollbar">
           <AnimatePresence mode="wait">
             {activeTab === 'cm' && (
@@ -360,33 +360,33 @@ const DatabasePage: React.FC = () => {
                 {/* Main Control Card */}
                 <div className="lg:col-span-8">
                   <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 lg:p-10 shadow-sm relative overflow-hidden h-full">
-                    {/* Corner accent like in Widget */}
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-[#E95420]/5 rounded-bl-full pointer-events-none"></div>
+                    {/* Corner accent */}
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-primary-600/5 rounded-bl-full pointer-events-none"></div>
 
                     <div className="relative z-10 flex flex-col lg:flex-row gap-8 lg:gap-12 w-full">
                       {/* Description */}
                       <div className="flex-1 space-y-6">
                         <div className="flex items-center gap-4">
                           <div className="p-3.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
-                            <FileSpreadsheet className="w-8 h-8 text-[#E95420]" />
+                            <FileSpreadsheet className="w-8 h-8 text-primary-600" />
                           </div>
-                          <h3 className="text-xl font-bold uppercase tracking-tight border-l-2 border-[#E95420] pl-3">
+                          <h3 className="text-xl font-bold uppercase tracking-tight border-l-2 border-primary-600 pl-3">
                             CM Plant Report Generator
                           </h3>
                         </div>
-                        <p className="text-sm text-[#4d4d4d] dark:text-slate-400 leading-relaxed max-w-xl">
+                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-xl">
                           Module ekstraksi data operasional CM Plant. Sistem akan melakukan
                           sinkronisasi kernel sebelum mengunduh laporan dalam format Microsoft Excel
                           (.xlsx).
                         </p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 text-[10px] font-bold text-[#808080] dark:text-slate-500 uppercase tracking-widest">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                           <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700/50">
                             <ShieldCheck className="w-4 h-4 text-emerald-500 font-bold" />
                             <span>Data Integrity Verified</span>
                           </div>
                           <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                            <Clock className="w-4 h-4 text-[#772953] font-bold" />
+                            <Clock className="w-4 h-4 text-primary-600 font-bold" />
                             <span>Auto-Sync Enabled</span>
                           </div>
                         </div>
@@ -396,14 +396,14 @@ const DatabasePage: React.FC = () => {
                       <div className="w-full md:w-80 space-y-6 bg-[#F7F7F7] dark:bg-slate-950/50 p-6 rounded-xl border border-slate-200 dark:border-slate-800">
                         <div className="space-y-4">
                           <div>
-                            <label className="text-[10px] font-bold text-[#808080] uppercase tracking-widest mb-2 block">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">
                               Pilih Bulan
                             </label>
                             <div className="relative group">
                               <select
                                 value={selectedMonth}
                                 onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg py-3 px-4 text-xs font-bold transition-all focus:ring-2 focus:ring-[#E95420]/20 outline-none appearance-none cursor-pointer"
+                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg py-3 px-4 text-xs font-bold transition-all focus:ring-2 focus:ring-primary-500/20 outline-none appearance-none cursor-pointer"
                               >
                                 {months.map((m) => (
                                   <option key={m.value} value={m.value}>
@@ -411,19 +411,19 @@ const DatabasePage: React.FC = () => {
                                   </option>
                                 ))}
                               </select>
-                              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none group-hover:text-[#E95420] transition-colors" />
+                              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none group-hover:text-primary-600 transition-colors" />
                             </div>
                           </div>
 
                           <div>
-                            <label className="text-[10px] font-bold text-[#808080] uppercase tracking-widest mb-2 block">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">
                               Pilih Tahun
                             </label>
                             <div className="relative group">
                               <select
                                 value={selectedYear}
                                 onChange={(e) => setSelectedYear(Number(e.target.value))}
-                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg py-3 px-4 text-xs font-bold transition-all focus:ring-2 focus:ring-[#E95420]/20 outline-none appearance-none cursor-pointer"
+                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg py-3 px-4 text-xs font-bold transition-all focus:ring-2 focus:ring-primary-500/20 outline-none appearance-none cursor-pointer"
                               >
                                 {years.map((y) => (
                                   <option key={y} value={y}>
@@ -431,7 +431,7 @@ const DatabasePage: React.FC = () => {
                                   </option>
                                 ))}
                               </select>
-                              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none group-hover:text-[#E95420] transition-colors" />
+                              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none group-hover:text-primary-600 transition-colors" />
                             </div>
                           </div>
                         </div>
@@ -446,7 +446,7 @@ const DatabasePage: React.FC = () => {
                               ${
                                 isDownloading
                                   ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 border border-slate-200 dark:border-slate-700'
-                                  : 'bg-[#E95420] text-white shadow-md shadow-[#E95420]/20 hover:bg-[#D44415]'
+                                  : 'bg-primary-600 text-white shadow-md shadow-emerald-500/20 hover:bg-primary-500'
                               }
                             `}
                         >
@@ -476,17 +476,17 @@ const DatabasePage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Side Stats Card (Like System Health Widget) */}
+                {/* Side Stats Card */}
                 <div className="lg:col-span-4">
                   <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col h-full relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-[#772953] opacity-50"></div>
-                    <h4 className="text-[10px] font-bold text-[#333333] dark:text-slate-300 uppercase tracking-widest mb-6 border-l-2 border-[#E95420] pl-2">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-primary-600 opacity-50"></div>
+                    <h4 className="text-[10px] font-bold text-slate-800 dark:text-slate-300 uppercase tracking-widest mb-6 border-l-2 border-primary-600 pl-2">
                       System Diagnostics
                     </h4>
 
                     <div className="space-y-6 flex-1">
                       <div className="flex flex-col gap-2">
-                        <span className="text-[10px] font-bold text-[#808080] uppercase tracking-wide">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
                           Kernel Status
                         </span>
                         <div className="flex items-center gap-2 text-xs font-bold text-emerald-600">
@@ -496,11 +496,11 @@ const DatabasePage: React.FC = () => {
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <span className="text-[10px] font-bold text-[#808080] uppercase tracking-wide">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
                           Extraction Engine
                         </span>
-                        <div className="flex items-center gap-2 text-xs font-bold text-[#333333] dark:text-slate-200">
-                          <Terminal className="w-3.5 h-3.5 text-[#E95420]" />
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
+                          <Terminal className="w-3.5 h-3.5 text-primary-600" />
                           <span>ExcelJS_v4.4.0</span>
                         </div>
                       </div>
@@ -519,23 +519,23 @@ const DatabasePage: React.FC = () => {
                 className="w-full"
               >
                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-12 lg:p-20 text-center shadow-sm relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-[#E95420]/5 rounded-full blur-3xl"></div>
-                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#772953]/5 rounded-full blur-3xl"></div>
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-primary-600/5 rounded-full blur-3xl"></div>
+                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-secondary-900/5 rounded-full blur-3xl"></div>
 
                   <div className="relative z-10 max-w-lg mx-auto flex flex-col items-center">
                     <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-8 border border-slate-100 dark:border-slate-700 shadow-inner">
-                      <Cpu className="w-10 h-10 text-[#E95420] animate-pulse" />
+                      <Cpu className="w-10 h-10 text-primary-600 animate-pulse" />
                     </div>
-                    <h3 className="text-2xl font-bold uppercase tracking-tight mb-4 text-[#333333] dark:text-white">
+                    <h3 className="text-2xl font-bold uppercase tracking-tight mb-4 text-slate-800 dark:text-white">
                       RKC Operations Kernel
                     </h3>
-                    <p className="text-sm text-[#808080] dark:text-slate-400 leading-relaxed mb-10 font-bold uppercase tracking-wider">
+                    <p className="text-sm text-slate-400 leading-relaxed mb-10 font-bold uppercase tracking-wider">
                       Initializing data mapping kernel • Status:{' '}
-                      <span className="text-[#E95420]">Deploying</span>
+                      <span className="text-primary-600">Deploying</span>
                     </p>
 
-                    <div className="inline-flex items-center gap-4 px-6 py-2.5 bg-[#300a24]/5 dark:bg-white/5 rounded-full border border-slate-200 dark:border-white/10 text-[10px] font-mono font-bold text-[#772953] dark:text-white/60 uppercase tracking-widest">
-                      <div className="w-2 h-2 rounded-full bg-[#E95420] animate-ping" />
+                    <div className="inline-flex items-center gap-4 px-6 py-2.5 bg-slate-100 dark:bg-white/5 rounded-full border border-slate-200 dark:border-white/10 text-[10px] font-mono font-bold text-slate-800 dark:text-white/60 uppercase tracking-widest">
+                      <div className="w-2 h-2 rounded-full bg-primary-600 animate-ping" />
                       CORE_INITIALIZING_PHASE_09
                     </div>
                   </div>
@@ -554,11 +554,11 @@ const DatabasePage: React.FC = () => {
           background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #E9542033;
+          background: rgba(5, 150, 105, 0.2);
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #E9542066;
+          background: rgba(5, 150, 105, 0.4);
         }
       `}</style>
     </div>

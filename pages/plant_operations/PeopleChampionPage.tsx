@@ -341,7 +341,7 @@ const OperatorAchievementChart: React.FC<{
       <div ref={containerRef} style={containerStyle}>
         <div className="flex items-center justify-center h-full text-slate-500 text-sm">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#E95420] mx-auto mb-3"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#059669] mx-auto mb-3"></div>
             <span className="font-medium">Memvisualisasikan data...</span>
           </div>
         </div>
@@ -967,15 +967,15 @@ const PeopleChampionPage: React.FC = () => {
   ]);
 
   return (
-    <div className="min-h-screen bg-[#F7F7F7] p-6" style={{ fontFamily: 'Ubuntu, sans-serif' }}>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 font-sans">
       <div className="max-w-full mx-auto space-y-6">
         {/* Header Title Section */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-[#772953] to-[#E95420] rounded-xl shadow-lg border border-[#772953]/20 p-6">
+        <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-secondary-900 rounded-xl shadow-lg border border-white/10 p-6">
           <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.05)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.05)_50%,rgba(255,255,255,0.05)_75%,transparent_75%,transparent)] bg-[length:24px_24px] opacity-20"></div>
 
           <div className="relative flex items-center gap-4">
             <div className="w-14 h-14 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20 shadow-inner">
-              <TrendingUp className="w-7 h-7 text-white" />
+              <TrendingUp className="w-7 h-7 text-primary-400" />
             </div>
             <div>
               <h2 className="text-2xl font-bold text-white tracking-tight">People Champion</h2>
@@ -993,7 +993,7 @@ const PeopleChampionPage: React.FC = () => {
             <div className="flex-1 min-w-[180px]">
               <label
                 htmlFor="cop-filter-category"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+                className="flex items-center gap-1.5 text-xs font-semibold text-white uppercase tracking-wider mb-1.5"
               >
                 <Layers className="w-3.5 h-3.5" />
                 Plant Category
@@ -1003,7 +1003,7 @@ const PeopleChampionPage: React.FC = () => {
                   id="cop-filter-category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full appearance-none px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420]/40 focus:border-[#E95420] text-sm font-medium transition-all duration-200 hover:border-[#E95420]/50 cursor-pointer"
+                  className="w-full appearance-none px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669]/40 focus:border-[#059669] text-sm font-medium transition-all duration-200 hover:border-[#059669]/50 cursor-pointer"
                 >
                   {plantCategories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -1019,7 +1019,7 @@ const PeopleChampionPage: React.FC = () => {
             <div className="flex-1 min-w-[180px]">
               <label
                 htmlFor="cop-filter-unit"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+                className="flex items-center gap-1.5 text-xs font-semibold text-white uppercase tracking-wider mb-1.5"
               >
                 <Building2 className="w-3.5 h-3.5" />
                 Unit
@@ -1030,7 +1030,7 @@ const PeopleChampionPage: React.FC = () => {
                   value={selectedUnit}
                   onChange={(e) => setSelectedUnit(e.target.value)}
                   disabled={unitsForCategory.length === 0}
-                  className="w-full appearance-none px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420]/40 focus:border-[#E95420] disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-sm font-medium transition-all duration-200 hover:border-[#E95420]/50 cursor-pointer"
+                  className="w-full appearance-none px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669]/40 focus:border-[#059669] disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-sm font-medium transition-all duration-200 hover:border-[#059669]/50 cursor-pointer"
                 >
                   {unitsForCategory.map((unit) => (
                     <option key={unit} value={unit}>
@@ -1046,7 +1046,7 @@ const PeopleChampionPage: React.FC = () => {
             <div className="flex-1 min-w-[160px]">
               <label
                 htmlFor="cop-filter-cement-type"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+                className="flex items-center gap-1.5 text-xs font-semibold text-white uppercase tracking-wider mb-1.5"
               >
                 <Beaker className="w-3.5 h-3.5" />
                 Cement Type
@@ -1056,7 +1056,7 @@ const PeopleChampionPage: React.FC = () => {
                   id="cop-filter-cement-type"
                   value={selectedCementType}
                   onChange={(e) => setSelectedCementType(e.target.value)}
-                  className="w-full appearance-none px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420]/40 focus:border-[#E95420] text-sm font-medium transition-all duration-200 hover:border-[#E95420]/50 cursor-pointer"
+                  className="w-full appearance-none px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669]/40 focus:border-[#059669] text-sm font-medium transition-all duration-200 hover:border-[#059669]/50 cursor-pointer"
                 >
                   <option value="">Pilih Cement Type</option>
                   <option value="OPC">OPC</option>
@@ -1070,7 +1070,7 @@ const PeopleChampionPage: React.FC = () => {
             <div className="flex-1 min-w-[140px]">
               <label
                 htmlFor="cop-filter-month"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+                className="flex items-center gap-1.5 text-xs font-semibold text-white uppercase tracking-wider mb-1.5"
               >
                 <Calendar className="w-3.5 h-3.5" />
                 Month
@@ -1080,7 +1080,7 @@ const PeopleChampionPage: React.FC = () => {
                   id="cop-filter-month"
                   value={filterMonth}
                   onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="w-full appearance-none px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420]/40 focus:border-[#E95420] text-sm font-medium transition-all duration-200 hover:border-[#E95420]/50 cursor-pointer"
+                  className="w-full appearance-none px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669]/40 focus:border-[#059669] text-sm font-medium transition-all duration-200 hover:border-[#059669]/50 cursor-pointer"
                 >
                   {monthOptions.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -1096,7 +1096,7 @@ const PeopleChampionPage: React.FC = () => {
             <div className="flex-1 min-w-[120px]">
               <label
                 htmlFor="cop-filter-year"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+                className="flex items-center gap-1.5 text-xs font-semibold text-white uppercase tracking-wider mb-1.5"
               >
                 <CalendarDays className="w-3.5 h-3.5" />
                 Year
@@ -1106,7 +1106,7 @@ const PeopleChampionPage: React.FC = () => {
                   id="cop-filter-year"
                   value={filterYear}
                   onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="w-full appearance-none px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420]/40 focus:border-[#E95420] text-sm font-medium transition-all duration-200 hover:border-[#E95420]/50 cursor-pointer"
+                  className="w-full appearance-none px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669]/40 focus:border-[#059669] text-sm font-medium transition-all duration-200 hover:border-[#059669]/50 cursor-pointer"
                 >
                   {yearOptions.map((y) => (
                     <option key={y} value={y}>
@@ -1129,7 +1129,7 @@ const PeopleChampionPage: React.FC = () => {
           >
             <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
               <div>
-                <h2 className="text-3xl font-bold text-[#E95420] mb-3">
+                <h2 className="text-3xl font-bold text-[#059669] mb-3">
                   🏅 Peringkat Tertinggi Operator
                 </h2>
                 <p className="text-slate-600 font-medium">
@@ -1152,7 +1152,7 @@ const PeopleChampionPage: React.FC = () => {
             {/* Top Operators by Category */}
             {isLoadingRanking ? (
               <div className="flex justify-center items-center h-48">
-                <LoadingSpinner size="lg" className="border-[#E95420]" />
+                <LoadingSpinner size="lg" className="border-[#059669]" />
               </div>
             ) : (
               <>
@@ -1173,7 +1173,7 @@ const PeopleChampionPage: React.FC = () => {
                         <div key={category} className="mb-8 last:mb-0">
                           <div className="flex items-center gap-2 mb-4">
                             <h3 className="text-lg font-bold text-[#333333] flex items-center gap-2">
-                              <span className="w-1.5 h-6 bg-[#E95420] rounded-full"></span>
+                              <span className="w-1.5 h-6 bg-[#059669] rounded-full"></span>
                               {category} League
                             </h3>
                             <div className="h-px flex-1 bg-gradient-to-r from-slate-200 to-transparent"></div>
@@ -1217,7 +1217,7 @@ const PeopleChampionPage: React.FC = () => {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-white rounded-lg shadow-sm border border-slate-200 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                    <div className="bg-[#E95420] p-2 rounded-lg">
+                    <div className="bg-[#059669] p-2 rounded-lg">
                       <TrendingUp className="w-5 h-5 text-white" />
                     </div>
                   </div>
@@ -1254,7 +1254,7 @@ const PeopleChampionPage: React.FC = () => {
                         id="operator-filter"
                         value={selectedOperator}
                         onChange={(e) => setSelectedOperator(e.target.value)}
-                        className="pl-9 pr-8 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-[#333333] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420]/50 hover:border-[#E95420]/50 transition-colors cursor-pointer appearance-none min-w-[180px]"
+                        className="pl-9 pr-8 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-[#333333] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/50 hover:border-[#059669]/50 transition-colors cursor-pointer appearance-none min-w-[180px]"
                       >
                         <option value="">Semua Operator</option>
                         {relevantOperators.map((operator) => (
@@ -1335,7 +1335,7 @@ const PeopleChampionPage: React.FC = () => {
             <div className="p-6">
               {isLoadingAchievement ? (
                 <div className="flex flex-col justify-center items-center h-64 gap-3 bg-slate-50/50 rounded-xl border border-dashed border-slate-300">
-                  <LoadingSpinner size="lg" className="border-[#E95420]" />
+                  <LoadingSpinner size="lg" className="border-[#059669]" />
                   <span className="text-slate-500 text-sm font-medium animate-pulse">
                     Memuat data performa...
                   </span>
@@ -1420,14 +1420,14 @@ const PeopleChampionPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm group hover:border-[#E95420] transition-all">
+              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm group hover:border-[#059669] transition-all">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-[#E95420]/10 rounded-full flex items-center justify-center">
-                    <span className="text-[#E95420] font-bold text-lg">👑</span>
+                  <div className="w-10 h-10 bg-[#059669]/10 rounded-full flex items-center justify-center">
+                    <span className="text-[#059669] font-bold text-lg">👑</span>
                   </div>
                   <h4 className="text-lg font-bold text-[#333333]">Operator Terbaik</h4>
                 </div>
-                <p className="text-xl font-bold text-[#E95420] truncate mb-2">
+                <p className="text-xl font-bold text-[#059669] truncate mb-2">
                   {operatorAchievementData[0]?.operatorName || '-'}
                 </p>
                 <p className="text-sm text-slate-600 font-medium">
@@ -1435,14 +1435,14 @@ const PeopleChampionPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm group hover:border-[#772953] transition-all">
+              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm group hover:border-[#111827] transition-all">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-[#772953]/10 rounded-full flex items-center justify-center">
-                    <span className="text-[#772953] font-bold text-lg">📊</span>
+                  <div className="w-10 h-10 bg-[#111827]/10 rounded-full flex items-center justify-center">
+                    <span className="text-[#111827] font-bold text-lg">📊</span>
                   </div>
                   <h4 className="text-lg font-bold text-[#333333]">Total Operator</h4>
                 </div>
-                <p className="text-3xl font-bold text-[#772953] mb-2">
+                <p className="text-3xl font-bold text-[#111827] mb-2">
                   {operatorAchievementData.length}
                 </p>
                 <p className="text-sm text-slate-600 font-medium">
@@ -1472,21 +1472,21 @@ const PeopleChampionPage: React.FC = () => {
           <p className="text-sm text-slate-600">Breakdown pencapaian target per parameter.</p>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-200 border border-slate-200 rounded-lg">
-              <thead className="bg-slate-50">
+              <thead className="bg-slate-600 dark:bg-slate-700">
                 <tr>
-                  <th className="px-3 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                     Parameter
                   </th>
-                  <th className="px-3 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">
                     Total Cek
                   </th>
-                  <th className="px-3 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">
                     Dalam Range
                   </th>
-                  <th className="px-3 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">
                     Achievement
                   </th>
-                  <th className="px-3 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">
                     Target
                   </th>
                 </tr>

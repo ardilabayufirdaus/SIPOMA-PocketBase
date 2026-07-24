@@ -105,8 +105,8 @@ const getPerformanceStatus = (percentage: number) => {
   if (percentage <= 30)
     return {
       status: 'Good',
-      color: 'text-ubuntu-midAubergine dark:text-pink-300',
-      bg: 'bg-ubuntu-midAubergine/10 dark:bg-ubuntu-midAubergine/20',
+      color: 'text-emerald-700 dark:text-emerald-300',
+      bg: 'bg-emerald-100/80 dark:bg-emerald-950/40',
     };
   if (percentage <= 45)
     return {
@@ -490,13 +490,13 @@ const ChartContainer: React.FC<{
         {
           label: parameter.parameter,
           data: chartData.map((item) => item.value),
-          borderColor: '#E95420', // Ubuntu Orange
-          backgroundColor: '#E95420',
+          borderColor: '#059669', // Emerald Accent
+          backgroundColor: '#059669',
           borderWidth: 4,
           fill: false,
           pointRadius: 5,
           pointHoverRadius: 7,
-          pointBackgroundColor: '#E95420',
+          pointBackgroundColor: '#059669',
           pointBorderColor: '#ffffff',
           pointBorderWidth: 2,
           spanGaps: false,
@@ -2658,24 +2658,24 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F7F7] dark:bg-ubuntu-aubergine text-slate-900 dark:text-slate-100 font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
       <div className="max-w-full mx-auto space-y-4 sm:space-y-6 lg:space-y-8 pb-12">
-        {/* Premium Ubuntu Header */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-ubuntu-aubergine via-ubuntu-darkAubergine to-ubuntu-aubergine p-4 sm:p-6 lg:p-8 shadow-2xl rounded-2xl">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-ubuntu-orange opacity-10 rounded-full -mr-20 -mt-20 blur-3xl shadow-glow"></div>
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-ubuntu-midAubergine opacity-20 rounded-full -ml-10 -mb-10 blur-2xl"></div>
+        {/* Header */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-secondary-900 to-slate-900 p-4 sm:p-6 lg:p-8 shadow-2xl rounded-2xl">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary-600 opacity-10 rounded-full -mr-20 -mt-20 blur-3xl shadow-glow"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-800 opacity-20 rounded-full -ml-10 -mb-10 blur-2xl"></div>
 
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
             <div className="animate-fade-in group">
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="p-2 sm:p-2.5 bg-ubuntu-orange rounded-xl shadow-lg shadow-ubuntu-orange/30 group-hover:scale-110 transition-transform duration-300">
+                <div className="p-2 sm:p-2.5 bg-primary-600 rounded-xl shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform duration-300">
                   <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-display font-extrabold text-white tracking-tight">
                   {t.op_cop_analysis}
                 </h1>
               </div>
-              <p className="text-ubuntu-warmGrey text-sm sm:text-base lg:text-lg max-w-2xl font-medium opacity-90">
+              <p className="text-slate-400 text-sm sm:text-base lg:text-lg max-w-2xl font-medium opacity-90">
                 Comprehensive parameter performance monitoring and analytics for Plant Operations.
               </p>
             </div>
@@ -2696,14 +2696,14 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
         {/* Sync Progress Modal */}
 
-        {/* Filter Section - Ubuntu Glassmorphism */}
-        <div className="bg-white/70 dark:bg-ubuntu-aubergine/40 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-white/10 p-4 sm:p-6 animate-scale-in">
+        {/* Filter Section */}
+        <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-white/10 p-4 sm:p-6 animate-scale-in">
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6">
             {/* Plant Category */}
             <div className="space-y-1.5 sm:space-y-2 col-span-2 sm:col-span-1">
               <label
                 htmlFor="cop-filter-category"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <Layers className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Category
@@ -2713,7 +2713,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {plantCategories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -2721,7 +2721,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-ubuntu-orange transition-colors pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-primary-500 transition-colors pointer-events-none" />
               </div>
             </div>
 
@@ -2729,7 +2729,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-unit"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <Building2 className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Unit
@@ -2740,7 +2740,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   value={selectedUnit}
                   onChange={(e) => setSelectedUnit(e.target.value)}
                   disabled={unitsForCategory.length === 0}
-                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {unitsForCategory.map((unit) => (
                     <option key={unit} value={unit}>
@@ -2748,7 +2748,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-ubuntu-orange transition-colors pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-primary-500 transition-colors pointer-events-none" />
               </div>
             </div>
 
@@ -2756,7 +2756,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-cement-type"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <Beaker className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Type
@@ -2766,13 +2766,13 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-cement-type"
                   value={selectedCementType}
                   onChange={(e) => setSelectedCementType(e.target.value)}
-                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
                 >
                   <option value="">Choose</option>
                   <option value="OPC">OPC</option>
                   <option value="PPC">PPC</option>
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-ubuntu-orange transition-colors pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-primary-500 transition-colors pointer-events-none" />
               </div>
             </div>
 
@@ -2780,7 +2780,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-month"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <Calendar className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Month
@@ -2790,7 +2790,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-month"
                   value={filterMonth}
                   onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {monthOptions.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -2798,7 +2798,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-ubuntu-orange transition-colors pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-primary-500 transition-colors pointer-events-none" />
               </div>
             </div>
 
@@ -2806,7 +2806,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-year"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <CalendarDays className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Year
@@ -2816,7 +2816,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-year"
                   value={filterYear}
                   onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {yearOptions.map((y) => (
                     <option key={y} value={y}>
@@ -2824,12 +2824,12 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-ubuntu-orange transition-colors pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-primary-500 transition-colors pointer-events-none" />
               </div>
             </div>
           </div>
         </div>
-        {/* Feature Navigation Tabs - Ubuntu Styled */}
+        {/* Feature Navigation Tabs */}
         <div className="bg-slate-200/50 dark:bg-white/5 backdrop-blur-xl rounded-[2rem] p-3 flex flex-wrap gap-3 shadow-inner border border-white/10 overflow-x-auto scrollbar-hide">
           {[
             {
@@ -2860,7 +2860,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               onClick={() => tab.setter(!tab.state)}
               className={`flex-1 min-w-[150px] px-6 py-4 rounded-2xl text-[13px] font-black tracking-wider uppercase transition-all duration-300 active:scale-90 shadow-sm ${
                 tab.state
-                  ? 'bg-ubuntu-orange text-white shadow-2xl shadow-ubuntu-orange/40 ring-2 ring-white/20'
+                  ? 'bg-primary-600 text-white shadow-2xl shadow-primary-600/40 ring-2 ring-white/20'
                   : 'bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-700/80 border border-white/20 dark:border-white/5'
               }`}
             >
@@ -2868,7 +2868,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </button>
           ))}
         </div>
-        {/* Statistical Summary Panel - Ubuntu Redesigned */}
+        {/* Statistical Summary Panel */}
         {showStatisticalSummary && statisticalSummary.length > 0 && (
           <div className="bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-indigo-900/10 dark:to-blue-900/10 rounded-[2.5rem] p-10 border border-white/20 animate-slide-up shadow-xl">
             <div className="flex items-center justify-between mb-8">
@@ -2876,7 +2876,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 <h2 className="text-2xl font-black text-indigo-900 dark:text-indigo-300 uppercase tracking-widest">
                   Statistical Summary
                 </h2>
-                <p className="text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 font-bold italic">
                   Monthly parameter distribution and central tendency metrics.
                 </p>
               </div>
@@ -2887,7 +2887,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   key={stat.parameterId}
                   className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl hover:shadow-2xl transition-all duration-300 group"
                 >
-                  <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-ubuntu-orange transition-colors truncate">
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-primary-600 transition-colors truncate">
                     {stat.parameter}
                   </h3>
                   <div className="space-y-3 font-mono text-[11px]">
@@ -2938,7 +2938,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </div>
         )}
 
-        {/* Dynamic Analytics Panels - Ubuntu Redesigned */}
+        {/* Dynamic Analytics Panels */}
         <div className="grid gap-8">
           {showAnomalyDetection && anomalyDetection.length > 0 && (
             <div className="bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-900/10 dark:to-pink-900/10 rounded-[2.5rem] p-10 border border-white/20 animate-slide-up shadow-xl">
@@ -2946,7 +2946,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 <h2 className="text-2xl font-black text-red-900 dark:text-red-400 uppercase tracking-widest">
                   ⚠️ Anomaly Detection
                 </h2>
-                <p className="text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 font-bold italic">
                   Detecting abnormal values using advanced 3-sigma rule methodology.
                 </p>
               </div>
@@ -2956,7 +2956,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     key={anomaly.parameterId}
                     className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl hover:shadow-2xl transition-all duration-300 group"
                   >
-                    <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-ubuntu-orange transition-colors truncate">
+                    <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-primary-600 transition-colors truncate">
                       {anomaly.parameter}
                     </h3>
                     <div className="space-y-3 font-mono text-[11px]">
@@ -3005,21 +3005,21 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 <h2 className="text-2xl font-black text-purple-900 dark:text-purple-400 uppercase tracking-widest">
                   🔗 Correlation Matrix
                 </h2>
-                <p className="text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 font-bold italic">
                   Identifying relationships and dependencies between operational parameters.
                 </p>
               </div>
               <div className="overflow-x-auto rounded-3xl border border-white/20 shadow-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-md">
                 <table className="min-w-full">
-                  <thead>
-                    <tr className="bg-purple-900/10 dark:bg-purple-900/30 text-purple-900 dark:text-purple-300">
-                      <th className="px-6 py-5 text-left text-[11px] font-black uppercase tracking-[0.2em]">
+                  <thead className="bg-slate-600 dark:bg-slate-700">
+                    <tr className="text-white">
+                      <th className="px-6 py-5 text-left text-[11px] font-black uppercase tracking-[0.2em] text-white">
                         Parameter Pair
                       </th>
-                      <th className="px-6 py-5 text-center text-[11px] font-black uppercase tracking-[0.2em]">
+                      <th className="px-6 py-5 text-center text-[11px] font-black uppercase tracking-[0.2em] text-white">
                         Correlation
                       </th>
-                      <th className="px-6 py-5 text-center text-[11px] font-black uppercase tracking-[0.2em]">
+                      <th className="px-6 py-5 text-center text-[11px] font-black uppercase tracking-[0.2em] text-white">
                         Strength
                       </th>
                     </tr>
@@ -3067,7 +3067,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               <h2 className="text-2xl font-black text-indigo-900 dark:text-indigo-400 uppercase tracking-widest">
                 🏆 Quality Metrics
               </h2>
-              <p className="text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 font-bold italic">
                 Advanced data integrity and process compliance indicators.
               </p>
             </div>
@@ -3095,7 +3095,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   label: 'Data Points',
                   val: `${qualityMetrics.validDataPoints}/${qualityMetrics.totalDataPoints}`,
                   icon: '📈',
-                  color: 'text-ubuntu-orange',
+                  color: 'text-primary-600',
                 },
               ].map((m, i) => (
                 <div
@@ -3121,7 +3121,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 <h2 className="text-2xl font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-widest">
                   📈 Period Comparison
                 </h2>
-                <p className="text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 font-bold italic">
                   Benchmarking current performance against historical data.
                 </p>
               </div>
@@ -3160,7 +3160,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     key={comparison.parameterId}
                     className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl group"
                   >
-                    <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-ubuntu-orange transition-colors truncate">
+                    <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-primary-600 transition-colors truncate">
                       {comparison.parameter}
                     </h3>
                     <div className="space-y-3 font-mono text-[11px]">
@@ -3209,7 +3209,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               <h2 className="text-2xl font-black text-orange-900 dark:text-orange-400 uppercase tracking-widest">
                 🔮 Predictive Insights
               </h2>
-              <p className="text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 font-bold italic">
                 Advanced trend forecasting and risk detection for the next 7 days.
               </p>
             </div>
@@ -3219,7 +3219,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   key={insight.parameterId}
                   className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl group"
                 >
-                  <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-ubuntu-orange transition-colors truncate">
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-primary-600 transition-colors truncate">
                     {insight.parameter}
                   </h3>
                   <div className="space-y-3 font-mono text-[11px]">
@@ -3227,7 +3227,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <span className="text-slate-500 font-bold uppercase tracking-tighter">
                         Forecast
                       </span>
-                      <span className="text-ubuntu-orange font-black">
+                      <span className="text-primary-600 font-black">
                         {insight.forecast !== null ? formatCopNumber(insight.forecast) : '-'}
                       </span>
                     </div>
@@ -3254,7 +3254,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </div>
         )}
 
-        {/* AI Operations Assistant - Redesigned with Ubuntu Glass */}
+        {/* AI Operations Assistant */}
         <div className="animate-scale-in">
           <AiOperationsAssistant
             analysisData={analysisData}
@@ -3266,12 +3266,12 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           />
         </div>
 
-        <div className="bg-white/90 dark:bg-ubuntu-aubergine/60 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 dark:border-white/10 overflow-hidden animate-scale-in">
+        <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 dark:border-white/10 overflow-hidden animate-scale-in">
           <div className="p-8">
             {isLoading && (
               <div className="flex flex-col items-center justify-center py-16 space-y-6">
                 <div className="flex items-center space-x-3">
-                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600"></div>
                   <span className="text-xl font-medium text-slate-600">
                     Loading COP analysis data...
                   </span>
@@ -3279,14 +3279,14 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 {/* Loading skeleton */}
                 <div className="w-full max-w-2xl">
                   <div className="animate-pulse">
-                    <div className="h-4 bg-gradient-to-r from-blue-200 to-purple-200 rounded w-1/3 mb-4"></div>
+                    <div className="h-4 bg-gradient-to-r from-slate-200 to-emerald-200 rounded w-1/3 mb-4"></div>
                     <div className="space-y-3">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <div key={i} className="flex space-x-2">
-                          <div className="h-4 bg-gradient-to-r from-blue-200 to-purple-200 rounded w-1/5"></div>
-                          <div className="h-4 bg-gradient-to-r from-green-200 to-blue-200 rounded w-1/3"></div>
-                          <div className="h-4 bg-gradient-to-r from-purple-200 to-pink-200 rounded w-1/5"></div>
-                          <div className="h-4 bg-gradient-to-r from-orange-200 to-red-200 rounded w-1/6"></div>
+                          <div className="h-4 bg-gradient-to-r from-slate-200 to-emerald-200 rounded w-1/5"></div>
+                          <div className="h-4 bg-gradient-to-r from-emerald-200 to-teal-200 rounded w-1/3"></div>
+                          <div className="h-4 bg-gradient-to-r from-teal-200 to-cyan-200 rounded w-1/5"></div>
+                          <div className="h-4 bg-gradient-to-r from-slate-200 to-slate-300 rounded w-1/6"></div>
                           {Array.from({ length: 10 }).map((_, j) => (
                             <div
                               key={j}
@@ -3332,14 +3332,14 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
             {!isLoading && !error && (
               <DragDropContext onDragEnd={handleDragEnd}>
-                <div className="bg-white/70 dark:bg-ubuntu-aubergine/40 backdrop-blur-xl rounded-[1.5rem] sm:rounded-[2rem] lg:rounded-[2.5rem] p-4 sm:p-6 lg:p-10 border border-white/20 dark:border-white/10 shadow-2xl animate-scale-in overflow-hidden">
+                <div className="bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl rounded-[1.5rem] sm:rounded-[2rem] lg:rounded-[2.5rem] p-4 sm:p-6 lg:p-10 border border-white/20 dark:border-white/10 shadow-2xl animate-scale-in overflow-hidden">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
                     <div className="relative">
-                      <div className="absolute -top-6 -left-6 w-20 h-20 bg-ubuntu-orange/10 rounded-full blur-2xl"></div>
-                      <h2 className="text-xl sm:text-2xl lg:text-3xl font-black bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-orange bg-clip-text text-transparent tracking-tight relative z-10">
+                      <div className="absolute -top-6 -left-6 w-20 h-20 bg-primary-600/10 rounded-full blur-2xl"></div>
+                      <h2 className="text-xl sm:text-2xl lg:text-3xl font-black bg-gradient-to-r from-slate-900 to-primary-600 dark:from-white dark:to-primary-400 bg-clip-text text-transparent tracking-tight relative z-10">
                         📊 Parameter Analytics Matrix
                       </h2>
-                      <p className="text-slate-500 dark:text-ubuntu-warmGrey text-xs sm:text-sm lg:text-base font-bold italic">
+                      <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm lg:text-base font-bold italic">
                         Dynamic heatmap representing parameter adherence to target ranges.
                       </p>
                     </div>
@@ -3355,12 +3355,12 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       role="table"
                       aria-label="COP Analysis Table"
                     >
-                      <thead>
-                        <tr className="bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-darkAubergine text-white uppercase tracking-[0.1em] sm:tracking-[0.15em] font-black text-[10px] sm:text-[13px] h-16 sm:h-20 shadow-lg">
-                          <th className="sticky left-0 bg-ubuntu-aubergine z-40 px-2 sm:px-3 border-r border-white/10 w-10 sm:w-14 rounded-tl-[1.5rem] sm:rounded-tl-[2rem] text-center shadow-xl">
+                      <thead className="bg-secondary-800 text-white shadow-sm">
+                        <tr className="bg-secondary-800 text-white uppercase tracking-[0.1em] sm:tracking-[0.15em] font-black text-[10px] sm:text-[13px] h-16 sm:h-20 border-b border-secondary-700">
+                          <th className="sticky left-0 bg-secondary-900 z-40 px-2 sm:px-3 border-r border-white/10 w-10 sm:w-14 rounded-tl-[1.5rem] sm:rounded-tl-[2rem] text-center shadow-xl">
                             #
                           </th>
-                          <th className="sticky left-10 sm:left-14 bg-ubuntu-aubergine z-40 px-3 sm:px-6 border-r border-white/10 min-w-[120px] sm:min-w-[220px] text-left">
+                          <th className="sticky left-10 sm:left-14 bg-slate-900 z-40 px-3 sm:px-6 border-r border-white/10 min-w-[120px] sm:min-w-[220px] text-left">
                             Parameter Specification
                           </th>
                           <th className="px-2 sm:px-3 border-r border-white/10 w-16 sm:w-20 bg-red-500/10 text-red-300">
@@ -3382,7 +3382,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                               </div>
                             </th>
                           ))}
-                          <th className="sticky right-0 bg-ubuntu-orange z-40 px-3 sm:px-6 w-16 sm:w-24 rounded-tr-[1.5rem] sm:rounded-tr-[2rem] shadow-[-8px_0_20px_rgba(0,0,0,0.2)] text-center">
+                          <th className="sticky right-0 bg-primary-600 z-40 px-3 sm:px-6 w-16 sm:w-24 rounded-tr-[1.5rem] sm:rounded-tr-[2rem] shadow-[-8px_0_20px_rgba(0,0,0,0.2)] text-center">
                             AVG
                           </th>
                         </tr>
@@ -3407,17 +3407,17 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                     {...provided.dragHandleProps}
                                     className={`${
                                       snapshot.isDragging
-                                        ? 'shadow-2xl bg-white dark:bg-slate-800 ring-4 ring-ubuntu-orange/40 z-50'
+                                        ? 'shadow-2xl bg-white dark:bg-slate-800 ring-4 ring-primary-500/40 z-50'
                                         : 'hover:bg-slate-100/50 dark:hover:bg-white/5 transition-colors'
                                     } group/row`}
                                     style={{
                                       ...provided.draggableProps.style,
                                     }}
                                   >
-                                    <td className="sticky left-0 z-30 px-2 sm:px-3 py-4 text-slate-900 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-[#F3F3F3] dark:bg-slate-800 w-10 sm:w-14 font-black text-center shadow-lg group-hover/row:bg-ubuntu-orange/10 group-hover/row:text-ubuntu-orange transition-colors text-[11px] sm:text-[13px]">
+                                    <td className="sticky left-0 z-30 px-2 sm:px-3 py-4 text-slate-900 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-[#F3F3F3] dark:bg-slate-800 w-10 sm:w-14 font-black text-center shadow-lg group-hover/row:bg-emerald-500/10 group-hover/row:text-primary-600 transition-colors text-[11px] sm:text-[13px]">
                                       {rowIndex + 1}
                                     </td>
-                                    <td className="sticky left-10 sm:left-14 z-30 px-3 sm:px-6 py-4 font-black text-slate-800 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-900 min-w-[120px] sm:min-w-[220px] shadow-lg group-hover/row:text-ubuntu-orange transition-colors text-[11px] sm:text-[13px]">
+                                    <td className="sticky left-10 sm:left-14 z-30 px-3 sm:px-6 py-4 font-black text-slate-800 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-900 min-w-[120px] sm:min-w-[220px] shadow-lg group-hover/row:text-primary-600 transition-colors text-[11px] sm:text-[13px]">
                                       <div className="flex flex-col">
                                         <span className="truncate">{row.parameter.parameter}</span>
                                       </div>
@@ -3454,9 +3454,9 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                               {formatCopNumber(day.raw)}
                                             </span>
                                             {day.raw !== undefined && (
-                                              <div className="absolute bottom-full mb-3 w-64 p-4 bg-ubuntu-aubergine dark:bg-slate-800 text-white rounded-2xl opacity-0 group-hover/cell:opacity-100 transition-all duration-300 pointer-events-none z-50 shadow-2xl border border-white/10 left-1/2 -translate-x-1/2 scale-95 group-hover/cell:scale-100">
+                                              <div className="absolute bottom-full mb-3 w-64 p-4 bg-slate-900 dark:bg-slate-800 text-white rounded-2xl opacity-0 group-hover/cell:opacity-100 transition-all duration-300 pointer-events-none z-50 shadow-2xl border border-white/10 left-1/2 -translate-x-1/2 scale-95 group-hover/cell:scale-100">
                                                 <div className="flex items-center justify-between gap-3 mb-3 pb-2 border-b border-white/10">
-                                                  <span className="font-bold text-ubuntu-warmGrey">
+                                                  <span className="font-bold text-slate-300">
                                                     {formatDate(
                                                       new Date(
                                                         Date.UTC(
@@ -3479,7 +3479,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                                     <span className="text-white/60 font-medium">
                                                       {t.average}
                                                     </span>
-                                                    <span className="text-ubuntu-orange font-bold">
+                                                    <span className="text-primary-400 font-bold">
                                                       {formatCopNumber(day.raw)}{' '}
                                                       {row.parameter.unit}
                                                     </span>
@@ -3511,7 +3511,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                                 </div>
 
                                                 {/* Triangle pointer */}
-                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-ubuntu-aubergine dark:border-t-slate-800"></div>
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900 dark:border-t-slate-800"></div>
                                               </div>
                                             )}
                                           </div>
@@ -3558,7 +3558,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         <tr className="border-t-2 border-slate-300 dark:border-white/10">
                           <td
                             colSpan={2}
-                            className="sticky left-0 z-30 px-3 sm:px-6 py-6 text-right text-[10px] sm:text-[13px] font-black tracking-[0.1em] sm:tracking-[0.2em] text-ubuntu-aubergine dark:text-ubuntu-orange uppercase bg-white dark:bg-slate-900 shadow-xl border-r border-slate-200 font-display"
+                            className="sticky left-0 z-30 px-3 sm:px-6 py-6 text-right text-[10px] sm:text-[13px] font-black tracking-[0.1em] sm:tracking-[0.2em] text-slate-900 dark:text-primary-400 uppercase bg-white dark:bg-slate-900 shadow-xl border-r border-slate-200 font-display"
                           >
                             Quality Adherence (QAF)
                           </td>
@@ -3578,17 +3578,17 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                       : '-'}
                                   </span>
                                   {qaf.total > 0 && (
-                                    <div className="absolute bottom-full mb-4 w-56 p-5 bg-ubuntu-aubergine/95 backdrop-blur-xl text-white rounded-[1.5rem] opacity-0 group-hover/cell:opacity-100 transition-all duration-300 pointer-events-none z-50 shadow-2xl border border-white/20 text-center scale-90 group-hover/cell:scale-100">
+                                    <div className="absolute bottom-full mb-4 w-56 p-5 bg-slate-900/95 backdrop-blur-xl text-white rounded-[1.5rem] opacity-0 group-hover/cell:opacity-100 transition-all duration-300 pointer-events-none z-50 shadow-2xl border border-white/20 text-center scale-90 group-hover/cell:scale-100">
                                       <div className="text-[13px] font-black uppercase tracking-widest mb-2 text-white/60">
                                         Compliance Status
                                       </div>
                                       <div className="text-xl font-black mb-1">
                                         {formatCopNumber(qaf.value)}%
                                       </div>
-                                      <div className="text-[13px] font-bold text-ubuntu-warmGrey">
+                                      <div className="text-[13px] font-bold text-slate-300">
                                         {qaf.inRange} of {qaf.total} metrics in target
                                       </div>
-                                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-ubuntu-aubergine/95"></div>
+                                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900/95"></div>
                                     </div>
                                   )}
                                 </div>
@@ -3616,7 +3616,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             );
                           })()}
                         </tr>
-                        {/* Moisture Content Row - Ubuntu Themed */}
+                        {/* Moisture Content Row */}
                         <tr className="border-t border-white/10 bg-blue-500/5 transition-colors hover:bg-blue-500/10">
                           <td
                             colSpan={2}
@@ -3657,7 +3657,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             })()}
                           </td>
                         </tr>
-                        {/* Capacity Row - Ubuntu Themed */}
+                        {/* Capacity Row */}
                         <tr className="border-t border-white/10 bg-emerald-500/5 transition-colors hover:bg-emerald-500/10">
                           <td
                             colSpan={2}
@@ -3691,7 +3691,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                               );
                             }
                           )}
-                          <td className="sticky right-0 z-30 px-3 sm:px-6 py-5 text-center bg-ubuntu-orange text-white font-black text-sm sm:text-lg shadow-[-8px_0_20px_rgba(233,84,32,0.3)] border-l border-white/10">
+                          <td className="sticky right-0 z-30 px-3 sm:px-6 py-5 text-center bg-primary-600 text-white font-black text-sm sm:text-lg shadow-[-8px_0_20px_rgba(5,150,105,0.3)] border-l border-white/10">
                             {(() => {
                               const validCapacities: number[] = [];
                               Array.from(
@@ -3715,15 +3715,15 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             })()}
                           </td>
                         </tr>
-                        {/* COP Footer Parameters - Ubuntu Themed */}
+                        {/* COP Footer Parameters */}
                         {footerData.map((row, index) => (
                           <tr
                             key={`footer-${row.parameter.id}`}
-                            className={`border-t border-white/5 transition-colors hover:bg-ubuntu-orange/5 group/frow ${index === footerData.length - 1 ? 'rounded-b-[2rem]' : ''}`}
+                            className={`border-t border-white/5 transition-colors hover:bg-emerald-500/5 group/frow ${index === footerData.length - 1 ? 'rounded-b-[2rem]' : ''}`}
                           >
                             <td
                               colSpan={2}
-                              className={`sticky left-0 z-30 px-3 sm:px-6 py-4 text-right text-[10px] sm:text-[13px] font-black tracking-widest text-slate-500 dark:text-ubuntu-warmGrey uppercase bg-white dark:bg-slate-900 border-r border-slate-200 shadow-lg group-hover/frow:text-ubuntu-orange ${index === footerData.length - 1 ? 'rounded-bl-[1.5rem] sm:rounded-bl-[2rem]' : ''}`}
+                              className={`sticky left-0 z-30 px-3 sm:px-6 py-4 text-right text-[10px] sm:text-[13px] font-black tracking-widest text-slate-500 dark:text-slate-400 uppercase bg-white dark:bg-slate-900 border-r border-slate-200 shadow-lg group-hover/frow:text-primary-600 ${index === footerData.length - 1 ? 'rounded-bl-[1.5rem] sm:rounded-bl-[2rem]' : ''}`}
                             >
                               {row.parameter.parameter}
                             </td>
@@ -3741,7 +3741,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                               );
                             })}
                             <td
-                              className={`sticky right-0 z-30 px-3 sm:px-6 py-4 text-center bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-black text-[11px] sm:text-[13px] shadow-xl border-l border-slate-200 group-hover/frow:bg-ubuntu-orange group-hover/frow:text-white ${index === footerData.length - 1 ? 'rounded-br-[1.5rem] sm:rounded-bl-[2rem]' : ''}`}
+                              className={`sticky right-0 z-30 px-3 sm:px-6 py-4 text-center bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-black text-[11px] sm:text-[13px] shadow-xl border-l border-slate-200 group-hover/frow:bg-primary-600 group-hover/frow:text-white ${index === footerData.length - 1 ? 'rounded-br-[1.5rem] sm:rounded-bl-[2rem]' : ''}`}
                             >
                               {formatCopNumber(row.monthlyAverageRaw)}
                             </td>
@@ -3780,22 +3780,22 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             )}
           </div>
         </div>
-        {/* Parameter Line Charts - Ubuntu Theme */}
+        {/* Parameter Line Charts */}
         {analysisData.length > 0 && (
           <Card
             variant="floating"
             padding="lg"
-            className="mt-8 bg-gradient-to-br from-ubuntu-aubergine/5 via-ubuntu-midAubergine/5 to-ubuntu-orange/5 shadow-2xl border-0 backdrop-blur-sm"
+            className="mt-8 bg-gradient-to-br from-slate-900/5 via-emerald-900/5 to-slate-900/5 shadow-2xl border-0 backdrop-blur-sm"
           >
             <div className="mb-10 relative">
-              <div className="absolute -top-4 -left-4 w-24 h-24 bg-ubuntu-orange/10 rounded-full blur-2xl"></div>
-              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-ubuntu-aubergine/10 rounded-full blur-3xl"></div>
+              <div className="absolute -top-4 -left-4 w-24 h-24 bg-primary-600/10 rounded-full blur-2xl"></div>
+              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-slate-900/10 rounded-full blur-3xl"></div>
 
               <div className="relative">
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black bg-gradient-to-r from-ubuntu-aubergine via-ubuntu-darkAubergine to-ubuntu-orange bg-clip-text text-transparent mb-2 sm:mb-4 tracking-tight">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black bg-gradient-to-r from-slate-900 via-slate-800 to-primary-600 dark:from-white dark:to-primary-400 bg-clip-text text-transparent mb-2 sm:mb-4 tracking-tight">
                   📈 Trend Parameter COP
                 </h2>
-                <p className="text-sm sm:text-base text-slate-700 dark:text-ubuntu-warmGrey leading-relaxed font-medium">
+                <p className="text-sm sm:text-base text-slate-700 dark:text-slate-400 leading-relaxed font-medium">
                   Visualisasi tren nilai parameter sepanjang bulan untuk monitoring performa dan
                   identifikasi pola
                 </p>
@@ -3818,20 +3818,19 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   selectedCementType
                 );
 
-                // Ubuntu-themed color variations for each chart
+                // Option B Emerald & Slate color variations for each chart
                 const colorSchemes = [
                   {
-                    bg: 'from-ubuntu-aubergine/10 via-ubuntu-midAubergine/10 to-ubuntu-aubergine/5',
-                    border: 'border-ubuntu-aubergine/30',
-                    accent: 'text-ubuntu-aubergine dark:text-ubuntu-midAubergine',
-                    badge:
-                      'bg-ubuntu-aubergine/10 text-ubuntu-aubergine border-ubuntu-aubergine/20',
+                    bg: 'from-slate-900/10 via-slate-800/10 to-slate-900/5',
+                    border: 'border-slate-700/30',
+                    accent: 'text-slate-900 dark:text-slate-100',
+                    badge: 'bg-slate-900/10 text-slate-900 border-slate-900/20',
                   },
                   {
-                    bg: 'from-ubuntu-orange/10 via-ubuntu-orange/15 to-ubuntu-orange/5',
-                    border: 'border-ubuntu-orange/30',
-                    accent: 'text-ubuntu-orange dark:text-ubuntu-orange',
-                    badge: 'bg-ubuntu-orange/10 text-ubuntu-orange border-ubuntu-orange/20',
+                    bg: 'from-primary-600/10 via-primary-600/15 to-primary-600/5',
+                    border: 'border-primary-600/30',
+                    accent: 'text-primary-600 dark:text-primary-400',
+                    badge: 'bg-primary-600/10 text-primary-600 border-primary-600/20',
                   },
                   {
                     bg: 'from-emerald-50 via-green-50 to-emerald-50/50 dark:from-emerald-900/20 dark:via-green-900/20 dark:to-emerald-900/10',
@@ -3841,11 +3840,11 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       'bg-emerald-100/80 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-300/30 dark:border-emerald-700/30',
                   },
                   {
-                    bg: 'from-ubuntu-midAubergine/10 via-purple-100/50 to-ubuntu-midAubergine/5 dark:from-ubuntu-midAubergine/20 dark:via-purple-900/20 dark:to-ubuntu-midAubergine/10',
-                    border: 'border-ubuntu-midAubergine/30 dark:border-ubuntu-midAubergine/40',
-                    accent: 'text-ubuntu-midAubergine dark:text-purple-400',
+                    bg: 'from-teal-900/10 via-teal-100/50 to-teal-900/5 dark:from-teal-900/20 dark:via-teal-900/20 dark:to-teal-900/10',
+                    border: 'border-teal-700/30 dark:border-teal-700/40',
+                    accent: 'text-teal-800 dark:text-teal-400',
                     badge:
-                      'bg-ubuntu-midAubergine/10 dark:bg-ubuntu-midAubergine/20 text-ubuntu-midAubergine dark:text-purple-400 border-ubuntu-midAubergine/20 dark:border-ubuntu-midAubergine/30',
+                      'bg-teal-900/10 dark:bg-teal-900/20 text-teal-800 dark:text-teal-400 border-teal-700/20 dark:border-teal-700/30',
                   },
                   {
                     bg: 'from-blue-50 via-cyan-50 to-blue-50/50 dark:from-blue-900/20 dark:via-cyan-900/20 dark:to-blue-900/10',

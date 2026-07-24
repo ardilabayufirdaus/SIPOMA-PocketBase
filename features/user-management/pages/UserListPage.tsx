@@ -191,7 +191,9 @@ const UserListPage: React.FC = () => {
               <select
                 className="w-full h-[48px] px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 transition-all outline-none appearance-none cursor-pointer"
                 value={filter.status}
-                onChange={(e) => setFilter({ ...filter, status: e.target.value as UserFilter['status'], page: 1 })}
+                onChange={(e) =>
+                  setFilter({ ...filter, status: e.target.value as UserFilter['status'], page: 1 })
+                }
                 style={{
                   backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
                   backgroundPosition: `right 1rem center`,
@@ -212,21 +214,21 @@ const UserListPage: React.FC = () => {
       <EnhancedCard variant="glass" padding="none" className="overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+            <thead className="bg-secondary-800 dark:bg-secondary-900 border-b border-secondary-700">
               <tr>
-                <th className="px-6 py-5 text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">
+                <th className="px-6 py-5 text-sm font-bold text-white uppercase tracking-widest">
                   User Details
                 </th>
-                <th className="px-6 py-5 text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">
+                <th className="px-6 py-5 text-sm font-bold text-white uppercase tracking-widest">
                   System Role
                 </th>
-                <th className="px-6 py-5 text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">
+                <th className="px-6 py-5 text-sm font-bold text-white uppercase tracking-widest">
                   Account Status
                 </th>
-                <th className="px-6 py-5 text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">
+                <th className="px-6 py-5 text-sm font-bold text-white uppercase tracking-widest">
                   Permissions
                 </th>
-                <th className="px-6 py-5 text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest text-right">
+                <th className="px-6 py-5 text-sm font-bold text-white uppercase tracking-widest text-right">
                   Actions
                 </th>
               </tr>
@@ -285,7 +287,15 @@ const UserListPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <EnhancedBadge
-                        variant={getRoleColor(user.role) as "primary" | "secondary" | "success" | "warning" | "error" | "neutral"}
+                        variant={
+                          getRoleColor(user.role) as
+                            | 'primary'
+                            | 'secondary'
+                            | 'success'
+                            | 'warning'
+                            | 'error'
+                            | 'neutral'
+                        }
                         className="px-3 py-1 text-[10px] font-black uppercase tracking-widest shadow-sm"
                       >
                         {user.role}
@@ -341,26 +351,26 @@ const UserListPage: React.FC = () => {
                         )}
                       </div>
                     </td>
-      <td className="px-6 py-4 text-right">
-        <div className="flex justify-end gap-2 md:opacity-0 group-hover:opacity-100 transition-opacity">
-          <EnhancedButton
-            variant="ghost"
-            size="xs"
-            onClick={() => handleEdit(user)}
-            className="p-2 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/40"
-          >
-            <PencilIcon className="w-4 h-4" />
-          </EnhancedButton>
-          <EnhancedButton
-            variant="ghost"
-            size="xs"
-            onClick={() => handleDelete(user.id)}
-            className="p-2 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/40"
-          >
-            <TrashIcon className="w-4 h-4" />
-          </EnhancedButton>
-        </div>
-      </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                        <EnhancedButton
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => handleEdit(user)}
+                          className="p-2 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/40"
+                        >
+                          <PencilIcon className="w-4 h-4" />
+                        </EnhancedButton>
+                        <EnhancedButton
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => handleDelete(user.id)}
+                          className="p-2 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/40"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </EnhancedButton>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}

@@ -285,7 +285,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
         {/* Time Section */}
         <div className="space-y-4">
           <div className="flex items-center space-x-2 mb-2">
-            <div className="w-2 h-2 bg-[#E95420] rounded-full"></div>
+            <div className="w-2 h-2 bg-[#059669] rounded-full"></div>
             <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
               {t.time_period || 'Time Period'}
             </h4>
@@ -319,7 +319,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
         {/* Assignment Section */}
         <div className="space-y-4">
           <div className="flex items-center space-x-2 mb-2">
-            <div className="w-2 h-2 bg-[#772953] rounded-full"></div>
+            <div className="w-2 h-2 bg-[#111827] rounded-full"></div>
             <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
               {t.assignment || 'Assignment'}
             </h4>
@@ -351,7 +351,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                   className={`w-full px-4 py-3 bg-white/50 border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 appearance-none transition-all duration-200 ${
                     isFieldInvalid('pic')
                       ? 'border-orange-300 focus:ring-red-500 focus:border-red-500'
-                      : 'border-slate-300 focus:ring-[#772953] focus:border-[#772953] hover:border-[#E95420]'
+                      : 'border-slate-300 focus:ring-[#111827] focus:border-[#111827] hover:border-[#059669]'
                   }`}
                   disabled={picSettings.length === 0 || readOnly}
                 >
@@ -394,7 +394,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
         {/* Details Section */}
         <div className="space-y-4">
           <div className="flex items-center space-x-2 mb-2">
-            <div className="w-2 h-2 bg-[#E95420] rounded-full"></div>
+            <div className="w-2 h-2 bg-[#059669] rounded-full"></div>
             <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
               {t.details || 'Details'}
             </h4>
@@ -421,7 +421,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                   className={`w-full px-4 py-3 bg-white/50 border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 resize-none transition-all duration-200 ${
                     isFieldInvalid('problem')
                       ? 'border-orange-300 focus:ring-red-500 focus:border-red-500'
-                      : 'border-slate-300 focus:ring-[#772953] focus:border-[#772953] hover:border-[#E95420]'
+                      : 'border-slate-300 focus:ring-[#111827] focus:border-[#111827] hover:border-[#059669]'
                   }`}
                   disabled={readOnly}
                 />
@@ -462,7 +462,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                   t.placeholder_action_description ||
                   "Describe the actions taken or click 'AI RCA' for suggestions..."
                 }
-                className="w-full px-4 py-3 bg-white/50 border border-slate-300 rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#772953] focus:border-[#772953] hover:border-[#E95420] resize-none transition-all duration-200 font-mono text-sm"
+                className="w-full px-4 py-3 bg-white/50 border border-slate-300 rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-[#111827] hover:border-[#059669] resize-none transition-all duration-200 font-mono text-sm"
                 disabled={readOnly}
               />
             </div>

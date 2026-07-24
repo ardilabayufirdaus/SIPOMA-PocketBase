@@ -278,7 +278,7 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
     // Only show loading if we have no data yet
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="w-8 h-8 border-4 border-[#772953] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-[#111827] border-t-transparent rounded-full animate-spin"></div>
         <span className="ml-3 text-slate-600 font-medium">
           {t.loading_data || t.loading || 'Loading material usage data...'}
         </span>
@@ -332,7 +332,7 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
       {/* Material Usage Table */}
       <div className="overflow-x-auto rounded-2xl border border-white/20 shadow-2xl backdrop-blur-md bg-white/10">
         <table className="min-w-full divide-y divide-slate-200 border border-slate-200">
-          <thead className="bg-gradient-to-r from-[#772953] via-[#A83D55] to-[#E95420] text-white shadow-xl backdrop-blur-md">
+          <thead className="bg-secondary-800 text-white shadow-sm">
             {/* Header Row 1 */}
             <tr>
               <th

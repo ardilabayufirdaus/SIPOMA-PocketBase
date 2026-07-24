@@ -87,11 +87,11 @@ const MonthlyCapacityTable: React.FC<MonthlyCapacityTableProps> = ({ filters, pl
       className="w-full mb-8"
     >
       <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
-        <div className="px-8 py-6 border-b border-slate-200/50 bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-midAubergine">
+        <div className="px-8 py-6 border-b border-slate-200/50 bg-gradient-to-r from-slate-900 to-secondary-900">
           <h3 className="text-xl font-bold text-white font-display">
             Monthly Capacity Report - {plantUnit}
           </h3>
-          <p className="text-sm text-ubuntu-warmGrey mt-2">
+          <p className="text-sm text-slate-300 mt-2">
             Periode:{' '}
             {new Date(filters.date).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
           </p>
@@ -101,21 +101,21 @@ const MonthlyCapacityTable: React.FC<MonthlyCapacityTableProps> = ({ filters, pl
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-ubuntu-orange/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-primary-600/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
               <p className="text-sm font-medium text-slate-500 mb-1 relative z-10">
                 Total Wet Production
               </p>
-              <p className="text-2xl font-bold text-ubuntu-orange relative z-10">
+              <p className="text-2xl font-bold text-primary-600 relative z-10">
                 {loading ? '...' : formatNumber(totalWet)}{' '}
                 <span className="text-sm font-medium text-slate-400">Ton</span>
               </p>
             </div>
             <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-ubuntu-darkAubergine/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-secondary-900/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
               <p className="text-sm font-medium text-slate-500 mb-1 relative z-10">
                 Total Dry Production
               </p>
-              <p className="text-2xl font-bold text-ubuntu-darkAubergine relative z-10">
+              <p className="text-2xl font-bold text-secondary-900 relative z-10">
                 {loading ? '...' : formatNumber(totalDry)}{' '}
                 <span className="text-sm font-medium text-slate-400">Ton</span>
               </p>
@@ -132,29 +132,29 @@ const MonthlyCapacityTable: React.FC<MonthlyCapacityTableProps> = ({ filters, pl
           <div className="overflow-hidden bg-white rounded-xl border border-slate-200 shadow-sm">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200">
-                <thead className="bg-slate-50">
+                <thead className="bg-slate-600 dark:bg-slate-700">
                   <tr>
                     <th
                       scope="col"
-                      className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider"
+                      className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider"
                     >
                       Date
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider"
+                      className="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-wider"
                     >
                       Moisture (%)
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider"
+                      className="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-wider"
                     >
                       Wet (Ton)
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider"
+                      className="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-wider"
                     >
                       Dry (Ton)
                     </th>
@@ -192,10 +192,10 @@ const MonthlyCapacityTable: React.FC<MonthlyCapacityTableProps> = ({ filters, pl
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 text-right">
                           {row.moisture?.toFixed(2)}%
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-ubuntu-orange text-right">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-primary-600 text-right">
                           {formatNumber(row.wet)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-ubuntu-darkAubergine text-right">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-secondary-900 text-right">
                           {formatNumber(row.dry)}
                         </td>
                       </tr>

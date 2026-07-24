@@ -31,11 +31,11 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, t, onlineUsersC
           <div className="flex items-center gap-2 md:gap-3 flex-wrap">
             <h1 className="text-xl md:text-3xl font-bold tracking-tight text-[#333333] dark:text-white">
               {greeting},{' '}
-              <span className="text-[#E95420]">
+              <span className="text-primary-600">
                 {user?.name || user?.full_name || user?.username || 'Engineer'}
               </span>
             </h1>
-            <span className="px-2 py-0.5 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-widest bg-[#772953] text-white">
+            <span className="px-2 py-0.5 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-widest bg-slate-900 text-white">
               {user?.role || 'Guest'}
             </span>
           </div>
@@ -46,10 +46,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, t, onlineUsersC
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Date Display - Clean Ubuntu Style */}
+        {/* Date Display */}
         <div className="hidden md:flex items-center gap-2.5 px-4 py-2 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 shadow-sm">
           <svg
-            className="w-3.5 h-3.5 text-[#E95420]"
+            className="w-3.5 h-3.5 text-primary-600"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -70,7 +70,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, t, onlineUsersC
           </span>
         </div>
 
-        {/* Online Users - Ubuntu Style Badge */}
+        {/* Online Users Badge */}
         <div className="flex items-center gap-2.5 px-4 py-2 bg-[#F7F7F7] dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800">
           <div className="relative flex h-2 w-2">
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#38B000]"></span>

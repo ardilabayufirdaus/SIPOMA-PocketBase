@@ -532,16 +532,16 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative overflow-hidden bg-gradient-to-r from-[#772953] to-[#2C001E] rounded-xl shadow-lg border border-[#AEA79F]/20 p-6 mb-8"
+          className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-secondary-900 rounded-xl shadow-lg border border-white/10 p-6 mb-8"
         >
           {/* Background Pattern */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent"></div>
-          <div className="absolute top-0 right-0 w-40 h-40 bg-[#E95420]/10 rounded-full -translate-y-20 translate-x-20"></div>
+          <div className="absolute top-0 right-0 w-40 h-40 bg-primary-600/10 rounded-full -translate-y-20 translate-x-20"></div>
 
           <div className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
-                <Database className="w-7 h-7 text-[#E95420]" />
+                <Database className="w-7 h-7 text-primary-400" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white tracking-tight">
@@ -571,9 +571,9 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   whileTap={{ scale: 0.98 }}
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isImporting || !canWrite}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#333333] bg-white/90 backdrop-blur-sm border border-white/20 rounded-lg shadow-sm hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-800 bg-white/90 backdrop-blur-sm border border-white/20 rounded-lg shadow-sm hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
-                  <DocumentArrowUpIcon className="w-5 h-5 text-[#772953]" />
+                  <DocumentArrowUpIcon className="w-5 h-5 text-slate-700" />
                   {isImporting ? t['importing'] || 'Importing...' : t['import_all']}
                 </motion.button>
                 <motion.button
@@ -581,7 +581,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   whileTap={{ scale: 0.98 }}
                   onClick={handleExportAll}
                   disabled={isExporting}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#E95420] rounded-lg shadow-sm hover:bg-[#d94612] ring-1 ring-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-primary-600 rounded-lg shadow-sm hover:bg-primary-500 ring-1 ring-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   <DocumentArrowDownIcon className="w-5 h-5" />
                   {isExporting ? t['exporting'] || 'Exporting...' : t['export_all']}
@@ -598,13 +598,13 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="bg-white rounded-xl shadow-lg border border-[#AEA79F]/30 overflow-hidden"
+            className="bg-white rounded-xl shadow-lg border border-[#94a3b8]/30 overflow-hidden"
           >
-            <div className="p-6 border-b border-[#AEA79F]/20">
+            <div className="p-6 border-b border-[#94a3b8]/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#E95420]/10 rounded-lg">
-                    <Database className="w-5 h-5 text-[#E95420]" />
+                  <div className="p-2 bg-primary-600/10 rounded-lg">
+                    <Database className="w-5 h-5 text-primary-600" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-[#333333]">
@@ -618,7 +618,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleOpenAddModal('plantUnit')}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#E95420] rounded-lg shadow-sm hover:bg-[#d94612] transition-all duration-200"
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-primary-600 rounded-lg shadow-sm hover:bg-primary-500 transition-all duration-200"
                   >
                     <PlusIcon className="w-4 h-4" />
                     {t['add_data_button']}
@@ -628,13 +628,13 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </div>
             <div className="p-6">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-[#AEA79F]/20">
-                  <thead className="bg-[#F7F7F7]">
+                <table className="min-w-full divide-y divide-[#94a3b8]/20">
+                  <thead className="bg-slate-600 dark:bg-slate-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['measurement_unit']}
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['plant_category']}
                       </th>
                       {canWrite && (
@@ -644,19 +644,19 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       )}
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-[#AEA79F]/20">
+                  <tbody className="bg-white divide-y divide-[#94a3b8]/20">
                     {plantUnitsLoading ? (
                       <tr>
                         <td colSpan={3} className="px-4 py-8 text-center">
                           <div className="flex items-center justify-center gap-2">
                             <LoadingSpinner size="sm" />
-                            <span className="text-[#AEA79F]">Loading plant units...</span>
+                            <span className="text-[#94a3b8]">Loading plant units...</span>
                           </div>
                         </td>
                       </tr>
                     ) : paginatedPlantUnits.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="px-4 py-8 text-center text-[#AEA79F]">
+                        <td colSpan={3} className="px-4 py-8 text-center text-[#94a3b8]">
                           No plant units found
                         </td>
                       </tr>
@@ -664,7 +664,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       paginatedPlantUnits.map((unit, _index) => (
                         <tr
                           key={unit.id}
-                          className="hover:bg-[#E95420]/5 transition-colors duration-200"
+                          className="hover:bg-[#059669]/5 transition-colors duration-200"
                         >
                           <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-[#333333]">
                             {unit.unit}
@@ -679,7 +679,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}
                                   onClick={() => handleOpenEditModal('plantUnit', unit)}
-                                  className="p-2 text-[#AEA79F] hover:text-[#772953] transition-colors duration-200 rounded-lg hover:bg-[#772953]/10"
+                                  className="p-2 text-[#94a3b8] hover:text-[#111827] transition-colors duration-200 rounded-lg hover:bg-[#111827]/10"
                                 >
                                   <EditIcon className="w-4 h-4" />
                                 </motion.button>
@@ -687,7 +687,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}
                                   onClick={() => handleOpenDeleteModal(unit.id, 'plantUnit')}
-                                  className="p-2 text-[#AEA79F] hover:text-[#C7162B] transition-colors duration-200 rounded-lg hover:bg-[#C7162B]/10"
+                                  className="p-2 text-[#94a3b8] hover:text-[#C7162B] transition-colors duration-200 rounded-lg hover:bg-[#C7162B]/10"
                                 >
                                   <TrashIcon className="w-4 h-4" />
                                 </motion.button>
@@ -715,9 +715,9 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-white rounded-xl shadow-lg border border-[#AEA79F]/30 overflow-hidden"
+            className="bg-white rounded-xl shadow-lg border border-[#94a3b8]/30 overflow-hidden"
           >
-            <div className="p-6 border-b border-[#AEA79F]/20">
+            <div className="p-6 border-b border-[#94a3b8]/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-[#F9F9F9] rounded-lg">
@@ -735,7 +735,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleOpenAddModal('picSetting')}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#E95420] rounded-lg shadow-sm hover:bg-[#d94612] transition-all duration-200"
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#059669] rounded-lg shadow-sm hover:bg-[#d94612] transition-all duration-200"
                   >
                     <PlusIcon className="w-4 h-4" />
                     {t['add_data_button']}
@@ -745,10 +745,10 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </div>
             <div className="p-6">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-[#AEA79F]/20">
-                  <thead className="bg-[#F7F7F7]">
+                <table className="min-w-full divide-y divide-[#94a3b8]/20">
+                  <thead className="bg-slate-600 dark:bg-slate-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['pic']}
                       </th>
                       <th className="relative px-4 py-3 w-20">
@@ -756,11 +756,11 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-[#AEA79F]/20">
+                  <tbody className="bg-white divide-y divide-[#94a3b8]/20">
                     {paginatedPicSettings.map((pic, _index) => (
                       <tr
                         key={pic.id}
-                        className="hover:bg-[#E95420]/5 transition-colors duration-200"
+                        className="hover:bg-[#059669]/5 transition-colors duration-200"
                       >
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-[#333333]">
                           {pic.pic}
@@ -772,7 +772,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleOpenEditModal('picSetting', pic)}
-                                className="p-2 text-[#AEA79F] hover:text-[#772953] transition-colors duration-200 rounded-lg hover:bg-[#772953]/10"
+                                className="p-2 text-[#94a3b8] hover:text-[#111827] transition-colors duration-200 rounded-lg hover:bg-[#111827]/10"
                               >
                                 <EditIcon className="h-4 w-4" />
                               </motion.button>
@@ -780,7 +780,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleOpenDeleteModal(pic.id, 'picSetting')}
-                                className="p-2 text-[#AEA79F] hover:text-[#C7162B] transition-colors duration-200 rounded-lg hover:bg-[#C7162B]/10"
+                                className="p-2 text-[#94a3b8] hover:text-[#C7162B] transition-colors duration-200 rounded-lg hover:bg-[#C7162B]/10"
                               >
                                 <TrashIcon className="h-4 w-4" />
                               </motion.button>
@@ -812,8 +812,8 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="p-6 border-b border-slate-200">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#E95420]/10 rounded-lg">
-                    <BarChart3 className="w-5 h-5 text-[#E95420]" />
+                  <div className="p-2 bg-[#059669]/10 rounded-lg">
+                    <BarChart3 className="w-5 h-5 text-[#059669]" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900">
@@ -828,7 +828,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleOpenAddModal('parameterSetting')}
-                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#E95420] rounded-xl shadow-sm hover:bg-[#d94612] transition-all duration-200"
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#059669] rounded-xl shadow-sm hover:bg-[#d94612] transition-all duration-200"
                     >
                       <PlusIcon className="w-4 h-4" />
                       {t['add_data_button']}
@@ -846,7 +846,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     value={parameterSearchQuery}
                     onChange={(e) => setParameterSearchQuery(e.target.value)}
                     placeholder="Search parameters..."
-                    className="w-full pl-9 pr-4 py-2 text-sm border border-[#AEA79F]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all"
+                    className="w-full pl-9 pr-4 py-2 text-sm border border-[#94a3b8]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all"
                   />
                   {parameterSearchQuery && (
                     <button
@@ -875,7 +875,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     <select
                       value={parameterCategoryFilter}
                       onChange={(e) => setParameterCategoryFilter(e.target.value)}
-                      className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#AEA79F]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all"
+                      className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#94a3b8]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all"
                     >
                       {uniquePlantCategories.map((cat) => (
                         <option key={cat} value={cat}>
@@ -891,7 +891,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     <select
                       value={parameterUnitFilter}
                       onChange={(e) => setParameterUnitFilter(e.target.value)}
-                      className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#AEA79F]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all"
+                      className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#94a3b8]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all"
                     >
                       {unitsForParameterFilter.map((unit) => (
                         <option key={unit} value={unit}>
@@ -910,21 +910,21 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="p-6">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+                  <thead className="bg-slate-600 dark:bg-slate-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['parameter_name']}
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['data_type']}
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['measurement_unit']}
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['min_value']}
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['max_value']}
                       </th>
                       <th className="relative px-4 py-3 w-20">
@@ -954,7 +954,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             <span
                               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                 param.data_type === ParameterDataType.NUMBER
-                                  ? 'bg-[#E95420]/10 text-[#E95420]'
+                                  ? 'bg-[#059669]/10 text-[#059669]'
                                   : 'bg-slate-100 text-slate-800'
                               }`}
                             >
@@ -981,7 +981,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.95 }}
                                   onClick={() => handleOpenEditModal('parameterSetting', param)}
-                                  className="p-2 text-[#AEA79F] hover:text-[#E95420] transition-colors duration-200"
+                                  className="p-2 text-[#94a3b8] hover:text-[#059669] transition-colors duration-200"
                                 >
                                   <EditIcon className="h-4 w-4" />
                                 </motion.button>
@@ -991,7 +991,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                   onClick={() =>
                                     handleOpenDeleteModal(param.id, 'parameterSetting')
                                   }
-                                  className="p-2 text-[#AEA79F] hover:text-[#C7162B] transition-colors duration-200"
+                                  className="p-2 text-[#94a3b8] hover:text-[#C7162B] transition-colors duration-200"
                                 >
                                   <TrashIcon className="h-4 w-4" />
                                 </motion.button>
@@ -1024,8 +1024,8 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="p-6 border-b border-slate-200">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#E95420]/10 rounded-lg">
-                    <Database className="w-5 h-5 text-[#E95420]" />
+                  <div className="p-2 bg-[#059669]/10 rounded-lg">
+                    <Database className="w-5 h-5 text-[#059669]" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900">
@@ -1040,7 +1040,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleOpenAddModal('siloCapacity')}
-                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#E95420] rounded-xl shadow-sm hover:bg-[#d94612] transition-all duration-200"
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#059669] rounded-xl shadow-sm hover:bg-[#d94612] transition-all duration-200"
                     >
                       <PlusIcon className="w-4 h-4" />
                       {t['add_data_button']}
@@ -1055,7 +1055,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   <select
                     value={siloCategoryFilter}
                     onChange={(e) => setSiloCategoryFilter(e.target.value)}
-                    className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#AEA79F]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all"
+                    className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#94a3b8]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all"
                   >
                     {uniquePlantCategories.map((cat) => (
                       <option key={cat} value={cat}>
@@ -1071,7 +1071,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   <select
                     value={siloUnitFilter}
                     onChange={(e) => setSiloUnitFilter(e.target.value)}
-                    className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#AEA79F]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all"
+                    className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#94a3b8]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all"
                   >
                     {unitsForSiloFilter.map((unit) => (
                       <option key={unit} value={unit}>
@@ -1089,15 +1089,15 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="p-6">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+                  <thead className="bg-slate-600 dark:bg-slate-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['plant_unit']}
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['silo_name']} // Was silo_number
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['capacity']} (Ton) // Was max_capacity
                       </th>
                       {canWrite && (
@@ -1145,7 +1145,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.95 }}
                                   onClick={() => handleOpenEditModal('siloCapacity', silo)}
-                                  className="p-2 text-[#AEA79F] hover:text-[#E95420] transition-colors duration-200"
+                                  className="p-2 text-[#94a3b8] hover:text-[#059669] transition-colors duration-200"
                                 >
                                   <EditIcon className="h-4 w-4" />
                                 </motion.button>
@@ -1153,7 +1153,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.95 }}
                                   onClick={() => handleOpenDeleteModal(silo.id, 'siloCapacity')}
-                                  className="p-2 text-[#AEA79F] hover:text-[#C7162B] transition-colors duration-200"
+                                  className="p-2 text-[#94a3b8] hover:text-[#C7162B] transition-colors duration-200"
                                 >
                                   <TrashIcon className="h-4 w-4" />
                                 </motion.button>
@@ -1186,8 +1186,8 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="p-6 border-b border-slate-200">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#E95420]/10 rounded-lg">
-                    <BarChart3 className="w-5 h-5 text-[#E95420]" />
+                  <div className="p-2 bg-[#059669]/10 rounded-lg">
+                    <BarChart3 className="w-5 h-5 text-[#059669]" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900">
@@ -1202,7 +1202,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={handleOpenCopModal}
-                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#E95420] rounded-xl shadow-sm hover:bg-[#d94612] transition-all duration-200"
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#059669] rounded-xl shadow-sm hover:bg-[#d94612] transition-all duration-200"
                     >
                       <EditIcon className="w-4 h-4" />
                       {t['edit_parameters']}
@@ -1217,7 +1217,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   <select
                     value={copCategoryFilter}
                     onChange={(e) => setCopCategoryFilter(e.target.value)}
-                    className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#AEA79F]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all"
+                    className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#94a3b8]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all"
                   >
                     {uniquePlantCategories.map((cat) => (
                       <option key={cat} value={cat}>
@@ -1233,7 +1233,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   <select
                     value={copUnitFilter}
                     onChange={(e) => setCopUnitFilter(e.target.value)}
-                    className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#AEA79F]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all"
+                    className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#94a3b8]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all"
                   >
                     {unitsForCopFilter.map((unit) => (
                       <option key={unit} value={unit}>
@@ -1251,12 +1251,12 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="p-6">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+                  <thead className="bg-slate-600 dark:bg-slate-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['parameter_name']}
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['measurement_unit']}
                       </th>
                       {canWrite && (
@@ -1300,7 +1300,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleRemoveCopParameter(param.id)}
-                                className="p-2 text-[#AEA79F] hover:text-[#C7162B] transition-colors duration-200"
+                                className="p-2 text-[#94a3b8] hover:text-[#C7162B] transition-colors duration-200"
                                 title="Remove from COP"
                               >
                                 <TrashIcon className="h-4 w-4" />
@@ -1333,8 +1333,8 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="p-6 border-b border-slate-200">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#E95420]/10 rounded-lg">
-                    <FileText className="w-5 h-5 text-[#E95420]" />
+                  <div className="p-2 bg-[#059669]/10 rounded-lg">
+                    <FileText className="w-5 h-5 text-[#059669]" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900">
@@ -1351,7 +1351,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleOpenAddModal('reportSetting')}
-                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#E95420] rounded-xl shadow-sm hover:bg-[#d94612] transition-all duration-200"
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#059669] rounded-xl shadow-sm hover:bg-[#d94612] transition-all duration-200"
                     >
                       <PlusIcon className="w-4 h-4" />
                       {t['add_data_button']}
@@ -1364,15 +1364,15 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="p-6">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+                  <thead className="bg-slate-600 dark:bg-slate-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['order'] || 'Order'}
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['parameter_name']}
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['category'] || 'Category'}
                       </th>
                       {canWrite && (
@@ -1418,7 +1418,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={() => handleOpenEditModal('reportSetting', setting)}
-                                    className="p-2 text-[#AEA79F] hover:text-[#E95420] transition-colors duration-200"
+                                    className="p-2 text-[#94a3b8] hover:text-[#059669] transition-colors duration-200"
                                   >
                                     <EditIcon className="h-4 w-4" />
                                   </motion.button>
@@ -1428,7 +1428,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                     onClick={() =>
                                       handleOpenDeleteModal(setting.id, 'reportSetting')
                                     }
-                                    className="p-2 text-[#AEA79F] hover:text-[#C7162B] transition-colors duration-200"
+                                    className="p-2 text-[#94a3b8] hover:text-[#C7162B] transition-colors duration-200"
                                   >
                                     <TrashIcon className="h-4 w-4" />
                                   </motion.button>
@@ -1459,11 +1459,11 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             transition={{ duration: 0.5, delay: 0.7 }}
             className="md:col-span-2 bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
           >
-            <div className="p-6 border-b border-[#AEA79F]/20">
+            <div className="p-6 border-b border-[#94a3b8]/20">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#E95420]/10 rounded-lg">
-                    <BarChart3 className="w-5 h-5 text-[#E95420]" />
+                  <div className="p-2 bg-[#059669]/10 rounded-lg">
+                    <BarChart3 className="w-5 h-5 text-[#059669]" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900">
@@ -1481,7 +1481,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={handleOpenCopFooterModal}
-                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#E95420] rounded-xl shadow-sm hover:bg-[#d94612] transition-all duration-200"
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#059669] rounded-xl shadow-sm hover:bg-[#d94612] transition-all duration-200"
                     >
                       <EditIcon className="w-4 h-4" />
                       {t['edit_parameters']}
@@ -1496,7 +1496,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   <select
                     value={copFooterCategoryFilter}
                     onChange={(e) => setCopFooterCategoryFilter(e.target.value)}
-                    className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#AEA79F]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all"
+                    className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#94a3b8]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all"
                   >
                     {uniquePlantCategories.map((cat) => (
                       <option key={cat} value={cat}>
@@ -1512,7 +1512,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   <select
                     value={copFooterUnitFilter}
                     onChange={(e) => setCopFooterUnitFilter(e.target.value)}
-                    className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#AEA79F]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all"
+                    className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#94a3b8]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all"
                   >
                     {unitsForCopFooterFilter.map((unit) => (
                       <option key={unit} value={unit}>
@@ -1530,12 +1530,12 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="p-6">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+                  <thead className="bg-slate-600 dark:bg-slate-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['parameter_name']}
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['measurement_unit']}
                       </th>
                       {canWrite && (
@@ -1579,7 +1579,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleRemoveCopFooterParameter(param.id)}
-                                className="p-2 text-[#AEA79F] hover:text-[#C7162B] transition-colors duration-200"
+                                className="p-2 text-[#94a3b8] hover:text-[#C7162B] transition-colors duration-200"
                                 title="Remove from Footer"
                               >
                                 <TrashIcon className="h-4 w-4" />
@@ -1729,7 +1729,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       key={param.id}
                       className={`flex items-start p-3 rounded-lg border cursor-pointer transition-colors ${
                         tempCopSelection.includes(param.id)
-                          ? 'bg-[#E95420]/5 border-[#E95420]/30'
+                          ? 'bg-[#059669]/5 border-[#059669]/30'
                           : 'hover:bg-gray-50 border-gray-200'
                       }`}
                     >
@@ -1738,7 +1738,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           type="checkbox"
                           checked={tempCopSelection.includes(param.id)}
                           onChange={() => handleCopSelectionChange(param.id)}
-                          className="w-4 h-4 text-[#E95420] border-gray-300 rounded focus:ring-[#E95420]"
+                          className="w-4 h-4 text-[#059669] border-gray-300 rounded focus:ring-[#059669]"
                         />
                       </div>
                       <div className="ml-3 text-sm">
@@ -1758,7 +1758,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 </button>
                 <button
                   onClick={handleSaveCopSelection}
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#E95420] rounded-xl hover:bg-[#d94612]"
+                  className="px-4 py-2 text-sm font-medium text-white bg-[#059669] rounded-xl hover:bg-[#d94612]"
                 >
                   {t['save_changes']}
                 </button>
@@ -1819,7 +1819,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       key={param.id}
                       className={`flex items-start p-3 rounded-lg border cursor-pointer transition-colors ${
                         tempCopFooterSelection.includes(param.id)
-                          ? 'bg-[#E95420]/5 border-[#E95420]/30'
+                          ? 'bg-[#059669]/5 border-[#059669]/30'
                           : 'hover:bg-gray-50 border-gray-200'
                       }`}
                     >
@@ -1828,7 +1828,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           type="checkbox"
                           checked={tempCopFooterSelection.includes(param.id)}
                           onChange={() => handleCopFooterSelectionChange(param.id)}
-                          className="w-4 h-4 text-[#E95420] border-gray-300 rounded focus:ring-[#E95420]"
+                          className="w-4 h-4 text-[#059669] border-gray-300 rounded focus:ring-[#059669]"
                         />
                       </div>
                       <div className="ml-3 text-sm">
@@ -1848,7 +1848,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 </button>
                 <button
                   onClick={handleSaveCopFooterSelection}
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#E95420] rounded-xl hover:bg-[#d94612]"
+                  className="px-4 py-2 text-sm font-medium text-white bg-[#059669] rounded-xl hover:bg-[#d94612]"
                 >
                   {t['save_changes']}
                 </button>

@@ -62,11 +62,11 @@ export default function DataTable({
         <table className="w-full">
           {/* Table Header */}
           <thead>
-            <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+            <tr className="bg-slate-600 dark:bg-slate-700 border-b border-slate-500 dark:border-slate-600">
               {columns.map((column) => (
                 <th
                   key={column.field}
-                  className="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider"
                   style={{
                     width: column.width || 'auto',
                     minWidth: column.width ? `${column.width}px` : 'auto',

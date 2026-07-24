@@ -94,12 +94,12 @@ export const PageLoading: React.FC<{ message?: string }> = ({ message = 'Loading
 export const UserTableSkeleton: React.FC = () => (
   <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
     <table className="min-w-full divide-y divide-gray-300">
-      <thead className="bg-gray-50">
+      <thead className="bg-slate-600 dark:bg-slate-700">
         <tr>
           {['User', 'Role', 'Department', 'Status', 'Last Active', 'Actions'].map((header, i) => (
             <th
               key={i}
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider"
             >
               {header}
             </th>

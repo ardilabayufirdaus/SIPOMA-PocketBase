@@ -91,7 +91,7 @@ const LoadingSpinner: React.FC = () => (
   </div>
 );
 
-// Helper function for status classes - Ubuntu Themed
+// Helper function for status classes
 const getStatusClasses = (status: string, t: any) => {
   if (status === t.proj_status_completed) {
     return 'bg-success-50 text-success-700 border border-success-200';
@@ -155,7 +155,7 @@ const GanttChart: React.FC<{
             y1={ganttDimensions.topPadding - 5}
             x2={todayX}
             y2={totalHeight}
-            stroke="#E95420" // Ubuntu Orange
+            stroke="#059669" // Vibrant Emerald
             strokeWidth="1.5"
             strokeDasharray="4,2"
           />
@@ -180,9 +180,9 @@ const GanttChart: React.FC<{
 
           const isOverdue = taskEnd < today && task.percent_complete < 100;
 
-          // Ubuntu Styled Bars
+          // Option B Styled Bars
           const plannedBarColor = isOverdue ? 'text-red-100' : 'text-slate-200';
-          const progressBarColor = isOverdue ? 'text-primary-500' : 'text-secondary-600'; // Aubergine for normal, Orange for overdue
+          const progressBarColor = isOverdue ? 'text-primary-500' : 'text-secondary-600';
 
           return (
             <g
@@ -607,17 +607,17 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
     return [
       {
         id: 'Planned Progress',
-        color: '#772953', // Ubuntu Aubergine (Mid)
+        color: '#111827', // Deep Charcoal
         data: plannedData,
       },
       {
         id: 'Actual Progress',
-        color: '#E95420', // Ubuntu Orange
+        color: '#059669', // Vibrant Emerald
         data: actualData,
       },
       {
         id: 'Baseline',
-        color: '#AEA79F', // Ubuntu Warm Grey
+        color: '#9ca3af', // Slate Neutral
         data: baselineData,
       },
     ];
@@ -641,12 +641,12 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
           axis: 'x' as const,
           value: `Day ${daysFromStart + 1}`,
           lineStyle: {
-            stroke: '#E95420', // Orange
+            stroke: '#059669', // Orange
             strokeWidth: 2,
             strokeDasharray: '5,5',
           },
           textStyle: {
-            fill: '#E95420',
+            fill: '#059669',
             fontSize: 12,
             fontWeight: 'bold',
           },
@@ -930,7 +930,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
       <div className="w-full">
-        {/* Ubuntu Enhanced Header */}
+        {/* Option B Header */}
         <div className="bg-secondary-900 border-b border-secondary-800 px-4 py-6 sm:px-6 lg:px-8 shadow-md">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 max-w-[1400px] mx-auto">
             <div className="flex-1 min-w-0">
@@ -989,8 +989,8 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
             <LoadingSpinner />
           ) : (
             <>
-              {/* Project Main Metrics Card - Ubuntu Gradient */}
-              <div className="relative overflow-hidden bg-gradient-to-br from-[#772953] to-[#300a24] rounded-3xl shadow-xl shadow-secondary-900/20">
+              {/* Project Main Metrics Card */}
+              <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-secondary-900 rounded-3xl shadow-xl shadow-secondary-900/20">
                 <div className="absolute top-0 right-0 p-12 opacity-10 transform translate-x-10 -translate-y-10">
                   <PresentationChartLineIcon className="w-64 h-64 text-white" />
                 </div>
@@ -1230,7 +1230,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                 {activeProjectTasks && activeProjectTasks.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-slate-100">
-                      <thead className="bg-secondary-900">
+                      <thead className="bg-secondary-800 dark:bg-secondary-900 border-b border-secondary-700">
                         <tr>
                           <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
                             {t.task_activity}

@@ -12,12 +12,11 @@
 
   html {
     @apply antialiased scroll-smooth;
-    font-family: 'Inter', system-ui, sans-serif;
-    font-size: 67%; /* Scales app to ~67% zoom equivalent */
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100;
+    @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 selection:bg-primary-500/30 selection:text-primary-700 dark:selection:text-primary-300;
   }
 
   /* Typography Enhancements */
@@ -38,20 +37,20 @@
   select,
   textarea {
     @apply transition-all duration-200 ease-in-out
-           border-slate-200 dark:border-slate-700
-           bg-white dark:bg-slate-800
+           border-slate-200 dark:border-slate-800
+           bg-white dark:bg-slate-900
            focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500
-           disabled:bg-slate-50 disabled:text-slate-500
-           placeholder:text-slate-400
+           disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:text-slate-400
+           placeholder:text-slate-400 dark:placeholder:text-slate-500
            rounded-xl;
   }
 }
 
-/* Modern Scrollbar */
+/* Modern Scrollbar & Design System Utilities */
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
+    scrollbar-color: rgba(233, 84, 32, 0.3) transparent;
   }
 
   .scrollbar-thin::-webkit-scrollbar {
@@ -64,7 +63,7 @@
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-indigo-300/50 dark:bg-indigo-600/50 rounded-full hover:bg-indigo-400 dark:hover:bg-indigo-500;
+    @apply bg-primary-500/30 dark:bg-primary-500/50 rounded-full hover:bg-primary-500/60 dark:hover:bg-primary-400/80;
   }
 
   .text-balance {
@@ -73,15 +72,26 @@
 
   /* Glassmorphism Utilities */
   .glass-panel {
-    @apply bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-white/20 dark:border-slate-700/30 shadow-glass;
+    @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 shadow-md;
   }
 
   .glass-header {
-    @apply sticky top-0 z-40 w-full backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border-b border-white/20 dark:border-slate-700/30 transition-all duration-300;
+    @apply sticky top-0 z-40 w-full backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border-b border-slate-200/80 dark:border-slate-800/80 transition-all duration-300;
   }
 
   .glass-card {
-    @apply bg-white/40 dark:bg-slate-800/40 backdrop-blur-lg border border-white/30 dark:border-slate-700/30 shadow-lg rounded-2xl;
+    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg border border-slate-200/60 dark:border-slate-800/60 shadow-sm hover:shadow-md transition-all duration-200 rounded-2xl;
+  }
+  
+  .shimmer-effect {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s infinite;
   }
 }
 
@@ -127,7 +137,7 @@
   }
 
   .modern-table thead th {
-    @apply px-6 py-4 font-semibold text-slate-900 dark:text-slate-100 bg-slate-50/50 dark:bg-slate-900/50 backdrop-blur border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10;
+    @apply px-6 py-4 font-semibold text-white bg-slate-600 dark:bg-slate-700 border-b border-slate-500 dark:border-slate-600 sticky top-0 z-10;
   }
 
   .modern-table tbody tr {
@@ -136,6 +146,31 @@
 
   .modern-table td {
     @apply px-6 py-4 align-middle;
+  }
+
+  /* Table Header Tier Utilities */
+  /* Tier 1: Dark Charcoal — untuk tabel utama/data penting */
+  .table-header-primary {
+    @apply bg-secondary-800 dark:bg-secondary-900;
+  }
+  .table-header-primary th {
+    @apply text-white;
+  }
+
+  /* Tier 2: Medium Slate — untuk tabel data operasional */
+  .table-header-secondary {
+    @apply bg-slate-600 dark:bg-slate-700;
+  }
+  .table-header-secondary th {
+    @apply text-white;
+  }
+
+  /* Tier 3: Light Slate — untuk tabel utilitas/monitor */
+  .table-header-subtle {
+    @apply bg-slate-100 dark:bg-slate-800;
+  }
+  .table-header-subtle th {
+    @apply text-slate-700 dark:text-slate-200;
   }
 }
 
