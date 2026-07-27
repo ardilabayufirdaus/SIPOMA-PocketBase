@@ -2,6 +2,7 @@ import ExcelJS from 'exceljs';
 import { pb } from './pocketbase-simple';
 import { ParameterSetting } from '../types';
 import { parseIndonesianNumber } from './formatters';
+import { formatDateObjectToISO8601, formatDateToISO8601 } from './dateUtils';
 
 export interface MonthlyImportRow {
   date: string;
@@ -61,7 +62,10 @@ export async function exportMonthlyCcrData(
   // Map existing records by `date_parameterId`
   const recordMap = new Map<string, any>();
   records.forEach((rec) => {
-    recordMap.set(`${rec.date}_${rec.parameter_id}`, rec);
+    const cleanDate = String(rec.date || '')
+      .split('T')[0]
+      .split(' ')[0];
+    recordMap.set(`${cleanDate}_${rec.parameter_id}`, rec);
   });
 
   // 3. Create Excel Workbook
@@ -124,7 +128,16 @@ export async function exportMonthlyCcrData(
 
       parameters.forEach((param) => {
         const rec = recordMap.get(`${dateStr}_${param.id}`);
-        const val = rec ? rec[`hour${h}`] : null;
+        // Support both flat fields (hour1...hour24) and hourly_values JSON object
+        let val: any = null;
+        if (rec) {
+          if (rec[`hour${h}`] !== undefined && rec[`hour${h}`] !== null) {
+            val = rec[`hour${h}`];
+          } else if (rec.hourly_values && rec.hourly_values[String(h)] !== undefined) {
+            const hVal = rec.hourly_values[String(h)];
+            val = typeof hVal === 'object' && hVal !== null ? hVal.value : hVal;
+          }
+        }
         rowValues[`param_${param.id}`] = val !== null && val !== undefined && val !== '' ? val : '';
       });
 
@@ -257,13 +270,17 @@ export async function parseMonthlyCcrImport(file: File): Promise<MonthlyImportRe
 
     result.totalRows++;
 
-    // Parse Date
+    // Parse Date using local date formatting to prevent timezone shifts (UTC vs Local)
     let dateStr = '';
     if (dateCellVal instanceof Date) {
-      dateStr = dateCellVal.toISOString().split('T')[0];
+      dateStr = formatDateObjectToISO8601(dateCellVal);
+    } else if (typeof dateCellVal === 'string') {
+      dateStr = formatDateToISO8601(dateCellVal.trim());
     } else {
-      dateStr = String(dateCellVal).trim();
+      dateStr = formatDateToISO8601(String(dateCellVal).trim());
     }
+
+    if (!dateStr) continue;
 
     // Parse Hour (1..24)
     let hourNum = 0;
@@ -335,17 +352,19 @@ export async function saveMonthlyCcrImportToDb(
   const minDate = dates.reduce((min, d) => (d < min ? d : min), dates[0]);
   const maxDate = dates.reduce((max, d) => (d > max ? d : max), dates[0]);
 
-  const existingMap = new Map<string, string>(); // `${date}_${parameter_id}` -> record.id
+  const existingMap = new Map<string, any>(); // `${date}_${parameter_id}` -> existing record object
 
   if (minDate && maxDate) {
     try {
       const existingRecords = await pb.collection('ccr_parameter_data').getFullList<any>({
         filter: `date >= "${minDate}" && date <= "${maxDate}"`,
-        fields: 'id,date,parameter_id',
       });
 
       existingRecords.forEach((rec) => {
-        existingMap.set(`${rec.date}_${rec.parameter_id}`, rec.id);
+        const cleanDate = String(rec.date || '')
+          .split('T')[0]
+          .split(' ')[0];
+        existingMap.set(`${cleanDate}_${rec.parameter_id}`, rec);
       });
     } catch (err) {
       console.warn('Pre-fetch existing records failed, falling back to dynamic lookup', err);
@@ -363,24 +382,43 @@ export async function saveMonthlyCcrImportToDb(
       chunk.map(async (entry) => {
         try {
           const key = `${entry.date}_${entry.parameter_id}`;
-          const existingId = existingMap.get(key);
+          const existingRec = existingMap.get(key);
+
+          // Copy existing hourly_values object if present, or create empty
+          const existingHourlyValues = existingRec?.hourly_values
+            ? { ...existingRec.hourly_values }
+            : {};
 
           const payload: Record<string, any> = {
             date: entry.date,
             parameter_id: entry.parameter_id,
           };
 
+          if (entry.unit && entry.unit !== 'ALL') {
+            payload.plant_unit = entry.unit;
+          }
+
           for (let h = 1; h <= 24; h++) {
             if (entry.hours[h] !== undefined) {
-              payload[`hour${h}`] = entry.hours[h];
+              const val = entry.hours[h];
+              payload[`hour${h}`] = val;
+
+              if (val !== null && val !== '') {
+                existingHourlyValues[String(h)] = val;
+              } else {
+                delete existingHourlyValues[String(h)];
+              }
             }
           }
 
-          if (existingId) {
-            await pb.collection('ccr_parameter_data').update(existingId, payload);
+          // Crucial: Update hourly_values field so both legacy and flat format readers get the updated values!
+          payload.hourly_values = existingHourlyValues;
+
+          if (existingRec) {
+            await pb.collection('ccr_parameter_data').update(existingRec.id, payload);
           } else {
             const created = await pb.collection('ccr_parameter_data').create(payload);
-            existingMap.set(key, created.id);
+            existingMap.set(key, created);
           }
 
           success++;
