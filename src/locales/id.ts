@@ -622,5 +622,22 @@ const id = {
   ccr_page_description: 'Kelola data CCR untuk monitoring performa pabrik',
   ccr_parameter_section_description:
     'Pastikan Plant Kategori dan Plant Unit sesuai dengan filter yang diterapkan sebelum mengisi data parameter.',
+  load_profile: 'Muat Profil',
+  save_profile: 'Simpan Profil',
+  reset_to_default: 'Reset',
+  done: 'Selesai',
+  you: 'Anda',
+  another_user: 'Pengguna Lain',
+  load: 'Muat',
+  created_by: 'Dibuat oleh:',
+  ccr_load_profile_desc: 'Pilih profil urutan parameter yang ingin dimuat:',
+  ccr_save_profile_desc:
+    'Masukkan nama dan deskripsi untuk menyimpan profil urutan parameter saat ini:',
+  profile_name_label: 'Nama Profil',
+  profile_name_placeholder: 'Contoh: Urutan Standar CCR Tuban 1',
+  description_optional_label: 'Deskripsi (Opsional)',
+  description_optional_placeholder: 'Masukkan deskripsi atau catatan profil...',
+  no_profiles_available: 'Belum ada profil urutan parameter yang tersimpan.',
+  delete_profile: 'Hapus Profil',
 };
 export default id;

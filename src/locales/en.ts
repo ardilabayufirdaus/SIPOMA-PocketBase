@@ -499,6 +499,23 @@ const en = {
   ccr_page_description: 'Manage CCR data for plant performance monitoring',
   ccr_parameter_section_description:
     'Ensure Plant Category and Plant Unit match the applied filters before filling parameter data.',
+  load_profile: 'Load Profile',
+  save_profile: 'Save Profile',
+  reset_to_default: 'Reset',
+  done: 'Done',
+  you: 'You',
+  another_user: 'Other User',
+  load: 'Load',
+  created_by: 'Created by:',
+  ccr_load_profile_desc: 'Select a parameter order profile to load:',
+  ccr_save_profile_desc:
+    'Enter a name and optional description to save the current parameter order profile:',
+  profile_name_label: 'Profile Name',
+  profile_name_placeholder: 'e.g. Standard CCR Tuban 1 Order',
+  description_optional_label: 'Description (Optional)',
+  description_optional_placeholder: 'Enter profile description or notes...',
+  no_profiles_available: 'No saved parameter order profiles available.',
+  delete_profile: 'Delete Profile',
 
   // Autonomous Data Entry
   autonomous_downtime_follow_up: 'Downtime Follow-up',

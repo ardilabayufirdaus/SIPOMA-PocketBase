@@ -4,7 +4,10 @@
 export interface ParameterProfile {
   id: string;
   name: string;
+  description?: string;
   user_id: string;
+  creator_name?: string;
+  category?: string;
   unit: string;
   parameter_order: string[];
   is_default: boolean;

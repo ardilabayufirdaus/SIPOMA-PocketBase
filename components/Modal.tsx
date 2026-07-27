@@ -42,11 +42,11 @@ const Modal: React.FC<ModalProps> = ({
         <>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md dark:bg-black/75"
+            className="fixed inset-0 z-50 bg-slate-950/70 dark:bg-black/80"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.15 }}
             onClick={onClose}
             aria-hidden="true"
           />
@@ -55,22 +55,22 @@ const Modal: React.FC<ModalProps> = ({
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-x-hidden overflow-y-auto pointer-events-none">
             <motion.div
               className={cn(
-                'relative w-full pointer-events-auto rounded-2xl shadow-2xl',
-                'bg-white/90 dark:bg-slate-800/90 backdrop-blur-md',
-                'border border-white/20 dark:border-slate-700/50',
+                'relative w-full pointer-events-auto rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden',
+                'bg-white dark:bg-slate-800',
+                'border border-slate-200 dark:border-slate-700',
                 maxWidthClass
               )}
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              initial={{ scale: 0.98, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              exit={{ scale: 0.98, opacity: 0, y: 10 }}
+              transition={{ duration: 0.15 }}
               role="dialog"
               aria-modal="true"
               aria-labelledby="modal-title"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 shrink-0">
                 <div>
                   <h3
                     id="modal-title"
@@ -92,7 +92,9 @@ const Modal: React.FC<ModalProps> = ({
               </div>
 
               {/* Content */}
-              <div className="p-6 text-slate-700 dark:text-slate-300">{children}</div>
+              <div className="p-6 text-slate-700 dark:text-slate-300 overflow-y-auto flex-1">
+                {children}
+              </div>
             </motion.div>
           </div>
         </>

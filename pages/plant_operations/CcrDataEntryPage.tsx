@@ -278,19 +278,32 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   // Fetch profiles
   const fetchProfiles = useCallback(async () => {
     try {
-      // Use filter syntax with spaces between operator and values (confirmed working)
-      // Note: No specific sort is used as the 'created' field doesn't exist in the schema
+      // Build user map for creator names
+      const userMap = new Map<string, string>();
+      try {
+        const usersList = await pb
+          .collection('users')
+          .getFullList({ fields: 'id,name,email,username' });
+        usersList.forEach((u: any) => {
+          userMap.set(u.id, u.name || u.email || u.username || u.id);
+        });
+      } catch (uErr) {
+        // Fallback silently if fetching users is restricted
+      }
+
       const records = await pb.collection('parameter_order_profiles').getFullList({
         filter: 'module = "plant_operations" && parameter_type = "ccr_parameters"',
       });
 
-      // Only update state if the component is still mounted (prevent memory leaks)
-      // Konversi records ke format ParameterProfile
+      // Only update state if component is mounted
       setProfiles(
         records.map((record) => ({
           id: record.id,
           name: record.name || 'Unnamed Profile',
+          description: record.description || '',
           user_id: record.user_id || '',
+          creator_name: userMap.get(record.user_id) || '',
+          category: record.category || '',
           unit: record.unit || '',
           parameter_order: record.parameter_order || [],
           is_default: record.is_default || false,
@@ -299,9 +312,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         }))
       );
     } catch (err) {
-      // Ignore auto-cancellation errors, they're normal during component unmounting
       if (err instanceof Error && err.message?.includes('autocancelled')) {
-        // This is an expected behavior, don't update state
         return;
       }
       showToast(t.failed_to_fetch_profiles);
@@ -1000,7 +1011,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
       try {
         // Update modal order
-        const ordeerrorParams = profile.parameter_order
+        const orderedParams = profile.parameter_order
           .map((id: string) => filteredParameterSettings.find((p) => p.id === id))
           .filter(Boolean);
 
@@ -1009,16 +1020,15 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           (p) => !profile.parameter_order.includes(p.id)
         );
 
-        setModalParameterOrder([...ordeerrorParams, ...missingParams]);
+        setModalParameterOrder([...orderedParams, ...missingParams]);
         setSelectedProfile(profile);
         setShowLoadProfileModal(false);
         showToast(t.profile_loaded.replace('{name}', profile.name));
       } catch {
         showToast(t.failed_to_load_profile);
-        showToast(t.failed_to_load_profile);
       }
     },
-    [filteredParameterSettings, showToast]
+    [filteredParameterSettings, showToast, t.profile_loaded, t.failed_to_load_profile]
   );
 
   // Delete profile
@@ -5303,51 +5313,36 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           title={t.reorder_parameters_title}
         >
           <div className="space-y-4 parameter-reorder-modal">
-            <div className="space-y-2">
-              <p className="text-sm text-neutral-600">{t.ccr_reorder_instructions_title}</p>
-              <div className="bg-neutral-100 p-2 rounded-md space-y-2">
+            <details className="group bg-neutral-50 border border-neutral-200 rounded-lg p-2.5 text-xs">
+              <summary className="font-medium text-neutral-700 cursor-pointer flex items-center justify-between">
+                <span>{t.ccr_reorder_instructions_title}</span>
+                <span className="text-neutral-400 group-open:rotate-180 transition-transform">
+                  ▼
+                </span>
+              </summary>
+              <div className="mt-2 pt-2 border-t border-neutral-200 space-y-2 text-neutral-600">
                 <div>
-                  <p className="text-xs font-medium text-neutral-700 mb-1">
-                    {t.ccr_reorder_method_drag}
-                  </p>
-                  <p className="text-xs text-neutral-600 pl-3">{t.ccr_reorder_method_drag_desc}</p>
+                  <p className="font-medium text-neutral-700">{t.ccr_reorder_method_drag}</p>
+                  <p className="pl-2">{t.ccr_reorder_method_drag_desc}</p>
                 </div>
-
                 <div>
-                  <p className="text-xs font-medium text-neutral-700 mb-1">
-                    {t.ccr_reorder_method_input}
-                  </p>
-                  <p className="text-xs text-neutral-600 pl-3">{t.ccr_reorder_method_input_desc}</p>
+                  <p className="font-medium text-neutral-700">{t.ccr_reorder_method_input}</p>
+                  <p className="pl-2">{t.ccr_reorder_method_input_desc}</p>
                 </div>
-
                 <div>
-                  <p className="text-xs font-medium text-neutral-700 mb-1">
-                    {t.ccr_reorder_method_arrow}
-                  </p>
-                  <p className="text-xs text-neutral-600 pl-3">{t.ccr_reorder_method_arrow_desc}</p>
+                  <p className="font-medium text-neutral-700">{t.ccr_reorder_method_arrow}</p>
+                  <p className="pl-2">{t.ccr_reorder_method_arrow_desc}</p>
                 </div>
-
                 <div>
-                  <p className="text-xs font-medium text-neutral-700 mb-1">
-                    {t.ccr_reorder_method_keyboard}
-                  </p>
-                  <ul className="text-xs text-neutral-600 space-y-1 pl-4 list-disc">
+                  <p className="font-medium text-neutral-700">{t.ccr_reorder_method_keyboard}</p>
+                  <ul className="pl-4 list-disc space-y-0.5">
                     <li>{t.ccr_reorder_method_keyboard_up}</li>
                     <li>{t.ccr_reorder_method_keyboard_down}</li>
                   </ul>
                 </div>
-
-                <div>
-                  <p className="text-xs font-medium text-neutral-700 mb-1">
-                    {t.ccr_reorder_method_search}
-                  </p>
-                  <p className="text-xs text-neutral-600 pl-3">
-                    {t.ccr_reorder_method_search_desc}
-                  </p>
-                </div>
+                <p className="italic text-neutral-500 pt-1">{t.ccr_reorder_auto_save_note}</p>
               </div>
-              <p className="text-xs text-neutral-500 italic">{t.ccr_reorder_auto_save_note}</p>
-            </div>
+            </details>
 
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -5408,7 +5403,34 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </DragDropContext>
 
             <div className="flex justify-end gap-3 pt-4 border-t flex-wrap">
-              <div className="flex gap-2 items-center">
+              <div className="flex gap-2 items-center flex-wrap">
+                <EnhancedButton
+                  variant="secondary"
+                  onClick={() => setShowLoadProfileModal(true)}
+                  aria-label={t.load_profile || 'Muat Profil'}
+                >
+                  {t.load_profile || 'Muat Profil'}
+                </EnhancedButton>
+                <EnhancedButton
+                  variant="secondary"
+                  onClick={() => setShowSaveProfileModal(true)}
+                  aria-label={t.save_profile || 'Simpan Profil'}
+                >
+                  {t.save_profile || 'Simpan Profil'}
+                </EnhancedButton>
+                <EnhancedButton
+                  variant="secondary"
+                  onClick={() => {
+                    // Reset to default order (sorted by parameter name)
+                    const defaultOrder = [...filteredParameterSettings].sort((a, b) =>
+                      a.parameter.localeCompare(b.parameter)
+                    );
+                    setModalParameterOrder(defaultOrder);
+                  }}
+                  aria-label={t.reset_to_default || 'Reset'}
+                >
+                  {t.reset_to_default || 'Reset'}
+                </EnhancedButton>
                 <EnhancedButton
                   variant="primary"
                   onClick={() => {
@@ -5417,9 +5439,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     saveParameterOrder(newOrder);
                     setShowReorderModal(false);
                   }}
-                  aria-label={t.done}
+                  aria-label={t.done || 'Selesai'}
                 >
-                  {t.done}
+                  {t.done || 'Selesai'}
                 </EnhancedButton>
               </div>
             </div>
@@ -5505,18 +5527,47 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 profiles.map((profile) => (
                   <div
                     key={profile.id}
-                    className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg cursor-pointer hover:bg-neutral-100 transition-colors"
+                    className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg cursor-pointer hover:bg-neutral-100 transition-colors border border-neutral-200"
                     onClick={() => loadProfile(profile)}
                   >
-                    <div>
-                      <div className="font-semibold text-neutral-800">{profile.name}</div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-neutral-800">{profile.name}</span>
+                        {profile.unit && (
+                          <span className="px-2 py-0.5 text-xs font-medium bg-primary-100 text-primary-700 rounded-full">
+                            {profile.unit}
+                          </span>
+                        )}
+                        {profile.category && profile.category !== selectedCategory && (
+                          <span className="px-2 py-0.5 text-xs font-medium bg-neutral-200 text-neutral-700 rounded-full">
+                            {profile.category}
+                          </span>
+                        )}
+                      </div>
+                      {profile.description && (
+                        <p className="text-xs text-neutral-600 line-clamp-2">
+                          {profile.description}
+                        </p>
+                      )}
                       <div className="text-xs text-neutral-500">
-                        {t.created_by}{' '}
-                        {profile.user_id === loggedInUser?.id ? t.you : t.another_user} •{' '}
-                        {new Date(profile.created_at).toLocaleDateString()}
+                        {t.created_by || 'Dibuat oleh:'}{' '}
+                        <span className="font-medium text-neutral-700">
+                          {profile.creator_name ||
+                            (profile.user_id === loggedInUser?.id
+                              ? loggedInUser?.name || t.you || 'Anda'
+                              : t.another_user || 'Pengguna Lain')}
+                        </span>
+                        {profile.user_id === loggedInUser?.id && ` (${t.you || 'Anda'})`} •{' '}
+                        {profile.created_at
+                          ? new Date(profile.created_at).toLocaleDateString('id-ID', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                            })
+                          : '-'}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0 ml-3">
                       <EnhancedButton
                         variant="primary"
                         size="sm"
@@ -5524,9 +5575,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           e.stopPropagation();
                           loadProfile(profile);
                         }}
-                        aria-label={`${t.load} profile ${profile.name}`}
+                        aria-label={`${t.load || 'Muat'} profile ${profile.name}`}
                       >
-                        {t.load}
+                        {t.load || 'Muat'}
                       </EnhancedButton>
                       {(profile.user_id === loggedInUser?.id ||
                         isSuperAdmin(loggedInUser?.role)) && (
@@ -5576,9 +5627,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               {t.ccr_delete_profile_confirm_message.replace('{name}', profileToDelete?.name || '')}
             </p>
           </div>
-          <div className="bg-neutral-50 px-4 py-2 sm:px-4 sm:flex sm:flex-row-reverse rounded-b-lg">
+          <div className="bg-neutral-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg gap-2">
             <EnhancedButton
-              variant="warning"
+              variant="error"
               onClick={async () => {
                 if (profileToDelete) {
                   await deleteProfile(profileToDelete);
@@ -5589,9 +5640,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               className="sm:ml-3 sm:w-auto"
               rounded="lg"
               elevation="sm"
-              aria-label={t.delete_profile}
+              aria-label={t.delete_profile || 'Hapus Profil'}
             >
-              {t.delete_profile}
+              {t.delete_profile || 'Hapus Profil'}
             </EnhancedButton>
             <EnhancedButton
               variant="secondary"
@@ -5599,12 +5650,12 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 setShowDeleteProfileModal(false);
                 setProfileToDelete(null);
               }}
-              className="mt-2 sm:mt-0 sm:ml-3 sm:w-auto"
+              className="mt-2 sm:mt-0 sm:w-auto"
               rounded="lg"
               elevation="sm"
-              aria-label={t.cancel_button}
+              aria-label={t.cancel_button || 'Batal'}
             >
-              {t.cancel_button}
+              {t.cancel_button || 'Batal'}
             </EnhancedButton>
           </div>
         </Modal>
