@@ -385,6 +385,24 @@ export async function saveMonthlyCcrImportToDb(
     }
   }
 
+  // 1b. Pre-fetch existing ccr_footer_data records for the date range
+  const existingFooterMap = new Map<string, any>(); // `${date}_${parameter_id}` -> footer record
+  if (minDate && maxDate) {
+    try {
+      const footerRecords = await pb.collection('ccr_footer_data').getFullList<any>({
+        filter: `date >= "${minDate}" && date <= "${maxDate}"`,
+      });
+      footerRecords.forEach((rec) => {
+        const cleanDate = String(rec.date || '')
+          .split('T')[0]
+          .split(' ')[0];
+        existingFooterMap.set(`${cleanDate}_${rec.parameter_id}`, rec);
+      });
+    } catch (err) {
+      console.warn('Pre-fetch ccr_footer_data failed', err);
+    }
+  }
+
   // 2. Process requests concurrently in chunks (Parallel batch execution)
   const CONCURRENCY_LIMIT = 35;
   let completedCount = 0;
@@ -461,6 +479,88 @@ export async function saveMonthlyCcrImportToDb(
             existingMap.set(key, created);
           }
 
+          // --- ALSO SYNC CCR_FOOTER_DATA (DAILY STATS FOR COP ANALYSIS) ---
+          const numericVals: number[] = [];
+          for (let h = 1; h <= 24; h++) {
+            const rawVal =
+              payload[`hour${h}`] !== undefined
+                ? payload[`hour${h}`]
+                : existingRec
+                  ? existingRec[`hour${h}`]
+                  : null;
+            if (rawVal !== null && rawVal !== undefined && rawVal !== '') {
+              const num = typeof rawVal === 'number' ? rawVal : parseFloat(String(rawVal));
+              if (!isNaN(num)) numericVals.push(num);
+            }
+          }
+
+          if (numericVals.length > 0) {
+            const totalVal = numericVals.reduce((a, b) => a + b, 0);
+            const avgVal = totalVal / numericVals.length;
+            const minVal = Math.min(...numericVals);
+            const maxVal = Math.max(...numericVals);
+
+            const getShiftStats = (shiftHours: number[]) => {
+              const sVals: number[] = [];
+              shiftHours.forEach((h) => {
+                const rawVal =
+                  payload[`hour${h}`] !== undefined
+                    ? payload[`hour${h}`]
+                    : existingRec
+                      ? existingRec[`hour${h}`]
+                      : null;
+                if (rawVal !== null && rawVal !== undefined && rawVal !== '') {
+                  const num = typeof rawVal === 'number' ? rawVal : parseFloat(String(rawVal));
+                  if (!isNaN(num)) sVals.push(num);
+                }
+              });
+              const sTotal = sVals.reduce((a, b) => a + b, 0);
+              const sAvg = sVals.length > 0 ? sTotal / sVals.length : 0;
+              return { total: sTotal, avg: sAvg, counter: sVals.length };
+            };
+
+            const s1 = getShiftStats([8, 9, 10, 11, 12, 13, 14, 15]);
+            const s2 = getShiftStats([16, 17, 18, 19, 20, 21, 22]);
+            const s3 = getShiftStats([23, 24]);
+            const s3c = getShiftStats([1, 2, 3, 4, 5, 6, 7]);
+
+            const footerPayload = {
+              date: entry.date,
+              parameter_id: entry.parameter_id,
+              plant_unit: entry.unit || 'CCR',
+              total: parseFloat(totalVal.toFixed(2)),
+              average: parseFloat(avgVal.toFixed(2)),
+              minimum: parseFloat(minVal.toFixed(2)),
+              maximum: parseFloat(maxVal.toFixed(2)),
+              shift1_total: parseFloat(s1.total.toFixed(2)),
+              shift2_total: parseFloat(s2.total.toFixed(2)),
+              shift3_total: parseFloat(s3.total.toFixed(2)),
+              shift3_cont_total: parseFloat(s3c.total.toFixed(2)),
+              shift1_average: parseFloat(s1.avg.toFixed(2)),
+              shift2_average: parseFloat(s2.avg.toFixed(2)),
+              shift3_average: parseFloat(s3.avg.toFixed(2)),
+              shift3_cont_average: parseFloat(s3c.avg.toFixed(2)),
+              shift1_counter: s1.counter,
+              shift2_counter: s2.counter,
+              shift3_counter: s3.counter,
+              shift3_cont_counter: s3c.counter,
+            };
+
+            const existingFooter = existingFooterMap.get(key);
+            if (existingFooter) {
+              await pb
+                .collection('ccr_footer_data')
+                .update(existingFooter.id, footerPayload)
+                .catch(() => null);
+            } else {
+              const createdFooter = await pb
+                .collection('ccr_footer_data')
+                .create(footerPayload)
+                .catch(() => null);
+              if (createdFooter) existingFooterMap.set(key, createdFooter);
+            }
+          }
+
           success++;
         } catch (err) {
           failed++;
@@ -472,6 +572,14 @@ export async function saveMonthlyCcrImportToDb(
         }
       })
     );
+  }
+
+  // Clear client-side IndexedDB cache so COP Analysis page re-fetches latest footer stats immediately
+  try {
+    const { indexedDBCache } = await import('./cache/indexedDB');
+    await indexedDBCache.clear();
+  } catch (err) {
+    console.warn('Failed to clear indexedDBCache after import:', err);
   }
 
   return { success, failed };
