@@ -109,7 +109,7 @@ export const formatDateToISO8601 = (dateInput: string): string => {
   try {
     const date = new Date(dateInput);
     if (!isNaN(date.getTime())) {
-      return date.toISOString().split('T')[0];
+      return formatDateObjectToISO8601(date);
     }
   } catch (e) {
     console.error('Error parsing date:', dateInput, e);

@@ -109,7 +109,7 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
     setImportResult(null);
 
     try {
-      const parsed = await parseMonthlyCcrImport(file);
+      const parsed = await parseMonthlyCcrImport(file, unit);
       setImportResult(parsed);
       if (parsed.invalidRows > 0) {
         setNotification({

@@ -190,7 +190,10 @@ export async function downloadMonthlyTemplate(
 /**
  * Parse uploaded Monthly Excel file (Wide format: Tanggal | Jam | Param1 | Param2 | ...)
  */
-export async function parseMonthlyCcrImport(file: File): Promise<MonthlyImportResult> {
+export async function parseMonthlyCcrImport(
+  file: File,
+  selectedUnit?: string
+): Promise<MonthlyImportResult> {
   const workbook = new ExcelJS.Workbook();
   const arrayBuffer = await file.arrayBuffer();
   await workbook.xlsx.load(arrayBuffer);
@@ -216,14 +219,25 @@ export async function parseMonthlyCcrImport(file: File): Promise<MonthlyImportRe
   // Map column index to Parameter object
   const paramColMap = new Map<number, ParameterSetting>();
 
-  // Fetch parameter settings for matching
-  const parameters = await pb.collection('parameter_settings').getFullList<ParameterSetting>();
+  // Fetch parameter settings filtered by unit if specified
+  let paramFilter = '';
+  if (selectedUnit && selectedUnit !== 'ALL') {
+    paramFilter = `unit="${selectedUnit}" || unit="ALL"`;
+  }
+
+  const parameters = await pb.collection('parameter_settings').getFullList<ParameterSetting>({
+    filter: paramFilter || '',
+  });
+
   const paramMapByName = new Map<string, ParameterSetting>();
   const paramMapById = new Map<string, ParameterSetting>();
 
   parameters.forEach((p) => {
     paramMapById.set(p.id, p);
-    paramMapByName.set(p.parameter.trim().toLowerCase(), p);
+    const nameKey = p.parameter.trim().toLowerCase();
+    if (!paramMapByName.has(nameKey) || p.unit === selectedUnit) {
+      paramMapByName.set(nameKey, p);
+    }
   });
 
   headerRow.eachCell((cell, colNum) => {
