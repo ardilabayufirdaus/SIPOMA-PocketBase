@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BrainCircuit,
@@ -9,8 +9,10 @@ import {
   Zap,
   Clock,
   ChevronRight,
+  Filter,
 } from 'lucide-react';
 import { usePredictiveData, AnomalyData } from '../../hooks/usePredictiveData';
+import { usePlantUnits } from '../../hooks/usePlantUnits';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -36,17 +38,17 @@ ChartJS.register(
 );
 
 interface PredictiveMaintenanceProps {
-  plantUnit: string;
+  plantUnit?: string;
 }
 
 const PredictiveMaintenance: React.FC<PredictiveMaintenanceProps> = ({ plantUnit }) => {
+  const { records: plantUnits } = usePlantUnits();
+  const [selectedUnit, setSelectedUnit] = useState<string>(plantUnit || 'all');
   const { anomalies, loading, fetchPredictiveAnalytics } = usePredictiveData();
 
   useEffect(() => {
-    if (plantUnit) {
-      fetchPredictiveAnalytics(plantUnit);
-    }
-  }, [plantUnit, fetchPredictiveAnalytics]);
+    fetchPredictiveAnalytics(selectedUnit);
+  }, [selectedUnit, fetchPredictiveAnalytics]);
 
   if (loading) {
     return (
@@ -69,11 +71,29 @@ const PredictiveMaintenance: React.FC<PredictiveMaintenanceProps> = ({ plantUnit
 
         <div className="relative z-10 flex flex-col md:flex-row justify-between gap-8">
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <div className="px-3 py-1 bg-primary-600 text-white text-[10px] font-black rounded-full tracking-widest uppercase">
                 AI Powered
               </div>
-              <div className="flex items-center gap-1.5 text-white/50 text-[10px] font-bold uppercase tracking-widest">
+
+              {/* Plant Unit Selector Dropdown */}
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-2xl border border-white/20 shadow-sm hover:bg-white/15 transition-all">
+                <Filter className="w-3.5 h-3.5 text-primary-400" />
+                <select
+                  value={selectedUnit}
+                  onChange={(e) => setSelectedUnit(e.target.value)}
+                  className="bg-transparent text-white text-xs font-bold focus:outline-none cursor-pointer [&>option]:bg-slate-900 [&>option]:text-white pr-1"
+                >
+                  <option value="all">All Plant Units</option>
+                  {plantUnits.map((u) => (
+                    <option key={u.id} value={u.unit}>
+                      {u.unit}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-1.5 text-white/50 text-[10px] font-bold uppercase tracking-widest ml-auto sm:ml-0">
                 <Clock className="w-3 h-3" />
                 Updated Real-time
               </div>
@@ -84,8 +104,9 @@ const PredictiveMaintenance: React.FC<PredictiveMaintenanceProps> = ({ plantUnit
               <span className="text-primary-400">& Anomaly Detection</span>
             </h2>
             <p className="max-w-[500px] text-white/60 text-sm font-medium leading-relaxed">
-              Our neural analysis engine monitors {plantUnit} sensor data to identify patterns that
-              precede potential failures using statistical Z-score validation.
+              Our neural analysis engine monitors{' '}
+              {selectedUnit === 'all' ? 'all plant unit' : selectedUnit} sensor data to identify
+              patterns that precede potential failures using statistical Z-score validation.
             </p>
           </div>
 

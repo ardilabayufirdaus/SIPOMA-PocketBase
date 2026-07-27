@@ -31,9 +31,32 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
     parameters: any[];
     downtime: any[];
     capacity: any[];
+    materialUsage: any[];
     summaries: any[];
-  }>({ parameters: [], downtime: [], capacity: [], summaries: [] });
+  }>({ parameters: [], downtime: [], capacity: [], materialUsage: [], summaries: [] });
   const [loading, setLoading] = useState(false);
+
+  // --- HELPER FOR FLEXIBLE UNIT MATCHING ---
+  const normalizeUnitStr = (str: string) => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const matchUnit = (u1: string, u2: string) => {
+    if (!u1 || !u2) return false;
+    const s1 = String(u1).trim().toLowerCase();
+    const s2 = String(u2).trim().toLowerCase();
+    if (s1 === s2) return true;
+    const n1 = normalizeUnitStr(s1);
+    const n2 = normalizeUnitStr(s2);
+    if (n1 === n2 || n1.includes(n2) || n2.includes(n1)) return true;
+    const num1 = n1.match(/\d+/)?.[0];
+    const num2 = n2.match(/\d+/)?.[0];
+    if (num1 && num2 && num1 === num2) {
+      const isCm1 =
+        s1.includes('cm') || s1.includes('cement') || s1.includes('finish') || s1.includes('mill');
+      const isCm2 =
+        s2.includes('cm') || s2.includes('cement') || s2.includes('finish') || s2.includes('mill');
+      if ((isCm1 && isCm2) || (!isCm1 && !isCm2)) return true;
+    }
+    return false;
+  };
 
   // --- CACHE KEYS ---
   const currentHour = new Date().getHours();
@@ -44,51 +67,51 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
       if (!date || plantUnits.length === 0) return;
       setLoading(true);
 
-      const cached = localStorage.getItem(cacheKey);
-      // Force fresh fetch for now to clear any stuck 0% results
-      let needsFullRange = true;
-      localStorage.removeItem(cacheKey);
-
-      if (cached) {
-        try {
-          const parsed = JSON.parse(cached);
-          // Only use cache if it has valid results (not all 0)
-          const hasValidData =
-            parsed.unitMetrics && parsed.unitMetrics.some((m: any) => m.daily.oee > 0);
-          if (hasValidData) {
-            needsFullRange = false;
-          }
-        } catch (e) {
-          console.warn('Invalid OEE cache format:', e);
-        }
-      }
-
       const targetDate = new Date(date);
       const year = targetDate.getFullYear();
+      const month = targetDate.getMonth() + 1;
+      const startOfMonth = `${year}-${String(month).padStart(2, '0')}-01`;
 
-      // Range for Charts (Always just the selected date)
-      const chartRangeFilter = `date = "${date}"`;
+      // Range for MTD calculations and charts
+      const mtdRangeFilter = `date >= "${startOfMonth}" && date <= "${date} 23:59:59"`;
 
-      // Range for OEE Calculations (Full YTD if no cache)
+      // Range for YTD OEE Summaries
       const firstDayOfYear = `${year}-01-01`;
-      const fullRangeFilter = `date >= "${firstDayOfYear}" && date <= "${date}"`;
+      const fullRangeFilter = `date >= "${firstDayOfYear}" && date <= "${date} 23:59:59"`;
 
       try {
-        const [params, downtime, capacity, summaries] = await Promise.all([
-          pb.collection('ccr_parameter_data').getFullList({
-            filter: chartRangeFilter,
-            fields:
-              'id,date,parameter_id,plant_unit,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24',
-          }),
-          pb.collection('ccr_downtime_data').getFullList({ filter: chartRangeFilter }),
-          pb.collection('monitoring_production_capacity').getFullList({ filter: chartRangeFilter }),
-          pb.collection('oee_daily_summary').getFullList({ filter: fullRangeFilter }),
+        const [params, downtime, capacity, materialUsage, summaries] = await Promise.all([
+          pb
+            .collection('ccr_parameter_data')
+            .getFullList({
+              filter: mtdRangeFilter,
+              fields:
+                'id,date,parameter_id,parameter,plant_unit,unit,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24',
+            })
+            .catch(() => []),
+          pb
+            .collection('ccr_downtime_data')
+            .getFullList({ filter: mtdRangeFilter })
+            .catch(() => []),
+          pb
+            .collection('monitoring_production_capacity')
+            .getFullList({ filter: mtdRangeFilter })
+            .catch(() => []),
+          pb
+            .collection('ccr_material_usage')
+            .getFullList({ filter: mtdRangeFilter })
+            .catch(() => []),
+          pb
+            .collection('oee_daily_summary')
+            .getFullList({ filter: fullRangeFilter })
+            .catch(() => []),
         ]);
 
         setAllData({
           parameters: params || [],
           downtime: downtime || [],
           capacity: capacity || [],
+          materialUsage: materialUsage || [],
           summaries: summaries || [],
         });
       } catch (err) {
@@ -103,18 +126,6 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
   const unitMetrics = useMemo(() => {
     if (plantUnits.length === 0 || parameterSettings.length === 0) return [];
 
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        if (parsed.unitMetrics && parsed.unitMetrics.length > 0) {
-          return parsed.unitMetrics;
-        }
-      } catch (e) {
-        console.warn('OEE cache parsing failed:', e);
-      }
-    }
-
     const targetDateStr = date;
     const targetDateObject = new Date(date);
     const month = targetDateObject.getMonth() + 1;
@@ -123,22 +134,34 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
     const startOfMonth = `${year}-${String(month).padStart(2, '0')}-01`;
 
     const unitsToProcess =
-      selectedUnit === 'all' ? plantUnits : plantUnits.filter((u) => u.unit === selectedUnit);
+      selectedUnit === 'all'
+        ? plantUnits
+        : plantUnits.filter((u) => matchUnit(u.unit, selectedUnit));
 
     const normalize = (dStr: string) => dStr?.substring(0, 10) || '';
 
     const calculatedMetrics = unitsToProcess.map((unit) => {
       const unitId = unit.unit;
-      const unitParams = parameterSettings.filter((p) => p.unit === unitId);
+      const unitParams = parameterSettings.filter(
+        (p) =>
+          matchUnit(p.unit, unitId) ||
+          matchUnit((p as any).plant_unit, unitId) ||
+          matchUnit(p.category, unitId)
+      );
 
       const feederParam =
         unitParams.find((p) => p.is_oee_feeder) ||
         unitParams.find((p) => {
-          const name = p.parameter.toLowerCase();
+          const name = (p.parameter || '').toLowerCase();
           return (
-            (name.includes('feeder') || name.includes('feed')) &&
+            (name.includes('feeder') ||
+              name.includes('feed') ||
+              name.includes('tph') ||
+              name.includes('rate')) &&
             (name.includes('clinker') ||
               name.includes('raw') ||
+              name.includes('cement') ||
+              name.includes('mill') ||
               (p.unit || '').toLowerCase().includes('tph'))
           );
         });
@@ -148,53 +171,140 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
         explicitlyMarkedQualityParams.length > 0
           ? explicitlyMarkedQualityParams
           : unitParams.filter(
-              (p) => p.unit !== 'ton' && (p.min_value !== null || p.max_value !== null)
+              (p) =>
+                (p.min_value !== null && p.min_value !== undefined) ||
+                (p.max_value !== null && p.max_value !== undefined)
             );
 
       const calculateRangeOee = (startDate: string, endDate: string) => {
         const downtimeInRange = allData.downtime.filter(
           (d) =>
-            (d.unit === unitId || d.plant_unit === unitId) &&
+            (matchUnit(d.unit, unitId) || matchUnit(d.plant_unit, unitId)) &&
             normalize(d.date) >= startDate &&
             normalize(d.date) <= endDate
         );
         const capacityInRange = allData.capacity.filter(
           (c) =>
-            c.plant_unit === unitId &&
+            (matchUnit(c.plant_unit, unitId) || matchUnit(c.unit, unitId)) &&
             normalize(c.date) >= startDate &&
             normalize(c.date) <= endDate
         );
+        const materialUsageInRange = allData.materialUsage.filter(
+          (m) =>
+            (matchUnit(m.plant_unit, unitId) || matchUnit(m.unit, unitId)) &&
+            normalize(m.date) >= startDate &&
+            normalize(m.date) <= endDate
+        );
         const paramsInRange = allData.parameters.filter(
           (p) =>
-            p.plant_unit === unitId &&
+            (matchUnit(p.plant_unit, unitId) || matchUnit(p.unit, unitId)) &&
             normalize(p.date) >= startDate &&
             normalize(p.date) <= endDate
         );
 
         const s = new Date(startDate);
         const e = new Date(endDate);
-        const days = Math.floor((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        const days = Math.max(
+          1,
+          Math.floor((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1
+        );
 
         const availability = calculateAvailabilityRange(downtimeInRange, days);
         const designCapacity = feederParam?.max_value || 100;
-        const prodRecords = capacityInRange.map((c) => {
-          const dtForDay = downtimeInRange.filter((d) => normalize(d.date) === normalize(c.date));
-          const dtMinutes = dtForDay.reduce(
-            (sum, d) => sum + (parseFloat(d.duration_minutes || d.duration) || 0),
-            0
-          );
-          return { actualOutput: c.wet || 0, operatingMinutes: 1440 - dtMinutes };
+
+        // Build actual output across all possible sources
+        let prodRecords: { actualOutput: number; operatingMinutes: number }[] = [];
+
+        // Source 1: monitoring_production_capacity
+        let source1Output = 0;
+        capacityInRange.forEach((c) => {
+          source1Output +=
+            parseFloat(c.wet || c.total_production || c.production || c.actual_output || 0) || 0;
         });
+
+        // Source 2: ccr_material_usage
+        let source2Output = 0;
+        materialUsageInRange.forEach((m) => {
+          const matTotal =
+            m.total_production ||
+            parseFloat(m.clinker || 0) +
+              parseFloat(m.gypsum || 0) +
+              parseFloat(m.limestone || 0) +
+              parseFloat(m.trass || 0) +
+              parseFloat(m.fly_ash || 0) +
+              parseFloat(m.fine_trass || 0) +
+              parseFloat(m.ckd || 0);
+          source2Output += parseFloat(matTotal || 0) || 0;
+        });
+
+        // Source 3: feederParam hourly sum in ccr_parameter_data
+        let source3Output = 0;
+        if (feederParam) {
+          const feederRecords = paramsInRange.filter(
+            (r) => r.parameter_id === feederParam.id || r.parameter === feederParam.parameter
+          );
+          feederRecords.forEach((rec) => {
+            for (let i = 1; i <= 24; i++) {
+              const val = parseFloat(rec[`hour${i}`]);
+              if (!isNaN(val) && val > 0) {
+                source3Output += val;
+              }
+            }
+          });
+        }
+
+        // Source 4: Any feeder/TPH parameter in ccr_parameter_data if feederParam was not explicit
+        let source4Output = 0;
+        if (source3Output === 0) {
+          paramsInRange.forEach((rec) => {
+            const pName = (rec.parameter || '').toLowerCase();
+            if (
+              pName.includes('feed') ||
+              pName.includes('tph') ||
+              pName.includes('prod') ||
+              pName.includes('rate')
+            ) {
+              for (let i = 1; i <= 24; i++) {
+                const val = parseFloat(rec[`hour${i}`]);
+                if (!isNaN(val) && val > 0) {
+                  source4Output += val;
+                }
+              }
+            }
+          });
+        }
+
+        const totalActualOutput = Math.max(
+          source1Output,
+          source2Output,
+          source3Output,
+          source4Output
+        );
+
+        const dtMinutes = downtimeInRange.reduce(
+          (sum, d) => sum + (parseFloat(d.duration_minutes || d.duration) || 0),
+          0
+        );
+        const operatingMinutes = Math.max(0, days * 1440 - dtMinutes);
+
+        prodRecords = [{ actualOutput: totalActualOutput, operatingMinutes }];
+
         const performance = calculatePerformanceRange(prodRecords, designCapacity);
 
         const qualityChecks: any[] = [];
         qualityParams.forEach((p) => {
-          const records = paramsInRange.filter((r) => r.parameter_id === p.id);
+          const records = paramsInRange.filter(
+            (r) => r.parameter_id === p.id || r.parameter === p.parameter
+          );
           records.forEach((rec) => {
             for (let i = 1; i <= 24; i++) {
               const val = parseFloat(rec[`hour${i}`]);
               if (!isNaN(val))
-                qualityChecks.push({ value: val, min: p.min_value, max: p.max_value });
+                qualityChecks.push({
+                  value: val,
+                  min: p.min_value !== undefined ? p.min_value : null,
+                  max: p.max_value !== undefined ? p.max_value : null,
+                });
             }
           });
         });
@@ -210,25 +320,50 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
 
       const calculateRangeFromSummaries = (startDate: string, endDate: string) => {
         const rangeSummaries = allData.summaries.filter(
-          (s) => s.unit === unitId && s.date >= startDate && s.date <= endDate
+          (s) =>
+            matchUnit(s.unit, unitId) &&
+            normalize(s.date) >= startDate &&
+            normalize(s.date) <= endDate
         );
 
-        if (rangeSummaries.length === 0) {
-          if (startDate === targetDateStr && endDate === targetDateStr) {
-            return calculateRangeOee(targetDateStr, targetDateStr);
-          }
-          return { availability: 0, performance: 0, quality: 0, oee: 0 };
+        if (rangeSummaries.length > 0) {
+          const avg = (field: string) =>
+            rangeSummaries.reduce((sum, s) => sum + (s[field] || 0), 0) / rangeSummaries.length;
+          return {
+            availability: avg('availability'),
+            performance: avg('performance'),
+            quality: avg('quality'),
+            oee: avg('oee'),
+          };
         }
 
-        const avg = (field: string) =>
-          rangeSummaries.reduce((sum, s) => sum + (s[field] || 0), 0) / rangeSummaries.length;
+        // Dynamic day-by-day calculation if summary table has missing rows
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const dailyOeeResults: any[] = [];
 
-        const availability = avg('availability');
-        const performance = avg('performance');
-        const quality = avg('quality');
-        const oee = avg('oee');
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+          const dayStr = d.toISOString().split('T')[0];
+          const res = calculateRangeOee(dayStr, dayStr);
+          // Only include operating/recorded days in average
+          if (res.availability > 0 || res.performance > 0 || res.quality < 100) {
+            dailyOeeResults.push(res);
+          }
+        }
 
-        return { availability, performance, quality, oee };
+        if (dailyOeeResults.length === 0) {
+          return calculateRangeOee(startDate, endDate);
+        }
+
+        const avgRes = (field: 'availability' | 'performance' | 'quality' | 'oee') =>
+          dailyOeeResults.reduce((sum, r) => sum + (r[field] || 0), 0) / dailyOeeResults.length;
+
+        return {
+          availability: avgRes('availability'),
+          performance: avgRes('performance'),
+          quality: avgRes('quality'),
+          oee: avgRes('oee'),
+        };
       };
 
       const daily = calculateRangeOee(targetDateStr, targetDateStr);
@@ -236,11 +371,9 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
       const ytd = calculateRangeFromSummaries(startOfYear, targetDateStr);
 
       const dailyFromSummary = allData.summaries.find(
-        (s) => normalize(s.date) === targetDateStr && s.unit === unitId
+        (s) => normalize(s.date) === targetDateStr && matchUnit(s.unit, unitId)
       );
 
-      // We use the raw calculation ('daily') if it has OEE > 0
-      // Otherwise, we fallback to the pre-calculated summary from backend
       const finalDaily =
         daily.oee > 0 || !dailyFromSummary
           ? daily
@@ -257,17 +390,10 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
         comparisons: {
           monthly: mtd.oee,
           mtd: mtd.oee,
-          ytd: ytd.oee,
+          ytd: ytd.oee > 0 ? ytd.oee : mtd.oee,
         },
       };
     });
-
-    if (calculatedMetrics.length > 0) {
-      localStorage.setItem(
-        cacheKey,
-        JSON.stringify({ unitMetrics: calculatedMetrics, timestamp: Date.now() })
-      );
-    }
 
     return calculatedMetrics;
   }, [allData, plantUnits, parameterSettings, date, selectedUnit, cacheKey]);

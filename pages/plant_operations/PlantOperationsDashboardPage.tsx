@@ -163,7 +163,7 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
               </div>
             </div>
 
-            <PredictiveMaintenance plantUnit={section === 'CM' ? 'Cement Mill 220' : 'RKC Unit'} />
+            <PredictiveMaintenance plantUnit={section === 'CM' ? 'all' : 'RKC Unit'} />
           </section>
         </main>
       </div>

@@ -16,9 +16,9 @@ const DowntimeHeatmap: React.FC<DowntimeHeatmapProps> = ({ units, downtimeData }
     });
 
     downtimeData.forEach((record) => {
-      // In ccr_downtime_data, the field is 'unit'
-      const unitId = record.unit;
-      if (!data[unitId]) return;
+      // In ccr_downtime_data, the field could be 'unit' or 'plant_unit'
+      const unitId = record.unit || record.plant_unit;
+      if (!unitId || !data[unitId]) return;
 
       // Extract hour from start_time (formatted as HH:MM)
       let hour = 0;

@@ -26,7 +26,10 @@ export const usePredictiveData = () => {
       const endDate = new Date();
       const startDate = subDays(endDate, 30);
 
-      const filter = `plant_unit = "${plantUnit}" && date >= "${format(startDate, 'yyyy-MM-dd')}"`;
+      let filter = `date >= "${format(startDate, 'yyyy-MM-dd')}"`;
+      if (plantUnit && plantUnit !== 'all') {
+        filter = `(plant_unit = "${plantUnit}" || unit = "${plantUnit}") && date >= "${format(startDate, 'yyyy-MM-dd')}"`;
+      }
 
       const records = await safeApiCall(() =>
         pb.collection('ccr_parameter_data').getFullList({

@@ -48,7 +48,9 @@ const StatusTimeline: React.FC<StatusTimelineProps> = ({ units, downtimeData }) 
         {/* Unit Timelines */}
         <div className="space-y-6 pt-2">
           {units.map((unit) => {
-            const unitDowntime = downtimeData.filter((d) => d.plant_unit === unit.unit);
+            const unitDowntime = downtimeData.filter(
+              (d) => d.plant_unit === unit.unit || d.unit === unit.unit
+            );
 
             return (
               <div key={unit.id} className="flex items-center group/row">

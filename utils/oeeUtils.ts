@@ -78,8 +78,8 @@ export const calculateQuality = (
 
   const inSpecCount = validData.filter((p) => {
     const val = p.value as number;
-    const min = p.min !== null ? p.min : -Infinity;
-    const max = p.max !== null ? p.max : Infinity;
+    const min = p.min !== null && p.min !== undefined ? p.min : -Infinity;
+    const max = p.max !== null && p.max !== undefined ? p.max : Infinity;
     return val >= min && val <= max;
   }).length;
 

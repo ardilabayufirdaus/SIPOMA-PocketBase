@@ -318,7 +318,7 @@ export async function parseMonthlyCcrImport(file: File): Promise<MonthlyImportRe
 }
 
 /**
- * Save parsed monthly import entries to PocketBase database
+ * Save parsed monthly import entries to PocketBase database with high-performance batching
  */
 export async function saveMonthlyCcrImportToDb(
   entries: MonthlyImportRow[],
@@ -328,40 +328,72 @@ export async function saveMonthlyCcrImportToDb(
   let failed = 0;
   const total = entries.length;
 
-  for (let i = 0; i < total; i++) {
-    const entry = entries[i];
+  if (total === 0) return { success: 0, failed: 0 };
+
+  // 1. Pre-fetch all existing records for the date range present in entries in ONE single query
+  const dates = entries.map((e) => e.date).filter(Boolean);
+  const minDate = dates.reduce((min, d) => (d < min ? d : min), dates[0]);
+  const maxDate = dates.reduce((max, d) => (d > max ? d : max), dates[0]);
+
+  const existingMap = new Map<string, string>(); // `${date}_${parameter_id}` -> record.id
+
+  if (minDate && maxDate) {
     try {
-      // Check if existing record exists for (date, parameter_id)
-      const existing = await pb
-        .collection('ccr_parameter_data')
-        .getFirstListItem(`date="${entry.date}" && parameter_id="${entry.parameter_id}"`)
-        .catch(() => null);
+      const existingRecords = await pb.collection('ccr_parameter_data').getFullList<any>({
+        filter: `date >= "${minDate}" && date <= "${maxDate}"`,
+        fields: 'id,date,parameter_id',
+      });
 
-      const payload: Record<string, any> = {
-        date: entry.date,
-        parameter_id: entry.parameter_id,
-      };
-
-      for (let h = 1; h <= 24; h++) {
-        if (entry.hours[h] !== undefined) {
-          payload[`hour${h}`] = entry.hours[h];
-        }
-      }
-
-      if (existing) {
-        await pb.collection('ccr_parameter_data').update(existing.id, payload);
-      } else {
-        await pb.collection('ccr_parameter_data').create(payload);
-      }
-
-      success++;
+      existingRecords.forEach((rec) => {
+        existingMap.set(`${rec.date}_${rec.parameter_id}`, rec.id);
+      });
     } catch (err) {
-      failed++;
+      console.warn('Pre-fetch existing records failed, falling back to dynamic lookup', err);
     }
+  }
 
-    if (onProgress) {
-      onProgress(i + 1, total);
-    }
+  // 2. Process requests concurrently in chunks (Parallel batch execution)
+  const CONCURRENCY_LIMIT = 15;
+  let completedCount = 0;
+
+  for (let i = 0; i < total; i += CONCURRENCY_LIMIT) {
+    const chunk = entries.slice(i, i + CONCURRENCY_LIMIT);
+
+    await Promise.all(
+      chunk.map(async (entry) => {
+        try {
+          const key = `${entry.date}_${entry.parameter_id}`;
+          const existingId = existingMap.get(key);
+
+          const payload: Record<string, any> = {
+            date: entry.date,
+            parameter_id: entry.parameter_id,
+          };
+
+          for (let h = 1; h <= 24; h++) {
+            if (entry.hours[h] !== undefined) {
+              payload[`hour${h}`] = entry.hours[h];
+            }
+          }
+
+          if (existingId) {
+            await pb.collection('ccr_parameter_data').update(existingId, payload);
+          } else {
+            const created = await pb.collection('ccr_parameter_data').create(payload);
+            existingMap.set(key, created.id);
+          }
+
+          success++;
+        } catch (err) {
+          failed++;
+        } finally {
+          completedCount++;
+          if (onProgress) {
+            onProgress(completedCount, total);
+          }
+        }
+      })
+    );
   }
 
   return { success, failed };
