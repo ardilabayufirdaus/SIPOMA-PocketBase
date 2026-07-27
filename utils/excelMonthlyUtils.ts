@@ -372,7 +372,7 @@ export async function saveMonthlyCcrImportToDb(
   }
 
   // 2. Process requests concurrently in chunks (Parallel batch execution)
-  const CONCURRENCY_LIMIT = 15;
+  const CONCURRENCY_LIMIT = 35;
   let completedCount = 0;
 
   for (let i = 0; i < total; i += CONCURRENCY_LIMIT) {
@@ -383,6 +383,16 @@ export async function saveMonthlyCcrImportToDb(
         try {
           const key = `${entry.date}_${entry.parameter_id}`;
           const existingRec = existingMap.get(key);
+
+          // Optimization A: Skip creating new database records if entry has 0 hours filled (all empty/null)
+          const hasData = Object.values(entry.hours).some(
+            (v) => v !== null && v !== undefined && v !== ''
+          );
+
+          if (!hasData && !existingRec) {
+            success++;
+            return;
+          }
 
           // Copy existing hourly_values object if present, or create empty
           const existingHourlyValues = existingRec?.hourly_values
@@ -398,6 +408,8 @@ export async function saveMonthlyCcrImportToDb(
             payload.plant_unit = entry.unit;
           }
 
+          let isDifferentFromExisting = !existingRec;
+
           for (let h = 1; h <= 24; h++) {
             if (entry.hours[h] !== undefined) {
               const val = entry.hours[h];
@@ -408,7 +420,21 @@ export async function saveMonthlyCcrImportToDb(
               } else {
                 delete existingHourlyValues[String(h)];
               }
+
+              if (existingRec && !isDifferentFromExisting) {
+                const oldVal =
+                  existingRec[`hour${h}`] !== undefined ? existingRec[`hour${h}`] : null;
+                if (val !== oldVal) {
+                  isDifferentFromExisting = true;
+                }
+              }
             }
+          }
+
+          // Optimization B: Skip update request if data is completely identical to existing record
+          if (existingRec && !isDifferentFromExisting) {
+            success++;
+            return;
           }
 
           // Crucial: Update hourly_values field so both legacy and flat format readers get the updated values!
