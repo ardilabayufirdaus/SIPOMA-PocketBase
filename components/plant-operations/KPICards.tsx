@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { TrendingUpIcon, TrendingDownIcon } from 'lucide-react';
 
 interface DashboardKPI {
@@ -42,13 +41,7 @@ const KPICards: React.FC<KPICardsProps> = ({ kpis, isLoading }) => {
   return (
     <div className="grid grid-cols-4 gap-6">
       {kpis.map((kpi) => (
-        <motion.div
-          key={kpi.id}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="bg-white rounded-lg shadow-sm border border-slate-200 p-6"
-        >
+        <div key={kpi.id} className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="p-2 bg-blue-50 rounded-lg">{kpi.icon}</div>
             <div
@@ -77,7 +70,7 @@ const KPICards: React.FC<KPICardsProps> = ({ kpis, isLoading }) => {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
       ))}
     </div>
   );

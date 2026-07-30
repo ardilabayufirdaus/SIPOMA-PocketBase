@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import XMarkIcon from '../../../components/icons/XMarkIcon';
 import ClipboardCheckIcon from '../../../components/icons/ClipboardCheckIcon';
 
@@ -30,10 +29,10 @@ const InspectionForm: React.FC<InspectionFormProps> = ({ onClose, onSave }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 backdrop-blur-3xl font-sans">
-      <div className="p-6 border-b border-slate-200 dark:border-white/10 flex items-center justify-between bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-20 shadow-sm">
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 font-sans">
+      <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900 sticky top-0 z-20 shadow-sm">
         <div className="flex items-center gap-6">
-          <div className="p-3 bg-gradient-to-br from-primary-600 to-emerald-600 rounded-2xl text-white shadow-lg shadow-emerald-500/20">
+          <div className="p-3 bg-gradient-to-br from-primary-600 to-emerald-600 rounded-2xl text-white shadow-md">
             <ClipboardCheckIcon className="w-8 h-8" />
           </div>
           <div>
@@ -41,8 +40,8 @@ const InspectionForm: React.FC<InspectionFormProps> = ({ onClose, onSave }) => {
               New Inspection Report
             </h3>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mt-1">
-              <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse"></span>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="w-2 h-2 rounded-full bg-primary-500"></span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
               One-off detailed report
             </p>
           </div>
