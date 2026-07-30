@@ -191,31 +191,12 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
         {/* Column Search Filter and Export/Import controls should be handled outside this component */}
 
         {loading ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="flex items-center justify-center py-16"
-          >
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full"
-            ></motion.div>
-            <motion.span
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="ml-3 text-slate-600 font-medium"
-            >
-              Loading parameter data...
-            </motion.span>
-          </motion.div>
+          <div className="flex items-center justify-center py-16">
+            <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+            <span className="ml-3 text-slate-600 font-medium">Loading parameter data...</span>
+          </div>
         ) : (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
+          <div
             className="ccr-table-container overflow-x-auto rounded-xl border border-slate-200/50 shadow-inner"
             role="grid"
             aria-label="Parameter Data Entry Table"
@@ -534,7 +515,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                 </tbody>
               </table>
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
     );
