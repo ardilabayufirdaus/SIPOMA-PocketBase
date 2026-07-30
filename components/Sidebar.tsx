@@ -496,7 +496,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     SYSTEM STATUS
                   </span>
                   <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1.5 translate-y-[-1px]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                     ONLINE
                   </span>
                 </div>

@@ -74,86 +74,54 @@ export const NavigationItem = React.forwardRef<HTMLButtonElement, IconButtonProp
 
     return (
       <div className="relative w-full group/nav-wrapper px-2">
-        <motion.button
+        <button
           ref={ref}
           onClick={onClick}
           onKeyDown={handleKeyDown}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           className={`
-            relative flex items-center transition-all duration-300
+            relative flex items-center transition-colors duration-150
             ${isSidebarExpanded ? 'w-full px-4 justify-start gap-4' : 'w-12 h-12 justify-center rounded-[12px] mx-auto'}
             min-h-[52px]
-            ${isActive ? 'text-white' : 'text-white/60 hover:text-white'}
+            ${isActive ? 'text-white bg-primary-600/20 border border-primary-500/30' : 'text-white/60 hover:text-white hover:bg-white/10'}
             ${isSidebarExpanded ? 'rounded-[12px] py-3' : ''}
           `}
           aria-label={label}
           aria-expanded={hasDropdown ? isExpanded : undefined}
           aria-haspopup={hasDropdown ? 'menu' : undefined}
           tabIndex={0}
-          whileHover={{ x: isSidebarExpanded ? 4 : 0, scale: isSidebarExpanded ? 1 : 1.05 }}
-          whileTap={{ scale: 0.95 }}
         >
-          {/* Hover highlight */}
-          {!isActive && (
-            <div className="absolute inset-x-2 inset-y-1 bg-white/0 group-hover/nav-wrapper:bg-white/10 rounded-[10px] transition-all duration-300 -z-10" />
-          )}
-
-          {/* Active highlight/dot */}
-          {isActive && (
-            <motion.div
-              layoutId="activeNavIndicator"
-              className="absolute inset-x-2 inset-y-1 bg-gradient-to-r from-primary-600/20 to-primary-600/5 border border-primary-500/30 rounded-[10px] -z-10"
-              initial={false}
-              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            />
-          )}
-
           {/* Left indicator bar */}
-          <AnimatePresence>
-            {isActive && (
-              <motion.div
-                initial={{ opacity: 0, scaleY: 0 }}
-                animate={{ opacity: 1, scaleY: 1 }}
-                exit={{ opacity: 0, scaleY: 0 }}
-                className="absolute left-[-4px] top-1/2 -translate-y-1/2 w-1.5 h-6 bg-primary-600 rounded-r-full shadow-[0_0_12px_rgba(5,150,105,0.8)]"
-              />
-            )}
-          </AnimatePresence>
+          {isActive && (
+            <div className="absolute left-[-4px] top-1/2 -translate-y-1/2 w-1.5 h-6 bg-primary-600 rounded-r-full shadow-[0_0_8px_rgba(5,150,105,0.8)]" />
+          )}
 
           <div
-            className={`transition-all duration-300 relative z-10 flex items-center justify-center ${
+            className={`transition-colors relative z-10 flex items-center justify-center ${
               isActive
-                ? 'scale-110 text-primary-400'
-                : 'text-white/60 group-hover/nav-wrapper:scale-110 group-hover/nav-wrapper:text-white'
+                ? 'text-primary-400 font-bold'
+                : 'text-white/60 group-hover/nav-wrapper:text-white'
             }`}
           >
             {icon}
           </div>
 
-          <AnimatePresence mode="wait">
-            {isSidebarExpanded && (
-              <motion.span
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={{ duration: 0.2 }}
-                className={`text-xs font-semibold tracking-wide transition-colors whitespace-nowrap overflow-hidden text-ellipsis ${
-                  isActive
-                    ? 'text-white font-bold'
-                    : 'text-slate-300 group-hover/nav-wrapper:text-white'
-                }`}
-              >
-                {label}
-              </motion.span>
-            )}
-          </AnimatePresence>
+          {isSidebarExpanded && (
+            <span
+              className={`text-xs font-semibold tracking-wide transition-colors whitespace-nowrap overflow-hidden text-ellipsis ${
+                isActive
+                  ? 'text-white font-bold'
+                  : 'text-slate-300 group-hover/nav-wrapper:text-white'
+              }`}
+            >
+              {label}
+            </span>
+          )}
 
           {hasDropdown && isSidebarExpanded && (
-            <motion.div
-              animate={{ rotate: isExpanded ? 180 : 0 }}
-              transition={{ duration: 0.2 }}
-              className={`ml-auto transition-colors ${
+            <div
+              className={`ml-auto transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''} ${
                 isActive
                   ? 'text-primary-400'
                   : 'text-white/40 group-hover/nav-wrapper:text-primary-400'
@@ -167,7 +135,7 @@ export const NavigationItem = React.forwardRef<HTMLButtonElement, IconButtonProp
                   d="M19 9l-7 7-7-7"
                 />
               </svg>
-            </motion.div>
+            </div>
           )}
 
           {/* Custom Floating Tooltip for Collapsed Sidebar */}
@@ -182,7 +150,7 @@ export const NavigationItem = React.forwardRef<HTMLButtonElement, IconButtonProp
               {label}
             </div>
           )}
-        </motion.button>
+        </button>
       </div>
     );
   }

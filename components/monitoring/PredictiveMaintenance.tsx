@@ -142,16 +142,12 @@ const PredictiveMaintenance: React.FC<PredictiveMaintenanceProps> = ({ plantUnit
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         <AnimatePresence mode="popLayout">
           {anomalies.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="col-span-2 py-16 text-center bg-white/40 backdrop-blur-xl rounded-[2.5rem] border border-white/60 shadow-inner"
-            >
+            <div className="col-span-2 py-16 text-center bg-white rounded-3xl border border-slate-200 shadow-sm">
               <ShieldCheck className="w-16 h-16 text-emerald-500/20 mx-auto mb-4" />
               <h4 className="text-slate-400 font-black tracking-widest uppercase text-xs">
                 No significant anomalies detected in recent historical data.
               </h4>
-            </motion.div>
+            </div>
           ) : (
             anomalies.map((anomaly, idx) => (
               <AnomalyCard key={anomaly.parameterName} anomaly={anomaly} index={idx} />
@@ -205,12 +201,9 @@ const AnomalyCard = React.forwardRef<HTMLDivElement, { anomaly: AnomalyData; ind
     };
 
     return (
-      <motion.div
+      <div
         ref={ref}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.1 }}
-        className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-xl overflow-hidden group hover:shadow-2xl transition-all duration-500"
+        className="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden group hover:shadow-lg transition-shadow duration-150"
       >
         <div className="p-8">
           <div className="flex justify-between items-start mb-6">
@@ -295,7 +288,7 @@ const AnomalyCard = React.forwardRef<HTMLDivElement, { anomaly: AnomalyData; ind
             </button>
           </div>
         </div>
-      </motion.div>
+      </div>
     );
   }
 );

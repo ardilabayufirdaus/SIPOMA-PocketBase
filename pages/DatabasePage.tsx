@@ -348,107 +348,83 @@ const DatabasePage: React.FC = () => {
 
         {/* Content Area */}
         <div className="flex-1 min-h-0 overflow-y-auto pr-1 custom-scrollbar">
-          <AnimatePresence mode="wait">
-            {activeTab === 'cm' && (
-              <motion.div
-                key="cm"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="grid grid-cols-1 lg:grid-cols-12 gap-6"
-              >
-                {/* Main Control Card */}
-                <div className="lg:col-span-8">
-                  <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 lg:p-10 shadow-sm relative overflow-hidden h-full">
-                    {/* Corner accent */}
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-primary-600/5 rounded-bl-full pointer-events-none"></div>
+          {activeTab === 'cm' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Main Control Card */}
+              <div className="lg:col-span-8">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 lg:p-10 shadow-sm relative overflow-hidden h-full">
+                  {/* Corner accent */}
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-primary-600/5 rounded-bl-full pointer-events-none"></div>
 
-                    <div className="relative z-10 flex flex-col lg:flex-row gap-8 lg:gap-12 w-full">
-                      {/* Description */}
-                      <div className="flex-1 space-y-6">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
-                            <FileSpreadsheet className="w-8 h-8 text-primary-600" />
-                          </div>
-                          <h3 className="text-xl font-bold uppercase tracking-tight border-l-2 border-primary-600 pl-3">
-                            CM Plant Report Generator
-                          </h3>
+                  <div className="relative z-10 flex flex-col lg:flex-row gap-8 lg:gap-12 w-full">
+                    {/* Description */}
+                    <div className="flex-1 space-y-6">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
+                          <FileSpreadsheet className="w-8 h-8 text-primary-600" />
                         </div>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-xl">
-                          Module ekstraksi data operasional CM Plant. Sistem akan melakukan
-                          sinkronisasi kernel sebelum mengunduh laporan dalam format Microsoft Excel
-                          (.xlsx).
-                        </p>
+                        <h3 className="text-xl font-bold uppercase tracking-tight border-l-2 border-primary-600 pl-3">
+                          CM Plant Report Generator
+                        </h3>
+                      </div>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-xl">
+                        Module ekstraksi data operasional CM Plant. Sistem akan melakukan
+                        sinkronisasi kernel sebelum mengunduh laporan dalam format Microsoft Excel
+                        (.xlsx).
+                      </p>
+                    </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                          <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                            <ShieldCheck className="w-4 h-4 text-emerald-500 font-bold" />
-                            <span>Data Integrity Verified</span>
-                          </div>
-                          <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                            <Clock className="w-4 h-4 text-primary-600 font-bold" />
-                            <span>Auto-Sync Enabled</span>
-                          </div>
+                    {/* Controls */}
+                    <div className="w-full lg:w-72 space-y-5 bg-slate-50/50 dark:bg-slate-950/30 p-6 rounded-xl border border-slate-200/60 dark:border-slate-800 flex flex-col justify-between">
+                      <div className="space-y-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                            PILIH BULAN
+                          </label>
+                          <select
+                            value={selectedMonth}
+                            onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                            className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs font-bold focus:outline-none focus:ring-1 focus:ring-primary-500 shadow-sm cursor-pointer"
+                          >
+                            {months.map((m) => (
+                              <option key={m.value} value={m.value}>
+                                {m.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                            PILIH TAHUN
+                          </label>
+                          <select
+                            value={selectedYear}
+                            onChange={(e) => setSelectedYear(Number(e.target.value))}
+                            className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs font-bold focus:outline-none focus:ring-1 focus:ring-primary-500 shadow-sm cursor-pointer"
+                          >
+                            {years.map((y) => (
+                              <option key={y} value={y}>
+                                {y}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                       </div>
 
-                      {/* Controls Section */}
-                      <div className="w-full md:w-80 space-y-6 bg-[#F7F7F7] dark:bg-slate-950/50 p-6 rounded-xl border border-slate-200 dark:border-slate-800">
-                        <div className="space-y-4">
-                          <div>
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">
-                              Pilih Bulan
-                            </label>
-                            <div className="relative group">
-                              <select
-                                value={selectedMonth}
-                                onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg py-3 px-4 text-xs font-bold transition-all focus:ring-2 focus:ring-primary-500/20 outline-none appearance-none cursor-pointer"
-                              >
-                                {months.map((m) => (
-                                  <option key={m.value} value={m.value}>
-                                    {m.label}
-                                  </option>
-                                ))}
-                              </select>
-                              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none group-hover:text-primary-600 transition-colors" />
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">
-                              Pilih Tahun
-                            </label>
-                            <div className="relative group">
-                              <select
-                                value={selectedYear}
-                                onChange={(e) => setSelectedYear(Number(e.target.value))}
-                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg py-3 px-4 text-xs font-bold transition-all focus:ring-2 focus:ring-primary-500/20 outline-none appearance-none cursor-pointer"
-                              >
-                                {years.map((y) => (
-                                  <option key={y} value={y}>
-                                    {y}
-                                  </option>
-                                ))}
-                              </select>
-                              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none group-hover:text-primary-600 transition-colors" />
-                            </div>
-                          </div>
-                        </div>
-
-                        <motion.button
-                          whileHover={!isDownloading ? { scale: 1.02 } : {}}
-                          whileTap={!isDownloading ? { scale: 0.98 } : {}}
+                      <div className="space-y-3 pt-2">
+                        <button
                           onClick={handleDownloadExcel}
                           disabled={isDownloading}
                           className={`
-                              w-full flex items-center justify-center gap-3 py-4 rounded-lg text-[11px] font-bold uppercase tracking-widest transition-all
-                              ${
-                                isDownloading
-                                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 border border-slate-200 dark:border-slate-700'
-                                  : 'bg-primary-600 text-white shadow-md shadow-emerald-500/20 hover:bg-primary-500'
-                              }
-                            `}
+                            w-full py-3 px-4 rounded font-bold text-xs uppercase tracking-wider
+                            flex items-center justify-center gap-2 transition-all shadow-sm
+                            ${
+                              isDownloading
+                                ? 'bg-slate-300 dark:bg-slate-800 text-slate-500 cursor-not-allowed'
+                                : 'bg-primary-600 hover:bg-primary-500 text-white shadow-primary-500/10'
+                            }
+                          `}
                         >
                           {isDownloading ? (
                             <>
@@ -461,11 +437,11 @@ const DatabasePage: React.FC = () => {
                               <span>Unduh Laporan</span>
                             </>
                           )}
-                        </motion.button>
+                        </button>
 
                         {isDownloading && (
                           <div className="flex items-center gap-2.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/10 rounded border border-emerald-100 dark:border-emerald-800/30">
-                            <Activity className="w-3 h-3 text-emerald-500 animate-pulse" />
+                            <Activity className="w-3 h-3 text-emerald-500" />
                             <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-tighter truncate">
                               {syncStatus}
                             </span>
@@ -475,92 +451,50 @@ const DatabasePage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
 
-                {/* Side Stats Card */}
-                <div className="lg:col-span-4">
-                  <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col h-full relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-primary-600 opacity-50"></div>
-                    <h4 className="text-[10px] font-bold text-slate-800 dark:text-slate-300 uppercase tracking-widest mb-6 border-l-2 border-primary-600 pl-2">
-                      System Diagnostics
-                    </h4>
+          {activeTab === 'rkc' && (
+            <div className="w-full">
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-12 lg:p-20 text-center shadow-sm relative overflow-hidden">
+                <div className="relative z-10 max-w-lg mx-auto flex flex-col items-center">
+                  <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-8 border border-slate-100 dark:border-slate-700 shadow-inner">
+                    <Cpu className="w-10 h-10 text-primary-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold uppercase tracking-tight mb-4 text-slate-800 dark:text-white">
+                    RKC Operations Kernel
+                  </h3>
+                  <p className="text-sm text-slate-400 leading-relaxed mb-10 font-bold uppercase tracking-wider">
+                    Initializing data mapping kernel • Status:{' '}
+                    <span className="text-primary-600">Deploying</span>
+                  </p>
 
-                    <div className="space-y-6 flex-1">
-                      <div className="flex flex-col gap-2">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-                          Kernel Status
-                        </span>
-                        <div className="flex items-center gap-2 text-xs font-bold text-emerald-600">
-                          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
-                          <span>VERIFIED_OK</span>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-                          Extraction Engine
-                        </span>
-                        <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
-                          <Terminal className="w-3.5 h-3.5 text-primary-600" />
-                          <span>ExcelJS_v4.4.0</span>
-                        </div>
-                      </div>
-                    </div>
+                  <div className="inline-flex items-center gap-4 px-6 py-2.5 bg-slate-100 dark:bg-white/5 rounded-full border border-slate-200 dark:border-white/10 text-[10px] font-mono font-bold text-slate-800 dark:text-white/60 uppercase tracking-widest">
+                    <div className="w-2 h-2 rounded-full bg-primary-600" />
+                    CORE_INITIALIZING_PHASE_09
                   </div>
                 </div>
-              </motion.div>
-            )}
-
-            {activeTab === 'rkc' && (
-              <motion.div
-                key="rkc"
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.02 }}
-                className="w-full"
-              >
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-12 lg:p-20 text-center shadow-sm relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-primary-600/5 rounded-full blur-3xl"></div>
-                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-secondary-900/5 rounded-full blur-3xl"></div>
-
-                  <div className="relative z-10 max-w-lg mx-auto flex flex-col items-center">
-                    <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-8 border border-slate-100 dark:border-slate-700 shadow-inner">
-                      <Cpu className="w-10 h-10 text-primary-600 animate-pulse" />
-                    </div>
-                    <h3 className="text-2xl font-bold uppercase tracking-tight mb-4 text-slate-800 dark:text-white">
-                      RKC Operations Kernel
-                    </h3>
-                    <p className="text-sm text-slate-400 leading-relaxed mb-10 font-bold uppercase tracking-wider">
-                      Initializing data mapping kernel • Status:{' '}
-                      <span className="text-primary-600">Deploying</span>
-                    </p>
-
-                    <div className="inline-flex items-center gap-4 px-6 py-2.5 bg-slate-100 dark:bg-white/5 rounded-full border border-slate-200 dark:border-white/10 text-[10px] font-mono font-bold text-slate-800 dark:text-white/60 uppercase tracking-widest">
-                      <div className="w-2 h-2 rounded-full bg-primary-600 animate-ping" />
-                      CORE_INITIALIZING_PHASE_09
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </div>
+            </div>
+          )}
+          <style>{`
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(5, 150, 105, 0.2);
+            border-radius: 10px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(5, 150, 105, 0.4);
+          }
+        `}</style>
         </div>
       </div>
-
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(5, 150, 105, 0.2);
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(5, 150, 105, 0.4);
-        }
-      `}</style>
     </div>
   );
 };

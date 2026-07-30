@@ -357,24 +357,17 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
                 <tbody className="bg-white divide-y divide-[#94a3b8]/10">
                   {groupedInstructions.map(([activity, instructionList], groupIndex) => (
                     <React.Fragment key={activity}>
-                      <motion.tr
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: groupIndex * 0.1 }}
-                      >
+                      <tr>
                         <td
                           colSpan={tableHeaders.length}
                           className="px-6 py-3 bg-[#F9F9F9] border-l-4 border-[#111827]"
                         >
                           <h3 className="text-sm font-bold text-[#111827]">{activity}</h3>
                         </td>
-                      </motion.tr>
+                      </tr>
                       {instructionList.map((instruction, index) => (
-                        <motion.tr
+                        <tr
                           key={instruction.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: groupIndex * 0.1 + index * 0.05 }}
                           className="hover:bg-[#059669]/5 transition-colors duration-150"
                         >
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-[#333333] font-mono">
@@ -443,7 +436,7 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
                               )}
                             </div>
                           </td>
-                        </motion.tr>
+                        </tr>
                       ))}
                     </React.Fragment>
                   ))}

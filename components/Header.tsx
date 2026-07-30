@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import PlusIcon from './icons/PlusIcon';
 import Bars3Icon from './icons/Bars3Icon';
 import BellIcon from './icons/BellIcon';
@@ -62,12 +61,9 @@ const Header: React.FC<HeaderProps> = React.memo(
         {/* Skip Links for accessibility */}
         <SkipLinks />
 
-        <motion.header
-          className="relative z-40 bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-800/80 shadow-md h-[60px] flex items-center font-sans"
+        <header
+          className="relative z-40 bg-slate-900 dark:bg-slate-950 border-b border-slate-800 shadow-md h-[60px] flex items-center font-sans"
           role="banner"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
         >
           <div className="w-full px-6">
             <div className="flex items-center justify-between">
@@ -75,15 +71,13 @@ const Header: React.FC<HeaderProps> = React.memo(
               <div className="flex items-center gap-6 min-w-0 flex-1">
                 {/* Mobile Hamburger Menu */}
                 {isMobile && onToggleSidebar && (
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                  <button
                     onClick={onToggleSidebar}
                     aria-label="Toggle navigation menu"
                     className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors md:hidden"
                   >
                     <Bars3Icon className="w-5 h-5" />
-                  </motion.button>
+                  </button>
                 )}
 
                 {/* Title Section */}
@@ -91,23 +85,16 @@ const Header: React.FC<HeaderProps> = React.memo(
                   <h1 className="text-white text-[15px] font-bold tracking-tight leading-tight uppercase">
                     {pageTitle}
                   </h1>
-                  <AnimatePresence mode="wait">
-                    {!isMobile && (
-                      <motion.div
-                        key={currentUser?.id}
-                        initial={{ opacity: 0, x: -5 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="flex items-center gap-2 mt-0.5"
-                      >
-                        <span className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">
-                          Sesi Aktif:
-                        </span>
-                        <span className="text-[10px] text-primary-400 font-bold uppercase tracking-wider">
-                          {currentUser?.full_name || 'Administrator'}
-                        </span>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {!isMobile && (
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">
+                        Sesi Aktif:
+                      </span>
+                      <span className="text-[10px] text-primary-400 font-bold uppercase tracking-wider">
+                        {currentUser?.full_name || 'Administrator'}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -115,24 +102,20 @@ const Header: React.FC<HeaderProps> = React.memo(
               <div className="flex items-center gap-2 flex-shrink-0">
                 {/* Add User Button */}
                 {showAddUserButton && !isMobile && (
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <button
                     onClick={onAddUser}
-                    className="flex items-center gap-2 bg-primary-600 hover:bg-primary-500 text-white text-[11px] font-bold px-4 py-2 rounded-lg transition-all shadow-lg shadow-emerald-500/20 mr-2 uppercase tracking-wide"
+                    className="flex items-center gap-2 bg-primary-600 hover:bg-primary-500 text-white text-[11px] font-bold px-4 py-2 rounded-lg transition-all shadow-md mr-2 uppercase tracking-wide"
                   >
                     <PlusIcon className="w-3.5 h-3.5" />
                     <span>{t.add_user_button}</span>
-                  </motion.button>
+                  </button>
                 )}
 
                 {/* System Tray Icons */}
                 <div className="flex items-center bg-white/5 rounded-xl p-1 gap-1 border border-white/5">
                   {/* Notifications */}
                   <div className="relative">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                    <button
                       onClick={() => setIsNotifMenuOpen(true)}
                       className={`p-2 rounded-lg transition-colors ${unreadCount > 0 ? 'text-primary-400' : 'text-white/60 hover:text-white'}`}
                       aria-label="Notifications"
@@ -145,7 +128,7 @@ const Header: React.FC<HeaderProps> = React.memo(
                       {unreadCount > 0 && (
                         <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-[#1e1e1e]" />
                       )}
-                    </motion.button>
+                    </button>
                   </div>
 
                   {/* Connection Status Indicator */}
@@ -156,9 +139,7 @@ const Header: React.FC<HeaderProps> = React.memo(
                   )}
 
                   {/* Theme Toggle */}
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                  <button
                     onClick={toggleTheme}
                     className="p-2 text-white/60 hover:text-white rounded-lg transition-colors"
                   >
@@ -167,20 +148,18 @@ const Header: React.FC<HeaderProps> = React.memo(
                     ) : (
                       <SunIcon className="w-5 h-5 text-yellow-400" />
                     )}
-                  </motion.button>
+                  </button>
 
                   <div className="w-px h-6 bg-white/10 mx-1" />
 
                   {/* Sign Out */}
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                  <button
                     onClick={onSignOut}
                     className="p-2 text-white/40 hover:text-red-400 rounded-lg transition-colors"
                     aria-label="Sign Out"
                   >
                     <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                  </motion.button>
+                  </button>
                 </div>
 
                 {/* User Profile */}
@@ -190,7 +169,7 @@ const Header: React.FC<HeaderProps> = React.memo(
               </div>
             </div>
           </div>
-        </motion.header>
+        </header>
 
         {/* Notifications Floating Window */}
         <NotificationModal
