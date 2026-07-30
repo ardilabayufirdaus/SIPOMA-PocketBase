@@ -101,6 +101,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             }}
             options={{
               responsive: true,
+              animation: false as const,
               maintainAspectRatio: false,
               plugins: {
                 legend: {
@@ -175,6 +176,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               }}
               options={{
                 responsive: true,
+                animation: false as const,
                 maintainAspectRatio: false,
                 plugins: {
                   legend: {
@@ -237,6 +239,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               }}
               options={{
                 responsive: true,
+                animation: false as const,
                 maintainAspectRatio: false,
                 plugins: {
                   legend: {

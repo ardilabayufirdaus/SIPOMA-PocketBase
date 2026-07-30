@@ -186,6 +186,7 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
 
     const options = {
       responsive: true,
+      animation: false as const,
       maintainAspectRatio: false,
       interaction: {
         mode: 'index' as const,

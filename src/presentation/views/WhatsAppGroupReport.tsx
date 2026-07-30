@@ -107,6 +107,7 @@ export const WhatsAppGroupReport: React.FC<WhatsAppGroupReportProps> = ({
                 }}
                 options={{
                   responsive: true,
+                  animation: false as const,
                   maintainAspectRatio: false,
                   plugins: {
                     legend: {
@@ -187,4 +188,3 @@ export const WhatsAppGroupReport: React.FC<WhatsAppGroupReportProps> = ({
     </div>
   );
 };
-

@@ -89,6 +89,7 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
 
     const commonOptions = {
       responsive: true,
+      animation: false as const,
       maintainAspectRatio: false,
       plugins: {
         legend: {
@@ -162,6 +163,7 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
             }}
             options={{
               responsive: true,
+              animation: false as const,
               maintainAspectRatio: false,
               plugins: {
                 legend: {
@@ -336,5 +338,3 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
     </div>
   );
 };
-
-

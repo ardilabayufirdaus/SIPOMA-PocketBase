@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import { DashboardFilters } from '../../../components/plant-operations/FilterSection';
 import { useCcrMaterialUsage } from '../../../hooks/useCcrMaterialUsage';
@@ -53,12 +52,7 @@ const ProductionCapacityTable: React.FC<ProductionCapacityTableProps> = ({
   const isLoading = capacityLoading || moistureLoading;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="w-full mb-8"
-    >
+    <div className="w-full mb-8">
       <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
         <div className="px-8 py-6 border-b border-slate-200/50 bg-gradient-to-r from-slate-900 to-secondary-900 flex justify-between items-center">
           <div>
@@ -130,7 +124,7 @@ const ProductionCapacityTable: React.FC<ProductionCapacityTableProps> = ({
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

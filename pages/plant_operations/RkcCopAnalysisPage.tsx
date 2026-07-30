@@ -492,6 +492,7 @@ const ChartContainer: React.FC<{
     return {
       responsive: true,
       maintainAspectRatio: false,
+      animation: false as const,
       plugins: {
         legend: {
           display: true,

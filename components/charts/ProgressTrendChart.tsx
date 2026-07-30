@@ -47,6 +47,7 @@ export const ProgressTrendChart: React.FC<ProgressTrendChartProps> = ({ data, t 
 
   const options = {
     responsive: true,
+    animation: false as const,
     maintainAspectRatio: false,
     plugins: {
       legend: {
@@ -102,5 +103,3 @@ export const ProgressTrendChart: React.FC<ProgressTrendChartProps> = ({ data, t 
     </div>
   );
 };
-
-

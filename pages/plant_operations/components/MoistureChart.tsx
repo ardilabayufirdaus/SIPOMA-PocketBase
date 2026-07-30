@@ -1,6 +1,5 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
-import { motion } from 'framer-motion';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,7 +9,6 @@ import {
   Title,
   Tooltip,
   Legend,
-  TooltipItem,
 } from 'chart.js';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
@@ -163,26 +161,16 @@ export const MoistureChart: React.FC<MoistureChartProps> = ({
         },
       },
     },
-    animation: {
-      duration: 2000,
-      easing: 'easeInOutCubic' as const,
-    },
+    animation: false as const,
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.6 }}
-      className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 h-full"
-    >
+    <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 h-full">
       <div className="h-full">
         <Line data={chartData} options={options} />
       </div>
-    </motion.div>
+    </div>
   );
 };
 
 export default MoistureChart;
-
-

@@ -130,7 +130,7 @@ export class ChartExportService {
         backgroundColor: '#ffffff',
         scale: 2,
       });
-      const chartImageDataUrl = canvas.toDataURL('image/png');
+      const chartImageDataUrl = canvas.toDataURL('image/jpeg', 0.85);
 
       // Calculate image dimensions to fit page
       const maxWidth = pageWidth - 2 * margin;
@@ -150,7 +150,16 @@ export class ChartExportService {
 
         const xPosition = (pageWidth - imgWidth) / 2;
 
-        pdf.addImage(chartImageDataUrl, 'PNG', xPosition, yPosition, imgWidth, imgHeight);
+        pdf.addImage(
+          chartImageDataUrl,
+          'JPEG',
+          xPosition,
+          yPosition,
+          imgWidth,
+          imgHeight,
+          undefined,
+          'FAST'
+        );
 
         // Save PDF
         pdf.save(`${filename}.pdf`);

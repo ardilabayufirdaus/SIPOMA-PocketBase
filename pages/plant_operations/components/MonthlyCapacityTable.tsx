@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { DashboardFilters } from '../../../components/plant-operations/FilterSection';
 import { useProductionCapacity } from '../../../hooks/useProductionCapacity';
 import { formatNumber } from '../../../utils/formatters';
@@ -80,12 +79,7 @@ const MonthlyCapacityTable: React.FC<MonthlyCapacityTableProps> = ({ filters, pl
   }, [filters.date, plantUnit, filters.plantCategory, getMonthlyCapacity]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="w-full mb-8"
-    >
+    <div className="w-full mb-8">
       <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
         <div className="px-8 py-6 border-b border-slate-200/50 bg-gradient-to-r from-slate-900 to-secondary-900">
           <h3 className="text-xl font-bold text-white font-display">
@@ -207,7 +201,7 @@ const MonthlyCapacityTable: React.FC<MonthlyCapacityTableProps> = ({ filters, pl
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

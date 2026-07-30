@@ -75,6 +75,7 @@ const OeeTrendChart: React.FC<OeeTrendChartProps> = ({ summaries, unitId }) => {
 
   const options = {
     responsive: true,
+    animation: false as const,
     maintainAspectRatio: false,
     plugins: {
       legend: {

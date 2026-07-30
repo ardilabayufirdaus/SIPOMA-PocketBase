@@ -40,6 +40,7 @@ export const StockDistributionChart: React.FC<StockDistributionChartProps> = ({ 
 
   const options = {
     responsive: true,
+    animation: false as const,
     maintainAspectRatio: false,
     plugins: {
       legend: {
@@ -72,5 +73,3 @@ export const StockDistributionChart: React.FC<StockDistributionChartProps> = ({ 
     </div>
   );
 };
-
-

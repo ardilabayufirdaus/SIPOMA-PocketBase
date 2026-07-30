@@ -185,6 +185,7 @@ const AnomalyCard = React.forwardRef<HTMLDivElement, { anomaly: AnomalyData; ind
 
     const options = {
       responsive: true,
+      animation: false as const,
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },

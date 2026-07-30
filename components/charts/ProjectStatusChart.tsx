@@ -39,6 +39,7 @@ export const ProjectStatusChart: React.FC<ProjectStatusChartProps> = ({ projects
 
   const options = {
     responsive: true,
+    animation: false as const,
     maintainAspectRatio: false,
     plugins: {
       legend: {
@@ -71,5 +72,3 @@ export const ProjectStatusChart: React.FC<ProjectStatusChartProps> = ({ projects
     </div>
   );
 };
-
-

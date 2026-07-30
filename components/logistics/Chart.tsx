@@ -124,6 +124,7 @@ export const Chart: React.FC<ChartProps> = ({
 
   const options = {
     responsive: true,
+    animation: false as const,
     maintainAspectRatio: false,
     plugins: {
       legend: {
@@ -220,5 +221,3 @@ export const Chart: React.FC<ChartProps> = ({
     </div>
   );
 };
-
-

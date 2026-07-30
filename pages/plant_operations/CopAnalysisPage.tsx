@@ -535,6 +535,7 @@ const ChartContainer: React.FC<{
     return {
       responsive: true,
       maintainAspectRatio: false,
+      animation: false as const,
       plugins: {
         legend: {
           display: true,
@@ -3906,16 +3907,16 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 return (
                   <div
                     key={paramData.parameter.id}
-                    className={`bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-xl hover:shadow-2xl transition-all duration-300 group hover:scale-[1.02] backdrop-blur-sm`}
+                    className={`bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-xl backdrop-blur-sm`}
                   >
                     <div className="flex items-center justify-between mb-4">
                       <h3
-                        className={`text-lg font-black ${colorScheme.accent} truncate tracking-tight group-hover:scale-105 transition-transform`}
+                        className={`text-lg font-black ${colorScheme.accent} truncate tracking-tight`}
                       >
                         {paramData.parameter.parameter}
                       </h3>
                       <div
-                        className={`px-3 py-1.5 ${colorScheme.badge} rounded-xl text-xs font-bold border shadow-sm group-hover:scale-110 transition-transform`}
+                        className={`px-3 py-1.5 ${colorScheme.badge} rounded-xl text-xs font-bold border shadow-sm`}
                       >
                         {chartData.length} hari
                       </div>

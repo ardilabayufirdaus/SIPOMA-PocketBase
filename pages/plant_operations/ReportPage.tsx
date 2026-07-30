@@ -753,23 +753,73 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         element.className = originalClass;
       });
 
-      const imgData = canvas.toDataURL('image/png');
       const { jsPDF } = await import('jspdf');
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
+        compress: true,
       });
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 10;
+      const margin = 10; // 10mm margin
+      const printWidth = pdfWidth - margin * 2; // 190mm
+      const printHeight = pdfHeight - margin * 2; // 277mm
 
-      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      // Conversion factor: pixels per mm on the print canvas
+      const pxPerMm = canvas.width / printWidth;
+      const pageCanvasHeight = Math.floor(printHeight * pxPerMm);
+
+      let yOffset = 0;
+      let pageIndex = 0;
+
+      while (yOffset < canvas.height) {
+        const chunkCanvasHeight = Math.min(pageCanvasHeight, canvas.height - yOffset);
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = chunkCanvasHeight;
+
+        const ctx = pageCanvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          ctx.drawImage(
+            canvas,
+            0,
+            yOffset,
+            canvas.width,
+            chunkCanvasHeight,
+            0,
+            0,
+            canvas.width,
+            chunkCanvasHeight
+          );
+        }
+
+        // Use JPEG with 0.82 quality to dramatically reduce file size (from ~30MB to <1MB)
+        // while maintaining sharp text and visual clarity.
+        const chunkImgData = pageCanvas.toDataURL('image/jpeg', 0.82);
+        const chunkPrintHeight = chunkCanvasHeight / pxPerMm;
+
+        if (pageIndex > 0) {
+          pdf.addPage();
+        }
+
+        pdf.addImage(
+          chunkImgData,
+          'JPEG',
+          margin,
+          margin,
+          printWidth,
+          chunkPrintHeight,
+          undefined,
+          'FAST'
+        );
+
+        yOffset += chunkCanvasHeight;
+        pageIndex++;
+      }
 
       const currentDate = new Date().toISOString().split('T')[0];
       const filename = `DAILY_OPERATIONAL_REPORT_${currentDate}.pdf`;

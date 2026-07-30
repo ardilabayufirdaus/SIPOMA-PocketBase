@@ -84,6 +84,7 @@ const QualityStabilityChart: React.FC<QualityStabilityChartProps> = ({
 
   const options = {
     responsive: true,
+    animation: false as const,
     maintainAspectRatio: false,
     plugins: {
       legend: {

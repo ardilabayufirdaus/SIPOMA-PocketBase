@@ -60,6 +60,7 @@ const OeeLeaderboard: React.FC<OeeLeaderboardProps> = ({ unitMetrics }) => {
 
   const options = {
     responsive: true,
+    animation: false as const,
     maintainAspectRatio: false,
     plugins: {
       legend: {

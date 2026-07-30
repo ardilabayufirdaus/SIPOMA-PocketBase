@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { DashboardFilters } from '../../../components/plant-operations/FilterSection';
 import { useMoistureData } from '../../../hooks/useMoistureData';
 import MoistureChart from './MoistureChart';
@@ -65,52 +64,30 @@ const MoistureContentTable: React.FC<MoistureContentTableProps> = ({ filters, pl
 
   if (loading) {
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8"
-      >
+      <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
         <div className="text-center py-16">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-            className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-6"
-          ></motion.div>
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
           <p className="text-slate-700 text-lg">Loading real-time moisture data...</p>
         </div>
-      </motion.div>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-red-50/90 backdrop-blur-sm rounded-2xl shadow-xl border border-red-200/50 p-8"
-      >
+      <div className="bg-red-50/90 backdrop-blur-sm rounded-2xl shadow-xl border border-red-200/50 p-8">
         <div className="text-center py-16">
           <p className="text-red-600 text-lg font-medium">Error loading moisture data: {error}</p>
         </div>
-      </motion.div>
+      </div>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="w-full"
-    >
+    <div className="w-full">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Table Section */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="min-h-[600px]"
-        >
+        <div className="min-h-[600px]">
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden h-full">
             <div className="px-8 py-6 border-b border-slate-200/50 bg-gradient-to-r from-slate-900 to-secondary-900">
               <h3 className="text-xl font-bold text-white font-display">
@@ -141,15 +118,8 @@ const MoistureContentTable: React.FC<MoistureContentTableProps> = ({ filters, pl
                   </tr>
                 </thead>
                 <tbody className="bg-white/50 divide-y divide-slate-200/50">
-                  {filteredMoistureData.map((row, index) => (
-                    <motion.tr
-                      key={row.hour}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.05 }}
-                      whileHover={{ backgroundColor: 'rgba(5, 150, 105, 0.05)' }}
-                      className="hover:bg-emerald-50/50 transition-colors"
-                    >
+                  {filteredMoistureData.map((row) => (
+                    <tr key={row.hour} className="hover:bg-emerald-50/50 transition-colors">
                       <td className="px-6 py-4 text-sm font-semibold text-slate-900">{row.hour}</td>
                       <td className="px-6 py-4 text-sm text-slate-700 font-medium">
                         {formatValue(row.gypsum)}
@@ -163,7 +133,7 @@ const MoistureContentTable: React.FC<MoistureContentTableProps> = ({ filters, pl
                       <td className="px-6 py-4 text-sm font-bold text-primary-600 bg-emerald-50 ring-1 ring-emerald-100 rounded-lg mx-2">
                         {formatValue(row.total)}
                       </td>
-                    </motion.tr>
+                    </tr>
                   ))}
                 </tbody>
                 <tfoot className="bg-slate-50 border-t-2 border-slate-300">
@@ -192,24 +162,19 @@ const MoistureContentTable: React.FC<MoistureContentTableProps> = ({ filters, pl
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Chart Section */}
         {filteredMoistureData.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="min-h-[600px]"
-          >
+          <div className="min-h-[600px]">
             <MoistureChart
               data={filteredMoistureData}
               title={`Moisture Content Trends - ${plantUnit} (${filters.date})`}
             />
-          </motion.div>
+          </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 };
 

@@ -85,6 +85,7 @@ const ComboChart: React.FC<ComboChartProps> = ({
 
   const options = {
     responsive: true,
+    animation: false as const,
     maintainAspectRatio: false,
     plugins: {
       legend: {
@@ -106,5 +107,3 @@ const ComboChart: React.FC<ComboChartProps> = ({
 };
 
 export default ComboChart;
-
-

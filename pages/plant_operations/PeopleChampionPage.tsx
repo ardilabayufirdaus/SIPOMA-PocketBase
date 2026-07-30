@@ -329,10 +329,7 @@ const OperatorAchievementChart: React.FC<{
           right: 20, // Extra space for labels
         },
       },
-      animation: {
-        duration: 750,
-        easing: 'easeOutQuart',
-      },
+      animation: false as const,
     };
   }, [data]);
 

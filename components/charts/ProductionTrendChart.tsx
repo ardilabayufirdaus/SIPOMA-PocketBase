@@ -106,6 +106,7 @@ export const ProductionTrendChart: React.FC<ProductionTrendChartProps> = ({
 
   const options = {
     responsive: true,
+    animation: false as const,
     maintainAspectRatio: false,
     plugins: {
       legend: {
@@ -176,5 +177,3 @@ export const ProductionTrendChart: React.FC<ProductionTrendChartProps> = ({
     </div>
   );
 };
-
-
