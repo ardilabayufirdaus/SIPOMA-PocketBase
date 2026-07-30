@@ -617,39 +617,22 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     columnSearchQuery,
   ]);
 
-  // Update modal parameter order when modal opens or filteredParameterSettings changes
-  // Parameter reorder handlers - optimized for performance with debouncing
-  const reorderTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const moveParameterUp = useCallback((index: number) => {
-    if (reorderTimeoutRef.current) return; // Prevent rapid clicks
-
     setModalParameterOrder((prev) => {
       if (index <= 0) return prev;
       const newOrder = [...prev];
       [newOrder[index], newOrder[index - 1]] = [newOrder[index - 1], newOrder[index]];
       return newOrder;
     });
-
-    // Debounce for 150ms to prevent rapid clicking
-    reorderTimeoutRef.current = setTimeout(() => {
-      reorderTimeoutRef.current = null;
-    }, 150);
   }, []);
 
   const moveParameterDown = useCallback((index: number) => {
-    if (reorderTimeoutRef.current) return; // Prevent rapid clicks
-
     setModalParameterOrder((prev) => {
       if (index >= prev.length - 1) return prev;
       const newOrder = [...prev];
       [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
       return newOrder;
     });
-
-    // Debounce for 150ms to prevent rapid clicking
-    reorderTimeoutRef.current = setTimeout(() => {
-      reorderTimeoutRef.current = null;
-    }, 150);
   }, []);
 
   // Handler for drag-and-drop reordering
@@ -977,24 +960,24 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 aria-label={`Ubah urutan parameter ${param.parameter}`}
               />
               <div className="flex items-center gap-1">
-                <EnhancedButton
-                  variant="ghost"
-                  size="xs"
+                <button
+                  type="button"
                   onClick={() => moveParameterUp(index)}
                   disabled={index === 0}
+                  className="px-2 py-1 text-xs font-bold text-slate-700 hover:bg-slate-200 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   aria-label={`Move ${param.parameter} up`}
                 >
                   ↑
-                </EnhancedButton>
-                <EnhancedButton
-                  variant="ghost"
-                  size="xs"
+                </button>
+                <button
+                  type="button"
                   onClick={() => moveParameterDown(index)}
                   disabled={index === modalParameterOrder.length - 1}
+                  className="px-2 py-1 text-xs font-bold text-slate-700 hover:bg-slate-200 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   aria-label={`Move ${param.parameter} down`}
                 >
                   ↓
-                </EnhancedButton>
+                </button>
               </div>
             </div>
           </div>
