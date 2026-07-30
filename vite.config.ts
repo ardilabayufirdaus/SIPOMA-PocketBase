@@ -294,10 +294,10 @@ export default defineConfig(async (_env) => {
           },
         },
         '/api': {
-          target: 'https://db.sipoma.online',
+          target: 'http://172.18.6.98:8090',
           changeOrigin: true,
-          secure: false, // karena SSL self-signed
-          ws: true, // Enable WebSocket proxying for realtime connections
+          secure: false,
+          ws: true,
         },
       },
     },

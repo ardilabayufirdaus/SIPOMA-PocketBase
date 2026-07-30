@@ -1,6 +1,9 @@
 # Secrets and Configs
 config.json
 secret.json
+.env
+.env.*
+!.env.example
 
 # Galaxy God Logs and Temporary
 *.log

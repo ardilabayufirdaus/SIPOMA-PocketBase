@@ -9,7 +9,7 @@ import { ClientResponseError } from 'pocketbase';
  */
 
 // Gunakan environment variable untuk URL PocketBase atau fallback ke URL default
-const pocketbaseUrl = import.meta.env.VITE_POCKETBASE_URL || 'https://db.sipoma.online/';
+const pocketbaseUrl = import.meta.env.VITE_POCKETBASE_URL || 'http://172.18.6.98:8090/';
 
 // Singleton pattern untuk mencegah multiple client instances
 let pbInstance: PocketBase | null = null;
