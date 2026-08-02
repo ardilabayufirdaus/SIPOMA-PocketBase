@@ -17,9 +17,13 @@ export const getAdminPb = async (): Promise<PocketBase> => {
   const pb = new PocketBase(getPocketbaseUrl());
   pb.autoCancellation(false);
 
-  // Credentials
-  const email = import.meta.env.VITE_POCKETBASE_EMAIL || 'ardila.firdaus@sig.id';
-  const password = import.meta.env.VITE_POCKETBASE_PASSWORD || 'makassar@270989';
+  // Credentials with fallback if env contains default placeholder text
+  const rawEmail = import.meta.env.VITE_POCKETBASE_EMAIL;
+  const rawPassword = import.meta.env.VITE_POCKETBASE_PASSWORD;
+
+  const email = rawEmail && !rawEmail.includes('your_email') ? rawEmail : 'ardila.firdaus@sig.id';
+  const password =
+    rawPassword && !rawPassword.includes('your_secure_password') ? rawPassword : 'makassar@270989';
 
   try {
     await pb.admins.authWithPassword(email, password);
