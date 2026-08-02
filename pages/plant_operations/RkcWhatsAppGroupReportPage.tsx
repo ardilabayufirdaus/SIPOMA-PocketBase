@@ -615,12 +615,36 @@ const RkcWhatsAppGroupReportPage: React.FC = () => {
 
   // Copy to clipboard handler
   const handleCopyToClipboard = useCallback(async () => {
+    if (!generatedReport) return;
+
     try {
-      await navigator.clipboard.writeText(generatedReport);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
-    } catch {
-      // ignore
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(generatedReport);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+        return;
+      }
+
+      // Fallback for non-secure contexts (HTTP/IP) or browsers without Clipboard API
+      const textarea = document.createElement('textarea');
+      textarea.value = generatedReport;
+      textarea.style.position = 'fixed';
+      textarea.style.top = '0';
+      textarea.style.left = '0';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textarea);
+
+      if (successful) {
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      }
+    } catch (err) {
+      console.error('Failed to copy text:', err);
     }
   }, [generatedReport]);
 
