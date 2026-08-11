@@ -2532,7 +2532,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         {/* Sync Progress Modal */}
 
         {/* Filter Section */}
-        <div className="bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-white/10 p-4 sm:p-6 animate-scale-in">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-slate-200 dark:border-slate-800 p-4 sm:p-6 animate-scale-in">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {/* Plant Category */}
             <div className="space-y-1.5 sm:space-y-2 col-span-2 sm:col-span-1">
@@ -2548,7 +2548,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-[border-color,box-shadow] duration-200 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {plantCategories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -2575,7 +2575,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   value={selectedUnit}
                   onChange={(e) => setSelectedUnit(e.target.value)}
                   disabled={unitsForCategory.length === 0}
-                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm font-semibold transition-[border-color,box-shadow] duration-200 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {unitsForCategory.map((unit) => (
                     <option key={unit} value={unit}>
@@ -2601,7 +2601,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-month"
                   value={filterMonth}
                   onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-[border-color,box-shadow] duration-200 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {monthOptions.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -2627,7 +2627,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-year"
                   value={filterYear}
                   onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-[border-color,box-shadow] duration-200 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {yearOptions.map((y) => (
                     <option key={y} value={y}>
@@ -2644,7 +2644,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         <Card
           variant="elevated"
           padding="md"
-          className="bg-white/80 backdrop-blur-sm shadow-xl border-0"
+          className="bg-white dark:bg-slate-900 shadow-md border border-slate-200 dark:border-slate-800"
         >
           <div className="flex flex-wrap gap-3">
             <button
@@ -2720,11 +2720,11 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 Advanced statistical breakdown of RKC parameters for the current month.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 text-xs transition-all duration-300">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 text-xs">
               {statisticalSummary.map((stat) => (
                 <div
                   key={stat.parameterId}
-                  className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-5 sm:p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl group hover:shadow-2xl transition-all duration-300"
+                  className="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-700/60 shadow-sm group hover:shadow-md transition-[box-shadow,transform] duration-200 transform-gpu"
                 >
                   <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-primary-600 transition-colors truncate">
                     {stat.parameter}
@@ -2790,11 +2790,11 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 Intelligent outlier detection using the advanced 3-sigma rule methodology.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 text-xs transition-all duration-300">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 text-xs">
               {anomalyDetection.map((anomaly) => (
                 <div
                   key={anomaly.parameterId}
-                  className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-5 sm:p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl group hover:shadow-2xl transition-all duration-300"
+                  className="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-700/60 shadow-sm group hover:shadow-md transition-[box-shadow,transform] duration-200 transform-gpu"
                 >
                   <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-primary-600 transition-colors truncate">
                     {anomaly.parameter}
@@ -2912,7 +2912,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         )}
         {/* Quality Metrics Dashboard */}
         {showQualityMetrics && (
-          <div className="bg-gradient-to-br from-indigo-900/10 via-slate-900/5 to-blue-900/10 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-3xl lg:rounded-[2.5rem] p-6 sm:p-8 lg:p-10 border border-white/20 animate-slide-up shadow-2xl backdrop-blur-3xl transition-all duration-500">
+          <div className="bg-gradient-to-br from-indigo-900/10 via-slate-900/5 to-blue-900/10 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-3xl lg:rounded-[2.5rem] p-6 sm:p-8 lg:p-10 border border-slate-200 dark:border-slate-800 animate-slide-up shadow-xl">
             <div className="mb-8">
               <h2 className="text-xl sm:text-2xl font-black text-indigo-900 dark:text-indigo-400 uppercase tracking-[0.2em]">
                 🏆 Quality Metrics
@@ -2954,7 +2954,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               ].map((m, i) => (
                 <div
                   key={i}
-                  className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl p-6 rounded-[2rem] border border-white/30 dark:border-white/5 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 group cursor-default"
+                  className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700/60 shadow-sm hover:shadow-md transition-[transform,box-shadow] duration-200 group cursor-default transform-gpu"
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div className="text-3xl filter drop-shadow-md group-hover:rotate-12 transition-transform duration-500">
@@ -2988,7 +2988,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   Benchmarking real-time RKC performance against deep historical baselines.
                 </p>
               </div>
-              <div className="flex items-center gap-4 bg-white/30 dark:bg-slate-800/30 backdrop-blur-2xl px-6 py-3 rounded-2xl border border-white/30 dark:border-white/10 shadow-lg">
+              <div className="flex items-center gap-4 bg-white/40 dark:bg-slate-800/40 px-6 py-3 rounded-2xl border border-slate-300 dark:border-slate-700 shadow-sm">
                 <span className="text-[10px] sm:text-xs font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-widest">
                   Benchmark Year:
                 </span>
@@ -3030,7 +3030,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 {periodComparison.map((comparison) => (
                   <div
                     key={comparison.parameterId}
-                    className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl p-6 rounded-[2rem] border border-white/30 dark:border-white/5 shadow-xl group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+                    className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700/60 shadow-sm group hover:shadow-md transition-[transform,box-shadow] duration-200 transform-gpu"
                   >
                     <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mb-6 leading-tight group-hover:text-primary-600 transition-colors truncate tracking-tight">
                       {comparison.parameter}
@@ -3097,7 +3097,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               {predictiveInsights.map((insight) => (
                 <div
                   key={insight.parameterId}
-                  className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-5 sm:p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl group hover:shadow-2xl transition-all duration-300"
+                  className="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-700/60 shadow-sm group hover:shadow-md transition-[box-shadow,transform] duration-200 transform-gpu"
                 >
                   <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-primary-600 transition-colors truncate">
                     {insight.parameter}
@@ -3186,7 +3186,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         <Card
           variant="glass"
           padding="lg"
-          className="backdrop-blur-xl bg-white/90 shadow-2xl border-0"
+          className="bg-white dark:bg-slate-900 shadow-lg border border-slate-200 dark:border-slate-800"
         >
           {isLoading && (
             <div className="flex flex-col items-center justify-center py-16 space-y-6">
@@ -3286,9 +3286,8 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
               <div
                 className="overflow-x-auto custom-scrollbar rounded-3xl shadow-2xl border border-white/20"
-                style={{ scrollbarWidth: 'thin' }}
               >
-                <table className="min-w-full text-xs border-collapse bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl">
+                <table className="min-w-full text-xs border-collapse bg-white dark:bg-slate-900">
                   <thead className="bg-secondary-800 text-white shadow-sm">
                     <tr className="bg-secondary-800 text-white">
                       <th className="sticky left-0 bg-secondary-900 z-30 px-4 py-6 text-left text-[10px] font-black uppercase tracking-widest border-r border-white/10 rounded-tl-3xl">
@@ -3334,17 +3333,17 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
-                                className={`group/row transition-all duration-300 ${
+                                className={`group/row transition-colors duration-150 ${
                                   snapshot.isDragging
                                     ? 'bg-indigo-500/20 shadow-2xl scale-[1.01] z-50'
                                     : 'hover:bg-white/10 dark:hover:bg-white/5'
                                 } ${rowIndex % 2 === 0 ? 'bg-white/30 dark:bg-white/2' : 'bg-transparent'}`}
                                 style={{ ...provided.draggableProps.style }}
                               >
-                                <td className="sticky left-0 z-20 px-4 py-4 text-center font-black text-slate-500 dark:text-slate-400 border-r border-white/10 bg-inherit backdrop-blur-md">
+                                <td className="sticky left-0 z-20 px-4 py-4 text-center font-black text-slate-500 dark:text-slate-400 border-r border-white/10 bg-white dark:bg-slate-900">
                                   {rowIndex + 1}
                                 </td>
-                                <td className="sticky left-12 z-20 px-4 py-4 font-black text-slate-800 dark:text-white border-r border-white/10 bg-inherit backdrop-blur-md truncate max-w-[140px]">
+                                <td className="sticky left-12 z-20 px-4 py-4 font-black text-slate-800 dark:text-white border-r border-white/10 bg-white dark:bg-slate-900 truncate max-w-[140px]">
                                   {row.parameter.parameter}
                                 </td>
                                 <td className="px-3 py-4 text-center font-bold text-rose-600 dark:text-rose-400 border-r border-white/10 bg-rose-500/5">
@@ -3358,7 +3357,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                   return (
                                     <td
                                       key={dayIndex}
-                                      className={`relative px-2 py-4 text-center border-r border-white/5 transition-colors duration-300 ${colors.bg} group-hover/row:opacity-90`}
+                                      className={`px-2 py-4 text-center border-r border-white/5 transition-colors duration-300 ${colors.bg} group-hover/row:opacity-90`}
                                     >
                                       <div className="relative group/cell h-full w-full flex items-center justify-center">
                                         <span
@@ -3367,7 +3366,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                           {formatCopNumber(day.raw)}
                                         </span>
                                         {day.raw !== undefined && (
-                                          <div className="absolute bottom-full mb-3 w-max max-w-sm bg-slate-900/95 backdrop-blur-xl text-white text-[10px] rounded-2xl py-3 px-4 opacity-0 group-hover/cell:opacity-100 transition-all duration-300 pointer-events-none z-50 shadow-2xl border border-white/10 left-1/2 -translate-x-1/2 scale-90 group-hover/cell:scale-100">
+                                          <div className="absolute bottom-full mb-3 w-max max-w-sm bg-slate-900/95 text-white text-[10px] rounded-2xl py-3 px-4 opacity-0 group-hover/cell:opacity-100 transition-all duration-300 pointer-events-none z-50 shadow-2xl border border-white/10 left-1/2 -translate-x-1/2 scale-90 group-hover/cell:scale-100">
                                             <div className="flex items-center justify-between gap-4 mb-2">
                                               <span className="font-black text-indigo-400 uppercase tracking-widest">
                                                 {formatDate(

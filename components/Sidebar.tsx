@@ -31,6 +31,7 @@ import { SidebarHeader } from './SidebarHeader';
 interface SidebarProps {
   currentPage: Page;
   onNavigate: (page: Page, subPage?: string) => void;
+  activeSubPage?: string;
   t: Record<string, string>;
   isOpen: boolean;
   onClose?: () => void;
@@ -42,6 +43,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({
   currentPage,
   onNavigate,
+  activeSubPage,
   t,
   isOpen,
   onClose,
@@ -322,15 +324,15 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       <aside
         {...bind()}
-        style={{ touchAction: 'none' }}
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-500 ease-in-out ${
+        style={{ touchAction: 'pan-y' }}
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 ease-in-out ${
           isExpanded ? 'w-[280px]' : 'w-[70px]'
         } ${isMobile ? (isOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'}`}
         role="navigation"
         aria-label="Main navigation"
       >
         {/* Obsidian Slate Background - High End Industrial Style */}
-        <div className="absolute inset-0 bg-slate-900 dark:bg-slate-950 border-r border-slate-800/80 shadow-[4px_0_24px_rgba(0,0,0,0.4)] transition-all duration-500" />
+        <div className="absolute inset-0 bg-slate-900 dark:bg-slate-950 border-r border-slate-800/80 shadow-[4px_0_24px_rgba(0,0,0,0.4)] transition-all duration-300" />
 
         {/* Subtle Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
@@ -384,7 +386,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 label={t.cmPlantOperations || t.plantOperations || 'CM Plant Operations'}
                 isActive={currentPage === 'operations'}
                 onClick={() => handleDropdownToggle('operations', operationsButtonRef)}
-                hasDropdown={!isExpanded}
+                hasDropdown={true}
                 isExpanded={activeDropdown === 'operations'}
                 isSidebarExpanded={isExpanded}
               />
@@ -398,7 +400,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 label={t.rkcPlantOperations || 'RKC Plant Operations'}
                 isActive={currentPage === 'rkc_operations'}
                 onClick={() => handleDropdownToggle('rkc_operations', rkcOperationsButtonRef)}
-                hasDropdown={!isExpanded}
+                hasDropdown={true}
                 isExpanded={activeDropdown === 'rkc_operations'}
                 isSidebarExpanded={isExpanded}
               />
@@ -411,7 +413,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 label={t.projectManagement}
                 isActive={currentPage === 'projects'}
                 onClick={() => handleDropdownToggle('projects', projectsButtonRef)}
-                hasDropdown={!isExpanded}
+                hasDropdown={true}
                 isExpanded={activeDropdown === 'projects'}
                 isSidebarExpanded={isExpanded}
               />
@@ -482,7 +484,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           </nav>
 
           <div
-            className={`${isExpanded ? 'p-5' : 'p-3'} border-t border-white/5 bg-black/10 transition-all duration-500`}
+            className={`${isExpanded ? 'p-5' : 'p-3'} border-t border-white/5 bg-black/10 transition-all duration-300`}
           >
             <div
               className={`transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 scale-95 translate-y-2 h-0 overflow-hidden'}`}
@@ -515,6 +517,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <FloatingDropdown
           items={getDropdownItems(activeDropdown)}
           position={dropdownPosition}
+          activeSubKey={activeSubPage}
           onClose={handleDropdownClose}
           onSelect={(item) => handleNavigate(activeDropdown as Page, item.key)}
         />

@@ -2684,7 +2684,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="flex flex-wrap items-center gap-4 animate-slide-in-right">
               <button
                 onClick={exportToExcel}
-                className="group flex items-center gap-2.5 px-6 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-105 active:scale-95 shadow-xl"
+                className="group flex items-center gap-2.5 px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white font-semibold transition-[background-color,transform] duration-200 hover:scale-105 active:scale-95 shadow-md transform-gpu"
               >
                 <div className="p-1 px-2.5 bg-emerald-500 rounded-lg group-hover:bg-emerald-400 transition-colors">
                   <span className="text-sm">XLSX</span>
@@ -2698,7 +2698,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         {/* Sync Progress Modal */}
 
         {/* Filter Section */}
-        <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-white/10 p-4 sm:p-6 animate-scale-in">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-slate-200 dark:border-slate-800 p-4 sm:p-6 animate-scale-in">
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6">
             {/* Plant Category */}
             <div className="space-y-1.5 sm:space-y-2 col-span-2 sm:col-span-1">
@@ -2714,7 +2714,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-[border-color,box-shadow] duration-200 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {plantCategories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -2741,7 +2741,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   value={selectedUnit}
                   onChange={(e) => setSelectedUnit(e.target.value)}
                   disabled={unitsForCategory.length === 0}
-                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm font-semibold transition-[border-color,box-shadow] duration-200 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {unitsForCategory.map((unit) => (
                     <option key={unit} value={unit}>
@@ -2767,7 +2767,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-cement-type"
                   value={selectedCementType}
                   onChange={(e) => setSelectedCementType(e.target.value)}
-                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-[border-color,box-shadow] duration-200 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
                 >
                   <option value="">Choose</option>
                   <option value="OPC">OPC</option>
@@ -2791,7 +2791,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-month"
                   value={filterMonth}
                   onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-[border-color,box-shadow] duration-200 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {monthOptions.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -2817,7 +2817,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-year"
                   value={filterYear}
                   onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs sm:text-sm font-semibold transition-[border-color,box-shadow] duration-200 hover:border-primary-500 hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {yearOptions.map((y) => (
                     <option key={y} value={y}>
@@ -2831,7 +2831,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </div>
         </div>
         {/* Feature Navigation Tabs */}
-        <div className="bg-slate-200/50 dark:bg-white/5 backdrop-blur-xl rounded-[2rem] p-3 flex flex-wrap gap-3 shadow-inner border border-white/10 overflow-x-auto scrollbar-hide">
+        <div className="bg-slate-200/80 dark:bg-slate-900/80 rounded-[2rem] p-3 flex flex-wrap gap-3 shadow-inner border border-slate-300 dark:border-slate-800 overflow-x-auto scrollbar-hide">
           {[
             {
               label: '📊 Statistical',
@@ -2859,9 +2859,9 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <button
               key={idx}
               onClick={() => tab.setter(!tab.state)}
-              className={`flex-1 min-w-[150px] px-6 py-4 rounded-2xl text-[13px] font-black tracking-wider uppercase transition-all duration-300 active:scale-90 shadow-sm ${
+              className={`flex-1 min-w-[150px] px-6 py-4 rounded-2xl text-[13px] font-black tracking-wider uppercase transition-[background-color,color,box-shadow,transform] duration-200 active:scale-95 shadow-sm transform-gpu ${
                 tab.state
-                  ? 'bg-primary-600 text-white shadow-2xl shadow-primary-600/40 ring-2 ring-white/20'
+                  ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30 ring-2 ring-white/20'
                   : 'bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-700/80 border border-white/20 dark:border-white/5'
               }`}
             >
@@ -2886,7 +2886,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               {statisticalSummary.map((stat) => (
                 <div
                   key={stat.parameterId}
-                  className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl hover:shadow-2xl transition-all duration-300 group"
+                  className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700/60 shadow-sm hover:shadow-md transition-[box-shadow,transform] duration-200 group transform-gpu"
                 >
                   <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-primary-600 transition-colors truncate">
                     {stat.parameter}
@@ -2955,7 +2955,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 {anomalyDetection.map((anomaly) => (
                   <div
                     key={anomaly.parameterId}
-                    className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl hover:shadow-2xl transition-all duration-300 group"
+                    className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700/60 shadow-sm hover:shadow-md transition-[box-shadow,transform] duration-200 group transform-gpu"
                   >
                     <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-primary-600 transition-colors truncate">
                       {anomaly.parameter}
@@ -3010,7 +3010,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   Identifying relationships and dependencies between operational parameters.
                 </p>
               </div>
-              <div className="overflow-x-auto rounded-3xl border border-white/20 shadow-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-md">
+              <div className="overflow-x-auto rounded-3xl border border-slate-200 dark:border-slate-800 shadow-md bg-white dark:bg-slate-900">
                 <table className="min-w-full">
                   <thead className="bg-slate-600 dark:bg-slate-700">
                     <tr className="text-white">
@@ -3101,7 +3101,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               ].map((m, i) => (
                 <div
                   key={i}
-                  className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl"
+                  className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700/60 shadow-sm"
                 >
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-2xl">{m.icon}</span>
@@ -3126,7 +3126,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   Benchmarking current performance against historical data.
                 </p>
               </div>
-              <div className="flex items-center gap-3 bg-white/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/30">
+              <div className="flex items-center gap-3 bg-white/40 dark:bg-slate-800/40 px-4 py-2 rounded-2xl border border-slate-300 dark:border-slate-700">
                 <span className="text-xs font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-tighter">
                   Compare With:
                 </span>
@@ -3159,7 +3159,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 {periodComparison.map((comparison) => (
                   <div
                     key={comparison.parameterId}
-                    className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl group"
+                    className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700/60 shadow-sm group"
                   >
                     <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-primary-600 transition-colors truncate">
                       {comparison.parameter}
@@ -3218,7 +3218,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               {predictiveInsights.map((insight) => (
                 <div
                   key={insight.parameterId}
-                  className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl group"
+                  className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl group"
                 >
                   <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-primary-600 transition-colors truncate">
                     {insight.parameter}
@@ -3267,7 +3267,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           />
         </div>
 
-        <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 dark:border-white/10 overflow-hidden animate-scale-in">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-800 overflow-hidden animate-scale-in">
           <div className="p-8">
             {isLoading && (
               <div className="flex flex-col items-center justify-center py-16 space-y-6">
@@ -3333,7 +3333,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
             {!isLoading && !error && (
               <DragDropContext onDragEnd={handleDragEnd}>
-                <div className="bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl rounded-[1.5rem] sm:rounded-[2rem] lg:rounded-[2.5rem] p-4 sm:p-6 lg:p-10 border border-white/20 dark:border-white/10 shadow-2xl animate-scale-in overflow-hidden">
+                <div className="bg-white dark:bg-slate-900 rounded-[1.5rem] sm:rounded-[2rem] lg:rounded-[2.5rem] p-4 sm:p-6 lg:p-10 border border-slate-200 dark:border-slate-800 shadow-md animate-scale-in overflow-hidden">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
                     <div className="relative">
                       <div className="absolute -top-6 -left-6 w-20 h-20 bg-primary-600/10 rounded-full blur-2xl"></div>
@@ -3346,7 +3346,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </div>
                   </div>
                   <div
-                    className="overflow-x-auto scroll-smooth rounded-xl sm:rounded-2xl lg:rounded-[2.5rem] shadow-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-white/20 custom-scrollbar"
+                    className="overflow-x-auto scroll-smooth rounded-xl sm:rounded-2xl lg:rounded-[2.5rem] shadow-2xl bg-white dark:bg-slate-900 border border-white/20 custom-scrollbar"
                     role="region"
                     aria-label="COP Analysis Data Table"
                     tabIndex={0}
@@ -3373,7 +3373,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           {daysHeader.map((day) => (
                             <th
                               key={day}
-                              className="px-1 sm:px-2 border-r border-white/5 w-10 sm:w-14 hover:bg-white/10 transition-all duration-300 cursor-default group/h"
+                              className="px-1 sm:px-2 border-r border-white/5 w-10 sm:w-14 hover:bg-white/10 transition-colors duration-150 cursor-default group/h"
                             >
                               <div className="flex flex-col items-center">
                                 <span className="opacity-40 group-hover/h:opacity-100 transition-opacity text-[8px] sm:text-[11px]">
@@ -3391,7 +3391,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <Droppable droppableId="cop-analysis-table">
                         {(provided) => (
                           <tbody
-                            className="bg-white/80 dark:bg-white/5 backdrop-blur-md divide-y divide-slate-200 dark:divide-white/5"
+                            className="bg-white dark:bg-slate-900/80 divide-y divide-slate-200 dark:divide-white/5"
                             ref={provided.innerRef}
                             {...provided.droppableProps}
                           >
@@ -3555,7 +3555,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           </tbody>
                         )}
                       </Droppable>
-                      <tfoot className="bg-slate-100/80 dark:bg-white/5 backdrop-blur-md group/f">
+                      <tfoot className="bg-slate-100 dark:bg-slate-800 group/f">
                         <tr className="border-t-2 border-slate-300 dark:border-white/10">
                           <td
                             colSpan={2}
@@ -3570,7 +3570,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             return (
                               <td
                                 key={index}
-                                className={`px-1 sm:px-2 py-6 text-center border-r border-slate-200 dark:border-slate-700/50 ${colors.bg} ${colors.text} transition-all duration-300`}
+                                className={`px-1 sm:px-2 py-6 text-center border-r border-slate-200 dark:border-slate-700/50 ${colors.bg} ${colors.text} transition-colors duration-150`}
                               >
                                 <div className="relative group/cell h-full w-full flex items-center justify-center">
                                   <span className="text-[11px] sm:text-[13px] font-black drop-shadow-sm">
@@ -3579,7 +3579,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                       : '-'}
                                   </span>
                                   {qaf.total > 0 && (
-                                    <div className="absolute bottom-full mb-4 w-56 p-5 bg-slate-900/95 backdrop-blur-xl text-white rounded-[1.5rem] opacity-0 group-hover/cell:opacity-100 transition-all duration-300 pointer-events-none z-50 shadow-2xl border border-white/20 text-center scale-90 group-hover/cell:scale-100">
+                                    <div className="absolute bottom-full mb-4 w-56 p-5 bg-slate-900 text-white rounded-[1.5rem] opacity-0 group-hover/cell:opacity-100 transition-opacity duration-150 pointer-events-none z-50 shadow-2xl border border-white/20 text-center scale-90 group-hover/cell:scale-100">
                                       <div className="text-[13px] font-black uppercase tracking-widest mb-2 text-white/60">
                                         Compliance Status
                                       </div>
@@ -3869,7 +3869,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   return (
                     <div
                       key={paramData.parameter.id}
-                      className={`bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-xl hover:shadow-2xl transition-all duration-300 backdrop-blur-sm`}
+                      className={`bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border ${colorScheme.border} shadow-sm transition-[box-shadow,transform] duration-200 transform-gpu`}
                     >
                       <div className="flex items-center justify-between mb-4">
                         <h3
@@ -3892,7 +3892,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           {paramData.parameter.unit}
                         </span>
                       </p>
-                      <div className="flex flex-col items-center justify-center h-64 bg-white/60 dark:bg-slate-800/30 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 backdrop-blur-sm">
+                      <div className="flex flex-col items-center justify-center h-64 bg-white/60 dark:bg-slate-800/30 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600">
                         <div className="text-5xl mb-4 opacity-40">📊</div>
                         <p className="text-slate-500 dark:text-slate-400 font-semibold text-center text-sm">
                           Tidak ada data
@@ -3907,7 +3907,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 return (
                   <div
                     key={paramData.parameter.id}
-                    className={`bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-xl backdrop-blur-sm`}
+                    className={`bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border ${colorScheme.border} shadow-sm transform-gpu`}
                   >
                     <div className="flex items-center justify-between mb-4">
                       <h3
@@ -3930,7 +3930,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         {paramData.parameter.unit}
                       </span>
                     </p>
-                    <div className="bg-white/80 dark:bg-slate-800/50 rounded-xl p-3 shadow-inner backdrop-blur-sm border border-white/20 dark:border-slate-700/50">
+                    <div className="bg-white dark:bg-slate-800/50 rounded-xl p-3 shadow-inner border border-slate-200 dark:border-slate-700/50">
                       <ChartContainer
                         chartData={chartData}
                         parameter={paramData.parameter}

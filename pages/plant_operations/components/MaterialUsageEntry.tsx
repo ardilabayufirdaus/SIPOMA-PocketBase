@@ -300,10 +300,10 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
   return (
     <div className="space-y-4">
       {/* Real-time Info */}
-      <div className="bg-emerald-50/80 backdrop-blur-sm border border-emerald-200/50 rounded-xl p-4 shadow-sm flex justify-between items-center">
+      <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 rounded-xl p-4 shadow-sm flex justify-between items-center">
         <div className="flex items-center">
           <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="h-5 w-5 text-emerald-500 dark:text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
                 d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -312,7 +312,7 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
             </svg>
           </div>
           <div className="ml-3">
-            <p className="text-sm text-emerald-800 font-medium">
+            <p className="text-sm text-emerald-800 dark:text-emerald-200 font-medium">
               <strong>{t.ccr_realTimeAutoSave || 'Real-time Auto-Save'}:</strong>{' '}
               {t.ccr_materialUsageAutoSaveMsg ||
                 'Material usage dihitung dari counter feeder data dan otomatis tersimpan/update ketika data counter berubah.'}
@@ -322,7 +322,7 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
         {isSyncing && (
           <div className="flex items-center">
             <div className="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mr-2"></div>
-            <span className="text-xs text-emerald-600 font-semibold animate-pulse">
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
               {t.syncing || 'Syncing...'}
             </span>
           </div>
@@ -330,9 +330,9 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
       </div>
 
       {/* Material Usage Table */}
-      <div className="overflow-x-auto rounded-2xl border border-white/20 shadow-2xl backdrop-blur-md bg-white/10">
-        <table className="min-w-full divide-y divide-slate-200 border border-slate-200">
-          <thead className="bg-secondary-800 text-white shadow-sm">
+      <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900">
+        <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800 border border-slate-200 dark:border-slate-800">
+          <thead className="bg-secondary-800 dark:bg-slate-800 text-white shadow-sm">
             {/* Header Row 1 */}
             <tr>
               <th
@@ -368,7 +368,7 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
               ))}
             </tr>
           </thead>
-          <tbody className="bg-white/40 backdrop-blur-md divide-y divide-white/20">
+          <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-200 dark:divide-slate-800">
             {shifts.map((shift, shiftIndex) => {
               const shiftData = materialData[shift.key];
               const rowTotal = materialFields.reduce((sum, field) => {
@@ -378,9 +378,9 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
               return (
                 <tr
                   key={shift.key}
-                  className={shiftIndex % 2 === 0 ? 'bg-slate-50/30' : 'bg-white/30'}
+                  className={shiftIndex % 2 === 0 ? 'bg-slate-50 dark:bg-slate-800/50' : 'bg-white dark:bg-slate-900'}
                 >
-                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-900 border-r">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-800">
                     {shift.label}
                   </td>
                   {materialFields.map((field, fieldIndex) => {
@@ -390,7 +390,7 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
                     return (
                       <td
                         key={field.key}
-                        className={`px-2 py-2 whitespace-nowrap border-r ${fieldIndex < materialFields.length - 1 ? 'border-r' : ''}`}
+                        className={`px-2 py-2 whitespace-nowrap border-r border-slate-200 dark:border-slate-800`}
                       >
                         <input
                           ref={(el) => {
@@ -401,13 +401,13 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
                           value={value === 0 ? '' : formatNumberWithPrecision(value, 1)}
                           disabled={true}
                           readOnly
-                          className="w-full px-2 py-1.5 text-sm text-center bg-white/50 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/50 backdrop-blur-sm text-slate-800 font-medium transition-all duration-200 cursor-not-allowed hover:bg-white/60"
+                          className="w-full px-2 py-1.5 text-sm text-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/50 text-slate-800 dark:text-slate-100 font-medium cursor-not-allowed"
                           placeholder={t.real_time || 'Real-time'}
                         />
                       </td>
                     );
                   })}
-                  <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 text-center">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 dark:text-slate-100 text-center">
                     {formatNumber(rowTotal)}
                   </td>
                 </tr>
@@ -415,8 +415,8 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
             })}
 
             {/* Footer Row - Totals */}
-            <tr className="bg-slate-100/80 backdrop-blur-sm border-t-2 border-white/30 font-semibold shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-              <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 border-r border-slate-300">
+            <tr className="bg-slate-100 dark:bg-slate-800 border-t-2 border-slate-300 dark:border-slate-700 font-semibold">
+              <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 dark:text-slate-100 border-r border-slate-300 dark:border-slate-700">
                 {t.total || 'Total'}
               </td>
               {materialFields.map((field, fieldIndex) => {
@@ -428,13 +428,13 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
                 return (
                   <td
                     key={field.key}
-                    className={`px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 text-center border-r ${fieldIndex < materialFields.length - 1 ? 'border-r' : ''}`}
+                    className={`px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 dark:text-slate-100 text-center border-r border-slate-300 dark:border-slate-700`}
                   >
                     {formatNumber(columnTotal)}
                   </td>
                 );
               })}
-              <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 text-center">
+              <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 dark:text-slate-100 text-center">
                 {formatNumber(
                   materialFields.reduce((totalSum, field) => {
                     return (

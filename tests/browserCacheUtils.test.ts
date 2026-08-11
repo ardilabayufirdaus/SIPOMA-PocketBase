@@ -16,6 +16,7 @@ describe('Browser Cache Utils', () => {
         removeItem: jest.fn(),
       },
       writable: true,
+      configurable: true,
     });
 
     // Mock sessionStorage
@@ -27,11 +28,13 @@ describe('Browser Cache Utils', () => {
         removeItem: jest.fn(),
       },
       writable: true,
+      configurable: true,
     });
 
     // Mock document.cookie
     Object.defineProperty(document, 'cookie', {
       writable: true,
+      configurable: true,
       value: 'test=value; another=test',
     });
 
@@ -42,6 +45,7 @@ describe('Browser Cache Utils', () => {
         href: 'http://localhost:3000',
       },
       writable: true,
+      configurable: true,
     });
   });
 

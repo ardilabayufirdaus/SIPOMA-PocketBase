@@ -54,7 +54,14 @@ describe('PermissionGuard Component', () => {
   });
 
   test('renders fallback when user does not have permission', async () => {
-    renderPermissionGuard({ feature: 'inspection' });
+    const noAccessUser = {
+      ...mockUser,
+      permissions: {
+        ...mockUser.permissions,
+        inspection: 'NONE' as const,
+      },
+    };
+    renderPermissionGuard({ user: noAccessUser, feature: 'inspection' });
 
     expect(screen.queryByTestId('protected-content')).not.toBeInTheDocument();
     expect(screen.getByTestId('fallback-content')).toBeInTheDocument();
@@ -67,7 +74,20 @@ describe('PermissionGuard Component', () => {
   });
 
   test('handles plant operation permissions correctly', async () => {
+    const plantOpsUser = {
+      ...mockUser,
+      permissions: {
+        ...mockUser.permissions,
+        cm_plant_operations: 'READ' as const,
+        plant_operations: {
+          category1: {
+            unit1: 'READ' as const,
+          },
+        },
+      },
+    };
     renderPermissionGuard({
+      user: plantOpsUser,
       feature: 'plant_operations',
       category: 'category1',
       unit: 'unit1',

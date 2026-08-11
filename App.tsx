@@ -507,6 +507,7 @@ const App: React.FC = () => {
             <Sidebar
               currentPage={currentPage}
               onNavigate={handleNavigate}
+              activeSubPage={activeSubPages[currentPage as keyof typeof activeSubPages]}
               t={t}
               isOpen={isSidebarOpen}
               onClose={handleCloseSidebar}

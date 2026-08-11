@@ -1,26 +1,27 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useDashboardDataAggregator } from '../../hooks/useDashboardDataAggregator';
+import { vi } from 'vitest';
 
 // Mock the individual hooks
-const mockUsePlantUnits = jest.fn();
-const mockUseSiloCapacities = jest.fn();
-const mockUseAutonomousRiskData = jest.fn();
-const mockUseWorkInstructions = jest.fn();
+const mockUsePlantUnits = vi.fn();
+const mockUseSiloCapacities = vi.fn();
+const mockUseAutonomousRiskData = vi.fn();
+const mockUseWorkInstructions = vi.fn();
 
-jest.mock('../../hooks/usePlantUnits', () => ({
+vi.mock('../../hooks/usePlantUnits', () => ({
   usePlantUnits: () => mockUsePlantUnits(),
 }));
 
-jest.mock('../../hooks/useSiloCapacities', () => ({
+vi.mock('../../hooks/useSiloCapacities', () => ({
   useSiloCapacities: () => mockUseSiloCapacities(),
 }));
 
-jest.mock('../../hooks/useAutonomousRiskData', () => ({
+vi.mock('../../hooks/useAutonomousRiskData', () => ({
   useAutonomousRiskData: () => mockUseAutonomousRiskData(),
 }));
 
-jest.mock('../../hooks/useWorkInstructions', () => ({
+vi.mock('../../hooks/useWorkInstructions', () => ({
   useWorkInstructions: () => mockUseWorkInstructions(),
 }));
 
@@ -107,11 +108,11 @@ describe('useDashboardDataAggregator', () => {
       { id: '1', activity: 'Maintenance', plant_category: 'Cement Mill' },
     ];
 
-    // Mock the query functions
-    queryClient.setQueryData(['plant-units'], mockPlantUnits);
-    queryClient.setQueryData(['silo-capacities'], mockSiloData);
-    queryClient.setQueryData(['autonomous-risk-data'], mockRiskData);
-    queryClient.setQueryData(['work-instructions'], mockWorkInstructions);
+    // Mock the hook return values
+    mockUsePlantUnits.mockReturnValue({ records: mockPlantUnits, loading: false });
+    mockUseSiloCapacities.mockReturnValue({ records: mockSiloData, loading: false });
+    mockUseAutonomousRiskData.mockReturnValue({ records: mockRiskData, loading: false });
+    mockUseWorkInstructions.mockReturnValue({ instructions: mockWorkInstructions, loading: false });
 
     const { result } = renderHook(() => useDashboardDataAggregator(mockFilters), {
       wrapper,

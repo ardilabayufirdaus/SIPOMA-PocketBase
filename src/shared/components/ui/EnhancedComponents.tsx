@@ -326,7 +326,7 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
   };
 
   const baseClasses = cn(
-    'relative inline-flex items-center font-semibold transition-all duration-300 ease-out',
+    'relative inline-flex items-center font-semibold transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out',
     'transform-gpu will-change-transform',
     alignClasses[align],
     'focus:outline-none focus:ring-4 focus:ring-offset-2',
@@ -485,7 +485,7 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
 
       {/* Enhanced ripple effect */}
       <div className="absolute inset-0 rounded-inherit overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-white/20 scale-0 rounded-inherit transition-all duration-500 origin-center opacity-0 hover:opacity-100 hover:scale-100 active:scale-110 active:opacity-30" />
+        <div className="absolute inset-0 bg-white/20 scale-0 rounded-inherit transition-[transform,opacity] duration-300 origin-center opacity-0 hover:opacity-100 hover:scale-100 active:scale-110 active:opacity-30" />
       </div>
 
       {/* Subtle glow effect for interactive states */}
@@ -525,7 +525,7 @@ export const EnhancedCard: React.FC<EnhancedCardProps> = ({
 
   // Base styles
   const baseClasses = cn(
-    'relative transition-all duration-300 ease-out',
+    'relative transition-[transform,box-shadow,border-color] duration-200 ease-out transform-gpu',
     interactive && 'cursor-pointer',
     hover && 'hover:scale-[1.02] hover:shadow-xl'
   );
@@ -653,7 +653,7 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
 
   // Base styles
   const baseClasses = cn(
-    'relative transition-all duration-200 ease-out',
+    'relative transition-[border-color,box-shadow,background-color] duration-200 ease-out transform-gpu',
     'focus:outline-none',
     fullWidth && 'w-full'
   );
@@ -863,7 +863,7 @@ export const EnhancedBadge: React.FC<EnhancedBadgeProps> = ({
   };
 
   const finalClasses = cn(
-    'inline-flex items-center font-medium transition-all duration-200',
+    'inline-flex items-center font-medium transition-[background-color,color,border-color] duration-200',
     variantClasses[variant],
     sizeClasses[size],
     roundedClasses[rounded],
@@ -1069,7 +1069,7 @@ export const EnhancedModal: React.FC<EnhancedModalProps> = ({
       <div
         ref={modalRef}
         className={cn(
-          'relative w-full rounded-xl shadow-2xl transform transition-all duration-300',
+          'relative w-full rounded-xl shadow-2xl transform transition-[transform,opacity] duration-200 transform-gpu',
           'animate-in fade-in-0 zoom-in-95',
           sizeClasses[size],
           variantClasses[variant],
@@ -1480,7 +1480,7 @@ export const Disclosure: React.FC<DisclosureProps> = ({
         role="region"
         aria-labelledby={triggerId}
         className={cn(
-          'overflow-hidden transition-all duration-200',
+          'overflow-hidden transition-[max-height,opacity] duration-200 ease-out',
           isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
         )}
       >
@@ -1547,7 +1547,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
       >
         <div
           className={cn(
-            'h-full transition-all duration-300 ease-out rounded-full',
+            'h-full transition-[width] duration-300 ease-out rounded-full',
             variantClasses[variant]
           )}
           style={{ width: `${percentage}%` }}

@@ -6,9 +6,14 @@ import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 import App from '../App';
 import { useCurrentUser } from '../hooks/useCurrentUser';
+import { TranslationProvider } from '../hooks/useTranslation';
+
+import { vi } from 'vitest';
 
 // Mock the hooks
-jest.mock('../hooks/useCurrentUser');
+vi.mock('../hooks/useCurrentUser', () => ({
+  useCurrentUser: vi.fn(),
+}));
 jest.mock('../stores/userStore', () => ({
   useUserStore: () => ({
     users: [],
@@ -79,9 +84,11 @@ describe('App Integration with Lazy Loading', () => {
     console.error = jest.fn();
 
     render(
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <TranslationProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </TranslationProvider>
     );
 
     // Restore console.error

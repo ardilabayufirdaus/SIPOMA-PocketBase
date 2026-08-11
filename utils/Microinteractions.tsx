@@ -13,10 +13,10 @@ import { forwardRef } from 'react';
 export const animationUtils = {
   // Transition classes
   transitions: {
-    fast: 'transition-all duration-150 ease-out',
-    normal: 'transition-all duration-200 ease-out',
-    slow: 'transition-all duration-300 ease-out',
-    bounce: 'transition-all duration-300 ease-bounce',
+    fast: 'transition-[transform,opacity,color,background-color,border-color,box-shadow] duration-150 ease-out transform-gpu',
+    normal: 'transition-[transform,opacity,color,background-color,border-color,box-shadow] duration-200 ease-out transform-gpu',
+    slow: 'transition-[transform,opacity,color,background-color,border-color,box-shadow] duration-300 ease-out transform-gpu',
+    bounce: 'transition-[transform,opacity] duration-300 ease-bounce transform-gpu',
   },
 
   // Transform classes
@@ -251,7 +251,7 @@ export const AnimatedButton = forwardRef<HTMLButtonElement, AnimatedButtonProps>
 
     const baseClasses = [
       'inline-flex items-center justify-center',
-      'font-medium rounded-lg transition-all duration-200',
+      'font-medium rounded-lg transition-[transform,opacity,background-color,box-shadow] duration-200 transform-gpu',
       'focus:outline-none focus:ring-2 focus:ring-offset-2',
       'disabled:opacity-50 disabled:cursor-not-allowed',
       'relative overflow-hidden',
@@ -378,7 +378,7 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
     'bg-white rounded-lg border border-gray-200',
     paddingClasses[padding],
     shadowClasses[shadow],
-    'transition-all duration-300 ease-out',
+    'transition-[transform,box-shadow,border-color] duration-200 ease-out transform-gpu',
     hover ? 'cursor-pointer' : '',
     animationClasses[animationType],
     className,
@@ -439,7 +439,7 @@ export const AnimatedInput: React.FC<AnimatedInputProps> = ({
   };
 
   const inputClasses = [
-    'w-full rounded-lg border transition-all duration-200',
+    'w-full rounded-lg border transition-[border-color,box-shadow,transform] duration-200 transform-gpu',
     'focus:outline-none',
     error ? 'border-red-300' : 'border-gray-300',
     disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white',
@@ -477,7 +477,7 @@ export const AnimatedInput: React.FC<AnimatedInputProps> = ({
 
         {/* Focus indicator */}
         <div
-          className={`absolute bottom-0 left-0 h-0.5 bg-blue-500 transition-all duration-200 ${
+          className={`absolute bottom-0 left-0 h-0.5 bg-blue-500 transition-[width] duration-200 ${
             isFocused ? 'w-full' : 'w-0'
           }`}
         />
@@ -755,7 +755,7 @@ export const AnimatedProgressBar: React.FC<AnimatedProgressBarProps> = ({
       className={`w-full bg-gray-200 rounded-full overflow-hidden ${sizeClasses[size]} ${className}`}
     >
       <div
-        className={`h-full ${colorClasses[color]} transition-all duration-500 ease-out ${
+        className={`h-full ${colorClasses[color]} transition-[width] duration-500 ease-out ${
           animated ? 'animate-progress-fill' : ''
         }`}
         style={{ width: `${Math.min(Math.max(progress, 0), 100)}%` }}

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach, vi as jest } from 'vitest';
 import { User, PermissionLevel } from '../types';
 
 // Mock DataCompressor to avoid import issues
@@ -162,6 +162,7 @@ describe('Cache Utilities', () => {
     });
 
     it('should return null for expired cache', () => {
+      jest.useFakeTimers();
       const mockUsers: User[] = [
         {
           id: '1',
@@ -187,9 +188,11 @@ describe('Cache Utilities', () => {
       const cached = dbCache.getUsers(1, 20);
 
       expect(cached).toBeNull();
+      jest.useRealTimers();
     });
 
     it('should invalidate users cache', () => {
+      jest.useFakeTimers();
       const createdAt = new Date('2025-10-15T05:39:57.830Z');
       const updatedAt = new Date('2025-10-15T05:39:57.830Z');
 
@@ -217,6 +220,7 @@ describe('Cache Utilities', () => {
       // Cache should be cleared due to expiration
       const cachedAfter = dbCache.getUsers(1, 20);
       expect(cachedAfter).toBeNull();
+      jest.useRealTimers();
     });
   });
 

@@ -587,9 +587,11 @@ export const useCcrParameterDataFlat = () => {
           filteredParameters = parameters.filter((param) => param.unit === plantUnit);
         }
 
-        // Map PocketBase response to flat data structure
+        // Map PocketBase response to flat data structure using composite key (parameter_id + date)
         const pocketbaseData = records as unknown as PocketBaseParameterRecord[];
-        const dailyRecords = new Map(pocketbaseData.map((d) => [d.parameter_id as string, d]));
+        const dailyRecords = new Map(
+          pocketbaseData.map((d) => [`${d.parameter_id as string}-${d.date}`, d])
+        );
 
         // For range queries, we need to return data for ALL dates in range,
         // even if no data exists for some dates
@@ -608,9 +610,9 @@ export const useCcrParameterDataFlat = () => {
         datesInRange.forEach((date) => {
           filteredParameters.forEach((param) => {
             const recordKey = `${param.id}-${date}`;
-            const record = dailyRecords.get(param.id);
+            const record = dailyRecords.get(recordKey);
 
-            if (record && record.date === date) {
+            if (record) {
               // Data exists for this date and parameter
               allResults.push(processRecord(record));
             } else {

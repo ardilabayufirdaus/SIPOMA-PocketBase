@@ -73,7 +73,7 @@ const ChatbotWidget: React.FC = () => {
             initial={{ opacity: 0, y: 50, scale: 0.8, transformOrigin: 'bottom right' }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.8 }}
-            className={`pointer-events-auto mb-4 bg-white dark:bg-slate-900 shadow-2xl rounded-3xl border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden transition-all duration-300 ${
+            className={`pointer-events-auto mb-4 bg-white dark:bg-slate-900 shadow-2xl rounded-3xl border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden transition-[width,height] duration-300 transform-gpu ${
               isExpanded ? 'w-[80vw] h-[80vh] sm:w-[600px]' : 'w-[90vw] h-[500px] sm:w-[400px]'
             }`}
           >
@@ -150,12 +150,12 @@ const ChatbotWidget: React.FC = () => {
                   onKeyDown={handleKeyPress}
                   placeholder="Tanyakan sesuatu..."
                   rows={1}
-                  className="w-full pl-4 pr-12 py-3 bg-slate-100 dark:bg-slate-900/50 border-none rounded-2xl focus:ring-2 focus:ring-primary-500 resize-none text-sm transition-all"
+                  className="w-full pl-4 pr-12 py-3 bg-slate-100 dark:bg-slate-900/50 border-none rounded-2xl focus:ring-2 focus:ring-primary-500 resize-none text-sm transition-[border-color,box-shadow,background-color]"
                 />
                 <button
                   onClick={handleSend}
                   disabled={!inputValue.trim() || isLoading}
-                  className={`absolute right-2 p-2 rounded-xl transition-all ${
+                  className={`absolute right-2 p-2 rounded-xl transition-[background-color,color,box-shadow] ${
                     inputValue.trim() && !isLoading
                       ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/20'
                       : 'text-slate-400 cursor-not-allowed'

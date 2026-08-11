@@ -4,20 +4,22 @@ import '@testing-library/jest-dom';
 import FilterSection from '../../../components/plant-operations/FilterSection';
 import { User } from '../../../types';
 
+import { vi } from 'vitest';
+
 // Mock the hooks
-jest.mock('../../../hooks/useCurrentUser', () => ({
-  useCurrentUser: jest.fn(),
+vi.mock('../../../hooks/useCurrentUser', () => ({
+  useCurrentUser: vi.fn(),
 }));
 
-jest.mock('../../../utils/permissions', () => ({
-  usePermissions: jest.fn(),
+vi.mock('../../../utils/permissions', () => ({
+  usePermissions: vi.fn(),
 }));
 
 import { useCurrentUser } from '../../../hooks/useCurrentUser';
 import { usePermissions } from '../../../utils/permissions';
 
-const mockUseCurrentUser = useCurrentUser as jest.MockedFunction<typeof useCurrentUser>;
-const mockUsePermissions = usePermissions as jest.MockedFunction<typeof usePermissions>;
+const mockUseCurrentUser = vi.mocked(useCurrentUser);
+const mockUsePermissions = vi.mocked(usePermissions);
 
 describe('FilterSection', () => {
   const defaultProps = {

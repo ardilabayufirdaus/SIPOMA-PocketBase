@@ -280,7 +280,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
   };
 
   return (
-    <div className="p-6 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/40">
+    <div className="p-6 bg-white rounded-2xl shadow-md border border-slate-200">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Time Section */}
         <div className="space-y-4">
@@ -299,7 +299,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
               value={formatTimeForInput(formData.start_time)}
               onChange={(val) => handleInputChange('start_time', val)}
               error={isFieldInvalid('start_time') ? errors.start_time : undefined}
-              className="bg-white/50"
+              className="bg-white"
               readOnly={readOnly}
             />
 
@@ -310,7 +310,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
               value={formatTimeForInput(formData.end_time)}
               onChange={(val) => handleInputChange('end_time', val)}
               error={isFieldInvalid('end_time') ? errors.end_time : undefined}
-              className="bg-white/50"
+              className="bg-white"
               readOnly={readOnly}
             />
           </div>
@@ -333,7 +333,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
               value={formData.unit}
               readOnly={true}
               onChange={() => {}} // ReadOnly
-              className="bg-slate-100/50"
+              className="bg-slate-100"
             />
 
             <div className="space-y-2">
@@ -348,7 +348,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                   value={formData.pic}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`w-full px-4 py-3 bg-white/50 border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 appearance-none transition-all duration-200 ${
+                  className={`w-full px-4 py-3 bg-white border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 appearance-none ${
                     isFieldInvalid('pic')
                       ? 'border-orange-300 focus:ring-red-500 focus:border-red-500'
                       : 'border-slate-300 focus:ring-[#111827] focus:border-[#111827] hover:border-[#059669]'

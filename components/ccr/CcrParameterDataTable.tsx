@@ -149,10 +149,10 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
     };
 
     return (
-      <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-6 space-y-4">
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-blue-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center">
               <svg
                 className="w-5 h-5 text-white"
                 fill="none"
@@ -168,7 +168,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
               </svg>
             </div>
             <div>
-              <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+              <h3 className="text-xl font-bold text-slate-800">
                 {t.ccr_parameter_data_entry_title}
               </h3>
               <p className="text-sm text-slate-600">Input data parameter CCR per jam</p>
@@ -180,7 +180,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
             </div>
             <button
               onClick={() => {}}
-              className="px-3 py-2 text-sm bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              className="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm"
               title="Show navigation help"
             >
               ? Help
@@ -249,18 +249,10 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                         <span className="text-white font-semibold">{t.name}</span>
                       </div>
                     </th>
-                    {filteredParameterSettings.map((param, idx) => (
+                    {filteredParameterSettings.map((param) => (
                       <th
                         key={param.id}
-                        className={`px-3 py-2 text-xs font-bold border-r border-white/20 text-center transition-all duration-200 ${
-                          idx % 4 === 0
-                            ? 'bg-gradient-to-b from-indigo-500 to-indigo-600'
-                            : idx % 4 === 1
-                              ? 'bg-gradient-to-b from-purple-500 to-purple-600'
-                              : idx % 4 === 2
-                                ? 'bg-gradient-to-b from-violet-500 to-violet-600'
-                                : 'bg-gradient-to-b from-fuchsia-500 to-fuchsia-600'
-                        } ${
+                        className={`px-3 py-2 text-xs font-bold border-r border-white/20 text-center bg-secondary-800 text-white ${
                           shouldHighlightColumn(param) ? 'ring-2 ring-yellow-400/50 ring-inset' : ''
                         }`}
                         style={{ width: '100px', minWidth: '100px' }}
@@ -283,18 +275,10 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                     className="bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700"
                     role="row"
                   >
-                    {filteredParameterSettings.map((param, idx) => (
+                    {filteredParameterSettings.map((param) => (
                       <th
                         key={`minmax-${param.id}`}
-                        className={`px-2 py-1.5 text-center border-r border-white/10 ${
-                          idx % 4 === 0
-                            ? 'bg-indigo-700/80'
-                            : idx % 4 === 1
-                              ? 'bg-purple-700/80'
-                              : idx % 4 === 2
-                                ? 'bg-violet-700/80'
-                                : 'bg-fuchsia-700/80'
-                        }`}
+                        className="px-2 py-1.5 text-center border-r border-white/10 bg-secondary-900"
                         style={{ width: '100px', minWidth: '100px' }}
                       >
                         <div className="flex items-center justify-center gap-2 text-[9px]">
@@ -311,7 +295,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                   </tr>
                 </thead>
                 <tbody
-                  className="bg-white/80 backdrop-blur-sm"
+                  className="bg-white"
                   role="rowgroup"
                   style={{ height: totalHeight }}
                 >
@@ -322,35 +306,35 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                     visibleHours.map((hour) => (
                       <tr
                         key={hour}
-                        className={`border-b border-slate-200/50 group transition-all duration-200 ${
-                          hour % 2 === 0 ? 'bg-slate-50/30' : 'bg-white/60'
-                        } hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-blue-50/30 hover:shadow-md hover:scale-[1.002] transform`}
+                        className={`border-b border-slate-200/50 group ${
+                          hour % 2 === 0 ? 'bg-slate-50/50' : 'bg-white'
+                        } hover:bg-orange-50/50`}
                         role="row"
                       >
                         <td
-                          className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-slate-900 border-r border-slate-200/50 sticky left-0 bg-white/90 group-hover:bg-orange-50/80 z-30 shadow-sm transition-all duration-200"
+                          className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-slate-900 border-r border-slate-200/50 sticky left-0 bg-white group-hover:bg-orange-50/80 z-30"
                           style={{ width: '90px' }}
                           role="gridcell"
                         >
                           <div className="flex items-center justify-center h-8">
-                            <span className="bg-gradient-to-r from-slate-700 to-slate-600 bg-clip-text text-transparent font-bold">
+                            <span className="text-slate-800 font-bold">
                               {String(hour).padStart(2, '0')}:00
                             </span>
                           </div>
                         </td>
                         <td
-                          className="px-4 py-3 whitespace-nowrap text-xs font-medium text-slate-700 border-r border-slate-200/50 sticky left-24 bg-white/90 group-hover:bg-orange-50/80 z-30 shadow-sm transition-all duration-200"
+                          className="px-4 py-3 whitespace-nowrap text-xs font-medium text-slate-700 border-r border-slate-200/50 sticky left-24 bg-white group-hover:bg-orange-50/80 z-30"
                           style={{ width: '140px' }}
                           role="gridcell"
                         >
                           <div className="flex items-center h-8">
-                            <span className="bg-gradient-to-r from-slate-600 to-slate-500 bg-clip-text text-transparent">
+                            <span className="text-slate-600">
                               {getShiftForHour(hour)}
                             </span>
                           </div>
                         </td>
                         <td
-                          className="px-4 py-3 whitespace-nowrap text-xs font-medium text-slate-800 border-r border-slate-200/50 sticky left-56 bg-white/90 group-hover:bg-orange-50/80 z-30 overflow-hidden text-ellipsis shadow-sm transition-all duration-200"
+                          className="px-4 py-3 whitespace-nowrap text-xs font-medium text-slate-800 border-r border-slate-200/50 sticky left-56 bg-white group-hover:bg-orange-50/80 z-30 overflow-hidden text-ellipsis"
                           style={{ width: '200px' }}
                           role="gridcell"
                         >
@@ -415,7 +399,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                           return (
                             <td
                               key={param.id}
-                              className={`p-2 border-r border-slate-200/50 relative transition-all duration-200 ${valueColor.bgClass} ${
+                              className={`p-2 border-r border-slate-200/50 relative ${valueColor.bgClass} ${
                                 shouldHighlightColumn(param) ? 'ring-2 ring-yellow-400/30' : ''
                               }`}
                               style={{ width: '160px', minWidth: '160px' }}
@@ -465,7 +449,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                                     handleKeyDown(e, 'parameter', hour - 1, paramIndex)
                                   }
                                   disabled={isCurrentlySaving}
-                                  className={`w-full text-center px-1 py-1 border rounded focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-transparent transition-all duration-200 text-xs ${valueColor.textClass} ${valueColor.borderClass} ${
+                                  className={`w-full text-center px-1 py-1 border rounded focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-white text-xs ${valueColor.textClass} ${valueColor.borderClass} ${
                                     isCurrentlySaving ? 'opacity-50 cursor-not-allowed' : ''
                                   }`}
                                   style={{

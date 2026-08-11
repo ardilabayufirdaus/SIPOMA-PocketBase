@@ -36,9 +36,9 @@ const CcrFilters: React.FC<CcrFiltersProps> = memo(
     }, [selectedDate]);
 
     return (
-      <div className="relative bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+      <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6">
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-secondary-900 flex items-center justify-center shadow-lg shadow-emerald-500/20 ring-4 ring-primary-500/10">
+          <div className="w-12 h-12 rounded-2xl bg-slate-900 dark:bg-slate-800 flex items-center justify-center">
             <svg
               className="w-6 h-6 text-emerald-400"
               fill="none"
@@ -54,28 +54,28 @@ const CcrFilters: React.FC<CcrFiltersProps> = memo(
             </svg>
           </div>
           <div>
-            <h3 className="text-2xl font-black tracking-tight text-slate-800">{t.filters}</h3>
-            <p className="text-sm font-medium text-slate-500">{t.filter_appearance_desc}</p>
+            <h3 className="text-2xl font-black tracking-tight text-slate-800 dark:text-slate-100">{t.filters}</h3>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{t.filter_appearance_desc}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Category Filter */}
           <div className="space-y-2.5">
-            <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-600 ml-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-slate-900"></div>
+            <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 ml-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-900 dark:bg-emerald-400"></div>
               {t.select_category || 'Kategori'}
             </label>
             <div className="relative">
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full pl-4 pr-10 py-3 bg-white/60 border border-white/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/50 focus:border-slate-900 transition-all duration-300 text-slate-800 font-bold shadow-sm hover:shadow-md appearance-none"
+                className="w-full pl-4 pr-10 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500/50 focus:border-slate-500 text-slate-800 dark:text-slate-100 font-bold appearance-none cursor-pointer"
                 aria-label={t.select_category}
               >
-                <option value="">{t.select_category || 'Pilih Kategori'}</option>
+                <option value="" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">{t.select_category || 'Pilih Kategori'}</option>
                 {plantCategories.map((category) => (
-                  <option key={category} value={category}>
+                  <option key={category} value={category} className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">
                     {category}
                   </option>
                 ))}
@@ -95,7 +95,7 @@ const CcrFilters: React.FC<CcrFiltersProps> = memo(
 
           {/* Unit Filter */}
           <div className="space-y-2.5">
-            <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-600 ml-1">
+            <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 ml-1">
               <div className="w-1.5 h-1.5 rounded-full bg-primary-600"></div>
               {t.select_unit || 'Unit Kerja'}
             </label>
@@ -104,12 +104,12 @@ const CcrFilters: React.FC<CcrFiltersProps> = memo(
                 value={selectedUnit}
                 onChange={(e) => setSelectedUnit(e.target.value)}
                 disabled={!selectedCategory}
-                className="w-full pl-4 pr-10 py-3 bg-white/60 border border-white/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all duration-300 text-slate-800 font-bold shadow-sm hover:shadow-md appearance-none disabled:opacity-40 disabled:grayscale disabled:cursor-not-allowed"
+                className="w-full pl-4 pr-10 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 text-slate-800 dark:text-slate-100 font-bold appearance-none disabled:opacity-40 disabled:grayscale disabled:cursor-not-allowed cursor-pointer"
                 aria-label={t.select_unit}
               >
-                <option value="">{t.select_unit || 'Pilih Unit'}</option>
+                <option value="" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">{t.select_unit || 'Pilih Unit'}</option>
                 {unitsForCategory.map((unit) => (
-                  <option key={unit} value={unit}>
+                  <option key={unit} value={unit} className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">
                     {unit}
                   </option>
                 ))}
@@ -129,23 +129,29 @@ const CcrFilters: React.FC<CcrFiltersProps> = memo(
 
           {/* Date Filter */}
           <div className="space-y-2.5">
-            <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-600 ml-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-slate-600"></div>
+            <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 ml-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-600 dark:bg-slate-400"></div>
               {t.select_date || 'Tanggal Operasional'}
             </label>
             <div className="relative group/input">
+              <div className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 font-bold flex items-center justify-between pointer-events-none group-hover/input:border-slate-400 dark:group-hover/input:border-slate-600">
+                <span>{formattedDateDisplay || '--/--/----'}</span>
+                <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
               <input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-4 py-3 bg-white/60 border border-white/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500/50 focus:border-slate-500 transition-all duration-300 text-transparent font-bold shadow-sm hover:shadow-md relative z-10"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                 aria-label={t.select_date}
               />
-              {formattedDateDisplay && (
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-800 font-bold z-0">
-                  {formattedDateDisplay}
-                </div>
-              )}
             </div>
           </div>
         </div>

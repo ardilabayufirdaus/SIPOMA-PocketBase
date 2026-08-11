@@ -36,7 +36,7 @@
   input[type='number'],
   select,
   textarea {
-    @apply transition-all duration-200 ease-in-out
+    @apply transition-[color,background-color,border-color,box-shadow] duration-200 ease-in-out
            border-slate-200 dark:border-slate-800
            bg-white dark:bg-slate-900
            focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500
@@ -70,17 +70,22 @@
     text-wrap: balance;
   }
 
-  /* Glassmorphism Utilities */
+  .gpu-layer {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  /* High-Performance Panel & Card Utilities */
   .glass-panel {
-    @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 shadow-md;
+    @apply bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-md;
   }
 
   .glass-header {
-    @apply sticky top-0 z-40 w-full backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border-b border-slate-200/80 dark:border-slate-800/80 transition-all duration-300;
+    @apply sticky top-0 z-40 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 transition-colors duration-150;
   }
 
   .glass-card {
-    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg border border-slate-200/60 dark:border-slate-800/60 shadow-sm hover:shadow-md transition-all duration-200 rounded-2xl;
+    @apply bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow duration-150 rounded-2xl;
   }
   
   .shimmer-effect {
@@ -95,11 +100,20 @@
   }
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 /* Component Classes */
 @layer components {
   /* Buttons */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-primary {
@@ -120,11 +134,11 @@
 
   /* Cards */
   .card {
-    @apply bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow duration-300;
+    @apply bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow duration-150;
   }
 
   .card-hover {
-    @apply hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/20 transition-all duration-300;
+    @apply hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600 transition-colors duration-150;
   }
 
   /* Tables */

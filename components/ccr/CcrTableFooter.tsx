@@ -208,9 +208,9 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
   return (
     <>
       {/* Footer Header - Option B style */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-secondary-900 rounded-t-xl shadow-lg px-4 py-3 mt-4 border-b-2 border-primary-600">
+      <div className="bg-slate-900 rounded-t-xl px-4 py-3 mt-4 border-b-2 border-primary-600">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
+          <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center border border-white/30">
             <svg
               className="w-4 h-4 text-white"
               fill="none"
@@ -225,12 +225,12 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
               />
             </svg>
           </div>
-          <h4 className="text-lg font-bold text-white drop-shadow-sm">Data Summary & Statistics</h4>
+          <h4 className="text-lg font-bold text-white">Data Summary & Statistics</h4>
         </div>
       </div>
       {/* Footer Table */}
       <div
-        className="ccr-footer-scroll-wrapper overflow-x-auto rounded-b-xl border border-slate-200 border-t-0 shadow-lg"
+        className="ccr-footer-scroll-wrapper overflow-x-auto rounded-b-xl border border-slate-200 border-t-0 shadow-sm"
         ref={footerRef}
         style={{ overflowX: 'hidden' }}
       >
@@ -255,12 +255,12 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
             {footerRows.map((row, rowIndex) => (
               <tr
                 key={rowIndex}
-                className={`border-b border-slate-200/70 last:border-b-0 transition-colors duration-150 ${getRowStyle(row.type, row.shift)}`}
+                className={`border-b border-slate-200/70 last:border-b-0 ${getRowStyle(row.type, row.shift)}`}
                 role="row"
               >
                 <td
                   colSpan={3}
-                  className={`px-4 py-2.5 text-right font-semibold text-xs uppercase tracking-wide border-r border-slate-200/70 sticky left-0 z-30 shadow-md ${getLabelStyle(row.type, row.shift)}`}
+                  className={`px-4 py-2.5 text-right font-semibold text-xs uppercase tracking-wide border-r border-slate-200/70 sticky left-0 z-30 ${getLabelStyle(row.type, row.shift)}`}
                   style={{ width: '320px', minWidth: '320px' }}
                   role="columnheader"
                 >
@@ -278,7 +278,7 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
                   return (
                     <td
                       key={param.id}
-                      className={`px-2 py-2.5 text-center border-r border-slate-200/50 transition-all duration-150 ${getDataCellStyle(row.type)}`}
+                      className={`px-2 py-2.5 text-center border-r border-slate-200/50 ${getDataCellStyle(row.type)}`}
                       style={{ width: '80px', minWidth: '80px' }}
                       role="gridcell"
                     >

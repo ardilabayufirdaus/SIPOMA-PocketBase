@@ -129,6 +129,11 @@ export default {
         'scale-in': 'scaleIn 0.3s ease-out forwards',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         float: 'float 3s ease-in-out infinite',
+        shimmer: 'shimmer 1.8s infinite',
+        heartbeat: 'heartbeat 1s ease-in-out infinite',
+        'success-check': 'successCheck 0.6s ease-out forwards',
+        'progress-fill': 'progressFill 0.5s ease-out forwards',
+        wiggle: 'wiggle 0.5s ease-in-out',
       },
       keyframes: {
         fadeIn: {
@@ -150,6 +155,29 @@ export default {
         float: {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-6px)' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
+        heartbeat: {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.1)' },
+        },
+        successCheck: {
+          '0%': { opacity: '0', transform: 'scale(0.3)' },
+          '50%': { opacity: '1', transform: 'scale(1.05)' },
+          '70%': { transform: 'scale(0.9)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        progressFill: {
+          '0%': { width: '0%' },
+          '100%': { width: 'var(--progress-width, 100%)' },
+        },
+        wiggle: {
+          '0%, 100%': { transform: 'rotate(0deg)' },
+          '25%': { transform: 'rotate(-3deg)' },
+          '75%': { transform: 'rotate(3deg)' },
         },
       },
       backgroundImage: {
@@ -182,7 +210,7 @@ export default {
             {},
         },
         '.glass-hover': {
-          '@apply hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all duration-300': {},
+          '@apply hover:bg-white/80 dark:hover:bg-slate-800/80 transition-[background-color,border-color,box-shadow,transform] duration-200': {},
         },
         '.text-balance': {
           'text-wrap': 'balance',

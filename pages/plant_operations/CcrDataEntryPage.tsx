@@ -3841,15 +3841,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         />
 
         {/* Header Section */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-4"
-        >
-          <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-secondary-900 rounded-2xl shadow-xl border border-white/10 p-6">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-600/20 via-transparent to-transparent"></div>
+        <div className="space-y-4">
+          <div className="relative overflow-hidden bg-slate-900 rounded-2xl shadow-md border border-white/10 p-6">
             <div className="relative flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
+              <div className="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center ring-1 ring-white/20">
                 <svg
                   className="w-7 h-7 text-indigo-200"
                   fill="none"
@@ -3872,23 +3867,14 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               </div>
             </div>
             {error && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="mt-4 bg-red-50/95 border border-red-200 rounded-xl p-4 shadow text-red-800 text-xs font-medium flex justify-between"
-              >
+              <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm text-red-800 text-xs font-medium flex justify-between">
                 <span>{error}</span>
                 <button onClick={() => setError(null)}>Close</button>
-              </motion.div>
+              </div>
             )}
           </div>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="space-y-8"
-        >
+        </div>
+        <div className="space-y-8">
           {/* Filters & Actions Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
             <CcrFilters
@@ -3931,10 +3917,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           />
 
           {/* Enhanced Parameter Data Table Card */}
-          <EnhancedCard className="backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl shadow-2xl p-6 space-y-4">
+          <EnhancedCard className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 flex-wrap">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#111827] to-[#059669] flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0">
                   <svg
                     className="w-5 h-5 text-white"
                     fill="none"
@@ -3950,7 +3936,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   </svg>
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-xl font-bold bg-gradient-to-r from-[#111827] to-[#059669] bg-clip-text text-transparent truncate">
+                  <h3 className="text-xl font-bold text-slate-800 truncate">
                     {t.ccr_parameter_data_entry_title}
                   </h3>
                   <p className="text-sm text-neutral-600 mt-1 truncate">
@@ -3962,7 +3948,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               {/* Controls Toolbar */}
               <div className="flex flex-col gap-2 w-full lg:w-auto items-end">
                 <div className="flex items-center gap-2 flex-wrap justify-end">
-                  <div className="flex items-center p-1 bg-white/50 rounded-lg border border-neutral-200/50 shadow-sm backdrop-blur-sm">
+                  <div className="flex items-center p-1 bg-white rounded-lg border border-neutral-200 shadow-sm">
                     <Button
                       size="sm"
                       onClick={refreshData}
@@ -3972,7 +3958,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       title="Refresh Data"
                     >
                       <div
-                        className={`transition-transform duration-700 ${isRefreshing ? 'animate-spin' : ''}`}
+                        className={isRefreshing ? 'animate-spin' : ''}
                       >
                         <svg
                           className="w-4 h-4"
@@ -4120,7 +4106,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     >
                       <tr className="border-b border-secondary-300/30" role="row">
                         <th
-                          className="px-2 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-secondary-700 sticky left-0 bg-secondary-900 z-30 sticky-col-header shadow-lg"
+                          className="px-2 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-secondary-700 sticky left-0 bg-secondary-900 z-30 sticky-col-header shadow-sm"
                           style={{ width: '60px' }}
                           role="columnheader"
                           scope="col"
@@ -4128,7 +4114,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           {t.hour}
                         </th>
                         <th
-                          className="px-2 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-indigo-500/50 bg-transparent backdrop-blur-sm"
+                          className="px-2 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-secondary-700 bg-secondary-900"
                           style={{ width: '80px' }}
                           role="columnheader"
                           scope="col"
@@ -4136,7 +4122,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           {t.shift}
                         </th>
                         <th
-                          className="px-3 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-indigo-500/50 bg-transparent backdrop-blur-sm"
+                          className="px-3 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-secondary-700 bg-secondary-900"
                           style={{ width: '180px', minWidth: '180px' }}
                           role="columnheader"
                           scope="col"
@@ -4146,7 +4132,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         {filteredParameterSettings.map((param) => (
                           <th
                             key={param.id}
-                            className={`px-2 py-3 text-xs font-bold border-r border-[#111827]/50 text-center bg-transparent backdrop-blur-sm text-white ${
+                            className={`px-2 py-3 text-xs font-bold border-r border-secondary-700 text-center bg-secondary-800 text-white ${
                               shouldHighlightColumn(param) ? 'filtered-column' : ''
                             }`}
                             style={{ width: '80px', minWidth: '80px' }}
@@ -4154,16 +4140,16 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             scope="col"
                           >
                             <div className="text-center">
-                              <div className="font-bold text-[8px] leading-tight uppercase tracking-wider text-white/90 drop-shadow-sm">
+                              <div className="font-bold text-[8px] leading-tight uppercase tracking-wider text-white/90">
                                 {param.parameter}
                               </div>
                             </div>
                           </th>
                         ))}
                       </tr>
-                      <tr className="border-b border-secondary-200/50 bg-neutral-50/80" role="row">
+                      <tr className="border-b border-secondary-200/50 bg-neutral-50" role="row">
                         <th
-                          className="px-2 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 sticky left-0 bg-neutral-50/95 backdrop-blur-sm z-30"
+                          className="px-2 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 sticky left-0 bg-neutral-50 z-30"
                           style={{ width: '60px' }}
                           role="columnheader"
                           scope="col"
@@ -4171,7 +4157,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           {/* Empty for Hour */}
                         </th>
                         <th
-                          className="px-2 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 bg-neutral-50/95 backdrop-blur-sm"
+                          className="px-2 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 bg-neutral-50"
                           style={{ width: '80px' }}
                           role="columnheader"
                           scope="col"
@@ -4179,7 +4165,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           {/* Empty for Shift */}
                         </th>
                         <th
-                          className="px-3 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 bg-neutral-50/95 backdrop-blur-sm"
+                          className="px-3 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 bg-neutral-50"
                           style={{ width: '180px', minWidth: '180px' }}
                           role="columnheader"
                           scope="col"
@@ -4189,7 +4175,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         {filteredParameterSettings.map((param) => (
                           <th
                             key={`minmax-${param.id}`}
-                            className={`px-2 py-1 text-xs border-r border-secondary-300/30 text-center bg-neutral-50/95 backdrop-blur-sm text-neutral-600 ${
+                            className={`px-2 py-1 text-xs border-r border-secondary-300/30 text-center bg-neutral-50 text-neutral-600 ${
                               shouldHighlightColumn(param) ? 'filtered-column' : ''
                             }`}
                             style={{ width: '80px', minWidth: '80px' }}
@@ -4212,18 +4198,18 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         ))}
                       </tr>
                     </thead>
-                    <tbody className="bg-white/80 backdrop-blur-sm" role="rowgroup">
+                    <tbody className="bg-white" role="rowgroup">
                       {filteredParameterSettings.length > 0 ? (
                         Array.from({ length: 24 }, (_, i) => i + 1).map((hour) => (
                           <tr
                             key={hour}
                             className={`border-b border-neutral-200/50 group ${
-                              hour % 2 === 0 ? 'bg-white/40' : 'bg-neutral-50/30'
-                            } hover:bg-gradient-to-r hover:from-[#111827]/5 hover:to-[#059669]/5 transition-all duration-150`}
+                              hour % 2 === 0 ? 'bg-white' : 'bg-neutral-50'
+                            } hover:bg-slate-100`}
                             role="row"
                           >
                             <td
-                              className="px-3 py-3 whitespace-nowrap text-sm font-medium text-neutral-900 border-r border-neutral-200/50 sticky left-0 bg-white/90 group-hover:bg-secondary-50/80 z-30 sticky-col backdrop-blur-sm"
+                              className="px-3 py-3 whitespace-nowrap text-sm font-medium text-neutral-900 border-r border-neutral-200/50 sticky left-0 bg-white group-hover:bg-slate-100 z-30 sticky-col"
                               style={{ width: '60px' }}
                               role="gridcell"
                             >
@@ -4369,14 +4355,14 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
                                   if (isBelowMin || isAboveMax) {
                                     // Out of range - RED
-                                    cellBgClass = 'bg-red-200';
-                                    cellTextClass = 'text-red-900 font-bold';
-                                    cellBorderClass = 'border-red-400';
+                                    cellBgClass = 'bg-red-200 dark:bg-red-950/70';
+                                    cellTextClass = 'text-red-900 dark:text-red-200 font-bold';
+                                    cellBorderClass = 'border-red-400 dark:border-red-800';
                                   } else if (hasMinOrMax) {
                                     // Within range - GREEN
-                                    cellBgClass = 'bg-green-200';
-                                    cellTextClass = 'text-green-900 font-bold';
-                                    cellBorderClass = 'border-green-400';
+                                    cellBgClass = 'bg-green-200 dark:bg-emerald-950/70';
+                                    cellTextClass = 'text-green-900 dark:text-emerald-200 font-bold';
+                                    cellBorderClass = 'border-green-400 dark:border-emerald-800';
                                   }
                                 }
                               }
@@ -4386,7 +4372,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                               return (
                                 <td
                                   key={param.id}
-                                  className={`p-1 border-r ${cellBgClass} relative ${
+                                  className={`p-1 border-r border-neutral-200 dark:border-slate-800 ${cellBgClass} relative ${
                                     shouldHighlightColumn(param) ? 'filtered-column' : ''
                                   }`}
                                   style={{ width: '80px', minWidth: '80px' }}
@@ -4423,13 +4409,11 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                           }
                                         }}
                                         disabled={!canWrite}
-                                        className={`w-full text-center text-sm px-2 py-2 border ${cellBorderClass} rounded focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${cellBgClass} ${cellTextClass} transition-all duration-150 ${
+                                        className={`w-full text-center text-xs px-1 border ${cellBorderClass} rounded focus:ring-1 focus:ring-neutral-400 ${cellBgClass} ${cellTextClass} ${
                                           isCurrentlySaving ? 'opacity-50 cursor-not-allowed' : ''
                                         }`}
                                         style={{
-                                          fontSize: '12px',
-                                          minHeight: '32px',
-                                          maxWidth: '150px',
+                                          height: '32px',
                                         }}
                                         aria-label={`Parameter ${param.parameter} jam ${hour}`}
                                         title={`Pilih tipe produk untuk jam ${hour}`}
@@ -4456,11 +4440,11 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                           }
                                         }}
                                         type="text"
-                                        className={`w-full h-full bg-transparent px-1 py-0.5 text-center text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 rounded-none transition-colors ${cellTextClass} border ${
+                                        className={`w-full h-8 bg-transparent px-1 py-0.5 text-center text-xs focus:outline-none focus:ring-1 focus:ring-neutral-400 border ${
                                           cellBorderClass !== 'border-neutral-300'
                                             ? cellBorderClass
                                             : 'border-transparent'
-                                        }`}
+                                        } ${cellTextClass}`}
                                         value={value}
                                         onChange={(e) => {
                                           // 1. Support input (.) as decimal separator -> auto convert to (,) only at the end
@@ -4617,11 +4601,11 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             {/* First Row: CCR Silo Data Entry and CCR Material Usage Entry */}
             <div className="grid grid-cols-2 gap-6">
               {/* Silo Data Entry */}
+              {/* Silo Data Section */}
               <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500/20 to-slate-600/20 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                <EnhancedCard className="relative backdrop-blur-xl bg-white/40 border border-white/60 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] p-6 space-y-6">
+                <EnhancedCard className="relative bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#111827] to-[#059669] flex items-center justify-center shadow-lg shadow-[#111827]/30 ring-4 ring-[#111827]/10">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center shadow-md">
                       <svg
                         className="w-6 h-6 text-white"
                         fill="none"
@@ -4700,7 +4684,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           ])}
                         </tr>
                       </thead>
-                      <tbody className="bg-white/80 backdrop-blur-sm divide-y divide-neutral-200/50">
+                      <tbody className="bg-white divide-y divide-slate-200">
                         {loading ? (
                           <tr>
                             <td colSpan={10} className="text-center py-16">
@@ -4741,7 +4725,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                       <td
                                         className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
                                           siloIndex % 2 === 0 ? 'bg-neutral-50' : 'bg-white'
-                                        } transition-colors duration-150`}
+                                        }`}
                                       >
                                         <input
                                           ref={(el) => {
@@ -4773,7 +4757,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                             handleKeyDown(e, 'silo', siloIndex, i * 2)
                                           }
                                           disabled={!canWrite}
-                                          className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-150 hover:border-neutral-400 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
+                                          className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm hover:border-neutral-400 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
                                           aria-label={`Empty Space for ${masterSilo.silo_name} ${shift}`}
                                           title={`Isi ruang kosong untuk ${
                                             masterSilo.silo_name
@@ -4784,7 +4768,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                       <td
                                         className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
                                           siloIndex % 2 === 0 ? 'bg-neutral-50' : 'bg-white'
-                                        } transition-colors duration-150`}
+                                        }`}
                                       >
                                         <input
                                           ref={(el) => {
@@ -4813,7 +4797,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                             handleKeyDown(e, 'silo', siloIndex, i * 2 + 1)
                                           }
                                           disabled={!canWrite}
-                                          className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-150 hover:border-neutral-400 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
+                                          className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm hover:border-neutral-400 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
                                           aria-label={`Content for ${masterSilo.silo_name} ${shift}`}
                                           title={`Isi konten untuk ${
                                             masterSilo.silo_name
@@ -4828,7 +4812,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                       >
                                         <div className="relative w-full h-6 bg-neutral-200 rounded-full overflow-hidden">
                                           <div
-                                            className="absolute top-0 left-0 h-full bg-error-500 transition-all duration-150"
+                                            className="absolute top-0 left-0 h-full bg-error-500"
                                             style={{
                                               width: `${Math.min(100, percentage)}%`,
                                             }}
@@ -4865,10 +4849,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
               {/* CCR Material Usage Entry */}
               <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-[#111827]/20 to-[#059669]/20 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                <EnhancedCard className="relative backdrop-blur-xl bg-white/40 border border-white/60 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] p-6 space-y-6">
+                <EnhancedCard className="relative bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#111827] to-[#059669] flex items-center justify-center shadow-lg shadow-[#111827]/30 ring-4 ring-[#111827]/10">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center shadow-md">
                       <svg
                         className="w-6 h-6 text-white"
                         fill="none"
@@ -4892,7 +4875,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       </p>
                     </div>
                   </div>
-                  <div className="bg-white/30 backdrop-blur-md rounded-2xl p-4 border border-white/50 shadow-inner">
+                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
                     <MaterialUsageEntry
                       key={materialUsageRefreshTrigger}
                       selectedDate={selectedDate}
@@ -4909,9 +4892,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             {/* Second Row: Information and CCR Downtime Data Entry */}
             <div className="grid grid-cols-2 gap-6">
               {/* Information */}
-              <EnhancedCard className="backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl shadow-2xl p-6 space-y-4">
+              <EnhancedCard className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#111827] to-[#059669] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center">
                     <svg
                       className="w-5 h-5 text-white"
                       fill="none"
@@ -4927,7 +4910,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold bg-gradient-to-r from-[#111827] to-[#059669] bg-clip-text text-transparent">
+                    <h3 className="text-xl font-bold text-slate-800">
                       {t.ccr_information_title}
                     </h3>
                     <p className="text-sm text-neutral-600 mt-1">{t.ccr_information_description}</p>
@@ -4947,7 +4930,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       value={informationText}
                       onChange={(e) => handleInformationChange(e.target.value)}
                       disabled={!canWrite || !selectedCategory || !selectedUnit}
-                      className="w-full px-4 py-3 border border-neutral-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-success-500 focus:border-success-500 resize-vertical transition-all duration-150 bg-white/50 backdrop-blur-sm disabled:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="w-full px-4 py-3 border border-neutral-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-success-500 focus:border-success-500 resize-vertical bg-white disabled:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
                       placeholder={t.information_placeholder}
                     />
                   </div>
@@ -4964,11 +4947,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
               {/* Downtime Data Entry */}
               <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-[#111827]/20 to-[#059669]/20 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                <EnhancedCard className="relative backdrop-blur-xl bg-white/40 border border-white/60 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] p-6 space-y-6">
+                <EnhancedCard className="relative bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-6">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#111827] to-[#059669] flex items-center justify-center shadow-lg shadow-[#111827]/30 ring-4 ring-[#111827]/10">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center shadow-md">
                         <svg
                           className="w-6 h-6 text-white"
                           fill="none"
@@ -5021,7 +5003,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           !selectedUnit
                         }
                         aria-label={t.add_downtime_button || 'Add new downtime'}
-                        className="group relative overflow-hidden flex items-center gap-2 h-9 px-4 bg-gradient-to-r from-[#111827] to-[#059669] hover:from-[#8a3061] hover:to-[#f06e3b] shadow-md transition-all"
+                        className="group relative overflow-hidden flex items-center gap-2 h-9 px-4 bg-slate-900 hover:bg-slate-800 text-white shadow-sm"
                       >
                         <PlusIcon className="w-4 h-4 text-white" />
                         <span className="relative z-10 text-sm font-medium text-white">
@@ -5057,7 +5039,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white/80 backdrop-blur-sm">
+                      <tbody className="bg-white">
                         {loading ? (
                           <tr>
                             <td colSpan={7} className="text-center py-12 text-neutral-500">
@@ -5072,8 +5054,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             <tr
                               key={downtime.id}
                               className={`border-b border-neutral-200/50 group ${
-                                idx % 2 === 0 ? 'bg-white/40' : 'bg-neutral-50/30'
-                              } hover:bg-gradient-to-r hover:from-[#111827]/5 hover:to-[#059669]/5 transition-all duration-150`}
+                                idx % 2 === 0 ? 'bg-white' : 'bg-neutral-50'
+                              } hover:bg-slate-50`}
                             >
                               <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-semibold text-neutral-800">
                                 {downtime.start_time}
@@ -5102,7 +5084,6 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                     size="xs"
                                     onClick={() => handleOpenEditDowntimeModal(downtime)}
                                     aria-label={`Edit downtime for ${downtime.unit}`}
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                                   >
                                     <EditIcon />
                                   </EnhancedButton>
@@ -5111,7 +5092,6 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                     size="xs"
                                     onClick={() => handleOpenDeleteModal(downtime)}
                                     aria-label={`Delete downtime for ${downtime.unit}`}
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                                   >
                                     <TrashIcon />
                                   </EnhancedButton>
@@ -5150,7 +5130,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Modals */}
         <Modal

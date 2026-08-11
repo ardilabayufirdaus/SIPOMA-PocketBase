@@ -3625,21 +3625,11 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
 
       <div className="relative space-y-6 p-4 lg:p-8">
         {/* Enhanced Header Section with Indigo/Slate Theme */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="space-y-4"
-        >
+        <div className="space-y-4">
           {/* Title Card */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-secondary-900 rounded-2xl shadow-xl border border-white/10 p-6">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-600/20 via-transparent to-transparent"></div>
-            <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-400/5 rounded-full -translate-y-20 translate-x-20"></div>
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-slate-400/5 rounded-full translate-y-16 -translate-x-16"></div>
-
+          <div className="relative overflow-hidden bg-slate-900 rounded-2xl shadow-md border border-white/10 p-6">
             <div className="relative flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20 shadow-lg">
+              <div className="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center ring-1 ring-white/20">
                 <svg
                   className="w-7 h-7 text-indigo-200"
                   fill="none"
@@ -3664,11 +3654,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
 
             {/* Error Alert - Inside Title Card */}
             {error && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="mt-4 bg-red-50/95 backdrop-blur-md border border-red-300/50 rounded-xl p-4 shadow-lg"
-              >
+              <div className="mt-4 bg-red-50 border border-red-300/50 rounded-xl p-4 shadow-sm">
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0">
                     <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
@@ -3686,18 +3672,18 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                     <p className="text-sm text-red-700 leading-relaxed">{error}</p>
                     <button
                       onClick={() => setError(null)}
-                      className="mt-2 px-3 py-1.5 text-xs font-medium bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors duration-200"
+                      className="mt-2 px-3 py-1.5 text-xs font-medium bg-red-100 hover:bg-red-200 text-red-700 rounded-lg"
                     >
                       {t.close_button}
                     </button>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             )}
           </div>
 
           {/* Filter Card - White Background */}
-          <div className="bg-white/90 backdrop-blur-md rounded-xl shadow-lg border border-slate-200/60 p-4">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-4">
             <div className="flex flex-wrap items-end gap-4">
               {/* Plant Category */}
               <div className="flex-1 min-w-[200px]">
@@ -3825,19 +3811,19 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                     id="ccr-date"
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer zi-10"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                   />
                 </div>
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Enhanced Parameter Data Table */}
-        <EnhancedCard className="backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl shadow-2xl p-6 space-y-4">
+        <EnhancedCard className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 flex-wrap">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#111827] to-[#059669] flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0">
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"
@@ -3853,7 +3839,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                 </svg>
               </div>
               <div className="min-w-0">
-                <h3 className="text-xl font-bold bg-gradient-to-r from-[#111827] to-[#059669] bg-clip-text text-transparent truncate">
+                <h3 className="text-xl font-bold text-slate-800 truncate">
                   {t.ccr_parameter_data_entry_title}
                 </h3>
                 <p className="text-sm text-neutral-600 mt-1 truncate">
@@ -3868,7 +3854,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
               {/* Primary Actions Row */}
               <div className="flex items-center gap-2 flex-wrap justify-end">
                 {/* Visual Controls Group */}
-                <div className="flex items-center p-1 bg-white/50 rounded-lg border border-neutral-200/50 shadow-sm backdrop-blur-sm">
+                <div className="flex items-center p-1 bg-white rounded-lg border border-neutral-200 shadow-sm">
                   {/* Refresh Button */}
                   <div className="relative group/tooltip">
                     <Button
@@ -3880,7 +3866,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                       title={t.refresh_data}
                     >
                       <div
-                        className={`transition-transform duration-700 ${isRefreshing ? 'animate-spin' : ''}`}
+                        className={isRefreshing ? 'animate-spin' : ''}
                       >
                         <svg
                           className="w-4 h-4"
@@ -4198,7 +4184,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                   >
                     <tr className="border-b border-secondary-300/30" role="row">
                       <th
-                        className="px-2 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-secondary-700 sticky left-0 bg-secondary-900 z-30 sticky-col-header shadow-lg"
+                        className="px-2 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-secondary-700 sticky left-0 bg-secondary-900 z-30 sticky-col-header shadow-sm"
                         style={{ width: '60px' }}
                         role="columnheader"
                         scope="col"
@@ -4206,7 +4192,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                         {t.hour}
                       </th>
                       <th
-                        className="px-2 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-indigo-500/50 bg-transparent backdrop-blur-sm"
+                        className="px-2 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-secondary-700 bg-secondary-900"
                         style={{ width: '80px' }}
                         role="columnheader"
                         scope="col"
@@ -4214,7 +4200,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                         {t.shift}
                       </th>
                       <th
-                        className="px-3 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-indigo-500/50 bg-transparent backdrop-blur-sm"
+                        className="px-3 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-secondary-700 bg-secondary-900"
                         style={{ width: '180px', minWidth: '180px' }}
                         role="columnheader"
                         scope="col"
@@ -4224,7 +4210,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                       {filteredParameterSettings.map((param) => (
                         <th
                           key={param.id}
-                          className={`px-2 py-3 text-xs font-bold border-r border-[#111827]/50 text-center bg-transparent backdrop-blur-sm text-white ${
+                          className={`px-2 py-3 text-xs font-bold border-r border-secondary-700 text-center bg-secondary-800 text-white ${
                             shouldHighlightColumn(param) ? 'filtered-column' : ''
                           }`}
                           style={{ width: '80px', minWidth: '80px' }}
@@ -4232,42 +4218,39 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                           scope="col"
                         >
                           <div className="text-center">
-                            <div className="font-bold text-[8px] leading-tight uppercase tracking-wider text-white/90 drop-shadow-sm">
+                            <div className="font-bold text-[8px] leading-tight uppercase tracking-wider text-white/90">
                               {param.parameter}
                             </div>
                           </div>
                         </th>
                       ))}
                     </tr>
-                    <tr className="border-b border-secondary-200/50 bg-neutral-50/80" role="row">
+                    <tr className="border-b border-secondary-200/50 bg-neutral-50" role="row">
                       <th
-                        className="px-2 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 sticky left-0 bg-neutral-50/95 backdrop-blur-sm z-30"
+                        className="px-2 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 sticky left-0 bg-neutral-50 z-30"
                         style={{ width: '60px' }}
                         role="columnheader"
                         scope="col"
                       >
-                        {/* Empty for Hour */}
                       </th>
                       <th
-                        className="px-2 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 bg-neutral-50/95 backdrop-blur-sm"
+                        className="px-2 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 bg-neutral-50"
                         style={{ width: '80px' }}
                         role="columnheader"
                         scope="col"
                       >
-                        {/* Empty for Shift */}
                       </th>
                       <th
-                        className="px-3 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 bg-neutral-50/95 backdrop-blur-sm"
+                        className="px-3 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 bg-neutral-50"
                         style={{ width: '180px', minWidth: '180px' }}
                         role="columnheader"
                         scope="col"
                       >
-                        {/* Empty for Name */}
                       </th>
                       {filteredParameterSettings.map((param) => (
                         <th
                           key={`minmax-${param.id}`}
-                          className={`px-2 py-1 text-xs border-r border-secondary-300/30 text-center bg-neutral-50/95 backdrop-blur-sm text-neutral-600 ${
+                          className={`px-2 py-1 text-xs border-r border-secondary-300/30 text-center bg-neutral-50 text-neutral-600 ${
                             shouldHighlightColumn(param) ? 'filtered-column' : ''
                           }`}
                           style={{ width: '80px', minWidth: '80px' }}
@@ -4290,18 +4273,18 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="bg-white/80 backdrop-blur-sm" role="rowgroup">
+                  <tbody className="bg-white" role="rowgroup">
                     {filteredParameterSettings.length > 0 ? (
                       Array.from({ length: 24 }, (_, i) => i + 1).map((hour) => (
                         <tr
                           key={hour}
                           className={`border-b border-neutral-200/50 group ${
-                            hour % 2 === 0 ? 'bg-white/40' : 'bg-neutral-50/30'
-                          } hover:bg-gradient-to-r hover:from-[#111827]/5 hover:to-[#059669]/5 transition-all duration-150`}
+                            hour % 2 === 0 ? 'bg-white' : 'bg-neutral-50'
+                          } hover:bg-slate-100`}
                           role="row"
                         >
                           <td
-                            className="px-3 py-3 whitespace-nowrap text-sm font-medium text-neutral-900 border-r border-neutral-200/50 sticky left-0 bg-white/90 group-hover:bg-secondary-50/80 z-30 sticky-col backdrop-blur-sm"
+                            className="px-3 py-3 whitespace-nowrap text-sm font-medium text-neutral-900 border-r border-neutral-200/50 sticky left-0 bg-white group-hover:bg-slate-100 z-30 sticky-col"
                             style={{ width: '60px' }}
                             role="gridcell"
                           >
@@ -4328,20 +4311,14 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                             role="gridcell"
                           >
                             <div className="flex items-center h-8">
-                              {/* User name display/edit - Super Admin can edit */}
                               {(() => {
-                                // Cari parameter dengan data di jam ini yang memiliki informasi user
                                 let userName = null;
-
-                                // Prioritaskan untuk mencari user_name dari field khusus hour{X}_user terlebih dahulu
                                 const userKeyName = `hour${hour}_user`;
 
-                                // Cek semua parameter untuk jam ini
                                 for (const param of filteredParameterSettings) {
                                   const paramData = parameterDataMap.get(param.id);
                                   if (!paramData) continue;
 
-                                  // Periksa langsung field hour{X}_user terlebih dahulu
                                   const userKey = userKeyName as keyof CcrParameterDataFlat;
                                   if (
                                     paramData[userKey] !== null &&
@@ -4351,8 +4328,6 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                     break;
                                   }
 
-                                  // Jika tidak ada di hour{X}_user, periksa apakah parameter memiliki nilai untuk jam ini
-                                  // dan gunakan field name sebagai fallback
                                   const hourKey = `hour${hour}` as keyof CcrParameterDataFlat;
                                   const hourValue = paramData[hourKey];
 
@@ -4367,7 +4342,6 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                   }
                                 }
 
-                                // Jika Super Admin, tampilkan input field untuk edit
                                 if (isSuperAdmin(loggedInUser?.role)) {
                                   return (
                                     <input
@@ -4375,14 +4349,13 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                       value={userName || ''}
                                       onChange={(e) => handleUserNameChange(hour, e.target.value)}
                                       onBlur={(e) => saveUserNameChange(hour, e.target.value)}
-                                      className="w-full px-2 py-1 text-xs border border-neutral-300 rounded focus:ring-2 focus:ring-error-400 focus:border-error-400 bg-white hover:bg-neutral-50 text-neutral-800 transition-all duration-150"
+                                      className="w-full px-2 py-1 text-xs border border-neutral-300 rounded focus:ring-1 focus:ring-neutral-400 bg-white hover:bg-neutral-50 text-neutral-800"
                                       placeholder={t.operator_name_placeholder}
                                       title={`${t.edit_operator_name} ${t.hour} ${hour}`}
                                       disabled={!canWrite}
                                     />
                                   );
                                 } else {
-                                  // Tampilkan nama user jika ditemukan
                                   if (userName) {
                                     return (
                                       <span
@@ -4401,22 +4374,18 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                           </td>
                           {filteredParameterSettings.map((param, paramIndex) => {
                             const paramData = parameterDataMap.get(param.id);
-                            // Use flat structure with hourX field
                             const hourKey = `hour${hour}` as keyof CcrParameterDataFlat;
                             const hourValue = paramData?.[hourKey];
 
-                            // Extract value from flat structure
                             let value = '';
 
-                            // Simply convert the value if it exists
                             if (hourValue !== undefined && hourValue !== null) {
-                              // Use formatIndonesianInput for numbers to show Indonesian locale (dots for thousands, commas for decimal)
                               value =
                                 param.data_type === ParameterDataType.NUMBER
                                   ? formatIndonesianInput(
                                       hourValue,
                                       getPrecisionForParameter(param.parameter, param.unit),
-                                      false // Don't force precision while rendering for input to prevent jumping
+                                      false 
                                     )
                                   : String(hourValue);
                             }
@@ -4425,7 +4394,6 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                               .toLowerCase()
                               .includes('tipe produk');
 
-                            // Determine cell background and text color based on parameter value vs min/max
                             let cellBgClass = 'bg-white';
                             let cellTextClass = 'text-neutral-800';
                             let cellBorderClass = 'border-neutral-300';
@@ -4435,7 +4403,6 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                               value &&
                               !isProductTypeParameter
                             ) {
-                              // Parse value - handle Indonesian local format correctly
                               const numValue = parseIndonesianNumber(value);
                               if (numValue !== null) {
                                 const isBelowMin =
@@ -4446,25 +4413,23 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                   param.min_value !== undefined || param.max_value !== undefined;
 
                                 if (isBelowMin || isAboveMax) {
-                                  // Out of range - RED
-                                  cellBgClass = 'bg-red-200';
-                                  cellTextClass = 'text-red-900 font-bold';
-                                  cellBorderClass = 'border-red-400';
+                                  cellBgClass = 'bg-red-200 dark:bg-red-950/70';
+                                  cellTextClass = 'text-red-900 dark:text-red-200 font-bold';
+                                  cellBorderClass = 'border-red-400 dark:border-red-800';
                                 } else if (hasMinOrMax) {
-                                  // Within range - GREEN
-                                  cellBgClass = 'bg-green-200';
-                                  cellTextClass = 'text-green-900 font-bold';
-                                  cellBorderClass = 'border-green-400';
+                                  cellBgClass = 'bg-green-200 dark:bg-emerald-950/70';
+                                  cellTextClass = 'text-green-900 dark:text-emerald-200 font-bold';
+                                  cellBorderClass = 'border-green-400 dark:border-emerald-800';
                                 }
                               }
                             }
 
-                            const isCurrentlySaving = false; // Removed loading indicator for immediate saving
+                            const isCurrentlySaving = false;
 
                             return (
                               <td
                                 key={param.id}
-                                className={`p-1 border-r ${cellBgClass} relative ${
+                                className={`p-1 border-r border-neutral-200 dark:border-slate-800 ${cellBgClass} relative ${
                                   shouldHighlightColumn(param) ? 'filtered-column' : ''
                                 }`}
                                 style={{ width: '80px', minWidth: '80px' }}
@@ -4483,18 +4448,16 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                       }}
                                       value={value}
                                       onChange={(e) => {
-                                        // Hanya update UI tanpa menyimpan ke database
                                         handleParameterDataChange(param.id, hour, e.target.value);
                                       }}
                                       onBlur={(e) => {
-                                        // Simpan ke database saat berpindah sel
                                         saveParameterChange(param.id, hour, e.target.value);
                                       }}
                                       onKeyDown={(e) =>
                                         handleKeyDown(e, 'parameter', hour - 1, paramIndex)
                                       }
                                       disabled={!canWrite}
-                                      className={`w-full text-center text-sm px-2 py-2 border ${cellBorderClass} rounded focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${cellBgClass} ${cellTextClass} transition-all duration-150 ${
+                                      className={`w-full text-center text-sm px-2 py-2 border ${cellBorderClass} rounded focus:ring-1 focus:ring-neutral-400 bg-white dark:bg-slate-800 ${cellTextClass} ${
                                         isCurrentlySaving ? 'opacity-50 cursor-not-allowed' : ''
                                       }`}
                                       style={{
@@ -4519,37 +4482,27 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                         );
                                         setInputRef(refKey, el);
                                       }}
-                                      type={
-                                        param.data_type === ParameterDataType.NUMBER
-                                          ? 'text'
-                                          : 'text'
-                                      }
+                                      type="text"
                                       value={value}
                                       onChange={(e) => {
-                                        // 1. Support input (.) as decimal separator -> auto convert to (,) only at the end
                                         let newValue = e.target.value;
 
-                                        // Konversi titik ke koma (standar desimal Indonesia) hanya untuk numpad support di akhir input
                                         if (newValue.endsWith('.')) {
                                           newValue = newValue.slice(0, -1) + ',';
                                         }
 
-                                        // 2. Auto-format ribuan (1.000) saat mengetik
                                         if (newValue !== '-' && newValue !== '') {
                                           const parts = newValue.split(',');
                                           let integerPart = parts[0];
                                           const decimalPart =
                                             parts.length > 1 ? ',' + parts[1] : '';
 
-                                          // Bersihkan ribuan hanya jika kita yakin itu ribuan
                                           const dotCount = (integerPart.match(/\./g) || []).length;
                                           if (dotCount > 0) {
                                             const lastDotIndex = integerPart.lastIndexOf('.');
                                             const charsAfterDot =
                                               integerPart.length - lastDotIndex - 1;
 
-                                            // Jika multiple dots, atau satu titik di posisi ribuan (3 digit) dan diikuti koma desimal,
-                                            // atau tepat 3 digit di akhir integer part.
                                             if (
                                               dotCount > 1 ||
                                               charsAfterDot === 3 ||
@@ -4559,10 +4512,8 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                             }
                                           }
 
-                                          // Formating ulang bagian integer jika itu angka valid
                                           const cleanInt = integerPart.replace(/\./g, '');
                                           if (!isNaN(Number(cleanInt)) && cleanInt !== '') {
-                                            // Jika cleanInt mengandung titik, berarti itu desimal yang belum diconvert
                                             if (cleanInt.includes('.')) {
                                               newValue =
                                                 cleanInt.replace('.', ',') +
@@ -4580,7 +4531,6 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                         handleParameterDataChange(param.id, hour, newValue);
                                       }}
                                       onBlur={async (e) => {
-                                        // Reformat nilai numerik dan simpan ke database saat berpindah sel
                                         if (param.data_type === ParameterDataType.NUMBER) {
                                           const parsed = parseIndonesianNumber(e.target.value);
                                           if (parsed !== null) {
@@ -4591,7 +4541,6 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                           }
                                         }
 
-                                        // Get final value to save
                                         const value =
                                           param.data_type === ParameterDataType.NUMBER
                                             ? parseIndonesianNumber(e.target.value) !== null
@@ -4599,14 +4548,13 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                               : ''
                                             : e.target.value;
 
-                                        // Simpan ke database saat berpindah sel
                                         await saveParameterChange(param.id, hour, value || '');
                                       }}
                                       onKeyDown={(e) =>
                                         handleKeyDown(e, 'parameter', hour - 1, paramIndex)
                                       }
-                                      disabled={!canWrite} // Removed loading state for immediate saving
-                                      className={`w-full text-center text-sm px-2 py-2 border ${cellBorderClass} rounded focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${cellBgClass} ${cellTextClass} transition-all duration-150 ${
+                                      disabled={!canWrite}
+                                      className={`w-full text-center text-xs px-1 border ${cellBorderClass} rounded focus:ring-1 focus:ring-neutral-400 bg-transparent ${cellTextClass} ${
                                         isCurrentlySaving ? 'opacity-50 cursor-not-allowed' : ''
                                       }`}
                                       style={{
@@ -4623,12 +4571,6 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                       }
                                     />
                                   )}
-                                  {/* Removed loading indicator for immediate saving */}
-                                  {/* {isCurrentlySaving && (
-                                  <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded">
-                                    <div className="w-4 h-4 border-2 border-error-500 border-t-transparent rounded-full animate-spin"></div>
-                                  </div>
-                                )} */}
                                 </div>
                               </td>
                             );
@@ -4678,9 +4620,9 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
           {/* First Row: CCR Silo Data Entry and CCR Material Usage Entry */}
           <div className="grid grid-cols-2 gap-6">
             {/* Silo Data Entry */}
-            <EnhancedCard className="backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl shadow-2xl p-6 space-y-4">
+            <EnhancedCard className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-slate-600 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center">
                   <svg
                     className="w-5 h-5 text-white"
                     fill="none"
@@ -4696,7 +4638,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-indigo-600 bg-clip-text text-transparent">
+                  <h3 className="text-xl font-bold text-slate-800">
                     {t.ccr_data_entry_title}
                   </h3>
                   <p className="text-sm text-neutral-600">{t.ccr_silo_data_description}</p>
@@ -4759,7 +4701,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                       ])}
                     </tr>
                   </thead>
-                  <tbody className="bg-white/80 backdrop-blur-sm divide-y divide-neutral-200/50">
+                  <tbody className="bg-white divide-y divide-slate-200">
                     {loading ? (
                       <tr>
                         <td colSpan={10} className="text-center py-16">
@@ -4800,7 +4742,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                   <td
                                     className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
                                       siloIndex % 2 === 0 ? 'bg-neutral-50' : 'bg-white'
-                                    } transition-colors duration-150`}
+                                    }`}
                                   >
                                     <input
                                       ref={(el) => {
@@ -4825,7 +4767,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                         handleSiloDataBlur(siloData.silo_id, shift, 'emptySpace');
                                       }}
                                       onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i * 2)}
-                                      className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-150 hover:border-neutral-400"
+                                      className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm hover:border-neutral-400"
                                       aria-label={`${t.empty_space} ${masterSilo.silo_name} ${shift}`}
                                       disabled={!canWrite}
                                       title={`${t.fill_empty_space} ${masterSilo.silo_name} ${t.shift} ${i + 1}`}
@@ -4835,7 +4777,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                   <td
                                     className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
                                       siloIndex % 2 === 0 ? 'bg-neutral-50' : 'bg-white'
-                                    } transition-colors duration-150`}
+                                    }`}
                                   >
                                     <input
                                       ref={(el) => {
@@ -4859,7 +4801,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                       onKeyDown={(e) =>
                                         handleKeyDown(e, 'silo', siloIndex, i * 2 + 1)
                                       }
-                                      className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-150 hover:border-neutral-400"
+                                      className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm hover:border-neutral-400"
                                       aria-label={`${t.content} ${masterSilo.silo_name} ${shift}`}
                                       disabled={!canWrite}
                                       title={`${t.fill_content} ${masterSilo.silo_name} ${t.shift} ${i + 1} (Max: ${masterSilo.capacity})`}
@@ -4873,7 +4815,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                   >
                                     <div className="relative w-full h-6 bg-neutral-200 rounded-full overflow-hidden">
                                       <div
-                                        className="absolute top-0 left-0 h-full bg-error-500 transition-all duration-150"
+                                        className="absolute top-0 left-0 h-full bg-error-500"
                                         style={{
                                           width: `${Math.min(100, percentage)}%`,
                                         }}
@@ -4905,9 +4847,9 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
             </EnhancedCard>
 
             {/* CCR Material Usage Entry */}
-            <EnhancedCard className="backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl shadow-2xl p-6 space-y-4">
+            <EnhancedCard className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#111827] to-[#059669] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center">
                   <svg
                     className="w-5 h-5 text-white"
                     fill="none"
@@ -4923,7 +4865,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold bg-gradient-to-r from-[#111827] to-[#059669] bg-clip-text text-transparent">
+                  <h3 className="text-xl font-bold text-slate-800">
                     {t.ccr_material_usage_entry_title}
                   </h3>
                   <p className="text-sm text-neutral-600">{t.ccr_material_usage_description}</p>
@@ -4943,9 +4885,9 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
           {/* Second Row: Information and CCR Downtime Data Entry */}
           <div className="grid grid-cols-2 gap-6">
             {/* Information */}
-            <EnhancedCard className="backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl shadow-2xl p-6 space-y-4">
+            <EnhancedCard className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#111827] to-[#059669] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center">
                   <svg
                     className="w-5 h-5 text-white"
                     fill="none"
@@ -4961,7 +4903,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold bg-gradient-to-r from-[#111827] to-[#059669] bg-clip-text text-transparent">
+                  <h3 className="text-xl font-bold text-slate-800">
                     {t.ccr_information_title}
                   </h3>
                   <p className="text-sm text-neutral-600 mt-1">{t.ccr_information_description}</p>
@@ -4981,7 +4923,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                     value={informationText}
                     onChange={(e) => handleInformationChange(e.target.value)}
                     disabled={!selectedCategory || !selectedUnit || !canWrite}
-                    className="w-full px-4 py-3 border border-neutral-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-success-500 focus:border-success-500 resize-vertical transition-all duration-150 bg-white/50 backdrop-blur-sm disabled:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="w-full px-4 py-3 border border-neutral-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-success-500 focus:border-success-500 resize-vertical bg-white disabled:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
                     placeholder={t.information_placeholder}
                   />
                 </div>
@@ -4997,10 +4939,10 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
             </EnhancedCard>
 
             {/* Downtime Data Entry */}
-            <EnhancedCard className="backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl shadow-2xl p-6 space-y-4">
+            <EnhancedCard className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#111827] to-[#059669] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center">
                     <svg
                       className="w-5 h-5 text-white"
                       fill="none"
@@ -5016,7 +4958,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold bg-gradient-to-r from-[#111827] to-[#059669] bg-clip-text text-transparent">
+                    <h3 className="text-xl font-bold text-slate-800">
                       {t.ccr_downtime_title}
                     </h3>
                     <br className="hidden" />
@@ -5052,7 +4994,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                       !canWrite
                     }
                     aria-label={t.add_downtime_button}
-                    className="group relative overflow-hidden flex items-center gap-2 h-9 px-4 bg-gradient-to-r from-[#111827] to-[#059669] hover:from-[#8a3061] hover:to-[#f06e3b] shadow-md transition-all"
+                    className="group relative overflow-hidden flex items-center gap-2 h-9 px-4 bg-slate-900 hover:bg-slate-800 text-white shadow-sm"
                   >
                     <PlusIcon className="w-4 h-4 text-white" />
                     <span className="relative z-10 text-sm font-medium text-white">
@@ -5088,7 +5030,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white/80 backdrop-blur-sm">
+                  <tbody className="bg-white">
                     {loading ? (
                       <tr>
                         <td colSpan={7} className="text-center py-12 text-neutral-500">
@@ -5103,8 +5045,8 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                         <tr
                           key={downtime.id}
                           className={`border-b border-neutral-200/50 group ${
-                            idx % 2 === 0 ? 'bg-white/40' : 'bg-neutral-50/30'
-                          } hover:bg-gradient-to-r hover:from-[#111827]/5 hover:to-[#059669]/5 transition-all duration-150`}
+                            idx % 2 === 0 ? 'bg-white' : 'bg-neutral-50'
+                          } hover:bg-slate-50`}
                         >
                           <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-semibold text-neutral-800">
                             {downtime.start_time}
@@ -5133,7 +5075,6 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                 size="xs"
                                 onClick={() => handleOpenEditDowntimeModal(downtime)}
                                 aria-label={`Edit downtime for ${downtime.unit}`}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                               >
                                 <EditIcon />
                               </EnhancedButton>
@@ -5142,7 +5083,6 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                 size="xs"
                                 onClick={() => handleOpenDeleteModal(downtime)}
                                 aria-label={`Delete downtime for ${downtime.unit}`}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                               >
                                 <TrashIcon />
                               </EnhancedButton>

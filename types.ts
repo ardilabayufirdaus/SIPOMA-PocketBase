@@ -18,6 +18,7 @@ export interface UserPermission {
   project_management: PermissionLevel;
   database: PermissionLevel;
   inspection: PermissionLevel;
+  plant_operations?: any;
 }
 
 // Alias for compatibility if needed, or replace usages

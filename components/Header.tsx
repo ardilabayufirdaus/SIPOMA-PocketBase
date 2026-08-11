@@ -13,7 +13,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import './Header.css';
 
 // Import Enhanced Components
-import { EnhancedButton, SkipLinks } from './ui/EnhancedComponents';
+import { SkipLinks } from './ui/EnhancedComponents';
 
 // Import NotificationModal
 import NotificationModal from './NotificationModal';
@@ -74,6 +74,7 @@ const Header: React.FC<HeaderProps> = React.memo(
                   <button
                     onClick={onToggleSidebar}
                     aria-label="Toggle navigation menu"
+                    title="Menu Navigasi"
                     className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors md:hidden"
                   >
                     <Bars3Icon className="w-5 h-5" />
@@ -119,6 +120,7 @@ const Header: React.FC<HeaderProps> = React.memo(
                       onClick={() => setIsNotifMenuOpen(true)}
                       className={`p-2 rounded-lg transition-colors ${unreadCount > 0 ? 'text-primary-400' : 'text-white/60 hover:text-white'}`}
                       aria-label="Notifications"
+                      title={t.notifications_title || 'Notifikasi'}
                     >
                       {settings.browser ? (
                         <BellIcon className="w-5 h-5" />
@@ -133,7 +135,7 @@ const Header: React.FC<HeaderProps> = React.memo(
 
                   {/* Connection Status Indicator */}
                   {!isMobile && (
-                    <div className="px-2 border-x border-white/10 h-5 flex items-center">
+                    <div className="px-1.5 flex items-center">
                       <ConnectionStatusIndicator variant="inline" />
                     </div>
                   )}
@@ -142,6 +144,8 @@ const Header: React.FC<HeaderProps> = React.memo(
                   <button
                     onClick={toggleTheme}
                     className="p-2 text-white/60 hover:text-white rounded-lg transition-colors"
+                    aria-label="Toggle theme"
+                    title={theme === 'light' ? 'Mode Gelap' : 'Mode Terang'}
                   >
                     {theme === 'light' ? (
                       <MoonIcon className="w-5 h-5" />
@@ -157,6 +161,7 @@ const Header: React.FC<HeaderProps> = React.memo(
                     onClick={onSignOut}
                     className="p-2 text-white/40 hover:text-red-400 rounded-lg transition-colors"
                     aria-label="Sign Out"
+                    title="Keluar (Sign Out)"
                   >
                     <ArrowRightOnRectangleIcon className="w-5 h-5" />
                   </button>

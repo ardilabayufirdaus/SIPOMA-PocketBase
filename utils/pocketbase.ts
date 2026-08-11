@@ -54,9 +54,9 @@ export const isSecureContext = (): boolean => {
   return false;
 };
 
-// Gunakan environment variable untuk URL PocketBase
-const pocketbaseEmail = import.meta.env.VITE_POCKETBASE_EMAIL || 'ardila.firdaus@sig.id';
-const pocketbasePassword = import.meta.env.VITE_POCKETBASE_PASSWORD || 'makassar@270989';
+// Gunakan environment variable untuk URL dan kredensial PocketBase
+const pocketbaseEmail = import.meta.env.VITE_POCKETBASE_EMAIL || '';
+const pocketbasePassword = import.meta.env.VITE_POCKETBASE_PASSWORD || '';
 const authRequired = import.meta.env.VITE_AUTH_REQUIRED !== 'false'; // Defaultnya true
 
 /**

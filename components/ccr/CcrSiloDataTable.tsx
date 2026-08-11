@@ -47,38 +47,38 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
     selectedCategory,
   }) => {
     return (
-      <div className="bg-white p-3 rounded-xl shadow space-y-3">
-        <h3 className="text-base font-bold text-slate-800 mb-1 truncate">
+      <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow space-y-3">
+        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1 truncate">
           {t.ccr_data_entry_title}
         </h3>
         <div className="overflow-x-auto">
           <table
-            className="min-w-full divide-y divide-slate-200 border border-slate-200 text-xs"
+            className="min-w-full divide-y divide-slate-200 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 text-xs"
             aria-label="Silo Data Table"
           >
-            <thead className="bg-slate-600 dark:bg-slate-700 text-center">
+            <thead className="bg-secondary-800 dark:bg-slate-800 text-center">
               <tr>
                 <th
                   rowSpan={2}
-                  className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider border-r align-middle"
+                  className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider border-r border-slate-700/50 align-middle"
                 >
                   {t.silo_name}
                 </th>
                 <th
                   colSpan={3}
-                  className="px-4 py-3 text-xs font-semibold text-white uppercase tracking-wider border-r border-b"
+                  className="px-4 py-3 text-xs font-semibold text-white uppercase tracking-wider border-r border-b border-slate-700/50"
                 >
                   {t.shift_1}
                 </th>
                 <th
                   colSpan={3}
-                  className="px-4 py-3 text-xs font-semibold text-white uppercase tracking-wider border-r border-b"
+                  className="px-4 py-3 text-xs font-semibold text-white uppercase tracking-wider border-r border-b border-slate-700/50"
                 >
                   {t.shift_2}
                 </th>
                 <th
                   colSpan={3}
-                  className="px-4 py-3 text-xs font-semibold text-white uppercase tracking-wider border-b"
+                  className="px-4 py-3 text-xs font-semibold text-white uppercase tracking-wider border-b border-slate-700/50"
                 >
                   {t.shift_3}
                 </th>
@@ -87,31 +87,29 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                 {[...Array(3)].flatMap((_, i) => [
                   <th
                     key={`es-${i}`}
-                    className="px-2 py-3 text-xs font-semibold text-white uppercase tracking-wider border-r"
+                    className="px-2 py-3 text-xs font-semibold text-white uppercase tracking-wider border-r border-slate-700/50"
                   >
                     {t.empty_space}
                   </th>,
                   <th
-                    key={`c-${i}`}
-                    className="px-2 py-3 text-xs font-semibold text-white uppercase tracking-wider border-r"
+                    key={`co-${i}`}
+                    className="px-2 py-3 text-xs font-semibold text-white uppercase tracking-wider border-r border-slate-700/50"
                   >
                     {t.content}
                   </th>,
                   <th
-                    key={`p-${i}`}
-                    className={`px-2 py-3 text-xs font-semibold text-white uppercase tracking-wider ${
-                      i < 2 ? 'border-r' : ''
-                    }`}
+                    key={`pe-${i}`}
+                    className="px-2 py-3 text-xs font-semibold text-white uppercase tracking-wider border-r border-slate-700/50 last:border-r-0"
                   >
-                    {t.percentage}
+                    %
                   </th>,
                 ])}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-slate-200">
+            <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-200 dark:divide-slate-800">
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="text-center py-10 text-slate-500 animate-pulse">
+                  <td colSpan={10} className="text-center py-10 text-slate-500 dark:text-slate-400">
                     Loading data...
                   </td>
                 </tr>
@@ -123,8 +121,8 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                   const shifts: ('shift1' | 'shift2' | 'shift3')[] = ['shift1', 'shift2', 'shift3'];
 
                   return (
-                    <tr key={siloData.id} className="hover:bg-slate-50">
-                      <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-slate-900 border-r sticky left-0 bg-white z-10">
+                    <tr key={siloData.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                      <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-800 sticky left-0 bg-white dark:bg-slate-900 z-10">
                         {masterSilo.silo_name}
                       </td>
                       {shifts.map((shift, i) => {
@@ -138,9 +136,9 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                         return (
                           <React.Fragment key={shift}>
                             <td
-                              className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
-                                siloIndex % 2 === 0 ? 'bg-slate-50' : 'bg-white'
-                              } transition-colors duration-200`}
+                              className={`px-1 py-1 whitespace-nowrap text-sm border-r border-slate-200 dark:border-slate-800 ${
+                                siloIndex % 2 === 0 ? 'bg-slate-50 dark:bg-slate-800/40' : 'bg-white dark:bg-slate-900'
+                              }`}
                             >
                               <input
                                 ref={(el) => {
@@ -162,7 +160,7 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                                   handleSiloDataBlur(siloData.silo_id, shift, 'emptySpace');
                                 }}
                                 onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i * 2)}
-                                className="w-full text-center px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-xs transition-all duration-200 hover:border-slate-400"
+                                className="w-full text-center px-1 py-1 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-slate-500 text-xs hover:border-slate-400 dark:hover:border-slate-600"
                                 aria-label={`Empty Space for ${masterSilo.silo_name} ${shift}`}
                                 title={`Isi ruang kosong untuk ${
                                   masterSilo.silo_name
@@ -171,9 +169,9 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                               />
                             </td>
                             <td
-                              className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
-                                siloIndex % 2 === 0 ? 'bg-slate-50' : 'bg-white'
-                              } transition-colors duration-200`}
+                              className={`px-1 py-1 whitespace-nowrap text-sm border-r border-slate-200 dark:border-slate-800 ${
+                                siloIndex % 2 === 0 ? 'bg-slate-50 dark:bg-slate-800/40' : 'bg-white dark:bg-slate-900'
+                              }`}
                             >
                               <input
                                 ref={(el) => {
@@ -195,7 +193,7 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                                   handleSiloDataBlur(siloData.silo_id, shift, 'content');
                                 }}
                                 onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i * 2 + 1)}
-                                className="w-full text-center px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-xs transition-all duration-200 hover:border-slate-400"
+                                className="w-full text-center px-1 py-1 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded focus:outline-none focus:ring-2 focus:ring-slate-500 text-xs hover:border-slate-400 dark:hover:border-slate-600"
                                 aria-label={`Content for ${masterSilo.silo_name} ${shift}`}
                                 title={`Isi konten untuk ${
                                   masterSilo.silo_name
@@ -204,13 +202,13 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                               />
                             </td>
                             <td
-                              className={`px-2 py-2 whitespace-nowrap text-sm text-center text-slate-600 align-middle ${
-                                i < 2 ? 'border-r' : ''
+                              className={`px-2 py-2 whitespace-nowrap text-sm text-center text-slate-600 dark:text-slate-300 align-middle ${
+                                i < 2 ? 'border-r border-slate-200 dark:border-slate-800' : ''
                               }`}
                             >
-                              <div className="relative w-full h-6 bg-slate-200 rounded-full overflow-hidden">
+                              <div className="relative w-full h-6 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                                 <div
-                                  className="absolute top-0 left-0 h-full bg-red-500 transition-all duration-300"
+                                  className="absolute top-0 left-0 h-full bg-emerald-500"
                                   style={{
                                     width: `${Math.min(100, percentage)}%`,
                                   }}
@@ -229,10 +227,10 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
               )}
               {dailySiloData.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="text-center py-10 text-slate-500">
+                  <td colSpan={10} className="text-center py-10 text-slate-500 dark:text-slate-400 font-medium">
                     {!selectedCategory
                       ? 'No plant categories found in Master Data.'
-                      : `No silo master data found for the category: ${selectedCategory}.`}
+                      : `No silo master data found for category: ${selectedCategory}.`}
                   </td>
                 </tr>
               )}

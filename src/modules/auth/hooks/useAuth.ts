@@ -73,15 +73,6 @@ export const useAuth = () => {
           throw new Error(rateLimitCheck.message || 'Too many login attempts');
         }
 
-        // Check cache first - but only if both user and password are valid
-        const cachedUser = authCache.getUser();
-        if (cachedUser && !authCache.isExpired() && cachedUser.username === identifier) {
-          // Still need to verify the password in cache case
-          setUser(cachedUser);
-          rateLimiter.recordSuccessfulLogin(identifier);
-          return cachedUser;
-        }
-
         // Use PocketBase's built-in authentication - use users collection for regular user login
         const authData = await pb.collection('users').authWithPassword(identifier, password);
 

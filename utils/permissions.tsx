@@ -71,12 +71,25 @@ export class PermissionChecker {
     // Check if permissions object exists
     if (!this.user.permissions) return false;
 
-    const plantOps = this.user.permissions.plant_operations;
-    if (!plantOps || !plantOps[category] || !plantOps[category][unit]) {
-      return false;
+    const p = this.user.permissions as any;
+    let plantOps = p.plant_operations;
+    if (!plantOps) {
+      plantOps = p.cm_plant_operations || p.rkc_plant_operations;
+    }
+    if (!plantOps) return false;
+
+    if (typeof plantOps === 'object') {
+      const catObj = plantOps[category];
+      if (catObj && catObj[unit]) {
+        return this.comparePermissionLevel(catObj[unit], requiredLevel);
+      }
     }
 
-    return this.comparePermissionLevel(plantOps[category][unit], requiredLevel);
+    if (typeof plantOps === 'string') {
+      return this.comparePermissionLevel(plantOps, requiredLevel);
+    }
+
+    return false;
   }
 
   /**
@@ -162,14 +175,17 @@ export class PermissionChecker {
    * Compare permission levels (higher levels include lower levels)
    */
   private comparePermissionLevel(userLevel: string, requiredLevel: string): boolean {
-    const levelHierarchy = {
+    const levelHierarchy: Record<string, number> = {
       NONE: 0,
       READ: 1,
       WRITE: 2,
       ADMIN: 3,
     };
 
-    return levelHierarchy[userLevel] >= levelHierarchy[requiredLevel];
+    const u = (userLevel || '').toUpperCase();
+    const r = (requiredLevel || '').toUpperCase();
+
+    return (levelHierarchy[u] || 0) >= (levelHierarchy[r] || 0);
   }
 }
 
@@ -239,7 +255,7 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
 
   let hasAccess = false;
 
-  if (category && unit && feature === 'plant_operations') {
+  if (category && unit && (feature === 'plant_operations' || feature === 'cm_plant_operations' || feature === 'rkc_plant_operations')) {
     hasAccess = permissionChecker.hasPlantOperationPermission(category, unit, requiredLevel);
   } else {
     hasAccess = permissionChecker.hasPermission(feature, requiredLevel);

@@ -41,9 +41,15 @@ export const NavigationItem = React.forwardRef<HTMLButtonElement, IconButtonProp
     };
 
     const getTooltipPosition = () => {
-      if (!ref || !(ref as React.RefObject<HTMLButtonElement>).current) return { top: 0, left: 0 };
+      let targetElement: HTMLButtonElement | null = null;
 
-      const rect = (ref as React.RefObject<HTMLButtonElement>).current!.getBoundingClientRect();
+      if (ref && 'current' in ref) {
+        targetElement = ref.current;
+      }
+
+      if (!targetElement) return { top: 0, left: 0 };
+
+      const rect = targetElement.getBoundingClientRect();
       const tooltipOffset = 12;
 
       switch (tooltipPosition) {
@@ -167,6 +173,7 @@ export interface FloatingDropdownItem {
 export interface FloatingDropdownProps {
   items: Array<{ key: string; label: string; icon: React.ReactNode }>;
   position: { top: number; left: number };
+  activeSubKey?: string;
   onSelect: (item: { key: string; label: string }) => void;
   onClose: () => void;
 }
@@ -174,6 +181,7 @@ export interface FloatingDropdownProps {
 export const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
   items,
   position,
+  activeSubKey,
   onSelect,
   onClose,
 }) => {
@@ -190,15 +198,33 @@ export const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
         setFocusedIndex((prev) => (prev - 1 + items.length) % items.length);
       } else if (event.key === 'Enter') {
         event.preventDefault();
-        onSelect(items[focusedIndex] as any);
-        onClose();
+        if (items[focusedIndex]) {
+          onSelect(items[focusedIndex] as any);
+          onClose();
+        }
       } else if (event.key === 'Escape') {
         onClose();
       }
     };
 
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    const handleScroll = () => {
+      onClose();
+    };
+
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('scroll', handleScroll, true);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', handleScroll, true);
+    };
   }, [items, focusedIndex, onSelect, onClose]);
 
   return (
@@ -225,44 +251,61 @@ export const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
           </span>
         </div>
 
-        {items.map((item, _index) => (
-          <button
-            key={item.key}
-            onClick={() => {
-              onSelect(item as any);
-              onClose();
-            }}
-            className={`w-full px-4 py-3 text-left flex items-center gap-3 transition-all duration-200 group relative z-10 ${
-              _index === focusedIndex ? 'bg-white/10' : 'hover:bg-white/5'
-            }`}
-            role="menuitem"
-            tabIndex={_index === focusedIndex ? 0 : -1}
-          >
-            {_index === focusedIndex && (
-              <motion.div
-                layoutId="dropdownHoverIndicator"
-                className="absolute inset-y-2 left-1.5 w-1 bg-primary-500 rounded-full shadow-[0_0_8px_rgba(5,150,105,0.6)]"
-              />
-            )}
+        {items.map((item, _index) => {
+          const isItemActive = item.key === activeSubKey;
+          const isItemFocused = _index === focusedIndex;
 
-            <div
-              className={`flex-shrink-0 w-4.5 h-4.5 transition-colors duration-200 ${
-                _index === focusedIndex
-                  ? 'text-primary-400'
-                  : 'text-white/50 group-hover:text-primary-400'
+          return (
+            <button
+              key={item.key}
+              onClick={() => {
+                onSelect(item as any);
+                onClose();
+              }}
+              className={`w-full px-4 py-3 text-left flex items-center gap-3 transition-all duration-200 group relative z-10 ${
+                isItemActive
+                  ? 'bg-primary-600/20 text-white font-bold'
+                  : isItemFocused
+                  ? 'bg-white/10 text-white'
+                  : 'hover:bg-white/5 text-white/70'
               }`}
+              role="menuitem"
+              tabIndex={isItemFocused ? 0 : -1}
             >
-              {item.icon}
-            </div>
-            <span
-              className={`text-sm font-bold tracking-tight transition-colors duration-200 ${
-                _index === focusedIndex ? 'text-white' : 'text-white/70 group-hover:text-white'
-              }`}
-            >
-              {item.label}
-            </span>
-          </button>
-        ))}
+              {isItemActive && (
+                <div className="absolute inset-y-2 left-1.5 w-1 bg-primary-500 rounded-full shadow-[0_0_8px_rgba(5,150,105,0.8)]" />
+              )}
+              {!isItemActive && isItemFocused && (
+                <motion.div
+                  layoutId="dropdownHoverIndicator"
+                  className="absolute inset-y-2 left-1.5 w-1 bg-white/40 rounded-full"
+                />
+              )}
+
+              <div
+                className={`flex-shrink-0 w-4.5 h-4.5 transition-colors duration-200 ${
+                  isItemActive
+                    ? 'text-primary-400 font-bold'
+                    : isItemFocused
+                    ? 'text-white'
+                    : 'text-white/50 group-hover:text-primary-400'
+                }`}
+              >
+                {item.icon}
+              </div>
+              <span
+                className={`text-sm tracking-tight transition-colors duration-200 ${
+                  isItemActive ? 'text-white font-bold' : isItemFocused ? 'text-white' : 'text-white/70 group-hover:text-white'
+                }`}
+              >
+                {item.label}
+              </span>
+              {isItemActive && (
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary-400 shadow-[0_0_6px_rgba(52,211,153,0.9)]" />
+              )}
+            </button>
+          );
+        })}
       </motion.div>
     </AnimatePresence>
   );

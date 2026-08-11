@@ -166,14 +166,8 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
   if (!isOpen || !canAccessMonthlyExportImport(userRole)) return null;
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="relative w-full max-w-2xl bg-slate-900 text-white border border-white/20 rounded-3xl shadow-2xl overflow-hidden font-sans"
-        >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+      <div className="relative w-full max-w-2xl bg-slate-900 text-white border border-white/20 rounded-3xl shadow-xl overflow-hidden font-sans">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 bg-gradient-to-r from-white/5 to-transparent">
             <div className="flex items-center gap-3">
@@ -258,9 +252,7 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
 
             {/* Notification Alert */}
             {notification && (
-              <motion.div
-                initial={{ opacity: 0, y: -5 }}
-                animate={{ opacity: 1, y: 0 }}
+              <div
                 className={`p-4 rounded-2xl flex items-center gap-3 border text-sm font-medium ${
                   notification.type === 'success'
                     ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-200'
@@ -273,14 +265,14 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
                   <ExclamationTriangleIcon className="w-5 h-5 shrink-0 text-rose-400" />
                 )}
                 <span>{notification.message}</span>
-              </motion.div>
+              </div>
             )}
 
             {/* Tabs Navigation */}
             <div className="flex border-b border-white/10">
               <button
                 onClick={() => setActiveTab('export')}
-                className={`flex-1 py-3 text-center text-sm font-bold border-b-2 transition duration-200 flex items-center justify-center gap-2 ${
+                className={`flex-1 py-3 text-center text-sm font-bold border-b-2 flex items-center justify-center gap-2 ${
                   activeTab === 'export'
                     ? 'border-[#059669] text-[#059669]'
                     : 'border-transparent text-white/50 hover:text-white'
@@ -291,7 +283,7 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
               </button>
               <button
                 onClick={() => setActiveTab('import')}
-                className={`flex-1 py-3 text-center text-sm font-bold border-b-2 transition duration-200 flex items-center justify-center gap-2 ${
+                className={`flex-1 py-3 text-center text-sm font-bold border-b-2 flex items-center justify-center gap-2 ${
                   activeTab === 'import'
                     ? 'border-[#059669] text-[#059669]'
                     : 'border-transparent text-white/50 hover:text-white'
@@ -455,9 +447,8 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
       </div>
-    </AnimatePresence>
   );
 };
 

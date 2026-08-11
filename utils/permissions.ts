@@ -68,6 +68,15 @@ export class PermissionChecker {
     // Simplified Model: Check module level permission instead of granular unit permission
     // Map category/unit check to the general module permission
 
+    // Check granular plant_operations object first
+    const p = this.user.permissions as any;
+    if (p && p.plant_operations && typeof p.plant_operations === 'object') {
+      const catObj = p.plant_operations[category];
+      if (catObj && catObj[unit]) {
+        return this.comparePermissionLevel(catObj[unit], requiredLevel);
+      }
+    }
+
     // Check CM Plant Operations
     if (this._hasPermission('cm_plant_operations', requiredLevel)) {
       return true;
@@ -314,7 +323,7 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   if (
     category &&
     unit &&
-    (feature === 'cm_plant_operations' || feature === 'rkc_plant_operations')
+    ((feature as string) === 'plant_operations' || feature === 'cm_plant_operations' || feature === 'rkc_plant_operations')
   ) {
     hasAccess = permissionChecker.hasPlantOperationPermission(category, unit, requiredLevel);
   } else {

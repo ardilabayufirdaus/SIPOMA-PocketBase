@@ -1,9 +1,12 @@
 // --- SMART ALERTING SYSTEM FOR SIPOMA ---
 
-const TELEGRAM_TOKEN = '8598640994:AAHRRdTwflTdRLblenMq8alxbL1zMcZwU90';
-const TELEGRAM_CHAT_ID = '630051008';
+const TELEGRAM_TOKEN = $os.getenv('TELEGRAM_TOKEN') || '';
+const TELEGRAM_CHAT_ID = $os.getenv('TELEGRAM_CHAT_ID') || '';
 
 function sendTelegram(message) {
+  if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) {
+    return; // Don't attempt send if missing credentials
+  }
   try {
     $os
       .cmd(

@@ -33,11 +33,11 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
               {t.notifications_title || 'Notifications'}
             </h3>
             {unreadCount > 0 && (
-              <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold bg-orange-100 text-orange-800 rounded-full">
+              <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300 rounded-full">
                 {unreadCount}
               </span>
             )}
@@ -49,7 +49,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                 onClick={markAllAsRead}
                 variant="ghost"
                 size="sm"
-                className="text-xs px-2 py-1"
+                className="text-xs px-2 py-1 dark:text-slate-300 dark:hover:text-white"
                 ariaLabel={t.mark_all_as_read}
               >
                 {t.mark_all_as_read}
@@ -66,14 +66,14 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                 key={notification.id}
                 className={`p-3 rounded-lg border transition-colors ${
                   !notification.read_at
-                    ? 'bg-blue-50 border-blue-200'
-                    : 'bg-gray-50 border-gray-200'
+                    ? 'bg-blue-50 dark:bg-primary-950/30 border-blue-200 dark:border-primary-800/40'
+                    : 'bg-gray-50 dark:bg-slate-800/40 border-gray-200 dark:border-slate-800'
                 }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-medium text-gray-500 uppercase">
+                      <span className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">
                         {notification.category || 'system'}
                       </span>
                       <span
@@ -86,10 +86,10 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                         }`}
                       />
                     </div>
-                    <h4 className="text-sm font-medium text-gray-900 mb-1">
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-slate-100 mb-1">
                       {notification.message}
                     </h4>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
                       {new Date(notification.created_at).toLocaleString()}
                     </p>
                   </div>
@@ -99,7 +99,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                         onClick={() => markAsRead(notification.id)}
                         variant="ghost"
                         size="sm"
-                        className="p-1"
+                        className="p-1 dark:text-slate-300 dark:hover:text-white"
                         ariaLabel="Mark as read"
                       >
                         <CheckIcon className="w-4 h-4" />
@@ -109,7 +109,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                       onClick={() => dismissNotification(notification.id)}
                       variant="ghost"
                       size="sm"
-                      className="p-1 text-red-500 hover:text-blue-600"
+                      className="p-1 text-red-500 hover:text-blue-600 dark:text-red-400 dark:hover:text-red-300"
                       ariaLabel="Dismiss notification"
                     >
                       <XMarkIcon className="w-4 h-4" />
@@ -120,8 +120,8 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
             ))
           ) : (
             <div className="text-center py-8">
-              <EyeSlashIcon className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">
+              <EyeSlashIcon className="w-8 h-8 text-gray-300 dark:text-slate-600 mx-auto mb-2" />
+              <p className="text-sm text-gray-500 dark:text-slate-400">
                 {t.no_new_notifications || 'No new notifications'}
               </p>
             </div>
@@ -129,11 +129,11 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="border-t pt-4">
+        <div className="border-t dark:border-slate-800 pt-4">
           <EnhancedButton
             variant="ghost"
             size="sm"
-            className="w-full text-center px-4 py-3 text-xs"
+            className="w-full text-center px-4 py-3 text-xs dark:text-slate-300 dark:hover:text-white"
             ariaLabel={t.view_all_notifications || 'View all notifications'}
           >
             {t.view_all_notifications || 'View all notifications'}

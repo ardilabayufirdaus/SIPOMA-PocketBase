@@ -522,17 +522,17 @@ export const EnhancedCard: React.FC<EnhancedCardProps> = ({
 
   // Base styles
   const baseClasses = cn(
-    'relative transition-all duration-300 ease-out',
+    'relative transition-shadow duration-150 ease-out',
     interactive && 'cursor-pointer',
-    hover && 'hover:scale-[1.02] hover:shadow-xl'
+    hover && 'hover:shadow-md'
   );
 
   // Variant styles
   const variantClasses = {
-    default: cn('bg-white', 'border border-neutral-200'),
-    glass: cn('bg-white/10', 'backdrop-blur-md', 'border border-white/20'),
-    elevated: cn('bg-white', 'border border-neutral-200', 'shadow-lg'),
-    outlined: cn('bg-transparent', 'border-2 border-neutral-300'),
+    default: cn('bg-white dark:bg-slate-900', 'border border-neutral-200 dark:border-slate-800'),
+    glass: cn('bg-white dark:bg-slate-900', 'border border-neutral-200 dark:border-slate-800'),
+    elevated: cn('bg-white dark:bg-slate-900', 'border border-neutral-200 dark:border-slate-800', 'shadow-md'),
+    outlined: cn('bg-transparent', 'border-2 border-neutral-300 dark:border-slate-700'),
     gradient: cn(
       'bg-gradient-to-br from-primary-500 to-secondary-600',
       'text-white',

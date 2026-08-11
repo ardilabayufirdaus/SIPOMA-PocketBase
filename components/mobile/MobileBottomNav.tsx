@@ -47,39 +47,44 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   const iconClass = 'w-5 h-5';
 
   // Define sub-menus for pages with children
-  const subMenuItems = useMemo(
-    () => ({
+  const subMenuItems = useMemo(() => {
+    const isAdminOrSuperAdmin = isAdminRole(currentUser?.role);
+    const isAutonomousRole = currentUser?.role === 'Autonomous';
+    const canAccessMasterData = isAdminOrSuperAdmin || isAutonomousRole;
+
+    const baseOperations = [
+      { key: 'op_dashboard', icon: <ChartBarIcon className={iconClass} /> },
+      { key: 'op_people_champion', icon: <UserGroupIcon className={iconClass} /> },
+      { key: 'op_report', icon: <ClipboardDocumentListIcon className={iconClass} /> },
+      { key: 'op_wag_report', icon: <ClipboardDocumentListIcon className={iconClass} /> },
+      { key: 'op_ccr_data_entry', icon: <EditIcon className={iconClass} /> },
+      { key: 'op_autonomous_data_entry', icon: <EditIcon className={iconClass} /> },
+      { key: 'op_monitoring', icon: <PresentationChartLineIcon className={iconClass} /> },
+      { key: 'op_cop_analysis', icon: <CurrencyDollarIcon className={iconClass} /> },
+      { key: 'op_work_instruction_library', icon: <BuildingLibraryIcon className={iconClass} /> },
+    ];
+
+    return {
       operations: [
-        { key: 'op_dashboard', icon: <ChartBarIcon className={iconClass} /> },
-        { key: 'op_people_champion', icon: <UserGroupIcon className={iconClass} /> },
-        { key: 'op_report', icon: <ClipboardDocumentListIcon className={iconClass} /> },
-        { key: 'op_wag_report', icon: <ClipboardDocumentListIcon className={iconClass} /> },
-        { key: 'op_ccr_data_entry', icon: <EditIcon className={iconClass} /> },
-        { key: 'op_autonomous_data_entry', icon: <EditIcon className={iconClass} /> },
-        { key: 'op_monitoring', icon: <PresentationChartLineIcon className={iconClass} /> },
-        { key: 'op_cop_analysis', icon: <CurrencyDollarIcon className={iconClass} /> },
-        { key: 'op_work_instruction_library', icon: <BuildingLibraryIcon className={iconClass} /> },
-        { key: 'op_master_data', icon: <ArchiveBoxIcon className={iconClass} /> },
+        ...baseOperations,
+        ...(canAccessMasterData
+          ? [{ key: 'op_master_data', icon: <ArchiveBoxIcon className={iconClass} /> }]
+          : []),
       ],
       rkc_operations: [
-        { key: 'op_dashboard', icon: <ChartBarIcon className={iconClass} /> },
-        { key: 'op_people_champion', icon: <UserGroupIcon className={iconClass} /> },
-        { key: 'op_report', icon: <ClipboardDocumentListIcon className={iconClass} /> },
-        { key: 'op_wag_report', icon: <ClipboardDocumentListIcon className={iconClass} /> },
-        { key: 'op_ccr_data_entry', icon: <EditIcon className={iconClass} /> },
-        { key: 'op_autonomous_data_entry', icon: <EditIcon className={iconClass} /> },
-        { key: 'op_monitoring', icon: <PresentationChartLineIcon className={iconClass} /> },
-        { key: 'op_cop_analysis', icon: <CurrencyDollarIcon className={iconClass} /> },
-        { key: 'op_work_instruction_library', icon: <BuildingLibraryIcon className={iconClass} /> },
-        { key: 'op_master_data', icon: <CircleStackIcon className={iconClass} /> },
+        ...baseOperations,
+        ...(canAccessMasterData
+          ? [{ key: 'op_master_data', icon: <CircleStackIcon className={iconClass} /> }]
+          : []),
       ],
       projects: [
         { key: 'proj_dashboard', icon: <ChartPieIcon className={iconClass} /> },
-        { key: 'proj_list', icon: <Bars4Icon className={iconClass} /> },
+        ...(isAdminOrSuperAdmin
+          ? [{ key: 'proj_list', icon: <Bars4Icon className={iconClass} /> }]
+          : []),
       ],
-    }),
-    [iconClass]
-  );
+    };
+  }, [iconClass, currentUser?.role]);
 
   // Build primary tabs based on permissions
   const primaryTabs = useMemo<NavTab[]>(() => {

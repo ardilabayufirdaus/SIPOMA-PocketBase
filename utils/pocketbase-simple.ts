@@ -100,5 +100,6 @@ export const Collections = {
   SILO_CAPACITIES: 'silo_capacities',
   USER_PARAMETER_ORDERS: 'user_parameter_orders',
   USER_PERMISSIONS: 'user_permissions',
+  USER_MANAGEMENT: 'user_management',
   WORK_INSTRUCTIONS: 'work_instructions',
 };
