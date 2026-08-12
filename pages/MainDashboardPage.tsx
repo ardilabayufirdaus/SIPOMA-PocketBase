@@ -5,9 +5,12 @@ import KPISection from '../components/dashboard/KPISection';
 import OperationsOverview from '../components/dashboard/OperationsOverview';
 import QuickActions from '../components/dashboard/QuickActions';
 import AiOperationalReview from '../components/dashboard/AiOperationalReview';
+import { ProductionMaterialMixChart } from '../components/dashboard/ProductionMaterialMixChart';
+import { SiloOccupancyWidget } from '../components/dashboard/SiloOccupancyWidget';
+import { DowntimeParetoWidget } from '../components/dashboard/DowntimeParetoWidget';
 import { useDashboardData } from '../hooks/useDashboardData';
+import { useMainDashboardChartsData } from '../hooks/useMainDashboardChartsData';
 import { useCurrentUser } from '../hooks/useCurrentUser';
-
 import { usePresenceTracker } from '../hooks/usePresenceTracker';
 
 interface MainDashboardPageProps {
@@ -17,12 +20,19 @@ interface MainDashboardPageProps {
 }
 
 const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) => {
-  const { metrics, unitStatuses, topDowntimes, isLoading } = useDashboardData();
-  const { currentUser } = useCurrentUser();
+  const { metrics, unitStatuses, topDowntimes, isLoading: isDashboardLoading } = useDashboardData();
+  const {
+    materialUsage,
+    downtimePareto,
+    siloData,
+    loading: isChartsLoading,
+  } = useMainDashboardChartsData();
 
-  // Use centralized presence tracker for real-time online users
+  const { currentUser } = useCurrentUser();
   const { onlineUsers } = usePresenceTracker();
   const onlineUsersCount = onlineUsers.length;
+
+  const isLoading = isDashboardLoading && isChartsLoading;
 
   if (isLoading) {
     return (
@@ -63,22 +73,35 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
           <AiOperationalReview t={t} />
         </div>
 
-        {/* Main Content - Grid Layout */}
-        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-6">
-          {/* Left Column: Operations Overview */}
-          <div className="lg:col-span-8 flex flex-col h-full">
-            <OperationsOverview
-              unitStatuses={unitStatuses}
-              topDowntimes={topDowntimes}
-              onNavigate={onNavigate}
-              t={t}
-            />
+        {/* Charts Row 1: Production Material Mix & Silo Occupancy */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
+          <div className="lg:col-span-7 h-[360px]">
+            <ProductionMaterialMixChart data={materialUsage} t={t} />
+          </div>
+          <div className="lg:col-span-5 h-[360px]">
+            <SiloOccupancyWidget data={siloData} t={t} />
+          </div>
+        </div>
+
+        {/* Main Operations & Downtime Analysis Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
+          {/* Left Column: Downtime Pareto Chart */}
+          <div className="lg:col-span-7 h-[380px]">
+            <DowntimeParetoWidget data={downtimePareto} t={t} />
           </div>
 
-          {/* Right Column: Quick Actions & Widgets */}
-          <div className="lg:col-span-4 flex flex-col h-full gap-4 lg:gap-6">
+          {/* Right Column: Operations Overview & Quick Actions */}
+          <div className="lg:col-span-5 flex flex-col gap-4 lg:gap-6">
             <div className="flex-1">
-              <div className="flex items-center justify-between mb-3 px-1">
+              <OperationsOverview
+                unitStatuses={unitStatuses}
+                topDowntimes={topDowntimes}
+                onNavigate={onNavigate}
+                t={t}
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-2 px-1">
                 <h3 className="text-[11px] font-bold text-[#808080] dark:text-slate-500 uppercase tracking-widest">
                   {t.dashboard_quick_actions || 'Akses Cepat'}
                 </h3>

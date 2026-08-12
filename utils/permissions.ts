@@ -27,7 +27,7 @@ export class PermissionChecker {
     return result;
   }
 
-  private _hasPermission(feature: keyof PermissionMatrix, requiredLevel: string = 'READ'): boolean {
+  private _hasPermission(feature: string, requiredLevel: string): boolean {
     if (!this.user) return false;
 
     // Super Admin has all permissions
@@ -36,7 +36,12 @@ export class PermissionChecker {
     // Check if permissions object exists
     if (!this.user.permissions) return false;
 
-    const userPermission = this.user.permissions[feature];
+    let userPermission = (this.user.permissions as any)[feature];
+
+    // Fallback for derivative_plant_operations if not set
+    if (feature === 'derivative_plant_operations' && !userPermission) {
+      userPermission = (this.user.permissions as any)['cm_plant_operations'];
+    }
 
     // Handle string permission format (recommended)
     if (typeof userPermission === 'string') {
@@ -87,6 +92,11 @@ export class PermissionChecker {
       return true;
     }
 
+    // Check Derivative Plant Operations
+    if (this._hasPermission('derivative_plant_operations', requiredLevel)) {
+      return true;
+    }
+
     return false;
   }
 
@@ -111,7 +121,8 @@ export class PermissionChecker {
   canAccessPlantOperations(): boolean {
     return (
       this.hasPermission('cm_plant_operations', 'READ') ||
-      this.hasPermission('rkc_plant_operations', 'READ')
+      this.hasPermission('rkc_plant_operations', 'READ') ||
+      this.hasPermission('derivative_plant_operations', 'READ')
     );
   }
 
@@ -188,6 +199,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
     dashboard: 'WRITE',
     cm_plant_operations: 'WRITE',
     rkc_plant_operations: 'WRITE',
+    derivative_plant_operations: 'WRITE',
     project_management: 'WRITE',
     database: 'WRITE',
     inspection: 'WRITE',
@@ -196,6 +208,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
     dashboard: 'WRITE',
     cm_plant_operations: 'WRITE',
     rkc_plant_operations: 'WRITE',
+    derivative_plant_operations: 'WRITE',
     project_management: 'WRITE',
     database: 'WRITE',
     inspection: 'WRITE',
@@ -204,6 +217,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
     dashboard: 'WRITE',
     cm_plant_operations: 'WRITE',
     rkc_plant_operations: 'WRITE',
+    derivative_plant_operations: 'WRITE',
     project_management: 'WRITE',
     database: 'READ',
     inspection: 'WRITE',
@@ -212,6 +226,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
     dashboard: 'READ',
     cm_plant_operations: 'WRITE',
     rkc_plant_operations: 'WRITE',
+    derivative_plant_operations: 'WRITE',
     project_management: 'NONE',
     database: 'NONE',
     inspection: 'WRITE',
@@ -220,6 +235,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
     dashboard: 'READ',
     cm_plant_operations: 'WRITE',
     rkc_plant_operations: 'WRITE',
+    derivative_plant_operations: 'WRITE',
     project_management: 'NONE',
     database: 'NONE',
     inspection: 'WRITE',
@@ -228,6 +244,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
     dashboard: 'NONE',
     cm_plant_operations: 'NONE',
     rkc_plant_operations: 'NONE',
+    derivative_plant_operations: 'NONE',
     project_management: 'NONE',
     database: 'NONE',
     inspection: 'NONE',
@@ -323,7 +340,9 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   if (
     category &&
     unit &&
-    ((feature as string) === 'plant_operations' || feature === 'cm_plant_operations' || feature === 'rkc_plant_operations')
+    ((feature as string) === 'plant_operations' ||
+      feature === 'cm_plant_operations' ||
+      feature === 'rkc_plant_operations')
   ) {
     hasAccess = permissionChecker.hasPlantOperationPermission(category, unit, requiredLevel);
   } else {

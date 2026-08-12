@@ -162,12 +162,8 @@ export const useRkcCcrDowntimeData = (date?: string) => {
         end_time: normalizeTimeFormat(record.end_time),
       };
 
-      try {
-        const response = await pb.collection('rkc_ccr_downtime_data').create(payload);
-        return record;
-      } catch (error) {
-        throw error;
-      }
+      await pb.collection('rkc_ccr_downtime_data').create(payload);
+      return record;
     },
     onMutate: async (newRecord) => {
       await queryClient.cancelQueries({ queryKey: ['rkc-ccr-downtime-data', newRecord.date] });

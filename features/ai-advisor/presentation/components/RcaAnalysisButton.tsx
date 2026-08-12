@@ -69,10 +69,10 @@ export const RcaAnalysisButton: React.FC<RcaAnalysisButtonProps> = ({
         type="button"
         onClick={handleAnalyze}
         disabled={disabled || loading}
-        className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-md hover:from-purple-700 hover:to-indigo-700 transition-all text-sm font-medium shadow-sm"
+        className="h-9 px-3.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-semibold shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap shrink-0"
       >
-        <Sparkles className="w-4 h-4" />
-        {loading ? 'Menganalisa...' : 'AI RCA'}
+        <Sparkles className="w-4 h-4 text-[#059669]" />
+        <span>{loading ? 'Menganalisa...' : 'AI RCA'}</span>
       </button>
 
       {isOpen && (

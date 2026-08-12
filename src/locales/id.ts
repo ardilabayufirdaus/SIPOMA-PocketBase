@@ -6,6 +6,8 @@ const id = {
   plantOperations: 'CM Plant Operations',
   cmPlantOperations: 'CM Plant Operations',
   rkcPlantOperations: 'RKC Plant Operations',
+  derivativePlantOperations: 'Derivative Plant Operations',
+  derivative_operations: 'Derivative Plant Operations',
 
   projectManagement: 'Manajemen Proyek',
   userManagement: 'Manajemen Pengguna',

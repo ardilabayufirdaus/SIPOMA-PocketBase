@@ -101,6 +101,7 @@ const App: React.FC = () => {
     projects: 'proj_dashboard',
     users: 'user_list',
     rkc_operations: 'op_dashboard',
+    derivative_operations: 'op_dashboard',
   });
 
   // Log system status on app load and start connection monitor
@@ -218,6 +219,12 @@ const App: React.FC = () => {
           t[activeSubPages.rkc_operations as keyof typeof t] ||
           t.rkcPlantOperations ||
           'RKC Plant Operations'
+        );
+      case 'derivative_operations':
+        return (
+          t[activeSubPages.derivative_operations as keyof typeof t] ||
+          t.derivativePlantOperations ||
+          'Derivative Plant Operations'
         );
       case 'projects':
         if (activeSubPages.projects === 'proj_detail') return t.project_overview_title;
@@ -414,6 +421,25 @@ const App: React.FC = () => {
           <PlantOperationsPage
             section="RKC"
             activePage={activeSubPages.rkc_operations}
+            t={t}
+            plantData={{
+              loading: plantDataLoading,
+            }}
+          />
+        )}
+      </PermissionGuard>
+
+      {/* Derivative Plant Operations - Check permission */}
+      <PermissionGuard
+        user={currentUser}
+        feature="derivative_plant_operations"
+        requiredLevel="READ"
+        fallback={null}
+      >
+        {currentPage === 'derivative_operations' && (
+          <PlantOperationsPage
+            section="Derivative"
+            activePage={activeSubPages.derivative_operations}
             t={t}
             plantData={{
               loading: plantDataLoading,

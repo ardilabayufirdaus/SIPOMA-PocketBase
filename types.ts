@@ -15,6 +15,7 @@ export interface UserPermission {
   dashboard: PermissionLevel;
   cm_plant_operations: PermissionLevel;
   rkc_plant_operations: PermissionLevel;
+  derivative_plant_operations?: PermissionLevel;
   project_management: PermissionLevel;
   database: PermissionLevel;
   inspection: PermissionLevel;
@@ -40,6 +41,20 @@ export interface User {
   permissions: PermissionMatrix;
   is_custom_permissions?: boolean; // Flag untuk menandai apakah permissions sudah di-custom
 }
+
+export type Page =
+  | 'dashboard'
+  | 'users'
+  | 'operations'
+  | 'packing'
+  | 'projects'
+  | 'settings'
+  | 'database'
+  | 'rkc_operations'
+  | 'derivative_operations'
+  | 'whatsapp-reports'
+  | 'inspection'
+  | 'server';
 
 export interface AddUserData {
   username: string;
@@ -283,19 +298,6 @@ export interface CcrFooterData {
   shift3_counter: number;
   shift3_cont_counter: number;
 }
-
-export type Page =
-  | 'dashboard'
-  | 'users'
-  | 'operations'
-  | 'packing'
-  | 'projects'
-  | 'settings'
-  | 'database'
-  | 'rkc_operations'
-  | 'whatsapp-reports'
-  | 'inspection'
-  | 'server';
 
 export type Language = 'en' | 'id';
 export type Theme = 'light';

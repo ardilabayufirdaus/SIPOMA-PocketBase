@@ -21,19 +21,31 @@ interface SiloTableProps {
     };
   }>;
   t: Record<string, string>;
+  customTitle?: string;
+  customNameHeader?: string;
+  hideEmptySpace?: boolean;
 }
 
-export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
+export const SiloTable: React.FC<SiloTableProps> = ({
+  siloData,
+  t,
+  customTitle,
+  customNameHeader,
+  hideEmptySpace: shouldHideEmptySpace,
+}) => {
   if (!siloData || siloData.length === 0) {
     return null;
   }
+
+  const hideEmptySpace = shouldHideEmptySpace ?? customNameHeader?.toUpperCase().includes('TRASS');
+  const shiftColSpan = hideEmptySpace ? 2 : 3;
 
   return (
     <div className="bg-white overflow-hidden">
       <div className="p-4 border-b border-slate-200 bg-[#F9F9F9]">
         <h3 className="text-sm font-bold text-[#059669] flex items-center gap-2 uppercase tracking-wider">
           <div className="w-1.5 h-4 bg-[#111827] rounded-full"></div>
-          {t.silo_stock_report_title || 'SILO STOCK REPORT'}
+          {customTitle || t.silo_stock_report_title || 'SILO STOCK REPORT'}
         </h3>
       </div>
 
@@ -46,22 +58,22 @@ export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
                 rowSpan={2}
                 className="px-3 py-3 text-left font-bold border-r border-white/20 sticky left-0 bg-secondary-800 z-10 min-w-32 align-middle text-xs uppercase"
               >
-                {t.silo_name || 'SILO NAME'}
+                {customNameHeader || t.silo_name || 'SILO NAME'}
               </th>
               <th
-                colSpan={3}
+                colSpan={shiftColSpan}
                 className="px-3 py-2 text-center font-bold border-r border-white/20 align-middle text-xs uppercase"
               >
                 {t.shift_1 || 'SHIFT 1'}
               </th>
               <th
-                colSpan={3}
+                colSpan={shiftColSpan}
                 className="px-3 py-2 text-center font-bold border-r border-white/20 align-middle text-xs uppercase"
               >
                 {t.shift_2 || 'SHIFT 2'}
               </th>
               <th
-                colSpan={3}
+                colSpan={shiftColSpan}
                 className="px-3 py-2 text-center font-bold align-middle text-xs uppercase"
               >
                 {t.shift_3 || 'SHIFT 3'}
@@ -71,11 +83,13 @@ export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
             <tr className="bg-primary-700 text-white">
               {['shift1', 'shift2', 'shift3'].map((shiftKey) => (
                 <React.Fragment key={shiftKey}>
+                  {!hideEmptySpace && (
+                    <th className="px-3 py-2 text-center font-semibold border-r border-white/20 align-middle text-[10px] uppercase">
+                      <div className="leading-tight">{t.empty_space || 'EMPTY SPACE'}</div>
+                    </th>
+                  )}
                   <th className="px-3 py-2 text-center font-semibold border-r border-white/20 align-middle text-[10px] uppercase">
-                    <div className="leading-tight">{t.empty_space || 'EMPTY SPACE'}</div>
-                  </th>
-                  <th className="px-3 py-2 text-center font-semibold border-r border-white/20 align-middle text-[10px] uppercase">
-                    <div className="leading-tight">{t.content || 'CONTENT'}</div>
+                    <div className="leading-tight">{t.content || 'ISI STOCK'}</div>
                   </th>
                   <th className="px-3 py-2 text-center font-semibold border-r border-white/20 last:border-r-0 align-middle text-[10px] uppercase">
                     <div className="leading-tight">%</div>
@@ -108,9 +122,11 @@ export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
 
                   return (
                     <React.Fragment key={shiftKey}>
-                      <td className="px-3 py-3 text-center text-slate-700 border-r border-slate-200 align-middle font-medium text-xs">
-                        {formatNumberIndonesian(shiftData?.emptySpace) || '-'}
-                      </td>
+                      {!hideEmptySpace && (
+                        <td className="px-3 py-3 text-center text-slate-700 border-r border-slate-200 align-middle font-medium text-xs">
+                          {formatNumberIndonesian(shiftData?.emptySpace) || '-'}
+                        </td>
+                      )}
                       <td className="px-3 py-3 text-center text-slate-700 border-r border-slate-200 align-middle font-medium text-xs">
                         {formatNumberIndonesian(content) || '-'}
                       </td>

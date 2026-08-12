@@ -11,6 +11,8 @@ interface FormProps {
   t: Record<string, string>;
   plantUnits: PlantUnit[];
   theme?: 'red' | 'indigo';
+  customTitle?: string;
+  customSiloLabel?: string;
 }
 
 const SiloCapacityForm: React.FC<FormProps> = ({
@@ -20,6 +22,8 @@ const SiloCapacityForm: React.FC<FormProps> = ({
   t,
   plantUnits,
   theme = 'red',
+  customTitle,
+  customSiloLabel,
 }) => {
   // Theme configuration
   const themeConfig = {
@@ -29,7 +33,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
       bg_light: 'bg-[#F0F0F0]',
       border_focus: 'focus:border-[#059669]',
       ring_focus: 'focus:ring-[#059669]',
-      button_primary: 'bg-[#059669] hover:bg-[#d94612] text-white',
+      button_primary: 'bg-[#059669] hover:bg-[#047857] text-white',
       button_secondary: 'text-[#333333] hover:bg-[#059669]/10',
       icon_color: 'text-[#059669]',
       subtle_text: 'text-white/80',
@@ -41,7 +45,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
       bg_light: 'bg-[#F0F0F0]',
       border_focus: 'focus:border-[#059669]',
       ring_focus: 'focus:ring-[#059669]',
-      button_primary: 'bg-[#059669] hover:bg-[#d94612] text-white',
+      button_primary: 'bg-[#059669] hover:bg-[#047857] text-white',
       button_secondary: 'text-[#333333] hover:bg-[#059669]/10',
       icon_color: 'text-[#059669]',
       subtle_text: 'text-white/80',
@@ -175,10 +179,12 @@ const SiloCapacityForm: React.FC<FormProps> = ({
           <Database className="w-6 h-6 text-white" />
           <div>
             <h2 className="text-xl font-bold text-white">
-              {t.silo_capacity_title || 'Silo Capacity'}
+              {customTitle || t.silo_capacity_title || 'Silo Capacity'}
             </h2>
             <p className={`text-sm ${colors.subtle_text}`}>
-              {t.silo_capacity_subtitle || 'Manage silo storage capacities'}
+              {recordToEdit
+                ? t.edit_silo_capacity_subtitle || 'Edit existing capacity data'
+                : t.add_silo_capacity_subtitle || 'Configure new capacity limits'}
             </p>
           </div>
         </div>
@@ -225,7 +231,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
           {/* Unit */}
           <div className="space-y-2">
             <label htmlFor="unit" className="block text-sm font-medium text-slate-700">
-              {t.unit || 'Unit'} <span className="text-[#C7162B]">*</span>
+              {t.plant_unit || 'Plant Unit'} <span className="text-[#C7162B]">*</span>
             </label>
             <div className="relative">
               <select
@@ -262,7 +268,8 @@ const SiloCapacityForm: React.FC<FormProps> = ({
           {/* Silo Name */}
           <div className="md:col-span-2 space-y-2">
             <label htmlFor="silo_name" className="block text-sm font-medium text-slate-700">
-              {t.silo_name || 'Silo Name'} <span className="text-[#C7162B]">*</span>
+              {customSiloLabel || t.silo_name || 'Silo Name'}{' '}
+              <span className="text-[#C7162B]">*</span>
             </label>
             <div className="relative">
               <input

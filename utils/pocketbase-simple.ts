@@ -102,4 +102,19 @@ export const Collections = {
   USER_PERMISSIONS: 'user_permissions',
   USER_MANAGEMENT: 'user_management',
   WORK_INSTRUCTIONS: 'work_instructions',
+
+  // Derivative Plant Operations Collections
+  DERIVATIVE_PLANT_UNITS: 'derivative_plant_units',
+  DERIVATIVE_PARAMETER_SETTINGS: 'derivative_parameter_settings',
+  DERIVATIVE_SILO_CAPACITIES: 'derivative_silo_capacities',
+  DERIVATIVE_PIC_SETTINGS: 'derivative_pic_settings',
+  DERIVATIVE_COP_PARAMETERS: 'derivative_cop_parameters',
+  DERIVATIVE_REPORT_SETTINGS: 'derivative_report_settings',
+  DERIVATIVE_COP_FOOTER_PARAMETERS: 'derivative_cop_footer_parameters',
+  DERIVATIVE_CCR_PARAMETER_DATA: 'derivative_ccr_parameter_data',
+  DERIVATIVE_CCR_DOWNTIME_DATA: 'derivative_ccr_downtime_data',
+  DERIVATIVE_CCR_SILO_DATA: 'derivative_ccr_silo_data',
+  DERIVATIVE_CCR_FOOTER_DATA: 'derivative_ccr_footer_data',
+  DERIVATIVE_CCR_INFORMATION: 'derivative_ccr_information',
+  DERIVATIVE_AUTONOMOUS_RISK_DATA: 'derivative_autonomous_risk_data',
 };

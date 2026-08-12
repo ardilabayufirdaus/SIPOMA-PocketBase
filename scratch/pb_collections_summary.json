@@ -1,0 +1,815 @@
+[
+  {
+    "name": "users",
+    "type": "auth",
+    "count": 29,
+    "fields": [
+      "name",
+      "avatar",
+      "role",
+      "is_active",
+      "last_active",
+      "employee_id"
+    ]
+  },
+  {
+    "name": "plant_units",
+    "type": "base",
+    "count": 6,
+    "fields": [
+      "unit",
+      "category",
+      "description"
+    ]
+  },
+  {
+    "name": "work_instructions",
+    "type": "base",
+    "count": 0,
+    "fields": [
+      "activity",
+      "doc_code",
+      "doc_title",
+      "description",
+      "link",
+      "plant_category",
+      "plant_unit"
+    ]
+  },
+  {
+    "name": "parameter_settings",
+    "type": "base",
+    "count": 305,
+    "fields": [
+      "parameter",
+      "data_type",
+      "unit",
+      "category",
+      "min_value",
+      "max_value",
+      "opc_min_value",
+      "opc_max_value",
+      "pcc_min_value",
+      "pcc_max_value",
+      "is_oee_feeder",
+      "is_oee_quality"
+    ]
+  },
+  {
+    "name": "ccr_silo_data",
+    "type": "base",
+    "count": 2915,
+    "fields": [
+      "date",
+      "silo_id",
+      "shift1_empty_space",
+      "shift1_content",
+      "shift2_empty_space",
+      "shift2_content",
+      "shift3_empty_space",
+      "shift3_content"
+    ]
+  },
+  {
+    "name": "silo_capacities",
+    "type": "base",
+    "count": 13,
+    "fields": [
+      "plant_category",
+      "unit",
+      "silo_name",
+      "capacity",
+      "dead_stock"
+    ]
+  },
+  {
+    "name": "ccr_footer_data",
+    "type": "base",
+    "count": 65371,
+    "fields": [
+      "date",
+      "parameter_id",
+      "unit_id",
+      "plant_unit",
+      "total",
+      "average",
+      "minimum",
+      "maximum",
+      "shift1_total",
+      "shift2_total",
+      "shift3_total",
+      "shift3_cont_total",
+      "shift1_average",
+      "shift2_average",
+      "shift3_average",
+      "shift3_cont_average",
+      "shift1_counter",
+      "shift2_counter",
+      "shift3_counter",
+      "shift3_cont_counter"
+    ]
+  },
+  {
+    "name": "pic_settings",
+    "type": "base",
+    "count": 7,
+    "fields": [
+      "pic"
+    ]
+  },
+  {
+    "name": "report_settings",
+    "type": "base",
+    "count": 169,
+    "fields": [
+      "parameter_id",
+      "category",
+      "order"
+    ]
+  },
+  {
+    "name": "autonomous_risk_data",
+    "type": "base",
+    "count": 0,
+    "fields": [
+      "date",
+      "unit",
+      "potential_disruption",
+      "preventive_action",
+      "mitigation_plan",
+      "status"
+    ]
+  },
+  {
+    "name": "ccr_parameter_data",
+    "type": "base",
+    "count": 70222,
+    "fields": [
+      "date",
+      "parameter_id",
+      "plant_unit",
+      "name",
+      "hour1",
+      "hour2",
+      "hour3",
+      "hour4",
+      "hour5",
+      "hour6",
+      "hour7",
+      "hour8",
+      "hour9",
+      "hour10",
+      "hour11",
+      "hour12",
+      "hour13",
+      "hour14",
+      "hour15",
+      "hour16",
+      "hour17",
+      "hour18",
+      "hour19",
+      "hour20",
+      "hour21",
+      "hour22",
+      "hour23",
+      "hour24",
+      "hour1_user",
+      "hour2_user",
+      "hour3_user",
+      "hour4_user",
+      "hour5_user",
+      "hour6_user",
+      "hour7_user",
+      "hour8_user",
+      "hour9_user",
+      "hour10_user",
+      "hour11_user",
+      "hour12_user",
+      "hour13_user",
+      "hour14_user",
+      "hour15_user",
+      "hour16_user",
+      "hour17_user",
+      "hour18_user",
+      "hour19_user",
+      "hour20_user",
+      "hour21_user",
+      "hour22_user",
+      "hour23_user",
+      "hour24_user"
+    ]
+  },
+  {
+    "name": "project_tasks",
+    "type": "base",
+    "count": 204,
+    "fields": [
+      "project_id",
+      "activity",
+      "planned_end",
+      "actual_start",
+      "actual_end",
+      "planned_start",
+      "percent_complete"
+    ]
+  },
+  {
+    "name": "projects",
+    "type": "base",
+    "count": 5,
+    "fields": [
+      "title",
+      "budget",
+      "status"
+    ]
+  },
+  {
+    "name": "notifications",
+    "type": "base",
+    "count": 0,
+    "fields": [
+      "user_id",
+      "message",
+      "title",
+      "severity",
+      "category",
+      "actio_url",
+      "action_label",
+      "metadata",
+      "read_at",
+      "dismissed_at",
+      "snoozed_until",
+      "expires_at"
+    ]
+  },
+  {
+    "name": "cop_parameters",
+    "type": "base",
+    "count": 6,
+    "fields": [
+      "parameter_ids",
+      "plant_category",
+      "plant_unit"
+    ]
+  },
+  {
+    "name": "user_parameter_orders",
+    "type": "base",
+    "count": 96,
+    "fields": [
+      "user_id",
+      "module",
+      "category",
+      "parameter_type",
+      "unit",
+      "parameter_order"
+    ]
+  },
+  {
+    "name": "parameter_order_profiles",
+    "type": "base",
+    "count": 10,
+    "fields": [
+      "name",
+      "description",
+      "user_id",
+      "module",
+      "parameter_type",
+      "category",
+      "unit",
+      "parameter_order"
+    ]
+  },
+  {
+    "name": "ccr_downtime_data",
+    "type": "base",
+    "count": 1496,
+    "fields": [
+      "date",
+      "start_time",
+      "end_time",
+      "pic",
+      "problem",
+      "unit",
+      "action",
+      "corrective_action",
+      "status",
+      "duration_minutes"
+    ]
+  },
+  {
+    "name": "ccr_information",
+    "type": "base",
+    "count": 1052,
+    "fields": [
+      "date",
+      "plant_unit",
+      "information"
+    ]
+  },
+  {
+    "name": "ccr_material_usage",
+    "type": "base",
+    "count": 11395,
+    "fields": [
+      "date",
+      "plant_category",
+      "plant_unit",
+      "shift",
+      "clinker",
+      "gypsum",
+      "limestone",
+      "trass",
+      "fly_ash",
+      "fine_trass",
+      "ckd",
+      "total_production"
+    ]
+  },
+  {
+    "name": "simple_report_settings",
+    "type": "base",
+    "count": 18,
+    "fields": [
+      "parameter_id",
+      "category",
+      "order",
+      "is_active"
+    ]
+  },
+  {
+    "name": "cop_footer_parameters",
+    "type": "base",
+    "count": 6,
+    "fields": [
+      "parameter_ids",
+      "plant_category",
+      "plant_unit"
+    ]
+  },
+  {
+    "name": "moisture_monitoring",
+    "type": "base",
+    "count": 846,
+    "fields": [
+      "date",
+      "unit",
+      "hourly_data",
+      "stats"
+    ]
+  },
+  {
+    "name": "monitoring_production_capacity",
+    "type": "base",
+    "count": 871,
+    "fields": [
+      "date",
+      "plant_unit",
+      "plant_category",
+      "wet",
+      "dry",
+      "moisture"
+    ]
+  },
+  {
+    "name": "api_key",
+    "type": "base",
+    "count": 1,
+    "fields": [
+      "provider",
+      "key"
+    ]
+  },
+  {
+    "name": "rkc_plant_units",
+    "type": "base",
+    "count": 5,
+    "fields": [
+      "unit",
+      "category",
+      "description"
+    ]
+  },
+  {
+    "name": "rkc_pic_settings",
+    "type": "base",
+    "count": 5,
+    "fields": [
+      "pic"
+    ]
+  },
+  {
+    "name": "rkc_parameter_settings",
+    "type": "base",
+    "count": 14,
+    "fields": [
+      "parameter",
+      "data_type",
+      "unit",
+      "category",
+      "min_value",
+      "max_value"
+    ]
+  },
+  {
+    "name": "rkc_silo_capacities",
+    "type": "base",
+    "count": 1,
+    "fields": [
+      "plant_category",
+      "unit",
+      "silo_name",
+      "capacity",
+      "dead_stock"
+    ]
+  },
+  {
+    "name": "rkc_cop_parameters",
+    "type": "base",
+    "count": 1,
+    "fields": [
+      "parameter_ids",
+      "plant_category",
+      "plant_unit"
+    ]
+  },
+  {
+    "name": "rkc_cop_footer_parameters",
+    "type": "base",
+    "count": 0,
+    "fields": [
+      "parameter_ids",
+      "plant_category",
+      "plant_unit"
+    ]
+  },
+  {
+    "name": "rkc_report_settings",
+    "type": "base",
+    "count": 0,
+    "fields": [
+      "parameter_id",
+      "category",
+      "order"
+    ]
+  },
+  {
+    "name": "rkc_ccr_footer_data",
+    "type": "base",
+    "count": 0,
+    "fields": [
+      "date",
+      "parameter_id",
+      "unit_id",
+      "plant_unit",
+      "total",
+      "average",
+      "minimum",
+      "maximum",
+      "shift1_total",
+      "shift2_total",
+      "shift3_total",
+      "shift3_cont_total",
+      "shift1_average",
+      "shift2_average",
+      "shift3_average",
+      "shift3_cont_average",
+      "shift1_counter",
+      "shift2_counter",
+      "shift3_counter",
+      "shift3_cont_counter"
+    ]
+  },
+  {
+    "name": "rkc_ccr_parameter_data",
+    "type": "base",
+    "count": 0,
+    "fields": [
+      "date",
+      "parameter_id",
+      "plant_unit",
+      "name",
+      "hour1",
+      "hour2",
+      "hour3",
+      "hour4",
+      "hour5",
+      "hour6",
+      "hour7",
+      "hour8",
+      "hour9",
+      "hour10",
+      "hour11",
+      "hour12",
+      "hour13",
+      "hour14",
+      "hour15",
+      "hour16",
+      "hour17",
+      "hour18",
+      "hour19",
+      "hour20",
+      "hour21",
+      "hour22",
+      "hour23",
+      "hour24",
+      "hour1_user",
+      "hour2_user",
+      "hour3_user",
+      "hour4_user",
+      "hour5_user",
+      "hour6_user",
+      "hour7_user",
+      "hour8_user",
+      "hour9_user",
+      "hour10_user",
+      "hour11_user",
+      "hour12_user",
+      "hour13_user",
+      "hour14_user",
+      "hour15_user",
+      "hour16_user",
+      "hour17_user",
+      "hour18_user",
+      "hour19_user",
+      "hour20_user",
+      "hour21_user",
+      "hour22_user",
+      "hour23_user",
+      "hour24_user"
+    ]
+  },
+  {
+    "name": "rkc_moisture_monitoring",
+    "type": "base",
+    "count": 0,
+    "fields": [
+      "date",
+      "unit",
+      "hourly_data",
+      "stats"
+    ]
+  },
+  {
+    "name": "rkc_ccr_downtime_data",
+    "type": "base",
+    "count": 0,
+    "fields": [
+      "date",
+      "start_time",
+      "end_time",
+      "pic",
+      "problem",
+      "unit",
+      "action",
+      "corrective_action",
+      "status",
+      "duration_minutes"
+    ]
+  },
+  {
+    "name": "rkc_ccr_information",
+    "type": "base",
+    "count": 0,
+    "fields": [
+      "date",
+      "plant_unit",
+      "information"
+    ]
+  },
+  {
+    "name": "rkc_autonomous_risk_data",
+    "type": "base",
+    "count": 0,
+    "fields": [
+      "date",
+      "unit",
+      "potential_disruption",
+      "preventive_action",
+      "mitigation_plan",
+      "status"
+    ]
+  },
+  {
+    "name": "rkc_ccr_material_usage",
+    "type": "base",
+    "count": 0,
+    "fields": [
+      "date",
+      "plant_category",
+      "plant_unit",
+      "shift",
+      "clinker",
+      "gypsum",
+      "limestone",
+      "trass",
+      "fly_ash",
+      "fine_trass",
+      "ckd",
+      "total_production"
+    ]
+  },
+  {
+    "name": "rkc_ccr_silo_data",
+    "type": "base",
+    "count": 0,
+    "fields": [
+      "date",
+      "silo_id",
+      "shift1_empty_space",
+      "shift1_content",
+      "shift2_empty_space",
+      "shift2_content",
+      "shift3_empty_space",
+      "shift3_content"
+    ]
+  },
+  {
+    "name": "rkc_monitoring_production_capacity",
+    "type": "base",
+    "count": 0,
+    "fields": [
+      "date",
+      "plant_unit",
+      "plant_category",
+      "wet",
+      "dry",
+      "moisture"
+    ]
+  },
+  {
+    "name": "rkc_parameter_order_profiles",
+    "type": "base",
+    "count": 0,
+    "fields": [
+      "name",
+      "description",
+      "user_id",
+      "module",
+      "parameter_type",
+      "category",
+      "unit",
+      "parameter_order"
+    ]
+  },
+  {
+    "name": "rkc_user_parameter_orders",
+    "type": "base",
+    "count": 0,
+    "fields": [
+      "user_id",
+      "module",
+      "category",
+      "parameter_type",
+      "unit",
+      "parameter_order"
+    ]
+  },
+  {
+    "name": "user_management",
+    "type": "base",
+    "count": 29,
+    "fields": [
+      "user_id",
+      "dashboard",
+      "cm_plant_operations",
+      "rkc_plant_operations",
+      "project_management",
+      "database",
+      "inspection"
+    ]
+  },
+  {
+    "name": "user_online",
+    "type": "base",
+    "count": 14,
+    "fields": [
+      "user_id"
+    ]
+  },
+  {
+    "name": "system_status",
+    "type": "base",
+    "count": 1,
+    "fields": [
+      "cpu_load",
+      "memory_usage",
+      "last_updated",
+      "is_online",
+      "uptime"
+    ]
+  },
+  {
+    "name": "inspection_units",
+    "type": "base",
+    "count": 2,
+    "fields": [
+      "name",
+      "sort_order",
+      "parent_id"
+    ]
+  },
+  {
+    "name": "inspection_areas",
+    "type": "base",
+    "count": 1,
+    "fields": [
+      "name",
+      "unit",
+      "sort_order"
+    ]
+  },
+  {
+    "name": "inspection_groups",
+    "type": "base",
+    "count": 2,
+    "fields": [
+      "name",
+      "areaId",
+      "unit",
+      "sort_order"
+    ]
+  },
+  {
+    "name": "inspection_equipments",
+    "type": "base",
+    "count": 5,
+    "fields": [
+      "name",
+      "group",
+      "sort_order"
+    ]
+  },
+  {
+    "name": "inspection_checkpoints",
+    "type": "base",
+    "count": 31,
+    "fields": [
+      "name",
+      "equipment",
+      "sort_order"
+    ]
+  },
+  {
+    "name": "inspections",
+    "type": "base",
+    "count": 3,
+    "fields": [
+      "date",
+      "unit",
+      "area",
+      "status",
+      "s1_tender",
+      "s2_tender",
+      "s3_tender",
+      "s1_karu",
+      "s2_karu",
+      "s3_karu",
+      "s1_approved",
+      "s2_approved",
+      "s3_approved",
+      "data"
+    ]
+  },
+  {
+    "name": "oee_daily_summary",
+    "type": "base",
+    "count": 691,
+    "fields": [
+      "date",
+      "unit",
+      "availability",
+      "performance",
+      "quality",
+      "oee",
+      "total_production",
+      "design_capacity",
+      "operating_time",
+      "planned_time"
+    ]
+  },
+  {
+    "name": "operational_ai_reviews",
+    "type": "base",
+    "count": 331,
+    "fields": [
+      "date",
+      "plant_unit",
+      "review_content",
+      "recommendations",
+      "metrics_summary"
+    ]
+  },
+  {
+    "name": "commander_secrets",
+    "type": "base",
+    "count": "Error",
+    "fields": [
+      "name",
+      "url",
+      "username",
+      "password",
+      "type"
+    ]
+  }
+]

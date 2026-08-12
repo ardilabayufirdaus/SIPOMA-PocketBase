@@ -5,6 +5,7 @@ const permissionModuleMap: Record<string, keyof PermissionMatrix> = {
   plant_operations: 'cm_plant_operations', // Map legacy to new
   cm_plant_operations: 'cm_plant_operations',
   rkc_plant_operations: 'rkc_plant_operations',
+  derivative_plant_operations: 'derivative_plant_operations',
   project_management: 'project_management',
   database: 'database',
   inspection: 'inspection',
@@ -16,6 +17,7 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
     dashboard: 'NONE',
     cm_plant_operations: 'NONE',
     rkc_plant_operations: 'NONE',
+    derivative_plant_operations: 'NONE',
     project_management: 'NONE',
     database: 'NONE',
     inspection: 'NONE',
@@ -43,7 +45,8 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
           p.plant_units.forEach((u: any) => {
             const cat = u.category || 'default';
             const unit = u.unit || 'unit';
-            if (!(matrix as any).cm_plant_operations[cat]) (matrix as any).cm_plant_operations[cat] = {};
+            if (!(matrix as any).cm_plant_operations[cat])
+              (matrix as any).cm_plant_operations[cat] = {};
             if (!(matrix as any).plant_operations[cat]) (matrix as any).plant_operations[cat] = {};
             (matrix as any).cm_plant_operations[cat][unit] = p.permission_level;
             (matrix as any).plant_operations[cat][unit] = p.permission_level;
@@ -63,6 +66,7 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
       dashboard: p.dashboard || 'NONE',
       cm_plant_operations: p.cm_plant_operations || 'NONE',
       rkc_plant_operations: p.rkc_plant_operations || 'NONE',
+      derivative_plant_operations: p.derivative_plant_operations || p.cm_plant_operations || 'NONE',
       project_management: p.project_management || 'NONE',
       database: p.database || 'NONE',
       inspection: p.inspection || 'NONE',
@@ -78,6 +82,7 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
         dashboard: 'WRITE',
         cm_plant_operations: 'WRITE',
         rkc_plant_operations: 'WRITE',
+        derivative_plant_operations: 'WRITE',
         project_management: 'WRITE',
         database: 'WRITE',
         inspection: 'WRITE',
@@ -88,6 +93,7 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
         dashboard: 'WRITE',
         cm_plant_operations: 'WRITE',
         rkc_plant_operations: 'WRITE',
+        derivative_plant_operations: 'WRITE',
         project_management: 'WRITE',
         database: 'READ',
         inspection: 'WRITE',
@@ -99,6 +105,7 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
         dashboard: 'READ',
         cm_plant_operations: 'WRITE',
         rkc_plant_operations: 'WRITE',
+        derivative_plant_operations: 'WRITE',
         inspection: 'WRITE',
       };
     }

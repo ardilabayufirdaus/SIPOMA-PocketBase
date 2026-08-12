@@ -19,6 +19,7 @@ export interface PermissionMatrix {
   dashboard: PermissionLevel | PlantOperationsPermissions;
   cm_plant_operations: PermissionLevel | PlantOperationsPermissions;
   rkc_plant_operations: PermissionLevel | PlantOperationsPermissions;
+  derivative_plant_operations?: PermissionLevel | PlantOperationsPermissions;
   project_management: PermissionLevel | PlantOperationsPermissions;
   database: PermissionLevel;
 }

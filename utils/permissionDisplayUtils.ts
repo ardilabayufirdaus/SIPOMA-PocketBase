@@ -22,6 +22,14 @@ export const formatPermissionsForDisplay = (permissions: PermissionMatrix): stri
     accessList.push(`RKC Operations: ${permissions.rkc_plant_operations}`);
   }
 
+  // Plant Operations access (Derivative)
+  if (
+    permissions.derivative_plant_operations &&
+    permissions.derivative_plant_operations !== 'NONE'
+  ) {
+    accessList.push(`Derivative Operations: ${permissions.derivative_plant_operations}`);
+  }
+
   // Other modules
   const moduleMap: Record<string, string> = {
     project_management: 'Project Management',

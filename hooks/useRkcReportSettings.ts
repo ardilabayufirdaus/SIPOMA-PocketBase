@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+﻿import { useState, useCallback, useEffect } from 'react';
 import { RkcReportSetting } from '../types';
 import { pb } from '../utils/pocketbase-simple';
 import { cacheManager } from '../utils/cacheManager';
@@ -107,7 +107,9 @@ export const useRkcReportSettings = () => {
         if (typeof unsubPromise === 'function') {
           try {
             unsubPromise();
-          } catch {}
+          } catch {
+            /* ignore */
+          }
         } else if (typeof (unsubPromise as Promise<any>).then === 'function') {
           (unsubPromise as Promise<any>)
             .then((unsub) => {

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+﻿import { useState, useCallback, useEffect } from 'react';
 import { ParameterSetting } from '../types';
 import { pb } from '../utils/pocketbase-simple';
 import { cacheManager } from '../utils/cacheManager';
@@ -79,7 +79,9 @@ export const useRkcParameterSettings = () => {
             }
           })
         );
-      } catch (error) {}
+      } catch (_err) {
+        /* ignore */
+      }
     };
 
     subscribe();
@@ -90,7 +92,9 @@ export const useRkcParameterSettings = () => {
         if (typeof unsubPromise === 'function') {
           try {
             unsubPromise();
-          } catch {}
+          } catch {
+            /* ignore */
+          }
         } else if (unsubPromise && typeof (unsubPromise as Promise<unknown>).then === 'function') {
           (unsubPromise as Promise<() => void>)
             .then((unsub) => {
@@ -118,7 +122,9 @@ export const useRkcParameterSettings = () => {
         await pb.collection('rkc_parameter_settings').create(cleanedRecord);
         cacheManager.delete(CACHE_KEY);
         fetchRecords();
-      } catch {}
+      } catch {
+        /* ignore */
+      }
     },
     [fetchRecords]
   );
@@ -140,7 +146,9 @@ export const useRkcParameterSettings = () => {
         await pb.collection('rkc_parameter_settings').update(id, cleanedUpdateData);
         cacheManager.delete(CACHE_KEY);
         fetchRecords();
-      } catch {}
+      } catch {
+        /* ignore */
+      }
     },
     [fetchRecords]
   );
@@ -151,7 +159,9 @@ export const useRkcParameterSettings = () => {
         await pb.collection('rkc_parameter_settings').delete(recordId);
         cacheManager.delete(CACHE_KEY);
         fetchRecords();
-      } catch {}
+      } catch {
+        /* ignore */
+      }
     },
     [fetchRecords]
   );
@@ -172,7 +182,9 @@ export const useRkcParameterSettings = () => {
         }
         cacheManager.delete(CACHE_KEY);
         fetchRecords();
-      } catch {}
+      } catch {
+        /* ignore */
+      }
     },
     [fetchRecords]
   );

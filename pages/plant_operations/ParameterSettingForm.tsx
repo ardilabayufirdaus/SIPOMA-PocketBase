@@ -571,17 +571,22 @@ const ParameterSettingForm: React.FC<FormProps> = ({
               <span className="text-sm font-medium">Saving...</span>
             </div>
           )}
-          <EnhancedButton type="button" variant="error" onClick={onCancel} disabled={isSubmitting}>
-            {t.cancel_button}
+          <EnhancedButton
+            type="button"
+            variant="secondary"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            {t.cancel_button || 'Cancel'}
           </EnhancedButton>
           <EnhancedButton
             type="submit"
             variant="primary"
             disabled={isSubmitting}
-            className="bg-[#059669] hover:bg-[#d94612] text-white"
+            className="bg-[#059669] hover:bg-[#047857] text-white rounded-xl"
           >
             <CheckCircle className="h-4 w-4 mr-2" />
-            {t.save_button}
+            {t.save_button || 'Save'}
           </EnhancedButton>
         </div>
       </form>

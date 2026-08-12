@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+﻿import { useEffect, useState, useCallback, useRef } from 'react';
 import { pb } from '../utils/pocketbase-simple';
 import { safeApiCall } from '../utils/connectionCheck';
 import { cacheManager } from '../utils/cacheManager';
@@ -97,7 +97,9 @@ export const useRkcCopParameters = (plantCategory?: string, plantUnit?: string) 
             }
           })
         );
-      } catch (error) {}
+      } catch (_err) {
+        /* ignore */
+      }
     };
 
     if (plantCategory && plantUnit) {
@@ -111,7 +113,9 @@ export const useRkcCopParameters = (plantCategory?: string, plantUnit?: string) 
         if (typeof unsubPromise === 'function') {
           try {
             unsubPromise();
-          } catch {}
+          } catch {
+            /* ignore */
+          }
         } else if (unsubPromise && typeof (unsubPromise as Promise<unknown>).then === 'function') {
           (unsubPromise as Promise<() => void>)
             .then((unsub) => {
@@ -166,7 +170,9 @@ export const useRkcCopParameters = (plantCategory?: string, plantUnit?: string) 
         cacheManager.delete(cacheKey); // Invalidate cache
         // Optionally update cache directly:
         // cacheManager.set(cacheKey, ids, CACHE_TIME);
-      } catch (error) {}
+      } catch (_err) {
+        /* ignore */
+      }
     },
     [plantCategory, plantUnit]
   );

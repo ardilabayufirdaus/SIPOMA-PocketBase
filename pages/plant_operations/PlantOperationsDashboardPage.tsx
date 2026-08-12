@@ -8,7 +8,7 @@ import { Server, Zap, Thermometer, Activity, Calendar, RefreshCw, BarChart3 } fr
 
 interface PlantOperationsDashboardPageProps {
   t: Record<string, string>;
-  section?: 'CM' | 'RKC';
+  section?: 'CM' | 'RKC' | 'Derivative';
 }
 
 const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> = ({
@@ -144,7 +144,15 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
               </div>
             </div>
 
-            <PredictiveMaintenance plantUnit={section === 'CM' ? 'all' : 'RKC Unit'} />
+            <PredictiveMaintenance
+              plantUnit={
+                section === 'CM'
+                  ? 'all'
+                  : section === 'Derivative'
+                    ? 'DEV-1 (Slurry Prep)'
+                    : 'RKC Unit'
+              }
+            />
           </section>
         </main>
       </div>

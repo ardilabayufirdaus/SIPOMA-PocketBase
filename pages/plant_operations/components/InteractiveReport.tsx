@@ -134,7 +134,18 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
             <MaterialUsageTable materialUsageData={materialUsageData} t={t} />
           </div>
           <div className="shadow-sm rounded-xl overflow-hidden bg-white border border-slate-200 h-fit">
-            <SiloTable siloData={siloData} t={t} />
+            <SiloTable
+              siloData={siloData}
+              t={t}
+              customTitle={
+                title.toUpperCase().includes('DERIVATIVE')
+                  ? 'LAPORAN STOK GUDANG TRASS KERING'
+                  : undefined
+              }
+              customNameHeader={
+                title.toUpperCase().includes('DERIVATIVE') ? 'NAMA GUDANG TRASS KERING' : undefined
+              }
+            />
           </div>
         </div>
       )}

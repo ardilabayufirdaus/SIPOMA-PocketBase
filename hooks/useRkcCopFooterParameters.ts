@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+﻿import { useEffect, useState, useCallback, useRef } from 'react';
 import { pb } from '../utils/pocketbase-simple';
 import { safeApiCall } from '../utils/connectionCheck';
 
@@ -106,7 +106,9 @@ export const useRkcCopFooterParameters = (plantCategory?: string, plantUnit?: st
         if (typeof unsubPromise === 'function') {
           try {
             unsubPromise();
-          } catch {}
+          } catch {
+            /* ignore */
+          }
         } else if (typeof (unsubPromise as Promise<any>).then === 'function') {
           (unsubPromise as Promise<any>)
             .then((unsub) => {

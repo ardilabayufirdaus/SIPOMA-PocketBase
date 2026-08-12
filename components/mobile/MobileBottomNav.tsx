@@ -6,6 +6,7 @@ import { isAdminRole, isSuperAdmin } from '../../utils/roleHelpers';
 import HomeIcon from '../icons/HomeIcon';
 import FactoryIcon from '../icons/FactoryIcon';
 import FireIcon from '../icons/FireIcon';
+import BeakerIcon from '../icons/BeakerIcon';
 import ClipboardDocumentListIcon from '../icons/ClipboardDocumentListIcon';
 import ClipboardCheckIcon from '../icons/ClipboardCheckIcon';
 import CircleStackIcon from '../icons/CircleStackIcon';
@@ -77,6 +78,16 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           ? [{ key: 'op_master_data', icon: <CircleStackIcon className={iconClass} /> }]
           : []),
       ],
+      derivative_operations: [
+        { key: 'op_dashboard', icon: <ChartBarIcon className={iconClass} /> },
+        { key: 'op_report', icon: <ClipboardDocumentListIcon className={iconClass} /> },
+        { key: 'op_wag_report', icon: <ClipboardDocumentListIcon className={iconClass} /> },
+        { key: 'op_ccr_data_entry', icon: <EditIcon className={iconClass} /> },
+        { key: 'op_cop_analysis', icon: <CurrencyDollarIcon className={iconClass} /> },
+        ...(canAccessMasterData
+          ? [{ key: 'op_master_data', icon: <ArchiveBoxIcon className={iconClass} /> }]
+          : []),
+      ],
       projects: [
         { key: 'proj_dashboard', icon: <ChartPieIcon className={iconClass} /> },
         ...(isAdminOrSuperAdmin
@@ -111,6 +122,17 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         key: 'rkc_operations',
         label: 'RKC Plant',
         icon: <FireIcon className={iconClass} />,
+      });
+    }
+
+    if (
+      permissionChecker.hasPermission('derivative_plant_operations', 'READ') ||
+      permissionChecker.hasPermission('cm_plant_operations', 'READ')
+    ) {
+      tabs.push({
+        key: 'derivative_operations',
+        label: 'Derivative',
+        icon: <BeakerIcon className={iconClass} />,
       });
     }
 

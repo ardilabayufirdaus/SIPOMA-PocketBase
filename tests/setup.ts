@@ -3,7 +3,7 @@ import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
 // Global alias so existing tests calling jest.fn(), jest.spyOn() etc. work in Vitest
-// @ts-expect-error
+// @ts-expect-error - globalThis.jest doesn't exist in Vitest but we alias it for compatibility
 globalThis.jest = vi;
 
 // Mock environment variables for testing
@@ -27,7 +27,7 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
 }));
 
 // Mock EventSource for PocketBase realtime subscriptions
-// @ts-expect-error
+// @ts-expect-error - global.EventSource type mismatch with mock implementation
 global.EventSource = vi.fn().mockImplementation(() => ({
   addEventListener: vi.fn(),
   removeEventListener: vi.fn(),

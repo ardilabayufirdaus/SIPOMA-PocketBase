@@ -25,6 +25,21 @@ const WhatsAppGroupReportPage = React.lazy(
 const RkcWhatsAppGroupReportPage = React.lazy(
   () => import('./plant_operations/RkcWhatsAppGroupReportPage')
 );
+const DerivativeWhatsAppGroupReportPage = React.lazy(
+  () => import('./plant_operations/DerivativeWhatsAppGroupReportPage')
+);
+const DerivativeMasterDataPage = React.lazy(
+  () => import('./plant_operations/DerivativeMasterDataPage')
+);
+const DerivativeCcrDataEntryPage = React.lazy(
+  () => import('./plant_operations/DerivativeCcrDataEntryPage')
+);
+const DerivativeCopAnalysisPage = React.lazy(
+  () => import('./plant_operations/DerivativeCopAnalysisPage')
+);
+const DerivativeAutonomousDataEntryPage = React.lazy(
+  () => import('./plant_operations/DerivativeAutonomousDataEntryPage')
+);
 const PlantOperationsDashboardPage = React.lazy(
   () => import('./plant_operations/PlantOperationsDashboardPage')
 );
@@ -47,8 +62,10 @@ interface PlantOperationsPageProps {
   activePage: string;
   t: Record<string, string>;
   plantData?: PlantData;
-  section?: 'CM' | 'RKC';
+  section?: 'CM' | 'RKC' | 'Derivative';
 }
+
+const DerivativeReportPage = React.lazy(() => import('./plant_operations/DerivativeReportPage'));
 
 const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({ activePage, t, section }) => {
   const renderContent = () => {
@@ -56,26 +73,32 @@ const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({ activePage, t
       case 'op_dashboard':
         return <PlantOperationsDashboardPage t={t} section={section} />;
       case 'op_report':
+        if (section === 'Derivative') return <DerivativeReportPage t={t} />;
         return <ReportPage t={t} />;
       case 'op_people_champion':
         return <PeopleChampionPage />;
       case 'op_wag_report':
+        if (section === 'Derivative') return <DerivativeWhatsAppGroupReportPage />;
         return section === 'RKC' ? <RkcWhatsAppGroupReportPage /> : <WhatsAppGroupReportPage />;
       case 'op_master_data':
+        if (section === 'Derivative') return <DerivativeMasterDataPage t={t} />;
         return section === 'RKC' ? (
           <RkcMasterDataPage t={t} />
         ) : (
           <PlantOperationsMasterData t={t} />
         );
       case 'op_ccr_data_entry':
+        if (section === 'Derivative') return <DerivativeCcrDataEntryPage t={t} />;
         return section === 'RKC' ? <RkcCcrDataEntryPage t={t} /> : <CcrDataEntryPage t={t} />;
       case 'op_autonomous_data_entry':
+        if (section === 'Derivative') return <DerivativeAutonomousDataEntryPage t={t} />;
         return section === 'RKC' ? (
           <RkcAutonomousDataEntryPage t={t} />
         ) : (
           <AutonomousDataEntryPage t={t} />
         );
       case 'op_cop_analysis':
+        if (section === 'Derivative') return <DerivativeCopAnalysisPage t={t} />;
         return section === 'RKC' ? <RkcCopAnalysisPage t={t} /> : <CopAnalysisPage t={t} />;
       case 'op_work_instruction_library':
         return <WorkInstructionLibraryPage t={t} />;

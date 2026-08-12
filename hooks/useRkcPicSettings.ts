@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+﻿import { useState, useCallback, useEffect } from 'react';
 import { PicSetting } from '../types';
 import { pb } from '../utils/pocketbase-simple';
 import { cacheManager } from '../utils/cacheManager';
@@ -92,7 +92,9 @@ export const useRkcPicSettings = () => {
         if (typeof unsubPromise === 'function') {
           try {
             unsubPromise();
-          } catch {}
+          } catch {
+            /* ignore */
+          }
         } else if (unsubPromise && typeof (unsubPromise as Promise<unknown>).then === 'function') {
           (unsubPromise as Promise<() => void>)
             .then((unsub) => {
@@ -110,7 +112,9 @@ export const useRkcPicSettings = () => {
         await pb.collection('rkc_pic_settings').create(record);
         cacheManager.delete(CACHE_KEY);
         fetchRecords();
-      } catch {}
+      } catch {
+        /* ignore */
+      }
     },
     [fetchRecords]
   );
@@ -122,7 +126,9 @@ export const useRkcPicSettings = () => {
         await pb.collection('rkc_pic_settings').update(id, updateData);
         cacheManager.delete(CACHE_KEY);
         fetchRecords();
-      } catch {}
+      } catch {
+        /* ignore */
+      }
     },
     [fetchRecords]
   );
@@ -133,7 +139,9 @@ export const useRkcPicSettings = () => {
         await pb.collection('rkc_pic_settings').delete(recordId);
         cacheManager.delete(CACHE_KEY);
         fetchRecords();
-      } catch {}
+      } catch {
+        /* ignore */
+      }
     },
     [fetchRecords]
   );

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+﻿import { useState, useCallback, useEffect } from 'react';
 import { SiloCapacity } from '../types';
 import { pb } from '../utils/pocketbase-simple';
 import { cacheManager } from '../utils/cacheManager';
@@ -73,7 +73,9 @@ export const useRkcSiloCapacities = () => {
             }
           })
         );
-      } catch (error) {}
+      } catch (_err) {
+        /* ignore */
+      }
     };
 
     subscribe();
@@ -84,7 +86,9 @@ export const useRkcSiloCapacities = () => {
         if (typeof unsubPromise === 'function') {
           try {
             unsubPromise();
-          } catch {}
+          } catch {
+            /* ignore */
+          }
         } else if (unsubPromise && typeof (unsubPromise as Promise<unknown>).then === 'function') {
           (unsubPromise as Promise<() => void>)
             .then((unsub) => {
@@ -102,7 +106,9 @@ export const useRkcSiloCapacities = () => {
         await pb.collection('rkc_silo_capacities').create(record);
         cacheManager.delete(CACHE_KEY);
         fetchRecords();
-      } catch {}
+      } catch {
+        /* ignore */
+      }
     },
     [fetchRecords]
   );
@@ -114,7 +120,9 @@ export const useRkcSiloCapacities = () => {
         await pb.collection('rkc_silo_capacities').update(id, updateData);
         cacheManager.delete(CACHE_KEY);
         fetchRecords();
-      } catch {}
+      } catch {
+        /* ignore */
+      }
     },
     [fetchRecords]
   );
@@ -125,7 +133,9 @@ export const useRkcSiloCapacities = () => {
         await pb.collection('rkc_silo_capacities').delete(recordId);
         cacheManager.delete(CACHE_KEY);
         fetchRecords();
-      } catch {}
+      } catch {
+        /* ignore */
+      }
     },
     [fetchRecords]
   );
@@ -142,7 +152,9 @@ export const useRkcSiloCapacities = () => {
         }
         cacheManager.delete(CACHE_KEY);
         fetchRecords();
-      } catch {}
+      } catch {
+        /* ignore */
+      }
     },
     [fetchRecords]
   );

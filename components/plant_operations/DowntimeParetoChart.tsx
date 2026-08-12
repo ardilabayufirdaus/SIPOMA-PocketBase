@@ -35,11 +35,12 @@ const DowntimeParetoChart: React.FC<DowntimeParetoChartProps> = ({ data, type })
     const groups: Record<string, { duration: number; frequency: number }> = {};
 
     data.forEach((record) => {
-      const category = record.remarks || 'Uncategorized';
+      const category = record.remarks || record.problem || record.category || 'Uncategorized';
       if (!groups[category]) {
         groups[category] = { duration: 0, frequency: 0 };
       }
-      groups[category].duration += parseFloat(record.duration) || 0;
+      const dur = parseFloat(record.duration) || parseFloat(record.duration_minutes) || 0;
+      groups[category].duration += dur;
       groups[category].frequency += 1;
     });
 

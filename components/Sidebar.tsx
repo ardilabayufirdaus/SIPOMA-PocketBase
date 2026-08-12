@@ -22,6 +22,7 @@ import BellIcon from './icons/BellIcon';
 import ClockIcon from './icons/ClockIcon';
 import ServerIcon from './icons/ServerIcon';
 import ClipboardCheckIcon from './icons/ClipboardCheckIcon';
+import BeakerIcon from './icons/BeakerIcon';
 import NotificationCreator from './NotificationCreator';
 import { usePermissions } from '../utils/permissions';
 import { User } from '../types';
@@ -136,6 +137,26 @@ const Sidebar: React.FC<SidebarProps> = ({
           icon: <CircleStackIcon className={iconClass} />,
         },
       ],
+      derivativePlantOperationPages: [
+        { key: 'op_dashboard', icon: <ChartBarIcon className={iconClass} /> },
+        {
+          key: 'op_report',
+          icon: <ClipboardDocumentListIcon className={iconClass} />,
+        },
+        {
+          key: 'op_wag_report',
+          icon: <ClipboardDocumentListIcon className={iconClass} />,
+        },
+        { key: 'op_ccr_data_entry', icon: <EditIcon className={iconClass} /> },
+        {
+          key: 'op_cop_analysis',
+          icon: <CurrencyDollarIcon className={iconClass} />,
+        },
+        {
+          key: 'op_master_data',
+          icon: <ArchiveBoxIcon className={iconClass} />,
+        },
+      ],
       projectPages: [
         { key: 'proj_dashboard', icon: <ChartPieIcon className={iconClass} /> },
         { key: 'proj_list', icon: <Bars4Icon className={iconClass} /> },
@@ -230,6 +251,36 @@ const Sidebar: React.FC<SidebarProps> = ({
               icon: page.icon,
             }));
 
+        case 'derivative_operations': // Derivative Case
+          return navigationData.derivativePlantOperationPages
+            .filter((page) => {
+              if (currentUser?.role === 'Guest') {
+                const allowedGuestPages = [
+                  'op_dashboard',
+                  'op_report',
+                  'op_wag_report',
+                  'op_cop_analysis',
+                ];
+                return allowedGuestPages.includes(page.key);
+              }
+              if (
+                page.key === 'op_master_data' &&
+                !isAdminOrSuperAdmin &&
+                currentUser?.role !== 'Autonomous'
+              ) {
+                return false;
+              }
+              return (
+                permissionChecker.hasPermission('derivative_plant_operations', 'READ') ||
+                permissionChecker.hasPermission('cm_plant_operations', 'READ')
+              );
+            })
+            .map((page) => ({
+              key: page.key,
+              label: t[page.key as keyof typeof t] || page.key,
+              icon: page.icon,
+            }));
+
         case 'projects':
           return navigationData.projectPages
             .filter((page) => {
@@ -265,6 +316,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const dashboardButtonRef = useRef<HTMLButtonElement>(null);
   const operationsButtonRef = useRef<HTMLButtonElement>(null);
   const rkcOperationsButtonRef = useRef<HTMLButtonElement>(null); // New ref for RKC
+  const derivativeOperationsButtonRef = useRef<HTMLButtonElement>(null);
   const inspectionButtonRef = useRef<HTMLButtonElement>(null);
 
   const projectsButtonRef = useRef<HTMLButtonElement>(null);
@@ -402,6 +454,23 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onClick={() => handleDropdownToggle('rkc_operations', rkcOperationsButtonRef)}
                 hasDropdown={true}
                 isExpanded={activeDropdown === 'rkc_operations'}
+                isSidebarExpanded={isExpanded}
+              />
+            )}
+
+            {/* Derivative Plant Operations */}
+            {(permissionChecker.hasPermission('derivative_plant_operations', 'READ') ||
+              permissionChecker.hasPermission('cm_plant_operations', 'READ')) && (
+              <NavigationItem
+                ref={derivativeOperationsButtonRef}
+                icon={<BeakerIcon className={iconClass} />}
+                label={t.derivativePlantOperations || 'Derivative Plant Operations'}
+                isActive={currentPage === 'derivative_operations'}
+                onClick={() =>
+                  handleDropdownToggle('derivative_operations', derivativeOperationsButtonRef)
+                }
+                hasDropdown={true}
+                isExpanded={activeDropdown === 'derivative_operations'}
                 isSidebarExpanded={isExpanded}
               />
             )}

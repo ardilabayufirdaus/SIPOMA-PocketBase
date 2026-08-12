@@ -20,6 +20,15 @@ export const CacheKeys = {
   RKC_REPORT_SETTINGS: 'rkc_report_settings',
   RKC_COP_FOOTER_PARAMETERS: 'rkc_cop_footer_parameters',
 
+  // Derivative Plant Operations
+  DERIVATIVE_PLANT_UNITS: 'derivative_plant_units',
+  DERIVATIVE_PARAMETER_SETTINGS: 'derivative_parameter_settings',
+  DERIVATIVE_SILO_CAPACITIES: 'derivative_silo_capacities',
+  DERIVATIVE_PIC_SETTINGS: 'derivative_pic_settings',
+  DERIVATIVE_COP_PARAMETERS: 'derivative_cop_parameters',
+  DERIVATIVE_REPORT_SETTINGS: 'derivative_report_settings',
+  DERIVATIVE_COP_FOOTER_PARAMETERS: 'derivative_cop_footer_parameters',
+
   // CCR Data
   CCR_PARAMETER_DATA: 'ccr_parameter_data',
   CCR_DOWNTIME_DATA: 'ccr_downtime_data',
