@@ -21,7 +21,7 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
 
   const { currentUser: loggedInUser } = useCurrentUser();
   const permissionChecker = usePermissions(loggedInUser);
-  const { canWrite } = usePlantOperationsAccess();
+  const { canWrite } = usePlantOperationsAccess('CM');
 
   const [isFormModalOpen, setFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -175,9 +175,9 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
                 <LinkIcon className="w-6 h-6 text-[#059669]" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-white tracking-tight">
+                <h1 className="text-2xl font-bold text-white tracking-tight">
                   {t.op_work_instruction_library}
-                </h2>
+                </h1>
                 <p className="text-sm text-white/80 font-medium mt-0.5">
                   Manage work instructions and documentation
                 </p>
@@ -476,18 +476,18 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
           title={t.delete_confirmation_title}
         >
           <div className="p-6">
-            <p className="text-sm text-[#333333]">{t.delete_confirmation_message}</p>
+            <p className="text-sm text-slate-800">{t.delete_confirmation_message}</p>
           </div>
-          <div className="bg-[#F9F9F9] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-[#94a3b8]/20">
+          <div className="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-slate-400/20">
             <button
               onClick={handleDeleteConfirm}
-              className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2.5 bg-[#c7162b] text-base font-medium text-white hover:bg-[#a61324] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#c7162b] sm:ml-3 sm:w-auto sm:text-sm min-h-[44px]"
+              className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2.5 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 sm:ml-3 sm:w-auto sm:text-sm min-h-[44px]"
             >
               {t.confirm_delete_button}
             </button>
             <button
               onClick={handleCloseModals}
-              className="mt-3 w-full inline-flex justify-center rounded-lg border border-[#94a3b8] shadow-sm px-4 py-2.5 bg-white text-base font-medium text-[#333333] hover:bg-[#F0F0F0] sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm min-h-[44px]"
+              className="mt-3 w-full inline-flex justify-center rounded-lg border border-slate-400 shadow-sm px-4 py-2.5 bg-white text-base font-medium text-slate-800 hover:bg-slate-100 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm min-h-[44px]"
             >
               {t.cancel_button}
             </button>

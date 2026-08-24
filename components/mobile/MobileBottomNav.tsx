@@ -21,6 +21,7 @@ import ArchiveBoxIcon from '../icons/ArchiveBoxIcon';
 import ChartPieIcon from '../icons/ChartPieIcon';
 import Bars4Icon from '../icons/Bars4Icon';
 import BellIcon from '../icons/BellIcon';
+import DocumentTextIcon from '../icons/DocumentTextIcon';
 
 interface MobileBottomNavProps {
   currentPage: Page;
@@ -156,6 +157,14 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         key: 'projects',
         label: t.projectManagement || 'Project',
         icon: <ClipboardDocumentListIcon className={iconClass} />,
+      });
+    }
+
+    if (permissionChecker.hasPermission('contract_sla_management', 'READ')) {
+      items.push({
+        key: 'contract_sla',
+        label: t.contractSlaManagement || 'Contract & SLA',
+        icon: <DocumentTextIcon className={iconClass} />,
       });
     }
 

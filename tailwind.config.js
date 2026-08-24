@@ -64,7 +64,7 @@ export default {
           700: '#047857',
         },
         warning: {
-          50: '#fffbebf',
+          50: '#fffbeb',
           500: '#f59e0b',
           700: '#b45309',
         },
@@ -210,7 +210,8 @@ export default {
             {},
         },
         '.glass-hover': {
-          '@apply hover:bg-white/80 dark:hover:bg-slate-800/80 transition-[background-color,border-color,box-shadow,transform] duration-200': {},
+          '@apply hover:bg-white/80 dark:hover:bg-slate-800/80 transition-[background-color,border-color,box-shadow,transform] duration-200':
+            {},
         },
         '.text-balance': {
           'text-wrap': 'balance',

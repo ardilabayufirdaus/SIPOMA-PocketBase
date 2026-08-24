@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { formatDate } from '../../utils/dateUtils';
 import OeeDashboardSection from '../../components/plant_operations/OeeDashboardSection';
+import DerivativeOeeDashboardSection from '../../components/plant_operations/DerivativeOeeDashboardSection';
 import { usePlantOperationsDataOptimizer } from '../../hooks/usePlantOperationsDataOptimizer';
 import PredictiveMaintenance from '../../components/monitoring/PredictiveMaintenance';
 import { useServerStats } from '../../hooks/useServerStats';
@@ -118,7 +119,11 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
               </div>
             </div>
 
-            <OeeDashboardSection date={selectedDate} selectedUnit="all" />
+            {section === 'Derivative' ? (
+              <DerivativeOeeDashboardSection date={selectedDate} selectedUnit="all" />
+            ) : (
+              <OeeDashboardSection date={selectedDate} selectedUnit="all" />
+            )}
           </section>
 
           {/* Predictive Maintenance Section */}

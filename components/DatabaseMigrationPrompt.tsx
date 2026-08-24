@@ -10,6 +10,16 @@ interface DatabaseMigrationPromptProps {
 const DatabaseMigrationPrompt: React.FC<DatabaseMigrationPromptProps> = ({ error, onDismiss }) => {
   const [showSQL, setShowSQL] = useState(false);
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && error.includes('users_role_check')) {
+        onDismiss();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [error, onDismiss]);
+
   const migrationSQL = `-- Run this SQL in your Supabase SQL Editor
 -- Drop the existing constraint
 ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
@@ -39,18 +49,31 @@ CHECK (role IN (
   }
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-[90%] max-w-4xl shadow-lg rounded-md bg-white">
-        <EnhancedCard className="p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div
+        className="fixed inset-0 bg-slate-950/70 dark:bg-black/80 transition-opacity"
+        onClick={onDismiss}
+        aria-hidden="true"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="migration-dialog-title"
+        className="relative w-full max-w-4xl bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto z-10"
+      >
+        <EnhancedCard className="p-2 border-0 shadow-none bg-transparent">
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
-              <ExclamationTriangleIcon className="w-8 h-8 text-yellow-500" />
+              <ExclamationTriangleIcon className="w-8 h-8 text-amber-500" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3
+                id="migration-dialog-title"
+                className="text-lg font-semibold text-slate-900 dark:text-white mb-2"
+              >
                 Database Schema Update Required
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-slate-600 dark:text-slate-300 mb-4">
                 The new Tonasa roles require a database schema update. Please run the following SQL
                 in your Supabase SQL Editor:
               </p>
@@ -66,22 +89,26 @@ CHECK (role IN (
               </div>
 
               {showSQL && (
-                <div className="bg-gray-100 rounded-lg p-4 mb-4">
+                <div className="bg-slate-100 dark:bg-slate-900/80 rounded-xl p-4 mb-4 border border-slate-200 dark:border-slate-700">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-gray-700">Migration SQL:</span>
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Migration SQL:
+                    </span>
                     <EnhancedButton variant="outline" size="sm" onClick={copyToClipboard}>
                       Copy to Clipboard
                     </EnhancedButton>
                   </div>
-                  <pre className="text-sm text-gray-800 overflow-x-auto whitespace-pre-wrap">
+                  <pre className="text-sm text-slate-800 dark:text-slate-200 overflow-x-auto whitespace-pre-wrap font-mono">
                     {migrationSQL}
                   </pre>
                 </div>
               )}
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                <h4 className="font-medium text-blue-900 mb-2">How to apply this migration:</h4>
-                <ol className="list-decimal list-inside text-sm text-blue-800 space-y-1">
+              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-xl p-4 mb-4">
+                <h4 className="font-medium text-blue-900 dark:text-blue-300 mb-2">
+                  How to apply this migration:
+                </h4>
+                <ol className="list-decimal list-inside text-sm text-blue-800 dark:text-blue-400 space-y-1">
                   <li>Go to your Supabase Dashboard</li>
                   <li>Navigate to SQL Editor</li>
                   <li>Copy and paste the migration SQL above</li>
@@ -90,7 +117,9 @@ CHECK (role IN (
                 </ol>
               </div>
 
-              <div className="text-xs text-gray-500">Error details: {error}</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">
+                Error details: {error}
+              </div>
             </div>
           </div>
 
@@ -114,5 +143,3 @@ CHECK (role IN (
 };
 
 export default DatabaseMigrationPrompt;
-
-

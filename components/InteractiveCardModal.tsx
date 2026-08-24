@@ -65,6 +65,18 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
   onClose,
   data,
 }) => {
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const renderChart = () => {
@@ -198,142 +210,165 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        {/* Background overlay */}
-        <div
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-          onClick={onClose}
-        ></div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+      {/* Background overlay */}
+      <div
+        className="fixed inset-0 bg-slate-950/70 dark:bg-black/80 transition-opacity"
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
-        {/* Modal panel */}
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-          {/* Header */}
-          <div className="bg-white px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">{data.title}</h3>
-                {data.description && (
-                  <p className="mt-1 text-sm text-gray-600">{data.description}</p>
-                )}
+      {/* Modal panel */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="interactive-card-title"
+        className="relative w-full max-w-4xl bg-white dark:bg-slate-800 rounded-2xl text-left overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-700 transform transition-all flex flex-col max-h-[90vh] z-10"
+      >
+        {/* Header */}
+        <div className="bg-white dark:bg-slate-800 px-6 py-4 border-b border-slate-200 dark:border-slate-700/60 flex items-center justify-between shrink-0">
+          <div>
+            <h3
+              id="interactive-card-title"
+              className="text-lg font-semibold text-slate-900 dark:text-white"
+            >
+              {data.title}
+            </h3>
+            {data.description && (
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{data.description}</p>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            className="min-h-[44px] min-w-[44px] p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 flex items-center justify-center"
+            aria-label="Tutup dialog"
+          >
+            <XMarkIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="bg-white dark:bg-slate-800 px-6 py-4 overflow-y-auto flex-1 text-slate-700 dark:text-slate-300 space-y-6">
+          {/* Metrics Grid */}
+          {data.metrics && data.metrics.length > 0 && (
+            <div>
+              <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3">
+                Key Metrics
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {data.metrics.map((metric, index) => (
+                  <div
+                    key={index}
+                    className="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700/50"
+                  >
+                    <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                      {metric.label}
+                    </div>
+                    <div className="flex items-baseline space-x-1 mt-1">
+                      <div className="text-lg font-semibold text-slate-900 dark:text-white">
+                        {typeof metric.value === 'string' || typeof metric.value === 'number'
+                          ? String(metric.value)
+                          : '[Invalid Value]'}
+                      </div>
+                      {metric.unit && (
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          {metric.unit}
+                        </div>
+                      )}
+                    </div>
+                    {metric.trend && (
+                      <div className="flex items-center mt-1">
+                        <span
+                          className={`text-xs font-medium ${
+                            metric.trend.isPositive
+                              ? 'text-emerald-600 dark:text-emerald-400'
+                              : 'text-blue-600 dark:text-blue-400'
+                          }`}
+                        >
+                          {metric.trend.value > 0 ? `+${metric.trend.value}` : metric.trend.value}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <XMarkIcon className="w-5 h-5 text-gray-500" />
-              </button>
             </div>
-          </div>
+          )}
 
-          {/* Content */}
-          <div className="bg-white px-6 py-4 max-h-96 overflow-y-auto">
-            <div className="space-y-6">
-              {/* Metrics Grid */}
-              {data.metrics && data.metrics.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">Key Metrics</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {data.metrics.map((metric, index) => (
-                      <div key={index} className="bg-gray-50 p-3 rounded-lg">
-                        <div className="text-xs font-medium text-gray-600">{metric.label}</div>
-                        <div className="flex items-baseline space-x-1 mt-1">
-                          <div className="text-lg font-semibold text-gray-900">
-                            {typeof metric.value === 'string' || typeof metric.value === 'number'
-                              ? String(metric.value)
-                              : '[Invalid Value]'}
-                          </div>
-                          {metric.unit && (
-                            <div className="text-xs text-gray-500">{metric.unit}</div>
-                          )}
-                        </div>
-                        {metric.trend && (
-                          <div className="flex items-center mt-1">
-                            <span
-                              className={`text-xs font-medium ${
-                                metric.trend.isPositive ? 'text-green-600' : 'text-blue-600'
-                              }`}
-                            >
-                              metric.trend.value
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Chart */}
-              {data.chartData && data.chartData.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">Trend Analysis</h4>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="h-64">{renderChart()}</div>
-                  </div>
-                </div>
-              )}
-
-              {/* Details List */}
-              {data.details && data.details.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">Detailed Information</h4>
-                  <div className="space-y-2">
-                    {data.details.map((detail, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg"
-                      >
-                        <span className="text-sm text-gray-600">{detail.label}</span>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium text-gray-900">
-                            {typeof detail.value === 'string' || typeof detail.value === 'number'
-                              ? String(detail.value)
-                              : '[Invalid Value]'}
-                          </span>
-                          {detail.status && (
-                            <span
-                              className={`w-2 h-2 rounded-full ${
-                                detail.status === 'good'
-                                  ? 'bg-green-500'
-                                  : detail.status === 'warning'
-                                    ? 'bg-yellow-500'
-                                    : detail.status === 'critical'
-                                      ? 'bg-red-500'
-                                      : 'bg-gray-500'
-                              }`}
-                            ></span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+          {/* Chart */}
+          {data.chartData && data.chartData.length > 0 && (
+            <div>
+              <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3">
+                Trend Analysis
+              </h4>
+              <div className="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                <div className="h-64">{renderChart()}</div>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Actions */}
-          {data.actions && data.actions.length > 0 && (
-            <div className="bg-gray-50 px-6 py-4 flex flex-wrap gap-3">
-              {data.actions.map((action, index) => (
-                <button
-                  key={index}
-                  onClick={action.onClick}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                    action.variant === 'primary'
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                      : action.variant === 'danger'
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                        : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
-                  }`}
-                >
-                  {action.label}
-                </button>
-              ))}
+          {/* Details List */}
+          {data.details && data.details.length > 0 && (
+            <div>
+              <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3">
+                Detailed Information
+              </h4>
+              <div className="space-y-2">
+                {data.details.map((detail, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between py-2 px-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-700/50"
+                  >
+                    <span className="text-sm text-slate-600 dark:text-slate-400">
+                      {detail.label}
+                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-slate-900 dark:text-white">
+                        {typeof detail.value === 'string' || typeof detail.value === 'number'
+                          ? String(detail.value)
+                          : '[Invalid Value]'}
+                      </span>
+                      {detail.status && (
+                        <span
+                          className={`w-2.5 h-2.5 rounded-full ${
+                            detail.status === 'good'
+                              ? 'bg-emerald-500'
+                              : detail.status === 'warning'
+                                ? 'bg-amber-500'
+                                : detail.status === 'critical'
+                                  ? 'bg-red-500'
+                                  : 'bg-slate-400'
+                          }`}
+                        ></span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
+
+        {/* Actions */}
+        {data.actions && data.actions.length > 0 && (
+          <div className="bg-slate-50 dark:bg-slate-900/80 px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex flex-wrap gap-3 shrink-0">
+            {data.actions.map((action, index) => (
+              <button
+                key={index}
+                onClick={action.onClick}
+                className={`min-h-[44px] px-4 py-2 text-sm font-medium rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                  action.variant === 'primary'
+                    ? 'bg-primary-600 hover:bg-primary-700 text-white shadow-md shadow-primary-600/20'
+                    : action.variant === 'danger'
+                      ? 'bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-600/20'
+                      : 'bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100'
+                }`}
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

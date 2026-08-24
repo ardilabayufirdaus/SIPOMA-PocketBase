@@ -53,28 +53,28 @@ const AIAnalyticsDashboard: React.FC<AIAnalyticsDashboardProps> = ({ className =
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'low':
-        return 'text-blue-600 bg-blue-100';
+        return 'text-blue-700 bg-blue-100 dark:bg-blue-950/60 dark:text-blue-400';
       case 'medium':
-        return 'text-yellow-600 bg-yellow-100';
+        return 'text-amber-700 bg-amber-100 dark:bg-amber-950/60 dark:text-amber-400';
       case 'high':
-        return 'text-blue-600 bg-orange-100';
+        return 'text-orange-700 bg-orange-100 dark:bg-orange-950/60 dark:text-orange-400';
       case 'critical':
-        return 'text-orange-800 bg-red-200';
+        return 'text-red-700 bg-red-100 dark:bg-red-950/60 dark:text-red-400';
       default:
-        return 'text-gray-600 bg-gray-100';
+        return 'text-slate-700 bg-slate-100 dark:bg-slate-800 dark:text-slate-300';
     }
   };
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
       case 'low':
-        return 'text-green-600 bg-green-100';
+        return 'text-emerald-700 bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-400';
       case 'medium':
-        return 'text-yellow-600 bg-yellow-100';
+        return 'text-amber-700 bg-amber-100 dark:bg-amber-950/60 dark:text-amber-400';
       case 'high':
-        return 'text-blue-600 bg-orange-100';
+        return 'text-orange-700 bg-orange-100 dark:bg-orange-950/60 dark:text-orange-400';
       default:
-        return 'text-gray-600 bg-gray-100';
+        return 'text-slate-700 bg-slate-100 dark:bg-slate-800 dark:text-slate-300';
     }
   };
 
@@ -348,12 +348,12 @@ const AIAnalyticsDashboard: React.FC<AIAnalyticsDashboardProps> = ({ className =
                   {!anomaly.isResolved ? (
                     <button
                       onClick={() => resolveAnomaly(anomaly.id, 'admin')}
-                      className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
+                      className="min-h-[44px] px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     >
                       Resolve
                     </button>
                   ) : (
-                    <span className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-md">
+                    <span className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-medium rounded-xl">
                       Resolved
                     </span>
                   )}
@@ -367,50 +367,50 @@ const AIAnalyticsDashboard: React.FC<AIAnalyticsDashboardProps> = ({ className =
   );
 
   const renderTrends = () => (
-    <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
-      <div className="p-6 border-b border-slate-200">
-        <h3 className="text-lg font-semibold text-slate-900">Trend Analysis</h3>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Trend Analysis</h3>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-slate-600 dark:bg-slate-700">
+          <thead className="bg-slate-800 dark:bg-slate-900 text-white">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+              <th className="px-6 py-3.5 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Category
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+              <th className="px-6 py-3.5 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Direction
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+              <th className="px-6 py-3.5 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Confidence
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+              <th className="px-6 py-3.5 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Prediction
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+              <th className="px-6 py-3.5 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Created
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-slate-200">
+          <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800">
             {filteredData.trends.map((trend) => (
-              <tr key={trend.id} className="hover:bg-slate-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+              <tr key={trend.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-white">
                   {trend.category}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300">
                   <div className="flex items-center space-x-2">
                     <span>{getTrendIcon(trend.direction)}</span>
                     <span>{trend.direction}</span>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 font-mono">
                   {(trend.confidence * 100).toFixed(1)}%
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 font-mono">
                   {trend.prediction.nextValue.toFixed(2)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                   {new Date(trend.createdAt).toLocaleString()}
                 </td>
               </tr>
@@ -422,30 +422,37 @@ const AIAnalyticsDashboard: React.FC<AIAnalyticsDashboardProps> = ({ className =
   );
 
   const renderPredictions = () => (
-    <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
-      <div className="p-6 border-b border-slate-200">
-        <h3 className="text-lg font-semibold text-slate-900">Predictive Models</h3>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Predictive Models</h3>
       </div>
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {models.map((model) => (
-            <div key={model.id} className="p-4 border border-slate-200 rounded-lg">
+            <div
+              key={model.id}
+              className="p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900"
+            >
               <div className="flex items-start justify-between mb-3">
-                <h4 className="text-lg font-medium text-slate-900">{model.name}</h4>
+                <h4 className="text-lg font-medium text-slate-900 dark:text-white">{model.name}</h4>
                 <span
-                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    model.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                  className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${
+                    model.isActive
+                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400'
+                      : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
                   }`}
                 >
                   {model.isActive ? 'Active' : 'Inactive'}
                 </span>
               </div>
-              <div className="space-y-2 text-sm text-slate-600">
+              <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
                 <div>Type: {model.type}</div>
                 <div>Category: {model.category}</div>
-                <div>Accuracy: {(model.accuracy * 100).toFixed(1)}%</div>
+                <div className="font-mono">Accuracy: {(model.accuracy * 100).toFixed(1)}%</div>
                 <div>Training Data: {model.trainingDataSize} points</div>
-                <div>Last Training: {new Date(model.lastTraining).toLocaleString()}</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">
+                  Last Training: {new Date(model.lastTraining).toLocaleString()}
+                </div>
               </div>
             </div>
           ))}

@@ -49,6 +49,7 @@ import {
   UserListPage,
   WhatsAppReportsPage,
   InspectionPage,
+  ContractSlaPage,
 } from './src/config/lazyComponents';
 
 import { logSystemStatus } from './utils/systemStatus';
@@ -233,6 +234,8 @@ const App: React.FC = () => {
         return t.database;
       case 'inspection':
         return t.inspection || 'Inspection';
+      case 'contract_sla':
+        return t.contractSlaManagement || 'Contract & SLA Management';
 
       default:
         return 'SIPOMA';
@@ -466,6 +469,16 @@ const App: React.FC = () => {
       {/* Inspection Module */}
       <PermissionGuard user={currentUser} feature="inspection" requiredLevel="READ" fallback={null}>
         {currentPage === 'inspection' && <InspectionPage />}
+      </PermissionGuard>
+
+      {/* Contract & SLA Management Module */}
+      <PermissionGuard
+        user={currentUser}
+        feature="contract_sla_management"
+        requiredLevel="READ"
+        fallback={null}
+      >
+        {currentPage === 'contract_sla' && <ContractSlaPage />}
       </PermissionGuard>
     </LazyContainer>
   );

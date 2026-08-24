@@ -56,13 +56,14 @@ import { useRkcCcrFooterData as useCcrFooterData } from '../../hooks/useRkcCcrFo
 import { useRkcCcrInformationData as useCcrInformationData } from '../../hooks/useRkcCcrInformationData';
 import { useRkcCcrMaterialUsage as useCcrMaterialUsage } from '../../hooks/useRkcCcrMaterialUsage';
 import { usePermissions } from '../../utils/permissions';
-import { isSuperAdmin } from '../../utils/roleHelpers';
+import { isSuperAdmin, canAccessMonthlyExportImport } from '../../utils/roleHelpers';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 // Import PocketBase client and hooks
 import { pb } from '../../utils/pocketbase-simple';
 import { useRkcUserParameterOrder as useUserParameterOrder } from '../../hooks/useRkcUserParameterOrder';
 import { formatDateToISO8601, formatToWITA, formatDate } from '../../utils/dateUtils';
+import MonthlyExportImportModal from '../../components/ccr/modals/MonthlyExportImportModal';
 
 // Import Enhanced Components
 import {
@@ -88,6 +89,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
   const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isDeletingAllNames, setIsDeletingAllNames] = useState(false);
+  const [showMonthlyModal, setShowMonthlyModal] = useState(false);
   const [columnSearchQuery, setColumnSearchQuery] = useState('');
   const [isFooterVisible, setIsFooterVisible] = useState(false);
   const [materialUsageRefreshTrigger, setMaterialUsageRefreshTrigger] = useState(0);
@@ -135,7 +137,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
   // Permission checker
   const { currentUser: loggedInUser } = useCurrentUser();
   const permissionChecker = usePermissions(loggedInUser);
-  const { canWrite } = usePlantOperationsAccess();
+  const { canWrite } = usePlantOperationsAccess('RKC');
   const hasPermission = (
     feature: Parameters<typeof permissionChecker.hasPermission>[0],
     level?: Parameters<typeof permissionChecker.hasPermission>[1]
@@ -3854,7 +3856,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
               {/* Primary Actions Row */}
               <div className="flex items-center gap-2 flex-wrap justify-end">
                 {/* Visual Controls Group */}
-                <div className="flex items-center p-1 bg-white rounded-lg border border-neutral-200 shadow-sm">
+                <div className="flex items-center p-1 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                   {/* Refresh Button */}
                   <div className="relative group/tooltip">
                     <Button
@@ -3862,12 +3864,11 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                       onClick={refreshData}
                       disabled={isRefreshing || !selectedCategory || !selectedUnit}
                       variant="ghost"
-                      className="h-9 px-3 text-neutral-600 hover:text-indigo-600 hover:bg-indigo-50"
+                      aria-label="Refresh Data"
+                      className="min-h-[44px] px-3.5 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                       title={t.refresh_data}
                     >
-                      <div
-                        className={isRefreshing ? 'animate-spin' : ''}
-                      >
+                      <div className={isRefreshing ? 'animate-spin' : ''}>
                         <svg
                           className="w-4 h-4"
                           fill="none"
@@ -3895,17 +3896,18 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                     )}
                   </div>
 
-                  <div className="w-px h-4 bg-neutral-300 mx-1"></div>
+                  <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-1"></div>
 
                   {/* Show/Hide Footer */}
                   <Button
                     size="sm"
                     onClick={() => setIsFooterVisible(!isFooterVisible)}
                     variant="ghost"
-                    className={`h-9 px-3 ${isFooterVisible ? 'text-indigo-600 bg-indigo-50 font-medium' : 'text-neutral-600 hover:bg-neutral-100'}`}
+                    aria-label={isFooterVisible ? t.hide_footer : t.show_footer}
+                    className={`min-h-[44px] px-3.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${isFooterVisible ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                     title={isFooterVisible ? t.hide_footer : t.show_footer}
                   >
-                    <span className="text-sm mr-2">{t.footer}</span>
+                    <span className="text-sm mr-2 font-medium">{t.footer}</span>
                     {isFooterVisible ? (
                       <svg
                         className="w-4 h-4"
@@ -3937,7 +3939,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                     )}
                   </Button>
 
-                  <div className="w-px h-4 bg-neutral-300 mx-1"></div>
+                  <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-1"></div>
 
                   {/* Reorder Parameters */}
                   <Button
@@ -3947,10 +3949,11 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                       !selectedCategory || !selectedUnit || filteredParameterSettings.length === 0
                     }
                     variant="ghost"
-                    className="h-9 px-3 text-neutral-600 hover:text-violet-600 hover:bg-violet-50"
+                    aria-label={t.reorder_parameters_title || 'Reorder Parameters'}
+                    className="min-h-[44px] px-3.5 text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     title={t.reorder_parameters_title}
                   >
-                    <span className="text-sm mr-2">{t.reorder}</span>
+                    <span className="text-sm mr-2 font-medium">{t.reorder}</span>
                     <ArrowsUpDownIcon className="w-4 h-4" />
                   </Button>
                 </div>
@@ -3959,18 +3962,11 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                 {hasPermission('rkc_plant_operations', 'WRITE') && selectedUnit && (
                   <div className="flex items-center gap-2">
                     {/* AI Parameter Optimization */}
-                    <OptimizationAdvisorButton
-                      unit={selectedUnit}
-                      className="h-9 text-sm px-3 shadow-sm bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 hover:shadow-md"
-                    />
+                    <OptimizationAdvisorButton unit={selectedUnit} />
 
                     {/* AI Shift Report */}
                     {selectedDate && (
-                      <ShiftHandoverButton
-                        date={selectedDate}
-                        unit={selectedUnit}
-                        className="h-9 text-sm px-3 shadow-sm bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 hover:shadow-md"
-                      />
+                      <ShiftHandoverButton date={selectedDate} unit={selectedUnit} />
                     )}
                   </div>
                 )}
@@ -4034,12 +4030,30 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                         filteredParameterSettings.length === 0
                       }
                       variant="ghost"
-                      className="h-8 px-3 rounded-none text-neutral-600 hover:text-teal-700 hover:bg-teal-50"
+                      aria-label="Export Excel"
+                      className="min-h-[44px] px-3.5 text-slate-700 dark:text-slate-200 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                       title={t.export}
                     >
                       <DocumentArrowDownIcon className="w-4 h-4 mr-2" />
                       <span className="text-xs font-medium">{t.export}</span>
                     </Button>
+
+                    {/* Monthly Export & Import Button */}
+                    {canAccessMonthlyExportImport(
+                      loggedInUser?.role || pb.authStore.model?.role
+                    ) && (
+                      <Button
+                        size="sm"
+                        onClick={() => setShowMonthlyModal(true)}
+                        variant="ghost"
+                        aria-label="Ekspor & Impor Data Bulanan"
+                        className="min-h-[44px] px-3.5 text-slate-700 dark:text-slate-200 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        title="Ekspor & Impor Data Bulanan"
+                      >
+                        <DocumentArrowDownIcon className="w-4 h-4 mr-2 text-emerald-600 dark:text-emerald-400" />
+                        <span className="text-xs font-bold">Bulanan (Excel)</span>
+                      </Button>
+                    )}
                   </div>
                 )}
 
@@ -4231,22 +4245,19 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                         style={{ width: '60px' }}
                         role="columnheader"
                         scope="col"
-                      >
-                      </th>
+                      ></th>
                       <th
                         className="px-2 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 bg-neutral-50"
                         style={{ width: '80px' }}
                         role="columnheader"
                         scope="col"
-                      >
-                      </th>
+                      ></th>
                       <th
                         className="px-3 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 bg-neutral-50"
                         style={{ width: '180px', minWidth: '180px' }}
                         role="columnheader"
                         scope="col"
-                      >
-                      </th>
+                      ></th>
                       {filteredParameterSettings.map((param) => (
                         <th
                           key={`minmax-${param.id}`}
@@ -4258,12 +4269,12 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                           scope="col"
                         >
                           <div className="text-center space-y-1">
-                            <div className="text-[6px] leading-tight text-[#111827] font-medium">
+                            <div className="text-xs leading-tight text-slate-700 dark:text-slate-300 font-medium">
                               {param.min_value !== undefined
                                 ? `Min: ${formatNumberIndonesian(param.min_value, 1)}`
                                 : '-'}
                             </div>
-                            <div className="text-[6px] leading-tight text-[#111827] font-medium">
+                            <div className="text-xs leading-tight text-slate-700 dark:text-slate-300 font-medium">
                               {param.max_value !== undefined
                                 ? `Max: ${formatNumberIndonesian(param.max_value, 1)}`
                                 : '-'}
@@ -4273,34 +4284,36 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="bg-white" role="rowgroup">
+                  <tbody className="bg-white dark:bg-slate-900" role="rowgroup">
                     {filteredParameterSettings.length > 0 ? (
                       Array.from({ length: 24 }, (_, i) => i + 1).map((hour) => (
                         <tr
                           key={hour}
-                          className={`border-b border-neutral-200/50 group ${
-                            hour % 2 === 0 ? 'bg-white' : 'bg-neutral-50'
-                          } hover:bg-slate-100`}
+                          className={`border-b border-neutral-200/50 dark:border-slate-800 group ${
+                            hour % 2 === 0
+                              ? 'bg-white dark:bg-slate-900'
+                              : 'bg-neutral-50 dark:bg-slate-800/40'
+                          } hover:bg-slate-100 dark:hover:bg-slate-800`}
                           role="row"
                         >
                           <td
-                            className="px-3 py-3 whitespace-nowrap text-sm font-medium text-neutral-900 border-r border-neutral-200/50 sticky left-0 bg-white group-hover:bg-slate-100 z-30 sticky-col"
+                            className="px-3 py-3 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-white border-r border-neutral-200/50 dark:border-slate-800 sticky left-0 bg-white dark:bg-slate-900 group-hover:bg-slate-100 dark:group-hover:bg-slate-800 z-30 sticky-col"
                             style={{ width: '60px' }}
                             role="gridcell"
                           >
                             <div className="flex items-center justify-center h-8">
-                              <span className="font-mono font-semibold text-neutral-800">
+                              <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
                                 {String(hour).padStart(2, '0')}:00
                               </span>
                             </div>
                           </td>
                           <td
-                            className="px-3 py-3 whitespace-nowrap text-xs text-neutral-600 border-r border-neutral-200/50"
+                            className="px-3 py-3 whitespace-nowrap text-xs text-slate-600 dark:text-slate-300 border-r border-neutral-200/50 dark:border-slate-800"
                             style={{ width: '80px' }}
                             role="gridcell"
                           >
                             <div className="flex items-center h-8">
-                              <span className="px-2 py-1 rounded-md bg-[#111827]/10 text-[#111827] font-medium text-xs">
+                              <span className="px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-medium text-xs">
                                 {getShiftForHour(hour)}
                               </span>
                             </div>
@@ -4385,7 +4398,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                   ? formatIndonesianInput(
                                       hourValue,
                                       getPrecisionForParameter(param.parameter, param.unit),
-                                      false 
+                                      false
                                     )
                                   : String(hourValue);
                             }
@@ -4638,9 +4651,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-800">
-                    {t.ccr_data_entry_title}
-                  </h3>
+                  <h3 className="text-xl font-bold text-slate-800">{t.ccr_data_entry_title}</h3>
                   <p className="text-sm text-neutral-600">{t.ccr_silo_data_description}</p>
                 </div>
               </div>
@@ -4903,9 +4914,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-800">
-                    {t.ccr_information_title}
-                  </h3>
+                  <h3 className="text-xl font-bold text-slate-800">{t.ccr_information_title}</h3>
                   <p className="text-sm text-neutral-600 mt-1">{t.ccr_information_description}</p>
                 </div>
               </div>
@@ -4958,9 +4967,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-slate-800">
-                      {t.ccr_downtime_title}
-                    </h3>
+                    <h3 className="text-xl font-bold text-slate-800">{t.ccr_downtime_title}</h3>
                     <br className="hidden" />
                     <p className="text-sm text-neutral-600 mt-1">{t.ccr_downtime_description}</p>
                   </div>
@@ -5684,6 +5691,15 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
             </EnhancedButton>
           </div>
         </Modal>
+
+        {/* Monthly Export & Import Modal */}
+        <MonthlyExportImportModal
+          isOpen={showMonthlyModal}
+          onClose={() => setShowMonthlyModal(false)}
+          selectedUnit={selectedUnit}
+          t={t}
+          onSuccess={refreshData}
+        />
 
         {/* Navigation Help Modal */}
         <CcrNavigationHelp

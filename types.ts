@@ -19,6 +19,7 @@ export interface UserPermission {
   project_management: PermissionLevel;
   database: PermissionLevel;
   inspection: PermissionLevel;
+  contract_sla_management?: PermissionLevel;
   plant_operations?: any;
 }
 
@@ -54,6 +55,7 @@ export type Page =
   | 'derivative_operations'
   | 'whatsapp-reports'
   | 'inspection'
+  | 'contract_sla'
   | 'server';
 
 export interface AddUserData {
@@ -352,4 +354,77 @@ export interface GenericInspectionArea {
   unit: string; // unit ID
   name: string;
   sort_order?: number;
+}
+
+// --- Contract & SLA Management Types ---
+export type ContractCategory =
+  | 'Raw Material'
+  | 'Maintenance & Sparepart'
+  | 'Logistik & Transport'
+  | 'Outsourcing & Jasa'
+  | 'Konstruksi & Proyek'
+  | 'Chemical & Consumable'
+  | 'Lain-lain';
+
+export type ContractStatus = 'Active' | 'Near Expiry' | 'Expired' | 'Completed' | 'Draft';
+export type SlaStatus = 'Achieved' | 'On Track' | 'Warning' | 'Breached';
+export type ContractCurrency = 'IDR' | 'USD' | 'EUR';
+
+export interface ContractSLA {
+  id: string;
+  po_number: string;
+  contract_title: string;
+  vendor_name: string;
+  category: ContractCategory | string;
+  start_date: string; // YYYY-MM-DD
+  end_date: string; // YYYY-MM-DD
+  currency?: ContractCurrency | string; // IDR, USD, EUR (default: IDR)
+  contract_budget: number; // Total nilai anggaran
+  budget_absorbed: number; // Realisasi serapan anggaran
+  initial_volume: number; // Pagu volume kontrak awal
+  absorbed_volume: number; // Realisasi volume
+  remaining_volume?: number; // Sisa volume
+  volume_unit: string; // Ton, Jam/Manhour, Unit, Trip, Paket, dll.
+  contract_pdf?: string; // Filename PDF Kontrak utama di PocketBase
+  sap_po_screenshot?: string; // Filename Screenshot SAP di PocketBase
+  attachments?: string[]; // Filenames lampiran berkas PDF di PocketBase
+  pic_name?: string;
+  pic_contact?: string;
+  status: ContractStatus;
+  sla_kpi_target?: string;
+  sla_status?: SlaStatus;
+  notes?: string;
+  created?: string;
+  updated?: string;
+}
+
+export interface ContractFilterState {
+  search: string;
+  category: string;
+  status: string;
+  currency?: string; // 'all' | 'IDR' | 'USD' | 'EUR'
+  expiryFilter: 'all' | 'h90' | 'h30' | 'expired' | 'active';
+  sortBy: 'end_date_asc' | 'end_date_desc' | 'budget_desc' | 'po_asc' | 'created_desc';
+}
+
+export interface CurrencyBudgetSummary {
+  currency: ContractCurrency | string;
+  totalBudget: number;
+  totalAbsorbed: number;
+  totalRemaining: number;
+  absorptionPercentage: number;
+  contractCount: number;
+}
+
+export interface ContractSummaryStats {
+  totalContracts: number;
+  activeContracts: number;
+  h90ExpiringContracts: number;
+  h30CriticalContracts: number;
+  expiredContracts: number;
+  totalBudget: number;
+  totalAbsorbedBudget: number;
+  overallAbsorptionPercentage: number;
+  byCurrency?: Record<string, CurrencyBudgetSummary>;
+  activeCurrencies?: string[];
 }

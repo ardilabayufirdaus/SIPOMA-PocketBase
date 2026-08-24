@@ -781,125 +781,147 @@ const ServerPage: React.FC = () => {
                     )}
                   </div>
                 </div>
-
-                {/* Network Rate Mini */}
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
-                  <h4 className="text-slate-500 font-bold text-xs uppercase">Net Speed</h4>
-                  <div>
-                    <div className="text-lg font-bold text-emerald-600">
-                      ↓ {formatBytes(ioRates.netRx)}/s
-                    </div>
-                    <div className="text-sm text-blue-500">↑ {formatBytes(ioRates.netTx)}/s</div>
-                  </div>
-                </div>
-
-                {/* Disk I/O Rate Mini */}
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
-                  <h4 className="text-slate-500 font-bold text-xs uppercase">Disk I/O</h4>
-                  <div>
-                    <div className="text-lg font-bold text-slate-700 dark:text-slate-300">
-                      R: {formatBytes(ioRates.diskRead)}/s
-                    </div>
-                    <div className="text-sm text-slate-500">
-                      W: {formatBytes(ioRates.diskWrite)}/s
-                    </div>
-                  </div>
-                </div>
-
-                {/* Top Resource Hog Mini */}
-                <div className="col-span-1 md:col-span-2 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                  <h4 className="text-slate-500 font-bold text-xs uppercase mb-2">Top CPU Hogs</h4>
-                  <div className="space-y-2">
-                    {stats?.top_processes?.slice(0, 2).map((p, i) => (
-                      <div key={i} className="flex justify-between items-center text-sm">
-                        <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">
-                          {p.name}
-                        </span>
-                        <span className="font-bold text-orange-500">{p.cpu}%</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
 
-              {/* Main Metrics Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {/* CPU Card with Chart */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xs font-bold text-[#808080] uppercase tracking-widest border-l-2 border-primary-600 pl-2">
-                      CPU Load
-                    </h3>
-                    <Cpu className="w-5 h-5 text-primary-600" />
+              {/* Dynamic Metric Grid */}
+              <div className="space-y-6">
+                {/* Real-time Sub-metrics summary banner */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+                    <span className="text-xs text-slate-500 font-bold uppercase">Web Server</span>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-sm font-bold">Port 80/443</span>
+                      {stats?.services?.web ? (
+                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-red-500" />
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-baseline gap-2 mb-4">
-                    <span className="text-3xl font-black">{loadData.one}</span>
-                    <span className="text-xs font-bold text-[#808080] uppercase">1m avg</span>
+
+                  {/* Network Rate Mini */}
+                  <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+                    <h2 className="text-slate-500 font-bold text-xs uppercase">Net Speed</h2>
+                    <div>
+                      <div className="text-lg font-bold text-emerald-600">
+                        ↓ {formatBytes(ioRates.netRx)}/s
+                      </div>
+                      <div className="text-sm text-blue-500">↑ {formatBytes(ioRates.netTx)}/s</div>
+                    </div>
                   </div>
-                  <div className="h-10 w-full opacity-50 group-hover:opacity-100 transition-opacity">
-                    <Sparkline data={cpuHistory} color="#059669" />
+
+                  {/* Disk I/O Rate Mini */}
+                  <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+                    <h2 className="text-slate-500 font-bold text-xs uppercase">Disk I/O</h2>
+                    <div>
+                      <div className="text-lg font-bold text-slate-700 dark:text-slate-300">
+                        R: {formatBytes(ioRates.diskRead)}/s
+                      </div>
+                      <div className="text-sm text-slate-500">
+                        W: {formatBytes(ioRates.diskWrite)}/s
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Top Resource Hog Mini */}
+                  <div className="col-span-1 md:col-span-2 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                    <h2 className="text-slate-500 font-bold text-xs uppercase mb-2">
+                      Top CPU Hogs
+                    </h2>
+                    <div className="space-y-2">
+                      {stats?.top_processes?.slice(0, 2).map((p, i) => (
+                        <div key={i} className="flex justify-between items-center text-sm">
+                          <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">
+                            {p.name}
+                          </span>
+                          <span className="font-bold text-orange-500">{p.cpu}%</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
-                {/* Memory Card with Chart */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xs font-bold text-[#808080] uppercase tracking-widest border-l-2 border-[#111827] pl-2">
-                      RAM Usage
-                    </h3>
-                    <Activity className="w-5 h-5 text-[#111827]" />
+                {/* Main Metrics Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {/* CPU Card with Chart */}
+                  <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
+                    <div className="flex items-center justify-between mb-2">
+                      <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-l-2 border-primary-600 pl-2">
+                        CPU Load
+                      </h2>
+                      <Cpu className="w-5 h-5 text-primary-600" />
+                    </div>
+                    <div className="flex items-baseline gap-2 mb-4">
+                      <span className="text-3xl font-black">{loadData.one}</span>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">
+                        1m avg
+                      </span>
+                    </div>
+                    <div className="h-10 w-full opacity-50 group-hover:opacity-100 transition-opacity">
+                      <Sparkline data={cpuHistory} color="#059669" />
+                    </div>
                   </div>
-                  <div className="flex items-baseline gap-2 mb-2">
-                    <span className="text-3xl font-black">{memData.percent}%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 mb-2 overflow-hidden">
-                    <div
-                      className="bg-[#111827] h-full rounded-full transition-all duration-500"
-                      style={{ width: `${memData.percent}%` }}
-                    ></div>
-                  </div>
-                  <div className="h-8 w-full opacity-30 group-hover:opacity-100 transition-opacity">
-                    <Sparkline data={ramHistory} color="#111827" />
-                  </div>
-                </div>
 
-                {/* Storage Card */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xs font-bold text-[#808080] uppercase tracking-widest border-l-2 border-amber-500 pl-2">
-                      Storage
-                    </h3>
-                    <HardDrive className="w-5 h-5 text-amber-500" />
+                  {/* Memory Card with Chart */}
+                  <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
+                    <div className="flex items-center justify-between mb-2">
+                      <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-l-2 border-slate-700 dark:border-slate-300 pl-2">
+                        RAM Usage
+                      </h2>
+                      <Activity className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+                    </div>
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <span className="text-3xl font-black">{memData.percent}%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 mb-2 overflow-hidden">
+                      <div
+                        className="bg-slate-700 dark:bg-slate-300 h-full rounded-full transition-all duration-500"
+                        style={{ width: `${memData.percent}%` }}
+                      ></div>
+                    </div>
+                    <div className="h-8 w-full opacity-30 group-hover:opacity-100 transition-opacity">
+                      <Sparkline data={ramHistory} color="#334155" />
+                    </div>
                   </div>
-                  <div className="flex items-baseline gap-2 mb-2">
-                    <span className="text-3xl font-black">{diskData.percent}</span>
-                  </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-4">
-                    <div
-                      className="bg-amber-500 h-2 rounded-full"
-                      style={{ width: diskData.percent }}
-                    ></div>
-                  </div>
-                  <div className="text-xs text-[#808080] flex justify-between">
-                    <span>Used: {diskData.used}</span>
-                    <span>Free: {diskData.avail}</span>
-                  </div>
-                </div>
 
-                {/* Network Card */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xs font-bold text-[#808080] uppercase tracking-widest border-l-2 border-blue-500 pl-2">
-                      Network
-                    </h3>
-                    <Network className="w-5 h-5 text-blue-500" />
+                  {/* Storage Card */}
+                  <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-l-2 border-amber-500 pl-2">
+                        Storage
+                      </h2>
+                      <HardDrive className="w-5 h-5 text-amber-500" />
+                    </div>
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <span className="text-3xl font-black">{diskData.percent}</span>
+                    </div>
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-4">
+                      <div
+                        className="bg-amber-500 h-2 rounded-full"
+                        style={{ width: diskData.percent }}
+                      ></div>
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 flex justify-between">
+                      <span>Used: {diskData.used}</span>
+                      <span>Free: {diskData.avail}</span>
+                    </div>
                   </div>
-                  <div className="text-2xl font-black truncate relative z-10">
-                    {netStats?.active_connections || 0}{' '}
-                    <span className="text-sm text-slate-500 font-normal">Conns</span>
-                  </div>
-                  <div className="h-10 w-full opacity-50 mt-4">
-                    <Sparkline data={netRxHistory} color="#3B82F6" />
+
+                  {/* Network Card */}
+                  <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+                    <div className="flex items-center justify-between mb-2">
+                      <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-l-2 border-blue-500 pl-2">
+                        Network
+                      </h2>
+                      <Network className="w-5 h-5 text-blue-500" />
+                    </div>
+                    <div className="text-2xl font-black truncate relative z-10">
+                      {netStats?.active_connections || 0}{' '}
+                      <span className="text-sm text-slate-500 font-normal">Conns</span>
+                    </div>
+                    <div className="h-10 w-full opacity-50 mt-4">
+                      <Sparkline data={netRxHistory} color="#3B82F6" />
+                    </div>
                   </div>
                 </div>
               </div>

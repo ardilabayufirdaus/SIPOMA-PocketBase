@@ -74,7 +74,7 @@ type ModalType =
   | null;
 
 const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
-  const { canWrite } = usePlantOperationsAccess();
+  const { canWrite } = usePlantOperationsAccess('DERIVATIVE');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Plant Units State
@@ -545,10 +545,11 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white tracking-tight">
-                  Derivative Master Data
+                  {t.derivative_master_data_title || 'Derivative Master Data'}
                 </h1>
                 <p className="text-sm text-white/80 font-medium mt-0.5">
-                  Manage Derivative plant operations master data and configurations
+                  {t.derivative_master_data_subtitle ||
+                    'Manage Derivative plant operations master data and configurations'}
                 </p>
               </div>
             </div>
@@ -569,20 +570,28 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isImporting || !canWrite}
-                  className="inline-flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold text-white bg-[#059669] hover:bg-[#047857] rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                  title="Import Excel"
+                  className="inline-flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-900 rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  title={t.import_excel || 'Import Excel'}
                 >
                   <DocumentArrowUpIcon className="w-4 h-4 text-white" />
-                  <span>{isImporting ? 'Importing...' : 'Import Excel'}</span>
+                  <span>
+                    {isImporting
+                      ? t.importing_excel || 'Importing...'
+                      : t.import_excel || 'Import Excel'}
+                  </span>
                 </button>
                 <button
                   onClick={handleExportAll}
                   disabled={isExporting}
                   className="inline-flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-900 rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                  title="Export Excel"
+                  title={t.export_excel || 'Export Excel'}
                 >
                   <DocumentArrowDownIcon className="w-4 h-4 text-white" />
-                  <span>{isExporting ? 'Exporting...' : 'Export Excel'}</span>
+                  <span>
+                    {isExporting
+                      ? t.exporting_excel || 'Exporting...'
+                      : t.export_excel || 'Export Excel'}
+                  </span>
                 </button>
               </div>
             </div>
@@ -675,7 +684,8 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}
                                   onClick={() => handleOpenEditModal('plantUnit', unit)}
-                                  className="p-2 text-slate-400 hover:text-[#059669] hover:bg-[#059669]/10 rounded-lg transition-all duration-200"
+                                  className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#059669] hover:bg-[#059669]/10 rounded-lg transition-all duration-200"
+                                  aria-label="Edit plant unit"
                                 >
                                   <EditIcon className="w-4 h-4" />
                                 </motion.button>
@@ -683,7 +693,8 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}
                                   onClick={() => handleOpenDeleteModal(unit.id, 'plantUnit')}
-                                  className="p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
+                                  className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
+                                  aria-label="Delete plant unit"
                                 >
                                   <TrashIcon className="w-4 h-4" />
                                 </motion.button>
@@ -766,7 +777,8 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleOpenEditModal('picSetting', pic)}
-                                className="p-2 text-slate-400 hover:text-[#059669] hover:bg-[#059669]/10 rounded-lg transition-all duration-200"
+                                className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#059669] hover:bg-[#059669]/10 rounded-lg transition-all duration-200"
+                                aria-label="Edit PIC setting"
                               >
                                 <EditIcon className="h-4 w-4" />
                               </motion.button>
@@ -774,7 +786,8 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleOpenDeleteModal(pic.id, 'picSetting')}
-                                className="p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
+                                className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
+                                aria-label="Delete PIC setting"
                               >
                                 <TrashIcon className="h-4 w-4" />
                               </motion.button>
@@ -976,7 +989,8 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.95 }}
                                   onClick={() => handleOpenEditModal('parameterSetting', param)}
-                                  className="p-2 text-slate-400 hover:text-[#059669] hover:bg-[#059669]/10 rounded-lg transition-all duration-200"
+                                  className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#059669] hover:bg-[#059669]/10 rounded-lg transition-all duration-200"
+                                  aria-label="Edit parameter setting"
                                 >
                                   <EditIcon className="h-4 w-4" />
                                 </motion.button>
@@ -986,7 +1000,8 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                                   onClick={() =>
                                     handleOpenDeleteModal(param.id, 'parameterSetting')
                                   }
-                                  className="p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
+                                  className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
+                                  aria-label="Delete parameter setting"
                                 >
                                   <TrashIcon className="h-4 w-4" />
                                 </motion.button>
@@ -1023,11 +1038,9 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                     <Database className="w-5 h-5 text-[#059669]" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900">
-                      Kapasitas Gudang Material Trass Kering
-                    </h3>
+                    <h3 className="text-lg font-semibold text-slate-900">Material Storage</h3>
                     <p className="text-sm text-slate-600">
-                      Pengaturan kapasitas dan dead stock Gudang Penyimpanan Material Trass Kering
+                      Pengaturan kapasitas dan dead stock Gudang Penyimpanan Material
                     </p>
                   </div>
                 </div>
@@ -1090,7 +1103,7 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                         {t['plant_unit']}
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        Nama Gudang Trass Kering
+                        Nama Gudang Material
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['capacity']} (Ton) // Was max_capacity
@@ -1140,7 +1153,8 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.95 }}
                                   onClick={() => handleOpenEditModal('siloCapacity', silo)}
-                                  className="p-2 text-slate-400 hover:text-[#059669] hover:bg-[#059669]/10 rounded-lg transition-all duration-200"
+                                  className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#059669] hover:bg-[#059669]/10 rounded-lg transition-all duration-200"
+                                  aria-label="Edit silo capacity"
                                 >
                                   <EditIcon className="h-4 w-4" />
                                 </motion.button>
@@ -1148,7 +1162,8 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.95 }}
                                   onClick={() => handleOpenDeleteModal(silo.id, 'siloCapacity')}
-                                  className="p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
+                                  className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
+                                  aria-label="Delete silo capacity"
                                 >
                                   <TrashIcon className="h-4 w-4" />
                                 </motion.button>
@@ -1186,9 +1201,13 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900">
-                      {t['cop_parameter_title']}
+                      {t['cop_parameter_title'] || t['cop_parameters_title'] || 'Parameter COP'}
                     </h3>
-                    <p className="text-sm text-slate-600">{t['cop_parameter_subtitle']}</p>
+                    <p className="text-sm text-slate-600">
+                      {t['cop_parameter_subtitle'] ||
+                        t['cop_parameters_subtitle'] ||
+                        'Pemilihan parameter operasi kritis'}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -1293,7 +1312,7 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleRemoveCopParameter(param.id)}
-                                className="p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
+                                className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
                                 title="Remove from COP"
                               >
                                 <TrashIcon className="h-4 w-4" />
@@ -1409,7 +1428,8 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={() => handleOpenEditModal('reportSetting', setting)}
-                                    className="p-2 text-slate-400 hover:text-[#059669] hover:bg-[#059669]/10 rounded-lg transition-all duration-200"
+                                    className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#059669] hover:bg-[#059669]/10 rounded-lg transition-all duration-200"
+                                    aria-label="Edit report setting"
                                   >
                                     <EditIcon className="h-4 w-4" />
                                   </motion.button>
@@ -1419,7 +1439,8 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                                     onClick={() =>
                                       handleOpenDeleteModal(setting.id, 'reportSetting')
                                     }
-                                    className="p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
+                                    className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
+                                    aria-label="Delete report setting"
                                   >
                                     <TrashIcon className="h-4 w-4" />
                                   </motion.button>
@@ -1633,11 +1654,7 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
           <Modal
             isOpen={true}
             onClose={handleCloseModals}
-            title={
-              editingSilo
-                ? 'Edit Gudang Material Trass Kering'
-                : 'Tambah Gudang Material Trass Kering'
-            }
+            title={editingSilo ? 'Edit Material Storage' : 'Tambah Material Storage'}
           >
             <SiloCapacityForm
               recordToEdit={editingSilo}
@@ -1645,8 +1662,8 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
               onCancel={handleCloseModals}
               t={t}
               plantUnits={plantUnits}
-              customTitle="Kapasitas Gudang Material Trass Kering"
-              customSiloLabel="Nama Gudang Trass Kering"
+              customTitle="Material Storage"
+              customSiloLabel="Nama Gudang Material"
             />
           </Modal>
         )}

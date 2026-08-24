@@ -23,6 +23,7 @@ import ClockIcon from './icons/ClockIcon';
 import ServerIcon from './icons/ServerIcon';
 import ClipboardCheckIcon from './icons/ClipboardCheckIcon';
 import BeakerIcon from './icons/BeakerIcon';
+import DocumentTextIcon from './icons/DocumentTextIcon';
 import NotificationCreator from './NotificationCreator';
 import { usePermissions } from '../utils/permissions';
 import { User } from '../types';
@@ -320,6 +321,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const inspectionButtonRef = useRef<HTMLButtonElement>(null);
 
   const projectsButtonRef = useRef<HTMLButtonElement>(null);
+  const contractSlaButtonRef = useRef<HTMLButtonElement>(null);
   const usersButtonRef = useRef<HTMLButtonElement>(null);
   const notificationCreatorButtonRef = useRef<HTMLButtonElement>(null);
   const databaseButtonRef = useRef<HTMLButtonElement>(null);
@@ -495,6 +497,17 @@ const Sidebar: React.FC<SidebarProps> = ({
                 label={t.inspection || 'Inspection'}
                 isActive={currentPage === 'inspection'}
                 onClick={() => handleNavigate('inspection')}
+                isSidebarExpanded={isExpanded}
+              />
+            )}
+
+            {permissionChecker.hasPermission('contract_sla_management', 'READ') && (
+              <NavigationItem
+                ref={contractSlaButtonRef}
+                icon={<DocumentTextIcon className={iconClass} />}
+                label={t.contractSlaManagement || 'Contract & SLA Management'}
+                isActive={currentPage === 'contract_sla'}
+                onClick={() => handleNavigate('contract_sla')}
                 isSidebarExpanded={isExpanded}
               />
             )}

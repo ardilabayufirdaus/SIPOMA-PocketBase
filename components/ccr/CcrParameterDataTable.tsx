@@ -180,7 +180,8 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
             </div>
             <button
               onClick={() => {}}
-              className="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm"
+              aria-label="Tampilkan bantuan navigasi tabel CCR"
+              className="min-h-[44px] px-4 py-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
               title="Show navigation help"
             >
               ? Help
@@ -294,11 +295,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                     ))}
                   </tr>
                 </thead>
-                <tbody
-                  className="bg-white"
-                  role="rowgroup"
-                  style={{ height: totalHeight }}
-                >
+                <tbody className="bg-white" role="rowgroup" style={{ height: totalHeight }}>
                   {/* Spacer for virtual scrolling */}
                   <tr style={{ height: startRow * rowHeight }} />
 
@@ -328,9 +325,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                           role="gridcell"
                         >
                           <div className="flex items-center h-8">
-                            <span className="text-slate-600">
-                              {getShiftForHour(hour)}
-                            </span>
+                            <span className="text-slate-600">{getShiftForHour(hour)}</span>
                           </div>
                         </td>
                         <td

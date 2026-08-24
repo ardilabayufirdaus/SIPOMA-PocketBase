@@ -177,9 +177,9 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
           {/* Header Section */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h2 className="text-3xl font-display font-bold text-secondary-900 tracking-tight">
+              <h1 className="text-3xl font-display font-bold text-secondary-900 dark:text-white tracking-tight">
                 {t.proj_list || 'Project Management'}
-              </h2>
+              </h1>
               <p className="text-slate-500 mt-2 text-lg">
                 Manage your projects, track progress, and monitor deadlines effectively.
               </p>

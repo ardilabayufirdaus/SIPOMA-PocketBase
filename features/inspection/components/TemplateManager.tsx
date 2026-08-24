@@ -24,6 +24,7 @@ interface TemplateManagerProps {
   onAddCheckpoint: (equipmentId: string) => void;
   onUpdateCheckpoint: (id: string, name: string) => void;
   onDeleteCheckpoint: (id: string) => void;
+  canWrite?: boolean;
 }
 
 const TemplateManager: React.FC<TemplateManagerProps> = ({
@@ -37,6 +38,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
   onAddCheckpoint,
   onUpdateCheckpoint,
   onDeleteCheckpoint,
+  canWrite = true,
 }) => {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [expandedEquipments, setExpandedEquipments] = useState<Record<string, boolean>>({});
@@ -60,13 +62,15 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
             Manage groups, equipment, and checkpoints
           </p>
         </div>
-        <button
-          onClick={onAddGroup}
-          className="group flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-primary-600 to-emerald-600 hover:from-primary-700 hover:to-emerald-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all active:scale-95"
-        >
-          <PlusIcon className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-          Add Group
-        </button>
+        {canWrite && (
+          <button
+            onClick={onAddGroup}
+            className="group flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-primary-600 to-emerald-600 hover:from-primary-700 hover:to-emerald-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all active:scale-95"
+          >
+            <PlusIcon className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+            Add Group
+          </button>
+        )}
       </div>
 
       <div className="space-y-4">
@@ -88,28 +92,33 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
                 <div className="flex-1 relative group/input">
                   <input
                     value={group.name}
+                    readOnly={!canWrite}
                     onChange={(e) => onUpdateGroup(group.id, e.target.value)}
                     className="bg-transparent font-bold text-slate-800 dark:text-white outline-none w-full italic text-xl tracking-tight focus:ring-2 ring-primary-500/20 rounded-xl px-3 transition-all placeholder:text-slate-300"
                     placeholder="Group Name..."
                   />
-                  <div className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary-600/0 group-focus-within/input:bg-primary-600/50 transition-all rounded-full"></div>
+                  {canWrite && (
+                    <div className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary-600/0 group-focus-within/input:bg-primary-600/50 transition-all rounded-full"></div>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center gap-3 pr-2">
-                <button
-                  onClick={() => onAddEquipment(group.id)}
-                  className="p-3 text-slate-400 hover:text-primary-600 hover:bg-primary-600/10 rounded-xl transition-all shadow-sm active:scale-90"
-                  title="Add Equipment"
-                >
-                  <PlusIcon className="w-6 h-6" />
-                </button>
-                <button
-                  onClick={() => onDeleteGroup(group.id)}
-                  className="p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all shadow-sm active:scale-90"
-                >
-                  <TrashIcon className="w-6 h-6" />
-                </button>
-              </div>
+              {canWrite && (
+                <div className="flex items-center gap-3 pr-2">
+                  <button
+                    onClick={() => onAddEquipment(group.id)}
+                    className="p-3 text-slate-400 hover:text-primary-600 hover:bg-primary-600/10 rounded-xl transition-all shadow-sm active:scale-90"
+                    title="Add Equipment"
+                  >
+                    <PlusIcon className="w-6 h-6" />
+                  </button>
+                  <button
+                    onClick={() => onDeleteGroup(group.id)}
+                    className="p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all shadow-sm active:scale-90"
+                  >
+                    <TrashIcon className="w-6 h-6" />
+                  </button>
+                </div>
+              )}
             </div>
 
             <AnimatePresence>
@@ -138,25 +147,28 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
                             </button>
                             <input
                               value={eq.name}
+                              readOnly={!canWrite}
                               onChange={(e) => onUpdateEquipment(eq.id, e.target.value)}
                               className="bg-transparent font-bold text-slate-800 dark:text-white outline-none w-full focus:ring-2 ring-primary-500/20 rounded-xl px-3 text-base transition-all placeholder:text-slate-300 italic"
                               placeholder="Equipment Name..."
                             />
                           </div>
-                          <div className="flex items-center gap-2 pr-2">
-                            <button
-                              onClick={() => onAddCheckpoint(eq.id)}
-                              className="p-2.5 text-slate-400 hover:text-primary-600 hover:bg-primary-600/10 rounded-xl transition-all"
-                            >
-                              <PlusIcon className="w-6 h-6" />
-                            </button>
-                            <button
-                              onClick={() => onDeleteEquipment(eq.id)}
-                              className="p-2.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all"
-                            >
-                              <TrashIcon className="w-5 h-5" />
-                            </button>
-                          </div>
+                          {canWrite && (
+                            <div className="flex items-center gap-2 pr-2">
+                              <button
+                                onClick={() => onAddCheckpoint(eq.id)}
+                                className="p-2.5 text-slate-400 hover:text-primary-600 hover:bg-primary-600/10 rounded-xl transition-all"
+                              >
+                                <PlusIcon className="w-6 h-6" />
+                              </button>
+                              <button
+                                onClick={() => onDeleteEquipment(eq.id)}
+                                className="p-2.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all"
+                              >
+                                <TrashIcon className="w-5 h-5" />
+                              </button>
+                            </div>
+                          )}
                         </div>
 
                         <AnimatePresence>
@@ -175,16 +187,19 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
                                   <div className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-600 group-hover/row:bg-primary-600 group-hover/row:scale-125 transition-all shadow-sm" />
                                   <input
                                     value={cp.name}
+                                    readOnly={!canWrite}
                                     onChange={(e) => onUpdateCheckpoint(cp.id, e.target.value)}
                                     className="bg-transparent text-sm font-bold text-slate-500 dark:text-slate-400 outline-none flex-1 focus:ring-2 ring-primary-500/20 rounded-xl px-3 group-hover/row:text-slate-800 dark:group-hover/row:text-white transition-all placeholder:text-slate-200"
                                     placeholder="Checkpoint description..."
                                   />
-                                  <button
-                                    onClick={() => onDeleteCheckpoint(cp.id)}
-                                    className="opacity-0 group-hover/row:opacity-100 p-2 text-slate-400 hover:text-rose-500 transition-all hover:bg-rose-500/10 rounded-lg"
-                                  >
-                                    <TrashIcon className="w-5 h-5" />
-                                  </button>
+                                  {canWrite && (
+                                    <button
+                                      onClick={() => onDeleteCheckpoint(cp.id)}
+                                      className="opacity-0 group-hover/row:opacity-100 p-2 text-slate-400 hover:text-rose-500 transition-all hover:bg-rose-500/10 rounded-lg"
+                                    >
+                                      <TrashIcon className="w-5 h-5" />
+                                    </button>
+                                  )}
                                 </div>
                               ))}
                               {eq.checkPoints.length === 0 && (

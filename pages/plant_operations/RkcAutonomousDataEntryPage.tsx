@@ -25,7 +25,7 @@ const RkcAutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
   // Permission checker
   const { currentUser: loggedInUser } = useCurrentUser();
   const permissionChecker = usePermissions(loggedInUser);
-  const { canWrite } = usePlantOperationsAccess();
+  const { canWrite } = usePlantOperationsAccess('RKC');
 
   // Downtime State
   const { getAllDowntime, updateDowntime } = useCcrDowntimeData();

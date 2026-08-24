@@ -7,6 +7,7 @@ const permissionModuleMap: Record<string, keyof PermissionMatrix> = {
   rkc_plant_operations: 'rkc_plant_operations',
   derivative_plant_operations: 'derivative_plant_operations',
   project_management: 'project_management',
+  contract_sla_management: 'contract_sla_management',
   database: 'database',
   inspection: 'inspection',
 };
@@ -19,6 +20,7 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
     rkc_plant_operations: 'NONE',
     derivative_plant_operations: 'NONE',
     project_management: 'NONE',
+    contract_sla_management: 'NONE',
     database: 'NONE',
     inspection: 'NONE',
     plant_operations: {},
@@ -68,6 +70,7 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
       rkc_plant_operations: p.rkc_plant_operations || 'NONE',
       derivative_plant_operations: p.derivative_plant_operations || p.cm_plant_operations || 'NONE',
       project_management: p.project_management || 'NONE',
+      contract_sla_management: p.contract_sla_management || 'NONE',
       database: p.database || 'NONE',
       inspection: p.inspection || 'NONE',
       plant_operations: p.plant_operations || {},
@@ -84,17 +87,19 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
         rkc_plant_operations: 'WRITE',
         derivative_plant_operations: 'WRITE',
         project_management: 'WRITE',
+        contract_sla_management: 'WRITE',
         database: 'WRITE',
         inspection: 'WRITE',
       };
     }
-    if (role.includes('supervisor')) {
+    if (role.includes('supervisor') || role.includes('manager')) {
       return {
         dashboard: 'WRITE',
         cm_plant_operations: 'WRITE',
         rkc_plant_operations: 'WRITE',
         derivative_plant_operations: 'WRITE',
         project_management: 'WRITE',
+        contract_sla_management: 'WRITE',
         database: 'READ',
         inspection: 'WRITE',
       };
@@ -106,6 +111,7 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
         cm_plant_operations: 'WRITE',
         rkc_plant_operations: 'WRITE',
         derivative_plant_operations: 'WRITE',
+        contract_sla_management: 'READ',
         inspection: 'WRITE',
       };
     }

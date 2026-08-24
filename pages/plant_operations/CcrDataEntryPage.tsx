@@ -124,7 +124,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [profileDescription, setProfileDescription] = useState('');
 
   // Access control
-  const { canWrite } = usePlantOperationsAccess();
+  const { canWrite } = usePlantOperationsAccess('CM');
   const [, setSelectedProfile] = useState<ParameterProfile | null>(null);
 
   // New state for undo stack
@@ -964,7 +964,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   type="button"
                   onClick={() => moveParameterUp(index)}
                   disabled={index === 0}
-                  className="px-2 py-1 text-xs font-bold text-slate-700 hover:bg-slate-200 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  className="min-h-[44px] min-w-[44px] px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
                   aria-label={`Move ${param.parameter} up`}
                 >
                   ↑
@@ -973,7 +973,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   type="button"
                   onClick={() => moveParameterDown(index)}
                   disabled={index === modalParameterOrder.length - 1}
-                  className="px-2 py-1 text-xs font-bold text-slate-700 hover:bg-slate-200 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  className="min-h-[44px] min-w-[44px] px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
                   aria-label={`Move ${param.parameter} down`}
                 >
                   ↓
@@ -3948,18 +3948,17 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               {/* Controls Toolbar */}
               <div className="flex flex-col gap-2 w-full lg:w-auto items-end">
                 <div className="flex items-center gap-2 flex-wrap justify-end">
-                  <div className="flex items-center p-1 bg-white rounded-lg border border-neutral-200 shadow-sm">
+                  <div className="flex items-center p-1 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <Button
                       size="sm"
                       onClick={refreshData}
                       disabled={isRefreshing || !selectedCategory || !selectedUnit}
                       variant="ghost"
-                      className="h-9 px-3 text-neutral-600 hover:text-indigo-600 hover:bg-indigo-50"
+                      aria-label="Refresh Data"
+                      className="min-h-[44px] px-3.5 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                       title="Refresh Data"
                     >
-                      <div
-                        className={isRefreshing ? 'animate-spin' : ''}
-                      >
+                      <div className={isRefreshing ? 'animate-spin' : ''}>
                         <svg
                           className="w-4 h-4"
                           fill="none"
@@ -3975,15 +3974,16 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         </svg>
                       </div>
                     </Button>
-                    <div className="w-px h-4 bg-neutral-300 mx-1"></div>
+                    <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-1"></div>
                     <Button
                       size="sm"
                       onClick={() => setIsFooterVisible(!isFooterVisible)}
                       variant="ghost"
-                      className={`h-9 px-3 ${isFooterVisible ? 'text-indigo-600 bg-indigo-50 font-medium' : 'text-neutral-600 hover:bg-neutral-100'}`}
+                      aria-label={isFooterVisible ? 'Hide Footer' : 'Show Footer'}
+                      className={`min-h-[44px] px-3.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${isFooterVisible ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                       title={isFooterVisible ? 'Hide Footer' : 'Show Footer'}
                     >
-                      <span className="text-sm mr-2">Footer</span>
+                      <span className="text-sm mr-2 font-medium">Footer</span>
                       {isFooterVisible ? (
                         <svg
                           className="w-4 h-4"
@@ -4014,7 +4014,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         </svg>
                       )}
                     </Button>
-                    <div className="w-px h-4 bg-neutral-300 mx-1"></div>
+                    <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-1"></div>
                     <Button
                       size="sm"
                       onClick={() => setShowReorderModal(true)}
@@ -4022,10 +4022,11 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         !selectedCategory || !selectedUnit || filteredParameterSettings.length === 0
                       }
                       variant="ghost"
-                      className="h-9 px-3 text-neutral-600 hover:text-violet-600 hover:bg-violet-50"
+                      aria-label="Reorder Parameters"
+                      className="min-h-[44px] px-3.5 text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                       title="Reorder Parameters"
                     >
-                      <span className="text-sm mr-2">Reorder</span>
+                      <span className="text-sm mr-2 font-medium">Reorder</span>
                       <ArrowsUpDownIcon className="w-4 h-4" />
                     </Button>
                   </div>
@@ -4033,16 +4034,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   {/* AI Features Group */}
                   {hasPermission('cm_plant_operations', 'WRITE') && selectedUnit && (
                     <div className="flex items-center gap-2">
-                      <OptimizationAdvisorButton
-                        unit={selectedUnit}
-                        className="h-9 text-sm px-3 shadow-sm bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 hover:shadow-md"
-                      />
+                      <OptimizationAdvisorButton unit={selectedUnit} />
                       {selectedDate && (
-                        <ShiftHandoverButton
-                          date={selectedDate}
-                          unit={selectedUnit}
-                          className="h-9 text-sm px-3 shadow-sm bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 hover:shadow-md"
-                        />
+                        <ShiftHandoverButton date={selectedDate} unit={selectedUnit} />
                       )}
                     </div>
                   )}
@@ -4140,16 +4134,19 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             scope="col"
                           >
                             <div className="text-center">
-                              <div className="font-bold text-[8px] leading-tight uppercase tracking-wider text-white/90">
+                              <div className="font-bold text-xs leading-tight uppercase tracking-wider text-white/90">
                                 {param.parameter}
                               </div>
                             </div>
                           </th>
                         ))}
                       </tr>
-                      <tr className="border-b border-secondary-200/50 bg-neutral-50" role="row">
+                      <tr
+                        className="border-b border-secondary-200/50 bg-neutral-50 dark:bg-slate-800"
+                        role="row"
+                      >
                         <th
-                          className="px-2 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 sticky left-0 bg-neutral-50 z-30"
+                          className="px-2 py-1 text-center text-xs font-semibold text-slate-700 dark:text-slate-300 border-r border-secondary-300/30 sticky left-0 bg-neutral-50 dark:bg-slate-800 z-30"
                           style={{ width: '60px' }}
                           role="columnheader"
                           scope="col"
@@ -4157,7 +4154,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           {/* Empty for Hour */}
                         </th>
                         <th
-                          className="px-2 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 bg-neutral-50"
+                          className="px-2 py-1 text-center text-xs font-semibold text-slate-700 dark:text-slate-300 border-r border-secondary-300/30 bg-neutral-50 dark:bg-slate-800"
                           style={{ width: '80px' }}
                           role="columnheader"
                           scope="col"
@@ -4165,7 +4162,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           {/* Empty for Shift */}
                         </th>
                         <th
-                          className="px-3 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 bg-neutral-50"
+                          className="px-3 py-1 text-center text-xs font-semibold text-slate-700 dark:text-slate-300 border-r border-secondary-300/30 bg-neutral-50 dark:bg-slate-800"
                           style={{ width: '180px', minWidth: '180px' }}
                           role="columnheader"
                           scope="col"
@@ -4175,7 +4172,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         {filteredParameterSettings.map((param) => (
                           <th
                             key={`minmax-${param.id}`}
-                            className={`px-2 py-1 text-xs border-r border-secondary-300/30 text-center bg-neutral-50 text-neutral-600 ${
+                            className={`px-2 py-1 text-xs border-r border-secondary-300/30 text-center bg-neutral-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 ${
                               shouldHighlightColumn(param) ? 'filtered-column' : ''
                             }`}
                             style={{ width: '80px', minWidth: '80px' }}
@@ -4183,12 +4180,12 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             scope="col"
                           >
                             <div className="text-center space-y-1">
-                              <div className="text-[6px] leading-tight text-[#111827] font-medium">
+                              <div className="text-xs leading-tight text-slate-700 dark:text-slate-300 font-medium">
                                 {param.min_value !== undefined
                                   ? `Min: ${formatNumberIndonesian(param.min_value, 1)}`
                                   : '-'}
                               </div>
-                              <div className="text-[6px] leading-tight text-[#111827] font-medium">
+                              <div className="text-xs leading-tight text-slate-700 dark:text-slate-300 font-medium">
                                 {param.max_value !== undefined
                                   ? `Max: ${formatNumberIndonesian(param.max_value, 1)}`
                                   : '-'}
@@ -4361,7 +4358,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                   } else if (hasMinOrMax) {
                                     // Within range - GREEN
                                     cellBgClass = 'bg-green-200 dark:bg-emerald-950/70';
-                                    cellTextClass = 'text-green-900 dark:text-emerald-200 font-bold';
+                                    cellTextClass =
+                                      'text-green-900 dark:text-emerald-200 font-bold';
                                     cellBorderClass = 'border-green-400 dark:border-emerald-800';
                                   }
                                 }
@@ -4910,9 +4908,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-slate-800">
-                      {t.ccr_information_title}
-                    </h3>
+                    <h3 className="text-xl font-bold text-slate-800">{t.ccr_information_title}</h3>
                     <p className="text-sm text-neutral-600 mt-1">{t.ccr_information_description}</p>
                   </div>
                 </div>

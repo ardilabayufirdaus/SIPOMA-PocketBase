@@ -28,7 +28,9 @@ import { useDerivativePlantUnits as usePlantUnits } from '../../hooks/useDerivat
 import { useDerivativeParameterSettings as useParameterSettings } from '../../hooks/useDerivativeParameterSettings';
 import { useDerivativeSiloCapacities as useSiloCapacities } from '../../hooks/useDerivativeSiloCapacities';
 import { useDerivativeCcrInformationData as useCcrInformationData } from '../../hooks/useDerivativeCcrInformationData';
+import { useDerivativeReportSettings } from '../../hooks/useDerivativeReportSettings';
 
+import { pb } from '../../utils/pocketbase-simple';
 import { CcrDowntimeData, CcrParameterDataWithName } from '../../types';
 
 // Helper function to format numbers in Indonesian format
@@ -69,6 +71,86 @@ const calculateTextMode = (
   }
 
   return mode;
+};
+
+// Helper function to extract parameter name and unit from parenthesis or fallback unit
+const parseParameterNameAndUnit = (
+  rawName: string,
+  fallbackUnit?: string,
+  plantUnitName?: string
+): { displayName: string; unitStr: string } => {
+  const match = rawName.trim().match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+  if (match) {
+    const displayName = match[1].trim();
+    const unitStr = match[2].trim();
+    return { displayName, unitStr };
+  }
+
+  let unitStr = '';
+  if (
+    fallbackUnit &&
+    fallbackUnit.trim() !== '' &&
+    (!plantUnitName || fallbackUnit.trim().toLowerCase() !== plantUnitName.trim().toLowerCase())
+  ) {
+    unitStr = fallbackUnit.trim();
+  }
+
+  return { displayName: rawName.trim(), unitStr };
+};
+
+// Helper function to format category display names (e.g. TRASS DRYER -> PELAYANAN KLINKER)
+const formatCategoryDisplayName = (categoryName: string): string => {
+  const trimmed = categoryName.trim();
+  if (trimmed.toUpperCase() === 'TRASS DRYER') {
+    return 'PELAYANAN KLINKER';
+  }
+  return trimmed;
+};
+
+// Helper function to assign emoji icon per report setting category
+const getCategoryEmoji = (categoryName: string): string => {
+  const lower = categoryName.toLowerCase();
+  if (lower.includes('klinker') || lower.includes('clinker') || lower.includes('pelayanan'))
+    return '🏗️';
+  if (
+    lower.includes('kualitas') ||
+    lower.includes('quality') ||
+    lower.includes('analisa') ||
+    lower.includes('lab')
+  )
+    return '🧪';
+  if (
+    lower.includes('bahan') ||
+    lower.includes('material') ||
+    lower.includes('pemakaian') ||
+    lower.includes('feeder') ||
+    lower.includes('handling')
+  )
+    return '📦';
+  if (
+    lower.includes('limbah') ||
+    lower.includes('waste') ||
+    lower.includes('sampah') ||
+    lower.includes('pemusnahan')
+  )
+    return '♻️';
+  if (
+    lower.includes('silo') ||
+    lower.includes('storage') ||
+    lower.includes('bin') ||
+    lower.includes('gudang')
+  )
+    return '🏗️';
+  if (
+    lower.includes('power') ||
+    lower.includes('energi') ||
+    lower.includes('listrik') ||
+    lower.includes('utilitas')
+  )
+    return '⚡';
+  if (lower.includes('produksi') || lower.includes('production') || lower.includes('output'))
+    return '📈';
+  return '📊';
 };
 
 // Adapter for flat parameter data
@@ -122,6 +204,7 @@ const DerivativeWhatsAppGroupReportPage: React.FC = () => {
   const { records: plantUnits } = usePlantUnits();
   const { records: parameterSettings } = useParameterSettings();
   const { records: silos } = useSiloCapacities();
+  const { records: reportSettings } = useDerivativeReportSettings();
 
   const plantCategories = useMemo(() => {
     const categories = [...new Set(plantUnits.map((unit) => unit.category))].filter(Boolean);
@@ -170,9 +253,13 @@ const DerivativeWhatsAppGroupReportPage: React.FC = () => {
           (s) =>
             s.category === category &&
             s.unit === unit &&
-            (s.parameter.toLowerCase().includes('counter feeder') ||
+            ((s as any).is_oee_feeder ||
+              s.parameter.toLowerCase().includes('counter feeder') ||
               s.parameter.toLowerCase().includes('feed count') ||
-              s.parameter.toLowerCase().includes('feeder'))
+              s.parameter.toLowerCase().includes('feeder') ||
+              s.parameter.toLowerCase().includes('feed') ||
+              s.parameter.toLowerCase().includes('tph') ||
+              s.parameter.toLowerCase().includes('rate'))
         )
         .map((s) => s.parameter);
 
@@ -390,35 +477,177 @@ const DerivativeWhatsAppGroupReportPage: React.FC = () => {
         report += `• Jam Operasi: ${formatIndonesianNumber(runningHoursAvg, 2)} Jam\n`;
         report += `• Total Produksi: ${formatIndonesianNumber(totalProduction, 2)} Ton\n\n`;
 
-        // Quality parameters
-        const qualityKeywords = ['H2O', 'Moisture', 'Kadar Air', 'Fine', 'Mesh'];
-        let hasQualityData = false;
-        let qualityReport = `🧪 *KUALITAS & PARAMETER*\n`;
-
-        qualityKeywords.forEach((keyword) => {
-          const param = allParameterData.find((p) => {
-            const s = parameterSettings.find((set) => set.id === p.parameter_id);
-            return s && s.parameter.toLowerCase().includes(keyword.toLowerCase());
-          });
-
-          if (param && param.hourly_values) {
-            const values = Object.values(param.hourly_values)
-              .map((v: any) => (typeof v === 'object' ? v.value : v))
-              .map((v: any) => Number(v))
-              .filter((n: number) => !isNaN(n));
-
-            if (values.length > 0) {
-              const avg = values.reduce((a, b) => a + b, 0) / values.length;
-              const s = parameterSettings.find((set) => set.id === param.parameter_id);
-              const displayName = s ? s.parameter : keyword;
-              qualityReport += `• ${displayName}: ${formatIndonesianNumber(avg, 2)} ${s?.unit || ''}\n`;
-              hasQualityData = true;
+        // Helper to fetch user custom parameter order for a category and unit
+        const fetchParameterOrderMap = async (category: string, unitName: string) => {
+          if (!user?.id) return new Map<string, number>();
+          try {
+            const res = await pb.collection('derivative_user_parameter_orders').getFullList({
+              filter: `user_id = "${user.id}" && module = "plant_operations" && parameter_type = "ccr_parameters" && category = "${category}" && unit = "${unitName}"`,
+            });
+            if (res.length > 0 && Array.isArray(res[0].parameter_order)) {
+              return new Map<string, number>(
+                res[0].parameter_order.map((id: string, idx: number) => [id, idx])
+              );
             }
+          } catch {
+            // ignore error
           }
+          return new Map<string, number>();
+        };
+
+        // Retrieve and sort all parameters configured in CCR Data Entry for this unit
+        let unitParameters = parameterSettings.filter(
+          (param) => param.category === selectedPlantCategory && param.unit === unit
+        );
+
+        const orderMap = await fetchParameterOrderMap(selectedPlantCategory, unit);
+        if (orderMap.size > 0) {
+          unitParameters = [...unitParameters].sort((a, b) => {
+            const aIdx = orderMap.get(a.id) ?? unitParameters.length;
+            const bIdx = orderMap.get(b.id) ?? unitParameters.length;
+            return aIdx - bIdx;
+          });
+        } else {
+          unitParameters = [...unitParameters].sort((a, b) => {
+            if ((a as any).display_order !== undefined && (b as any).display_order !== undefined) {
+              return (a as any).display_order - (b as any).display_order;
+            }
+            return a.parameter.localeCompare(b.parameter);
+          });
+        }
+
+        // Summary keywords already displayed in top section
+        const summaryKeywords = [
+          'tipe produk',
+          'product type',
+          'running hours',
+          'jam operasi',
+          'operation hours',
+        ];
+
+        const detailParameters = unitParameters.filter((p) => {
+          const pLower = p.parameter.toLowerCase();
+          return !summaryKeywords.some((kw) => pLower === kw);
         });
 
-        if (hasQualityData) {
-          report += qualityReport + `\n`;
+        if (detailParameters.length > 0) {
+          const excludedZeroParams = [
+            'ampere belt 141a',
+            'ampere dryer',
+            'damper dc selatan',
+            'fan tungku power',
+            'fan tungku speed',
+            'feed',
+            'operasi dryer start',
+            'operasi dryer stop',
+            'speed dc utara',
+            'speed dryer',
+            'temperatur outlet dryer',
+            'temperatur tungku',
+          ];
+
+          // Group detail parameters by Report Settings category configuration
+          const categoryGroupMap = new Map<string, typeof detailParameters>();
+          const categoryOrderMap = new Map<string, number>();
+
+          detailParameters.forEach((paramSetting) => {
+            const rs = reportSettings.find((r) => r.parameter_id === paramSetting.id);
+            const catName = rs?.category || paramSetting.category || 'PARAMETER OPERASIONAL';
+            const catOrder = rs?.order ?? 999;
+
+            if (!categoryGroupMap.has(catName)) {
+              categoryGroupMap.set(catName, []);
+              categoryOrderMap.set(catName, catOrder);
+            }
+            categoryGroupMap.get(catName)!.push(paramSetting);
+          });
+
+          // Sort categories by Report Settings order
+          const sortedCategories = Array.from(categoryGroupMap.keys()).sort((a, b) => {
+            const orderA = categoryOrderMap.get(a) ?? 999;
+            const orderB = categoryOrderMap.get(b) ?? 999;
+            if (orderA !== orderB) return orderA - orderB;
+            return a.localeCompare(b);
+          });
+
+          for (const catName of sortedCategories) {
+            const groupParams = categoryGroupMap.get(catName) || [];
+            let hasGroupData = false;
+            const displayCatName = formatCategoryDisplayName(catName);
+            const emoji = getCategoryEmoji(displayCatName);
+            let groupReport = `${emoji} *${displayCatName.toUpperCase()}*\n`;
+
+            groupParams.forEach((paramSetting) => {
+              const param = allParameterData.find(
+                (p) => p.parameter_id === paramSetting.id || p.name === paramSetting.parameter
+              );
+              const footer = unitFooterData.find((f) => f.parameter_id === paramSetting.id);
+
+              const { displayName, unitStr } = parseParameterNameAndUnit(
+                paramSetting.parameter,
+                paramSetting.unit,
+                unit
+              );
+
+              const isExcludedIfZero = excludedZeroParams.some(
+                (ex) =>
+                  displayName.toLowerCase() === ex ||
+                  paramSetting.parameter.toLowerCase().startsWith(ex)
+              );
+
+              if (paramSetting.data_type === 'Text') {
+                let textVal = 'N/A';
+                if (param && param.hourly_values) {
+                  const values = Array.from({ length: 24 }, (_, i) => i + 1).map(
+                    (h) => param.hourly_values[h]
+                  );
+                  textVal = calculateTextMode(values);
+                }
+                if (isExcludedIfZero && (textVal === 'N/A' || textVal === '0' || textVal === '')) {
+                  return;
+                }
+                if (textVal && textVal !== 'N/A') {
+                  groupReport += `• ${displayName}: ${textVal}\n`;
+                  hasGroupData = true;
+                }
+              } else {
+                // Numeric parameter
+                let numVal: number | null = null;
+                if (
+                  footer &&
+                  (footer.average !== undefined ||
+                    footer.total !== undefined ||
+                    footer.maximum !== undefined)
+                ) {
+                  numVal = footer.average ?? footer.total ?? footer.maximum ?? null;
+                }
+
+                if (numVal === null && param && param.hourly_values) {
+                  const validVals = Object.values(param.hourly_values)
+                    .map((v: any) => (typeof v === 'object' && v !== null ? v.value : v))
+                    .map((v: any) => Number(v))
+                    .filter((n: number) => !isNaN(n));
+                  if (validVals.length > 0) {
+                    numVal = validVals.reduce((a, b) => a + b, 0) / validVals.length;
+                  }
+                }
+
+                const displayVal = numVal !== null && !isNaN(numVal) ? numVal : 0;
+
+                if (isExcludedIfZero && displayVal === 0) {
+                  return;
+                }
+
+                const formattedUnit = unitStr ? ` ${unitStr}` : '';
+                groupReport += `• ${displayName}: ${formatIndonesianNumber(displayVal, 2)}${formattedUnit}\n`;
+                hasGroupData = true;
+              }
+            });
+
+            if (hasGroupData) {
+              report += groupReport + `\n`;
+            }
+          }
         }
 
         // Downtime & Information
@@ -443,15 +672,32 @@ const DerivativeWhatsAppGroupReportPage: React.FC = () => {
         report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
       }
 
-      // Storage Section (Gudang Material Trass Kering)
-      if (siloData.length > 0) {
-        report += `🏗️ *KAPASITAS GUDANG MATERIAL TRASS KERING*\n`;
+      // Storage Section (Gudang Material Storage)
+      const relevantSilos = silos.filter(
+        (s) =>
+          (selectedPlantUnits.some((u) => u === s.unit) || !s.unit) &&
+          (!s.plant_category || s.plant_category === selectedPlantCategory)
+      );
+      const displaySilos = relevantSilos.length > 0 ? relevantSilos : silos;
+      if (displaySilos.length > 0) {
+        report += `🏗️ *KAPASITAS & STATUS SILO MATERIAL*\n`;
         report += `━━━━━━━━━━━━━━━━━━━━━\n`;
-        siloData.forEach((s: any) => {
-          const siloName = s.silo_name || s.name || 'Gudang Material';
-          const capacity = s.capacity || s.max_capacity || 0;
+        displaySilos.forEach((s) => {
+          const siloName = s.silo_name || 'Gudang Material';
+          const capacity = s.capacity || 0;
           const deadStock = s.dead_stock || 0;
-          report += `• ${siloName}: Kapasitas ${formatIndonesianNumber(capacity, 0)} Ton (Dead Stock: ${formatIndonesianNumber(deadStock, 0)} Ton)\n`;
+
+          const dailySilo = siloData.find((d: any) => d.silo_id === s.id);
+          let stockDetail = '';
+          if (dailySilo) {
+            const contentVal =
+              dailySilo.shift3?.content ?? dailySilo.shift2?.content ?? dailySilo.shift1?.content;
+            if (contentVal !== undefined && contentVal !== null && !isNaN(Number(contentVal))) {
+              stockDetail = ` | Terisi: ${formatIndonesianNumber(Number(contentVal), 0)} Ton`;
+            }
+          }
+
+          report += `• ${siloName}: Kapasitas ${formatIndonesianNumber(capacity, 0)} Ton${stockDetail} (Dead Stock: ${formatIndonesianNumber(deadStock, 0)} Ton)\n`;
         });
         report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
       }
@@ -475,6 +721,7 @@ const DerivativeWhatsAppGroupReportPage: React.FC = () => {
     downtimeHook,
     infoHook,
     parameterSettings,
+    reportSettings,
     calculateTotalProductionFromFeeders,
     calculateTotalDowntime,
     user,
@@ -550,11 +797,11 @@ const DerivativeWhatsAppGroupReportPage: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white tracking-tight">
-                  WhatsApp Group Report — Derivative Plant
+                  {t.wag_derivative_title || 'WhatsApp Group Report — Derivative Plant'}
                 </h1>
                 <p className="text-sm text-white/80 font-medium mt-0.5">
-                  Generate dan format laporan operasional harian Derivative Plant untuk WhatsApp
-                  Group
+                  {t.wag_derivative_subtitle ||
+                    'Generate dan format laporan operasional harian Derivative Plant untuk WhatsApp Group'}
                 </p>
               </div>
             </div>
@@ -575,7 +822,7 @@ const DerivativeWhatsAppGroupReportPage: React.FC = () => {
                 htmlFor="report-date"
                 className="block text-xs font-bold text-slate-700 uppercase tracking-wider"
               >
-                Tanggal Laporan
+                {t.wag_report_date || 'Tanggal Laporan'}
               </label>
               <div className="relative">
                 <input
@@ -594,7 +841,7 @@ const DerivativeWhatsAppGroupReportPage: React.FC = () => {
                 htmlFor="plant-category"
                 className="block text-xs font-bold text-slate-700 uppercase tracking-wider"
               >
-                Kategori Pabrik
+                {t.plant_category_label || 'Kategori Pabrik'}
               </label>
               <div className="relative">
                 <select
@@ -616,7 +863,7 @@ const DerivativeWhatsAppGroupReportPage: React.FC = () => {
             {/* Multi-Select Unit Dropdown */}
             <div className="space-y-2">
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Pilih Unit ({selectedPlantUnits.length})
+                {t.wag_select_unit || 'Pilih Unit'} ({selectedPlantUnits.length})
               </label>
               <div className="relative unit-dropdown-container">
                 <button
@@ -626,8 +873,8 @@ const DerivativeWhatsAppGroupReportPage: React.FC = () => {
                 >
                   <span className="truncate text-slate-800">
                     {selectedPlantUnits.length === 0
-                      ? 'Pilih unit...'
-                      : `${selectedPlantUnits.length} Unit Terpilih`}
+                      ? t.wag_select_unit_placeholder || 'Pilih unit...'
+                      : `${selectedPlantUnits.length} ${t.wag_units_selected || 'Unit Terpilih'}`}
                   </span>
                   <ChevronDown
                     className={`w-4 h-4 text-slate-400 transition-transform ${isUnitDropdownOpen ? 'rotate-180' : ''}`}
@@ -642,14 +889,14 @@ const DerivativeWhatsAppGroupReportPage: React.FC = () => {
                         onClick={() => setSelectedPlantUnits(filteredUnits.map((u) => u.unit))}
                         className="text-xs font-semibold text-[#059669] hover:text-[#047857]"
                       >
-                        PILIH SEMUA
+                        {t.wag_select_all || 'PILIH SEMUA'}
                       </button>
                       <button
                         type="button"
                         onClick={() => setSelectedPlantUnits([])}
                         className="text-xs font-semibold text-slate-400 hover:text-slate-600"
                       >
-                        BERSIHKAN
+                        {t.wag_clear_all || 'BERSIHKAN'}
                       </button>
                     </div>
                     <div className="max-h-56 overflow-y-auto space-y-1">
@@ -672,7 +919,9 @@ const DerivativeWhatsAppGroupReportPage: React.FC = () => {
                             }}
                             className="w-4 h-4 text-[#059669] rounded border-slate-300 focus:ring-[#059669]"
                           />
-                          <span>Unit {unit.unit}</span>
+                          <span>
+                            {t.unit || 'Unit'} {unit.unit}
+                          </span>
                         </label>
                       ))}
                     </div>
@@ -691,12 +940,12 @@ const DerivativeWhatsAppGroupReportPage: React.FC = () => {
               {isGenerating ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin text-white" />
-                  <span>Memproses Laporan...</span>
+                  <span>{t.wag_processing_report || 'Memproses Laporan...'}</span>
                 </>
               ) : (
                 <>
                   <MessageSquare className="w-4 h-4 text-white" />
-                  <span>Generate Laporan WhatsApp</span>
+                  <span>{t.wag_generate_button || 'Generate Laporan WhatsApp'}</span>
                 </>
               )}
             </button>
@@ -712,7 +961,9 @@ const DerivativeWhatsAppGroupReportPage: React.FC = () => {
             className="space-y-4"
           >
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <h3 className="text-lg font-bold text-slate-900">Preview WhatsApp Chat Bubble</h3>
+              <h3 className="text-lg font-bold text-slate-900">
+                {t.wag_preview_title || 'Preview WhatsApp Chat Bubble'}
+              </h3>
               <div className="flex items-center gap-3">
                 <button
                   onClick={handleCopyToClipboard}
@@ -727,7 +978,11 @@ const DerivativeWhatsAppGroupReportPage: React.FC = () => {
                   ) : (
                     <Copy className="w-4 h-4 text-[#059669]" />
                   )}
-                  <span>{copySuccess ? 'Tersalin!' : 'Salin Teks'}</span>
+                  <span>
+                    {copySuccess
+                      ? t.wag_copied_text || 'Tersalin!'
+                      : t.wag_copy_text || 'Salin Teks'}
+                  </span>
                 </button>
 
                 <button
@@ -737,10 +992,10 @@ const DerivativeWhatsAppGroupReportPage: React.FC = () => {
                       '_blank'
                     )
                   }
-                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[#25D366] hover:bg-[#20ba59] rounded-xl shadow-sm transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-900 rounded-xl shadow-sm transition-all duration-200"
                 >
                   <Share2 className="w-4 h-4 text-white" />
-                  <span>Buka WhatsApp Web</span>
+                  <span>{t.wag_open_web || 'Buka WhatsApp Web'}</span>
                 </button>
               </div>
             </div>

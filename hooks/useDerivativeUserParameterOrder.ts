@@ -62,11 +62,7 @@ export const useDerivativeUserParameterOrder = ({
 
       try {
         const result = await safeApiCall(
-          () =>
-            pb
-              .collection('derivative_user_parameter_orders')
-              .getList(1, 1, { filter })
-              .catch(() => pb.collection('rkc_user_parameter_orders').getList(1, 1, { filter })),
+          () => pb.collection('derivative_user_parameter_orders').getList(1, 1, { filter }),
           { retries: 2, retryDelay: 1000 }
         );
 
@@ -99,7 +95,7 @@ export const useDerivativeUserParameterOrder = ({
     }
   }, [currentUser?.id, module, parameterType, category, unit]);
 
-  // Save parameter order to Supabase
+  // Save parameter order
   const saveParameterOrder = useCallback(
     async (newOrder: string[]) => {
       if (!currentUser?.id || newOrder.length === 0) {
@@ -127,46 +123,25 @@ export const useDerivativeUserParameterOrder = ({
             .collection('derivative_user_parameter_orders')
             .getList(1, 1, { filter });
         } catch {
-          records = await pb
-            .collection('rkc_user_parameter_orders')
-            .getList(1, 1, { filter })
-            .catch(() => ({ items: [] }));
+          records = { items: [] };
         }
 
         const existing = records.items.length > 0 ? records.items[0] : null;
 
         if (existing) {
-          try {
-            await pb.collection('derivative_user_parameter_orders').update(existing.id, {
-              parameter_order: newOrder,
-              updated_at: new Date().toISOString(),
-            });
-          } catch {
-            await pb.collection('rkc_user_parameter_orders').update(existing.id, {
-              parameter_order: newOrder,
-              updated_at: new Date().toISOString(),
-            });
-          }
+          await pb.collection('derivative_user_parameter_orders').update(existing.id, {
+            parameter_order: newOrder,
+            updated_at: new Date().toISOString(),
+          });
         } else {
-          try {
-            await pb.collection('derivative_user_parameter_orders').create({
-              user_id: currentUser.id,
-              module,
-              parameter_type: parameterType,
-              category: category || null,
-              unit: unit || null,
-              parameter_order: newOrder,
-            });
-          } catch {
-            await pb.collection('rkc_user_parameter_orders').create({
-              user_id: currentUser.id,
-              module,
-              parameter_type: parameterType,
-              category: category || null,
-              unit: unit || null,
-              parameter_order: newOrder,
-            });
-          }
+          await pb.collection('derivative_user_parameter_orders').create({
+            user_id: currentUser.id,
+            module,
+            parameter_type: parameterType,
+            category: category || null,
+            unit: unit || null,
+            parameter_order: newOrder,
+          });
         }
 
         setParameterOrder(newOrder);

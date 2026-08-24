@@ -2538,7 +2538,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="space-y-1.5 sm:space-y-2 col-span-2 sm:col-span-1">
               <label
                 htmlFor="cop-filter-category"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <Layers className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Category
@@ -2564,7 +2564,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-unit"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <Building2 className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Unit
@@ -2591,7 +2591,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-month"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <Calendar className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Month
@@ -2617,7 +2617,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-year"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <CalendarDays className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Year
@@ -3284,9 +3284,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 </div>
               </div>
 
-              <div
-                className="overflow-x-auto custom-scrollbar rounded-3xl shadow-2xl border border-white/20"
-              >
+              <div className="overflow-x-auto custom-scrollbar rounded-3xl shadow-2xl border border-white/20">
                 <table className="min-w-full text-xs border-collapse bg-white dark:bg-slate-900">
                   <thead className="bg-secondary-800 text-white shadow-sm">
                     <tr className="bg-secondary-800 text-white">

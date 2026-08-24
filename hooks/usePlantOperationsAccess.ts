@@ -8,13 +8,15 @@ export interface PlantOperationsAccess {
 }
 
 /**
- * Hook to determine access level for Plant Operations modules (CM or RKC).
+ * Hook to determine access level for Plant Operations modules (CM, RKC, or DERIVATIVE).
  * Uses permissions sourced from 'user_management' collection via useCurrentUser.
  *
- * @param section 'CM' or 'RKC', defaults to 'CM'
+ * @param section 'CM' | 'RKC' | 'DERIVATIVE', defaults to 'CM'
  * @returns Object containing access flags
  */
-export const usePlantOperationsAccess = (section: 'CM' | 'RKC' = 'CM'): PlantOperationsAccess => {
+export const usePlantOperationsAccess = (
+  section: 'CM' | 'RKC' | 'DERIVATIVE' = 'CM'
+): PlantOperationsAccess => {
   const { currentUser } = useCurrentUser();
 
   // Default to NONE if no user or permissions
@@ -27,11 +29,17 @@ export const usePlantOperationsAccess = (section: 'CM' | 'RKC' = 'CM'): PlantOpe
   }
 
   // Get the specific permission level based on section
-  // permissions property is already populated from user_management by useCurrentUser hook
-  const permissionLevel =
-    section === 'RKC'
-      ? currentUser.permissions.rkc_plant_operations
-      : currentUser.permissions.cm_plant_operations;
+  let permissionLevel: PermissionLevel = 'NONE';
+  if (section === 'RKC') {
+    permissionLevel = currentUser.permissions.rkc_plant_operations || 'NONE';
+  } else if (section === 'DERIVATIVE') {
+    permissionLevel =
+      currentUser.permissions.derivative_plant_operations ||
+      currentUser.permissions.cm_plant_operations ||
+      'NONE';
+  } else {
+    permissionLevel = currentUser.permissions.cm_plant_operations || 'NONE';
+  }
 
   return {
     canRead: permissionLevel === 'READ' || permissionLevel === 'WRITE',

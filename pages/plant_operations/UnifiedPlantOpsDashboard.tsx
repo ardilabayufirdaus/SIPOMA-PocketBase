@@ -97,7 +97,8 @@ export default function UnifiedPlantOpsDashboard() {
           <button
             onClick={loadAllData}
             disabled={isLoading}
-            className="px-3 py-2 sm:px-4 sm:py-2.5 bg-blue-600 hover:bg-green-700 disabled:bg-blue-400 text-white rounded-md font-medium transition-colors min-h-[44px]"
+            aria-label="Refresh Data"
+            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white rounded-xl font-bold transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 min-h-[44px]"
           >
             {isLoading ? 'Loading...' : 'Refresh Data'}
           </button>
@@ -105,15 +106,18 @@ export default function UnifiedPlantOpsDashboard() {
       </div>
 
       {/* Optimization controls */}
-      <div className="bg-white rounded-lg p-4 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-800 mb-3">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
           Performance Optimization Controls
         </h2>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => toggleQueryCaching(!isCachingEnabled)}
-            className={`px-3 py-1 rounded-full text-sm font-medium ${
-              isCachingEnabled ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-800'
+            aria-label={`Toggle Query Cache (${isCachingEnabled ? 'ON' : 'OFF'})`}
+            className={`min-h-[44px] px-4 py-2 rounded-xl text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+              isCachingEnabled
+                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
             }`}
           >
             Query Cache: {isCachingEnabled ? 'ON' : 'OFF'}
@@ -121,8 +125,11 @@ export default function UnifiedPlantOpsDashboard() {
 
           <button
             onClick={() => toggleBatching(!isBatchingEnabled)}
-            className={`px-3 py-1 rounded-full text-sm font-medium ${
-              isBatchingEnabled ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-800'
+            aria-label={`Toggle Batch Loading (${isBatchingEnabled ? 'ON' : 'OFF'})`}
+            className={`min-h-[44px] px-4 py-2 rounded-xl text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+              isBatchingEnabled
+                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
             }`}
           >
             Batch Loading: {isBatchingEnabled ? 'ON' : 'OFF'}
@@ -130,7 +137,8 @@ export default function UnifiedPlantOpsDashboard() {
 
           <button
             onClick={() => clearQueryCache()}
-            className="px-3 py-1 bg-orange-100 hover:bg-orange-200 text-orange-800 rounded-full text-sm font-medium transition-colors"
+            aria-label="Clear Cache"
+            className="min-h-[44px] px-4 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/50 rounded-xl text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
           >
             Clear Cache
           </button>
@@ -235,6 +243,3 @@ export default function UnifiedPlantOpsDashboard() {
     </div>
   );
 }
-
-
-

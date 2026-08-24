@@ -11,6 +11,7 @@ import ShiftReportForm from '../features/inspection/components/ShiftReportForm';
 import CheckBadgeIcon from '../components/icons/CheckBadgeIcon';
 import { useAuth } from '../hooks/useAuth';
 import { useInspectionData } from '../hooks/useInspectionData';
+import { usePermissions } from '../utils/permissions';
 import UnitManager from '../features/inspection/components/UnitManager';
 import CogIcon from '../components/icons/CogIcon';
 import { useEffect } from 'react';
@@ -70,6 +71,8 @@ const INITIAL_TEMPLATE: Record<string, Group[]> = {
 
 const InspectionPage: React.FC = () => {
   const { user: currentUser } = useAuth();
+  const permissionChecker = usePermissions(currentUser);
+  const canWrite = permissionChecker.hasPermission('inspection', 'WRITE');
   const {
     inspections: reportsFromDb,
     units,
@@ -203,6 +206,10 @@ const InspectionPage: React.FC = () => {
 
   // Handlers
   const handleSaveReport = async (newReportData: DailyReport) => {
+    if (!canWrite) {
+      alert('Anda tidak memiliki izin WRITE untuk membuat/mengubah shift report.');
+      return;
+    }
     const reportDate = new Date(newReportData.date).toISOString().split('T')[0];
 
     // Find if report already exists for this unit and date in DB records
@@ -220,19 +227,26 @@ const InspectionPage: React.FC = () => {
       unit: newReportData.unitId, // Use ID relation, not Name
       area: newReportData.areaId,
       status: newReportData.status,
-      s1_tender: newReportData.personnel.s1.tender,
-      s1_karu: newReportData.personnel.s1.karu,
-      s1_approved: newReportData.approvals.s1,
-      s2_tender: newReportData.personnel.s2.tender,
-      s2_karu: newReportData.personnel.s2.karu,
-      s2_approved: newReportData.approvals.s2,
-      s3_tender: newReportData.personnel.s3.tender,
-      s3_karu: newReportData.personnel.s3.karu,
-      s3_approved: newReportData.approvals.s3,
+      s1_tender: newReportData.personnel?.s1?.tender || '',
+      s1_karu: newReportData.personnel?.s1?.karu || '',
+      s1_approved: newReportData.approvals?.s1 ?? false,
+      s2_tender: newReportData.personnel?.s2?.tender || '',
+      s2_karu: newReportData.personnel?.s2?.karu || '',
+      s2_approved: newReportData.approvals?.s2 ?? false,
+      s3_tender: newReportData.personnel?.s3?.tender || '',
+      s3_karu: newReportData.personnel?.s3?.karu || '',
+      s3_approved: newReportData.approvals?.s3 ?? false,
       data: newReportData.data,
     };
 
     try {
+      const existing = reportsFromDb.find(
+        (r) =>
+          r.date === pbData.date &&
+          r.unit === pbData.unit &&
+          (pbData.area ? r.area === pbData.area : true)
+      );
+
       if (existing) {
         // MERGE LOGIC (similar to previous, but operating on flat PB object)
         const updatedPbData = {
@@ -257,6 +271,10 @@ const InspectionPage: React.FC = () => {
   };
 
   const handleApproveShift = async (reportId: string, shift: 's1' | 's2' | 's3') => {
+    if (!canWrite) {
+      alert('Anda tidak memiliki izin WRITE untuk menyetujui shift report.');
+      return;
+    }
     try {
       const fieldName = `${shift}_approved`;
       await updateInspection(reportId, { [fieldName]: true } as any);
@@ -374,7 +392,7 @@ const InspectionPage: React.FC = () => {
             </button>
           )}
 
-          {viewMode === 'reports' && (
+          {canWrite && viewMode === 'reports' && (
             <button
               onClick={() => setIsFormOpen(true)}
               className="group flex items-center gap-2.5 px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all active:scale-95"
@@ -715,6 +733,7 @@ const InspectionPage: React.FC = () => {
             }
             onUpdateCheckpoint={(id, name) => updateCheckpoint(id, { name })}
             onDeleteCheckpoint={deleteCheckpoint}
+            canWrite={canWrite}
           />
         </motion.div>
       )}

@@ -234,42 +234,51 @@ const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ className = '' })
   );
 
   const renderAlerts = () => (
-    <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
-      <div className="p-6 border-b border-slate-200">
-        <h3 className="text-lg font-semibold text-slate-900">Security Alerts</h3>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Security Alerts</h3>
       </div>
       <div className="p-6">
         <div className="space-y-4">
           {filteredData.alerts.map((alert) => (
-            <div key={alert.id} className="p-4 border border-slate-200 rounded-lg">
+            <div
+              key={alert.id}
+              className="p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900"
+            >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-2">
                     <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getSeverityColor(alert.severity)}`}
+                      className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${getSeverityColor(alert.severity)}`}
                     >
                       {alert.severity}
                     </span>
-                    <span className="text-sm text-slate-500">
+                    <span className="text-sm text-slate-500 dark:text-slate-400">
                       {new Date(alert.createdAt).toLocaleString()}
                     </span>
                   </div>
-                  <h4 className="text-lg font-medium text-slate-900 mb-1">{alert.title}</h4>
-                  <p className="text-sm text-slate-600 mb-2">{alert.description}</p>
+                  <h4 className="text-lg font-medium text-slate-900 dark:text-white mb-1">
+                    {alert.title}
+                  </h4>
+                  <p className="text-sm text-slate-600 dark:text-slate-300 mb-2">
+                    {alert.description}
+                  </p>
                   {alert.ipAddress && (
-                    <p className="text-xs text-slate-500">IP: {alert.ipAddress}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                      IP: {alert.ipAddress}
+                    </p>
                   )}
                 </div>
                 <div className="flex-shrink-0 ml-4">
                   {!alert.isResolved ? (
                     <button
                       onClick={() => resolveAlert(alert.id, 'admin')}
-                      className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
+                      className="min-h-[44px] px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     >
                       Resolve
                     </button>
                   ) : (
-                    <span className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-md">
+                    <span className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-medium rounded-xl">
                       Resolved
                     </span>
                   )}
@@ -283,50 +292,52 @@ const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ className = '' })
   );
 
   const renderSessions = () => (
-    <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
-      <div className="p-6 border-b border-slate-200">
-        <h3 className="text-lg font-semibold text-slate-900">Active Sessions</h3>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Active Sessions</h3>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-slate-600 dark:bg-slate-700">
+          <thead className="bg-slate-800 dark:bg-slate-900 text-white">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+              <th className="px-6 py-3.5 text-left text-xs font-medium text-white uppercase tracking-wider">
                 User
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+              <th className="px-6 py-3.5 text-left text-xs font-medium text-white uppercase tracking-wider">
                 IP Address
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+              <th className="px-6 py-3.5 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Device
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+              <th className="px-6 py-3.5 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Last Activity
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+              <th className="px-6 py-3.5 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Status
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-slate-200">
+          <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800">
             {activeSessions.map((session) => (
-              <tr key={session.sessionId} className="hover:bg-slate-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+              <tr key={session.sessionId} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-white">
                   {session.username}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 font-mono">
                   {session.ipAddress}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300">
                   {session.deviceInfo?.browser} on {session.deviceInfo?.os}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                   {new Date(session.lastActivity).toLocaleString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
-                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      session.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${
+                      session.isActive
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400'
+                        : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
                     }`}
                   >
                     {session.isActive ? 'Active' : 'Inactive'}

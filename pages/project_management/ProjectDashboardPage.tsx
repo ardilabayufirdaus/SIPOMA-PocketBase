@@ -484,7 +484,7 @@ const ProjectDashboardPage: React.FC<{
             ].map((metric, idx) => (
               <div
                 key={idx}
-                className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-start justify-between hover:shadow-md transition-all h-28 group"
+                className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col items-start justify-between hover:shadow-md transition-all h-28 group"
               >
                 <div
                   className={`p-2 rounded-lg ${metric.color} mb-2 group-hover:scale-110 transition-transform`}
@@ -492,21 +492,23 @@ const ProjectDashboardPage: React.FC<{
                   {metric.icon}
                 </div>
                 <div className="w-full">
-                  <p className="text-xs font-medium text-slate-500 mb-0.5 truncate">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-0.5 truncate">
                     {metric.title}
                   </p>
-                  <p className="text-xl font-bold text-slate-800">{metric.value}</p>
+                  <p className="text-xl font-bold text-slate-800 dark:text-white">{metric.value}</p>
                 </div>
               </div>
             ))}
           </div>
+        </div>
 
-          <div className="col-span-12 lg:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-12 lg:col-span-8 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-[#0f172a]">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                 {t.tasks_forecast || 'Tasks Forecast'}
               </h3>
-              <span className="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
                 6 Months Horizon
               </span>
             </div>
@@ -515,8 +517,10 @@ const ProjectDashboardPage: React.FC<{
             </div>
           </div>
 
-          <div className="col-span-12 lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
-            <h3 className="text-lg font-bold text-[#0f172a] mb-6">{t.projects_by_status}</h3>
+          <div className="col-span-12 lg:col-span-4 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">
+              {t.projects_by_status}
+            </h3>
             <div className="flex-1 flex flex-col items-center justify-center min-h-[280px]">
               <div className="scale-125 mb-8">
                 <DonutChart ref={donutChartInstRef} data={statusCounts} t={t} />
@@ -525,41 +529,43 @@ const ProjectDashboardPage: React.FC<{
                 {statusCounts.map((item) => (
                   <div
                     key={item.label}
-                    className="flex items-center justify-between text-sm p-3 rounded-xl bg-slate-50"
+                    className="flex items-center justify-between text-sm p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60"
                   >
                     <div className="flex items-center gap-3">
                       <span
                         className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: item.color }}
                       ></span>
-                      <span className="text-slate-700 font-medium">{item.label}</span>
+                      <span className="text-slate-700 dark:text-slate-300 font-medium">
+                        {item.label}
+                      </span>
                     </div>
-                    <span className="font-bold text-slate-800">{item.value}</span>
+                    <span className="font-bold text-slate-800 dark:text-white">{item.value}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          <div className="col-span-12 lg:col-span-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
-            <h3 className="text-lg font-bold text-[#0f172a] mb-6 flex items-center gap-2">
-              <CurrencyDollarIcon className="w-6 h-6 text-[#0E8420]" />
+          <div className="col-span-12 lg:col-span-6 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+              <CurrencyDollarIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
               {t.financial_overview || 'Financial Overview'}
             </h3>
             <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="p-4 rounded-xl bg-[#0E8420]/5 border border-[#0E8420]/10">
-                <p className="text-xs font-semibold text-[#0E8420] mb-1 uppercase tracking-wider">
+              <div className="p-4 rounded-xl bg-primary-50 dark:bg-primary-950/40 border border-primary-100 dark:border-primary-900/50">
+                <p className="text-xs font-semibold text-primary-700 dark:text-primary-300 mb-1 uppercase tracking-wider">
                   {t.total_budget || 'Total Budget'}
                 </p>
-                <p className="text-lg font-bold text-[#0f172a] truncate">
+                <p className="text-lg font-bold text-slate-900 dark:text-white truncate">
                   {overallMetrics.totalBudget ? formatRupiah(overallMetrics.totalBudget) : 'Rp 0'}
                 </p>
               </div>
-              <div className="p-4 rounded-xl bg-[#1e293b]/5 border border-[#1e293b]/10">
-                <p className="text-xs font-semibold text-[#1e293b] mb-1 uppercase tracking-wider">
+              <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wider">
                   {t.budget_utilization || 'Utilization'}
                 </p>
-                <p className="text-lg font-bold text-[#0f172a]">
+                <p className="text-lg font-bold text-slate-900 dark:text-white">
                   {(
                     (overallMetrics.completedProjects / Math.max(overallMetrics.totalProjects, 1)) *
                     100
@@ -573,8 +579,8 @@ const ProjectDashboardPage: React.FC<{
             </div>
           </div>
 
-          <div className="col-span-12 lg:col-span-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
-            <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+          <div className="col-span-12 lg:col-span-6 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
               <ExclamationTriangleIcon className="w-6 h-6 text-rose-500" />
               {t.critical_issues || 'Attention Needed'}
             </h3>
@@ -583,21 +589,27 @@ const ProjectDashboardPage: React.FC<{
                 criticalIssues.map((issue, index) => (
                   <div
                     key={index}
-                    className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100"
+                    className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700/50"
                   >
                     <div
                       className={`mt-1.5 w-2.5 h-2.5 rounded-full ${issue.severity === 'high' ? 'bg-red-500' : 'bg-orange-500'}`}
                     ></div>
                     <div>
-                      <p className="text-sm font-bold text-slate-800">{issue.title}</p>
-                      <p className="text-xs text-slate-600 mt-1">{issue.description}</p>
+                      <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                        {issue.title}
+                      </p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                        {issue.description}
+                      </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="flex flex-col items-center justify-center h-48 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                  <ShieldCheckIcon className="w-12 h-12 text-green-400 mb-3" />
-                  <p className="text-slate-600 font-medium">All systems operational</p>
+                <div className="flex flex-col items-center justify-center h-48 text-center bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                  <ShieldCheckIcon className="w-12 h-12 text-emerald-500 mb-3" />
+                  <p className="text-slate-600 dark:text-slate-300 font-medium">
+                    All systems operational
+                  </p>
                 </div>
               )}
             </div>

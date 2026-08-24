@@ -43,6 +43,17 @@ export class PermissionChecker {
       userPermission = (this.user.permissions as any)['cm_plant_operations'];
     }
 
+    // Fallback for contract_sla_management if not explicitly configured
+    if (feature === 'contract_sla_management' && !userPermission) {
+      if (['Super Admin', 'Admin', 'Manager'].includes(this.user.role)) {
+        userPermission = 'WRITE';
+      } else if (this.user.role !== 'Guest') {
+        userPermission = 'READ';
+      } else {
+        userPermission = 'NONE';
+      }
+    }
+
     // Handle string permission format (recommended)
     if (typeof userPermission === 'string') {
       return this.comparePermissionLevel(userPermission, requiredLevel);
@@ -201,6 +212,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
     rkc_plant_operations: 'WRITE',
     derivative_plant_operations: 'WRITE',
     project_management: 'WRITE',
+    contract_sla_management: 'WRITE',
     database: 'WRITE',
     inspection: 'WRITE',
   },
@@ -210,6 +222,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
     rkc_plant_operations: 'WRITE',
     derivative_plant_operations: 'WRITE',
     project_management: 'WRITE',
+    contract_sla_management: 'WRITE',
     database: 'WRITE',
     inspection: 'WRITE',
   },
@@ -219,6 +232,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
     rkc_plant_operations: 'WRITE',
     derivative_plant_operations: 'WRITE',
     project_management: 'WRITE',
+    contract_sla_management: 'WRITE',
     database: 'READ',
     inspection: 'WRITE',
   },
@@ -228,6 +242,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
     rkc_plant_operations: 'WRITE',
     derivative_plant_operations: 'WRITE',
     project_management: 'NONE',
+    contract_sla_management: 'READ',
     database: 'NONE',
     inspection: 'WRITE',
   },
@@ -237,6 +252,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
     rkc_plant_operations: 'WRITE',
     derivative_plant_operations: 'WRITE',
     project_management: 'NONE',
+    contract_sla_management: 'READ',
     database: 'NONE',
     inspection: 'WRITE',
   },
@@ -246,6 +262,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
     rkc_plant_operations: 'NONE',
     derivative_plant_operations: 'NONE',
     project_management: 'NONE',
+    contract_sla_management: 'NONE',
     database: 'NONE',
     inspection: 'NONE',
   },

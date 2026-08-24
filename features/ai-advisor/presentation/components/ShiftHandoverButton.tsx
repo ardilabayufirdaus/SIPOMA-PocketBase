@@ -67,7 +67,8 @@ export const ShiftHandoverButton: React.FC<ShiftHandoverButtonProps & { classNam
     <>
       <button
         onClick={handleClick}
-        className={`flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl shadow-sm hover:shadow-md transition-all font-medium text-sm ${className}`}
+        aria-label="Generate AI Shift Report"
+        className={`min-h-[44px] flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all font-bold text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${className}`}
         title="Generate AI Shift Report"
       >
         <Sparkles className="w-4 h-4" />

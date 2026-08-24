@@ -105,3 +105,12 @@ export const InspectionPage = createLazyComponent(() => import('../../pages/Insp
   loadingFallback: <LoadingSkeleton variant="rectangular" height={200} width="100%" />,
   errorFallback: <DefaultErrorFallback name="Inspection" />,
 });
+
+/**
+ * Contract & SLA Management Page
+ */
+export const ContractSlaPage = createLazyComponent(() => import('../../pages/ContractSlaPage'), {
+  displayName: 'ContractSlaPage',
+  loadingFallback: <LoadingSkeleton variant="rectangular" height={200} width="100%" />,
+  errorFallback: <DefaultErrorFallback name="Contract & SLA Management" />,
+});

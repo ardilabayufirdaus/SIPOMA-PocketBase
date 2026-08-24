@@ -37,14 +37,14 @@ export const SiloTable: React.FC<SiloTableProps> = ({
     return null;
   }
 
-  const hideEmptySpace = shouldHideEmptySpace ?? customNameHeader?.toUpperCase().includes('TRASS');
+  const hideEmptySpace = shouldHideEmptySpace ?? false;
   const shiftColSpan = hideEmptySpace ? 2 : 3;
 
   return (
-    <div className="bg-white overflow-hidden">
-      <div className="p-4 border-b border-slate-200 bg-[#F9F9F9]">
-        <h3 className="text-sm font-bold text-[#059669] flex items-center gap-2 uppercase tracking-wider">
-          <div className="w-1.5 h-4 bg-[#111827] rounded-full"></div>
+    <div className="bg-white dark:bg-slate-900 overflow-hidden">
+      <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+        <h3 className="text-sm font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2 uppercase tracking-wider">
+          <div className="w-1.5 h-4 bg-slate-800 dark:bg-slate-200 rounded-full"></div>
           {customTitle || t.silo_stock_report_title || 'SILO STOCK REPORT'}
         </h3>
       </div>
@@ -84,14 +84,16 @@ export const SiloTable: React.FC<SiloTableProps> = ({
               {['shift1', 'shift2', 'shift3'].map((shiftKey) => (
                 <React.Fragment key={shiftKey}>
                   {!hideEmptySpace && (
-                    <th className="px-3 py-2 text-center font-semibold border-r border-white/20 align-middle text-[10px] uppercase">
-                      <div className="leading-tight">{t.empty_space || 'EMPTY SPACE'}</div>
+                    <th className="px-3 py-2 text-center font-semibold border-r border-white/20 align-middle text-xs uppercase">
+                      <div className="leading-tight">
+                        {t.ruang_isi || t.empty_space || 'FILLED SPACE (m)'}
+                      </div>
                     </th>
                   )}
-                  <th className="px-3 py-2 text-center font-semibold border-r border-white/20 align-middle text-[10px] uppercase">
+                  <th className="px-3 py-2 text-center font-semibold border-r border-white/20 align-middle text-xs uppercase">
                     <div className="leading-tight">{t.content || 'ISI STOCK'}</div>
                   </th>
-                  <th className="px-3 py-2 text-center font-semibold border-r border-white/20 last:border-r-0 align-middle text-[10px] uppercase">
+                  <th className="px-3 py-2 text-center font-semibold border-r border-white/20 last:border-r-0 align-middle text-xs uppercase">
                     <div className="leading-tight">%</div>
                   </th>
                 </React.Fragment>
@@ -103,10 +105,12 @@ export const SiloTable: React.FC<SiloTableProps> = ({
               <tr
                 key={silo.master.silo_name}
                 className={`${
-                  index % 2 === 0 ? 'bg-white' : 'bg-slate-50'
-                } hover:bg-orange-50/50 transition-colors border-b border-slate-100 last:border-0`}
+                  index % 2 === 0
+                    ? 'bg-white dark:bg-slate-900'
+                    : 'bg-slate-50 dark:bg-slate-800/40'
+                } hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0`}
               >
-                <td className="px-3 py-3 font-bold text-slate-800 border-r border-slate-200 sticky left-0 bg-inherit z-10 align-middle text-xs">
+                <td className="px-3 py-3 font-bold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-800 sticky left-0 bg-inherit z-10 align-middle text-xs">
                   {silo.master.silo_name}
                 </td>
 
@@ -123,17 +127,17 @@ export const SiloTable: React.FC<SiloTableProps> = ({
                   return (
                     <React.Fragment key={shiftKey}>
                       {!hideEmptySpace && (
-                        <td className="px-3 py-3 text-center text-slate-700 border-r border-slate-200 align-middle font-medium text-xs">
+                        <td className="px-3 py-3 text-center text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800 align-middle font-medium text-xs">
                           {formatNumberIndonesian(shiftData?.emptySpace) || '-'}
                         </td>
                       )}
-                      <td className="px-3 py-3 text-center text-slate-700 border-r border-slate-200 align-middle font-medium text-xs">
+                      <td className="px-3 py-3 text-center text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800 align-middle font-medium text-xs">
                         {formatNumberIndonesian(content) || '-'}
                       </td>
                       <td
                         className={`px-3 py-3 text-center align-middle font-bold text-xs ${
-                          shiftIndex === 2 ? '' : 'border-r border-slate-200'
-                        } ${percentage > 90 ? 'text-[#059669]' : 'text-[#111827]'}`}
+                          shiftIndex === 2 ? '' : 'border-r border-slate-200 dark:border-slate-800'
+                        } ${percentage > 90 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}`}
                       >
                         {percentage > 0 ? `${percentage.toFixed(1)}%` : '-'}
                       </td>

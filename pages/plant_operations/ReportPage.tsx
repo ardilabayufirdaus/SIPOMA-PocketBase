@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, FileSpreadsheet, Copy, Check, Download } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { useReportSettings } from '../../hooks/useReportSettings';
 import { useSimpleReportSettings } from '../../hooks/useSimpleReportSettings';
@@ -875,136 +875,143 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         </div>
       </div>
 
-      {/* Filter Section */}
-      <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6">
-        <div className="flex flex-wrap items-end gap-6">
-          {/* Plant Category */}
-          <div className="flex-1 min-w-[200px]">
-            <label
-              htmlFor="report-category"
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
-            >
-              {t.plant_category_label || 'PLANT CATEGORY'}
-            </label>
-            <div className="relative">
-              <select
-                id="report-category"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-sm font-medium transition-all duration-200 hover:bg-slate-100 cursor-pointer"
+      {/* Filter & Actions Section */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          {/* Filters & Core Actions */}
+          <div className="flex flex-wrap items-end gap-4 flex-1">
+            {/* Plant Category */}
+            <div className="min-w-[170px] flex-1">
+              <label
+                htmlFor="report-category"
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
               >
-                {plantCategories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                {t.plant_category_label || 'PLANT CATEGORY'}
+              </label>
+              <div className="relative">
+                <select
+                  id="report-category"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-sm font-medium transition-all duration-200 hover:bg-slate-100 cursor-pointer"
+                >
+                  {plantCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Unit Name */}
+            <div className="min-w-[170px] flex-1">
+              <label
+                htmlFor="report-unit"
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
+              >
+                {t.unit_label || 'UNIT NAME'}
+              </label>
+              <div className="relative">
+                <select
+                  id="report-unit"
+                  value={selectedUnit}
+                  onChange={(e) => setSelectedUnit(e.target.value)}
+                  disabled={unitsForCategory.length === 0}
+                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-sm font-medium transition-all duration-200 hover:bg-slate-100 cursor-pointer"
+                >
+                  {unitsForCategory.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Select Date */}
+            <div className="min-w-[150px] flex-1">
+              <label
+                htmlFor="report-date"
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
+              >
+                {t.select_date || 'REPORT DATE'}
+              </label>
+              <input
+                type="date"
+                id="report-date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm font-medium transition-all duration-200 hover:bg-slate-100 cursor-pointer"
+              />
+            </div>
+
+            {/* Core Action Buttons */}
+            <div className="flex items-center gap-2">
+              <EnhancedButton
+                onClick={handleGenerateReport}
+                disabled={isLoading || reportConfig.length === 0}
+                variant="primary"
+                size="md"
+                className="px-5 py-2.5 h-[44px] min-h-[44px] text-sm font-bold bg-[#059669] hover:bg-[#047857] active:bg-[#065f46] text-white shadow-md hover:shadow-lg transition-all rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669]/40 flex items-center justify-center gap-2 whitespace-nowrap"
+                ariaLabel={t.generate_report_button || 'Generate Log Sheet'}
+                loading={isLoading}
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                {isLoading
+                  ? 'PROCESSING...'
+                  : (t.generate_report_button || 'GENERATE LOG SHEET').toUpperCase()}
+              </EnhancedButton>
+
+              <EnhancedButton
+                onClick={handleGenerateSimpleData}
+                disabled={isLoading || simpleReportConfig.length === 0}
+                variant="outline"
+                size="md"
+                className="px-5 py-2.5 h-[44px] min-h-[44px] text-sm font-bold border-2 border-[#059669] text-[#059669] hover:bg-[#059669]/10 active:bg-[#059669]/20 transition-all rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669]/40 flex items-center justify-center gap-2 whitespace-nowrap"
+                ariaLabel={t.generate_simple_data_button || 'Simple Report'}
+              >
+                SIMPLE
+              </EnhancedButton>
             </div>
           </div>
 
-          {/* Unit Name */}
-          <div className="flex-1 min-w-[200px]">
-            <label
-              htmlFor="report-unit"
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
-            >
-              {t.unit_label || 'UNIT NAME'}
-            </label>
-            <div className="relative">
-              <select
-                id="report-unit"
-                value={selectedUnit}
-                onChange={(e) => setSelectedUnit(e.target.value)}
-                disabled={unitsForCategory.length === 0}
-                className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-sm font-medium transition-all duration-200 hover:bg-slate-100 cursor-pointer"
+          {/* Export & Copy Actions */}
+          {reportData && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="w-px h-8 bg-slate-200 hidden sm:block mx-1"></div>
+
+              <EnhancedButton
+                onClick={handleCopyImage}
+                variant="secondary"
+                size="md"
+                className={`px-4 py-2.5 h-[44px] min-h-[44px] text-sm font-bold shadow-md hover:shadow-lg transition-all rounded-xl border-0 focus:outline-none focus:ring-2 flex items-center justify-center gap-2 whitespace-nowrap ${
+                  copySuccess
+                    ? 'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white focus:ring-emerald-500/40'
+                    : 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white focus:ring-indigo-500/40'
+                }`}
+                ariaLabel="Copy report as image"
+                disabled={isCopying}
               >
-                {unitsForCategory.map((unit) => (
-                  <option key={unit} value={unit}>
-                    {unit}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                {copySuccess ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {isCopying ? 'COPYING...' : copySuccess ? 'COPIED!' : 'COPY IMAGE'}
+              </EnhancedButton>
+
+              <EnhancedButton
+                onClick={handleExportPDF}
+                variant="secondary"
+                size="md"
+                className="px-4 py-2.5 h-[44px] min-h-[44px] text-sm font-bold bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white shadow-md hover:shadow-lg transition-all rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-rose-500/40 flex items-center justify-center gap-2 whitespace-nowrap"
+                ariaLabel="Export report as PDF"
+                disabled={isExportingPDF}
+              >
+                <Download className="w-4 h-4" />
+                {isExportingPDF ? 'EXPORTING...' : 'EXPORT PDF'}
+              </EnhancedButton>
             </div>
-          </div>
-
-          {/* Select Date */}
-          <div className="w-[200px]">
-            <label
-              htmlFor="report-date"
-              className="flex items-center gap-1.5 text-xs font-bold text-[#111827] uppercase tracking-wider mb-2"
-            >
-              {t.select_date || 'REPORT DATE'}
-            </label>
-            <input
-              type="date"
-              id="report-date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full px-4 py-2.5 bg-[#F7F7F7] border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm font-medium transition-all duration-200 hover:bg-slate-50 cursor-pointer"
-            />
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-end gap-3 flex-shrink-0 ml-auto">
-            <EnhancedButton
-              onClick={handleGenerateReport}
-              disabled={isLoading || reportConfig.length === 0}
-              variant="ghost"
-              size="sm"
-              className="px-6 py-2.5 h-[42px] text-sm font-bold !bg-primary-600 hover:!bg-primary-500 !text-white shadow-md hover:shadow-lg transition-all !border-0 rounded-lg tracking-wide"
-              ariaLabel={t.generate_report_button}
-              loading={isLoading}
-            >
-              {isLoading
-                ? 'PROCESSING...'
-                : (t.generate_report_button || 'GENERATE LOG SHEET').toUpperCase()}
-            </EnhancedButton>
-
-            <EnhancedButton
-              onClick={handleGenerateSimpleData}
-              disabled={isLoading || simpleReportConfig.length === 0}
-              variant="ghost"
-              size="sm"
-              className="px-6 py-2.5 h-[42px] text-sm font-bold !border-2 !border-primary-600 !text-primary-600 hover:!bg-primary-600/10 rounded-lg tracking-wide"
-              ariaLabel={t.generate_simple_data_button}
-            >
-              SIMPLE
-            </EnhancedButton>
-
-            {reportData && (
-              <>
-                <div className="w-px h-8 bg-slate-300 mx-2 hidden xl:block"></div>
-
-                <EnhancedButton
-                  onClick={handleCopyImage}
-                  variant="secondary"
-                  size="sm"
-                  className={`px-4 py-2.5 h-[42px] text-sm font-bold shadow-md hover:shadow-lg transition-all rounded-lg border-0 ${
-                    copySuccess
-                      ? 'bg-green-600 hover:bg-green-700 text-white'
-                      : 'bg-[#111827] hover:bg-[#5E2142] text-white'
-                  }`}
-                  ariaLabel="Copy report as image"
-                  disabled={isCopying}
-                >
-                  {isCopying ? 'COPYING...' : copySuccess ? 'COPIED!' : 'COPY IMAGE'}
-                </EnhancedButton>
-
-                <EnhancedButton
-                  onClick={handleExportPDF}
-                  variant="secondary"
-                  size="sm"
-                  className="px-4 py-2.5 h-[42px] text-sm font-bold bg-[#333333] hover:bg-black text-white shadow-md hover:shadow-lg transition-all rounded-lg border-0"
-                  ariaLabel="Export report as PDF"
-                  disabled={isExportingPDF}
-                >
-                  {isExportingPDF ? 'EXPORTING...' : 'EXPORT PDF'}
-                </EnhancedButton>
-              </>
-            )}
-          </div>
+          )}
         </div>
       </div>
 

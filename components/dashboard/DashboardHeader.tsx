@@ -29,17 +29,17 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, t, onlineUsersC
           className="flex flex-col"
         >
           <div className="flex items-center gap-2 md:gap-3 flex-wrap">
-            <h1 className="text-xl md:text-3xl font-bold tracking-tight text-[#333333] dark:text-white">
+            <h1 className="text-xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
               {greeting},{' '}
               <span className="text-primary-600">
                 {user?.name || user?.full_name || user?.username || 'Engineer'}
               </span>
             </h1>
-            <span className="px-2 py-0.5 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-widest bg-slate-900 text-white">
+            <span className="px-2 py-0.5 rounded text-xs font-bold uppercase tracking-widest bg-slate-900 dark:bg-slate-700 text-white">
               {user?.role || 'Guest'}
             </span>
           </div>
-          <p className="text-[10px] md:text-[11px] text-[#808080] dark:text-slate-400 font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] mt-1 pl-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] mt-1 pl-0.5">
             {t.dashboard_welcome_message || 'SYSTEMS OPERATIONAL • READY FOR PRODUCTION'}
           </p>
         </motion.div>
@@ -47,7 +47,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, t, onlineUsersC
 
       <div className="flex items-center gap-4">
         {/* Date Display */}
-        <div className="hidden md:flex items-center gap-2.5 px-4 py-2 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="hidden md:flex items-center gap-2.5 px-4 py-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <svg
             className="w-3.5 h-3.5 text-primary-600"
             fill="none"
@@ -61,7 +61,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, t, onlineUsersC
               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
-          <span className="text-xs font-bold text-[#333333] dark:text-slate-300 uppercase tracking-widest">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest">
             {new Date().toLocaleDateString('id-ID', {
               weekday: 'long',
               day: 'numeric',
@@ -71,11 +71,11 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, t, onlineUsersC
         </div>
 
         {/* Online Users Badge */}
-        <div className="flex items-center gap-2.5 px-4 py-2 bg-[#F7F7F7] dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800">
+        <div className="flex items-center gap-2.5 px-4 py-2 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
           <div className="relative flex h-2 w-2">
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#38B000]"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </div>
-          <span className="text-[11px] font-bold text-[#333333] dark:text-slate-300 uppercase tracking-widest">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest">
             {onlineUsersCount} Online
           </span>
         </div>

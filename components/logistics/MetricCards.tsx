@@ -40,22 +40,22 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   const getTrendColor = () => {
     switch (trend) {
       case 'good':
-        return 'bg-green-50 text-green-600';
+        return 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400';
       case 'warning':
-        return 'bg-yellow-50 text-yellow-600';
+        return 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400';
       case 'critical':
-        return 'bg-red-50 text-blue-600';
+        return 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400';
       default:
-        return 'bg-slate-50 text-slate-600';
+        return 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400';
     }
   };
 
   const getTrendBorder = () => {
     switch (trend) {
       case 'good':
-        return 'border-l-4 border-green-500';
+        return 'border-l-4 border-emerald-500';
       case 'warning':
-        return 'border-l-4 border-yellow-500';
+        return 'border-l-4 border-amber-500';
       case 'critical':
         return 'border-l-4 border-red-500';
       default:
@@ -68,8 +68,10 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   return (
     <>
       <div
-        className={`bg-white p-3 rounded-lg shadow-md flex items-start gap-2 transition hover:shadow-lg focus-within:ring-2 focus-within:ring-red-400 ${getTrendBorder()} ${
-          isInteractive ? 'cursor-pointer hover:bg-gray-50 transform hover:scale-[1.02]' : ''
+        className={`bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start gap-3 transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-primary-500 ${getTrendBorder()} ${
+          isInteractive
+            ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60 transform hover:scale-[1.02]'
+            : ''
         }`}
         tabIndex={isInteractive ? 0 : -1}
         aria-label={title + (unit ? ` (${unit})` : '')}
@@ -81,23 +83,26 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           }
         }}
       >
-        <div className={`p-2 rounded-lg flex items-center justify-center ${getTrendColor()}`}>
+        <div className={`p-2.5 rounded-xl flex items-center justify-center ${getTrendColor()}`}>
           {icon}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-medium text-slate-500 truncate" title={title}>
+            <p
+              className="text-xs font-medium text-slate-500 dark:text-slate-400 truncate"
+              title={title}
+            >
               {title}
             </p>
             <div className="flex items-center space-x-1">
               {trend !== 'neutral' && (
                 <span
-                  className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
                     trend === 'good'
-                      ? 'bg-green-100 text-green-800'
+                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400'
                       : trend === 'warning'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-orange-100 text-orange-800'
+                        ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-400'
+                        : 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-400'
                   }`}
                   title={
                     trend === 'good'
@@ -112,7 +117,12 @@ export const MetricCard: React.FC<MetricCardProps> = ({
               )}
               {isInteractive && (
                 <div className="text-slate-400">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -126,7 +136,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           </div>
           <div className="flex items-baseline space-x-1 mt-0.5">
             <p
-              className="text-lg font-semibold text-slate-900"
+              className="text-lg font-bold text-slate-900 dark:text-white"
               aria-label={
                 typeof value === 'string' || typeof value === 'number'
                   ? String(value)
@@ -137,7 +147,9 @@ export const MetricCard: React.FC<MetricCardProps> = ({
                 ? String(value)
                 : '[Invalid Value]'}
             </p>
-            {unit && <p className="text-xs font-medium text-slate-500">{unit}</p>}
+            {unit && (
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{unit}</p>
+            )}
           </div>
         </div>
       </div>
@@ -152,5 +164,3 @@ export const MetricCard: React.FC<MetricCardProps> = ({
     </>
   );
 };
-
-

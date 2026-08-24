@@ -129,33 +129,33 @@ const CcrConnectionBanner: React.FC<CcrConnectionBannerProps> = ({
     <div className="w-full space-y-3 mb-6 font-sans">
       {/* Recovery Notice Overlay (Indonesian) */}
       {showDraftNotice && hasDraft && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-200 dark:border-blue-700/50 rounded-xl p-4 flex items-center justify-between shadow-md transition-all duration-500 animate-in fade-in slide-in-from-top-4">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-200 dark:border-blue-700/50 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md transition-all duration-500 animate-in fade-in slide-in-from-top-4">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center text-xl shadow-sm border border-blue-100 dark:border-blue-800">
+            <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-xl shadow-sm border border-blue-100 dark:border-blue-800 shrink-0">
               💾
             </div>
             <div>
-              <h4 className="font-bold text-blue-900 dark:text-blue-100 flex items-center gap-2">
+              <h4 className="font-bold text-blue-900 dark:text-blue-100 flex items-center gap-2 flex-wrap">
                 Pemulihan Sesi Sebelumnya
-                <span className="bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 text-[10px] px-1.5 py-0.5 rounded italic">
+                <span className="bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 text-xs px-2 py-0.5 rounded italic">
                   Draft Deteksi
                 </span>
               </h4>
-              <p className="text-sm text-blue-700/80 dark:text-blue-300/70">
+              <p className="text-sm text-blue-700/80 dark:text-blue-300/70 mt-0.5">
                 Data draf ditemukan dari pengerjaan terakhir. Ingin dipulihkan?
               </p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             <button
               onClick={handleDiscardDraft}
-              className="px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-white/50 dark:hover:bg-gray-800 rounded-lg transition-all"
+              className="min-h-[44px] px-4 py-2 text-sm font-semibold text-blue-700 dark:text-blue-300 hover:bg-white/50 dark:hover:bg-slate-800 rounded-xl transition-all"
             >
               Abaikan
             </button>
             <button
               onClick={handleRecoverDraft}
-              className="px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm hover:shadow-md transform active:scale-95 transition-all"
+              className="min-h-[44px] px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm hover:shadow-md transform active:scale-95 transition-all"
             >
               Pulihkan Data
             </button>
@@ -165,7 +165,7 @@ const CcrConnectionBanner: React.FC<CcrConnectionBannerProps> = ({
 
       {/* Modern Status Toolbar */}
       <div
-        className={`${config.bg} ${config.border} border rounded-xl px-5 py-3.5 flex items-center justify-between shadow-sm transition-all duration-500`}
+        className={`${config.bg} ${config.border} border rounded-2xl px-5 py-3.5 flex flex-wrap items-center justify-between gap-3 shadow-sm transition-all duration-500`}
       >
         <div className="flex items-center gap-5">
           <div className="flex items-center gap-3">
@@ -181,20 +181,20 @@ const CcrConnectionBanner: React.FC<CcrConnectionBannerProps> = ({
               <span className={`font-black text-xs tracking-tighter ${config.text}`}>
                 {config.label}
               </span>
-              <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-widest leading-none">
+              <span className="text-xs uppercase font-bold text-slate-500 dark:text-slate-400 tracking-widest leading-none mt-1">
                 {config.desc}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-6">
           {lastSyncTime && (
-            <div className="hidden sm:flex flex-col items-end border-r border-gray-200 dark:border-gray-800 pr-5">
-              <span className="text-[10px] font-black text-gray-400 dark:text-gray-600 tracking-widest uppercase">
+            <div className="hidden sm:flex flex-col items-end border-r border-slate-200 dark:border-slate-800 pr-5">
+              <span className="text-xs font-black text-slate-400 dark:text-slate-500 tracking-widest uppercase">
                 Last Sync
               </span>
-              <span className="text-xs font-bold tabular-nums text-gray-700 dark:text-gray-300">
+              <span className="text-xs font-bold tabular-nums text-slate-700 dark:text-slate-300">
                 {lastSyncTime}
               </span>
             </div>
@@ -204,15 +204,15 @@ const CcrConnectionBanner: React.FC<CcrConnectionBannerProps> = ({
             <button
               onClick={onManualSync}
               disabled={isSyncing}
-              className="flex items-center gap-2 px-5 py-2 rounded-lg bg-white dark:bg-gray-800 border border-amber-200 dark:border-amber-900/50 text-amber-700 dark:text-amber-400 font-black text-[10px] tracking-widest shadow-sm hover:shadow-md hover:scale-[1.02] transform active:scale-95 disabled:opacity-50 transition-all"
+              className="min-h-[44px] flex items-center gap-2 px-5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-900/50 text-amber-700 dark:text-amber-400 font-black text-xs tracking-widest shadow-sm hover:shadow-md hover:scale-[1.02] transform active:scale-95 disabled:opacity-50 transition-all"
             >
               {isSyncing ? 'SYNCING...' : `FORCE SYNC (${pendingCount})`}
             </button>
           ) : (
             status === 'online' &&
             pendingCount === 0 && (
-              <div className="flex items-center gap-2 bg-emerald-100/50 dark:bg-emerald-950/30 px-3 py-1.5 rounded-full border border-emerald-500/20">
-                <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
+              <div className="flex items-center gap-2 bg-emerald-100/50 dark:bg-emerald-950/30 px-3.5 py-1.5 rounded-full border border-emerald-500/20">
+                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
                   Ready to go — Synced
                 </span>
               </div>

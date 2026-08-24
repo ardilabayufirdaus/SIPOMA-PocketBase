@@ -24,7 +24,9 @@ export const initializeUserPermissions = async (userId: string, role: UserRole):
     dashboard: defaultPermissions.dashboard,
     cm_plant_operations: defaultPermissions.cm_plant_operations,
     rkc_plant_operations: defaultPermissions.rkc_plant_operations,
+    derivative_plant_operations: defaultPermissions.derivative_plant_operations || 'NONE',
     project_management: defaultPermissions.project_management,
+    contract_sla_management: defaultPermissions.contract_sla_management || 'NONE',
     database: defaultPermissions.database,
     inspection: defaultPermissions.inspection,
   };
@@ -57,7 +59,9 @@ export const getUserPermissions = async (userId: string): Promise<PermissionMatr
       dashboard: item.dashboard || 'NONE',
       cm_plant_operations: item.cm_plant_operations || 'NONE',
       rkc_plant_operations: item.rkc_plant_operations || 'NONE',
+      derivative_plant_operations: item.derivative_plant_operations || 'NONE',
       project_management: item.project_management || 'NONE',
+      contract_sla_management: item.contract_sla_management || 'NONE',
       database: item.database || 'NONE',
       inspection: item.inspection || 'NONE',
     };
@@ -84,7 +88,9 @@ export const saveUserPermissions = async (
     dashboard: permissions.dashboard,
     cm_plant_operations: permissions.cm_plant_operations,
     rkc_plant_operations: permissions.rkc_plant_operations,
+    derivative_plant_operations: permissions.derivative_plant_operations || 'NONE',
     project_management: permissions.project_management,
+    contract_sla_management: permissions.contract_sla_management || 'NONE',
     database: permissions.database,
     inspection: permissions.inspection,
   };
@@ -131,7 +137,9 @@ export const resetUserPermissionsToDefault = async (
     dashboard: defaultPermissions.dashboard,
     cm_plant_operations: defaultPermissions.cm_plant_operations,
     rkc_plant_operations: defaultPermissions.rkc_plant_operations,
+    derivative_plant_operations: defaultPermissions.derivative_plant_operations || 'NONE',
     project_management: defaultPermissions.project_management,
+    contract_sla_management: defaultPermissions.contract_sla_management || 'NONE',
     database: defaultPermissions.database,
     inspection: defaultPermissions.inspection,
   };

@@ -93,59 +93,66 @@ const CcrQuickActions: React.FC<CcrQuickActionsProps> = memo(
           </div>
 
           <div className="flex flex-wrap gap-4">
-            {/* Refresh Button */}
+            {/* Refresh Button - Secondary */}
             <button
               onClick={handleRefresh}
               disabled={isDisabled || isRefreshing}
-              className="flex items-center gap-2.5 px-5 py-3 bg-gradient-to-br from-indigo-500 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all duration-150 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed"
+              aria-label={t.refresh_data || 'Refresh Data'}
+              className="min-h-[44px] flex items-center gap-2.5 px-5 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed"
               title={t.refresh_data || 'Refresh Data'}
             >
-              <ArrowPathIcon className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <ArrowPathIcon
+                className={`w-5 h-5 text-primary-600 dark:text-primary-400 ${isRefreshing ? 'animate-spin' : ''}`}
+              />
               <span className="font-bold tracking-wide">{t.refresh || 'Refresh'}</span>
             </button>
 
-            {/* Export Button */}
+            {/* Export Button - Primary */}
             <button
               onClick={handleExport}
               disabled={isDisabled || isExporting}
-              className="flex items-center gap-2.5 px-5 py-3 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-xl hover:shadow-lg transition-all duration-150 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed"
+              aria-label={t.export_to_excel || 'Export ke Excel'}
+              className="min-h-[44px] flex items-center gap-2.5 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed"
               title={t.export_to_excel || 'Export ke Excel'}
             >
               <DocumentArrowDownIcon className="w-5 h-5" />
               <span className="font-bold tracking-wide">{t.export || 'Export'}</span>
             </button>
 
-            {/* Import Button - Only if can write */}
+            {/* Import Button - Secondary */}
             {canWrite && (
               <button
                 onClick={handleImport}
                 disabled={isDisabled}
-                className="flex items-center gap-2.5 px-5 py-3 bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-xl hover:shadow-lg transition-all duration-150 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed"
+                aria-label={t.import_from_excel || 'Import dari Excel'}
+                className="min-h-[44px] flex items-center gap-2.5 px-5 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed"
                 title={t.import_from_excel || 'Import dari Excel'}
               >
-                <DocumentArrowUpIcon className="w-5 h-5" />
+                <DocumentArrowUpIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                 <span className="font-bold tracking-wide">{t.import || 'Import'}</span>
               </button>
             )}
 
-            {/* Monthly Export/Import Button */}
+            {/* Monthly Export/Import Button - Secondary */}
             {onMonthlyExportImport && (
               <button
                 onClick={onMonthlyExportImport}
-                className="flex items-center gap-2.5 px-5 py-3 bg-gradient-to-br from-slate-900 to-secondary-900 text-white rounded-xl hover:shadow-lg transition-all duration-150 border border-emerald-500/30"
+                aria-label="Ekspor & Impor Data Bulanan"
+                className="min-h-[44px] flex items-center gap-2.5 px-5 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1"
                 title="Ekspor & Impor Data Bulanan"
               >
-                <DocumentArrowDownIcon className="w-5 h-5 text-emerald-400" />
+                <DocumentArrowDownIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 <span className="font-bold tracking-wide">Bulanan (Excel)</span>
               </button>
             )}
 
-            {/* Delete All Button - Only if can write */}
+            {/* Delete All Button - Danger */}
             {canWrite && (
               <button
                 onClick={handleDeleteAll}
                 disabled={isDisabled}
-                className="flex items-center gap-2.5 px-5 py-3 bg-gradient-to-br from-rose-500 to-red-600 text-white rounded-xl hover:shadow-lg transition-all duration-150 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed"
+                aria-label={t.delete_all_data || 'Hapus Semua Data'}
+                className="min-h-[44px] flex items-center gap-2.5 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed"
                 title={t.delete_all_data || 'Hapus Semua Data'}
               >
                 <TrashIcon className="w-5 h-5" />

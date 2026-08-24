@@ -27,6 +27,7 @@ export const CacheKeys = {
   DERIVATIVE_PIC_SETTINGS: 'derivative_pic_settings',
   DERIVATIVE_COP_PARAMETERS: 'derivative_cop_parameters',
   DERIVATIVE_REPORT_SETTINGS: 'derivative_report_settings',
+  DERIVATIVE_SIMPLE_REPORT_SETTINGS: 'derivative_simple_report_settings',
   DERIVATIVE_COP_FOOTER_PARAMETERS: 'derivative_cop_footer_parameters',
 
   // CCR Data

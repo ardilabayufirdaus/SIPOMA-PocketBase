@@ -1,0 +1,44 @@
+Akses SERVER ssh ardilabayufirdaus@172.18.6.98 dengan password : 270989
+Pocketbase email : ardila.firdaus@sig.id password : makassar@270989
+
+Aturan-aturan wajib :
+1. Untuk seluruh tombol-tombol wajib mengikuti Aturan Pewarnaan (Color Hierarchy), Aturan Bentuk dan Sudut (Shape & Border Radius) dan Aturan Status Interaksi (Button States)
+- Setiap tombol memiliki warna sesuai fungsinya masing-masing
+
+2. Untuk layout wajib mengikuti Sistem Kisi (Grid System), Spasi dan Jarak (Spacing & White Space), Alur Membaca (Reading Patterns) dan Hierarki Visual (Visual Hierarchy)
+
+3. Untuk floating windows wajib mengikuti aturan Perilaku dan Kontrol Jendela (Window Behavior), Kedalaman dan Lapisan Visual (Elevation & Layering), Responsivitas dan Batas Ukuran (Sizing & Responsiveness) dan Konsistensi Penempatan Awal (Initial Anchor Point)
+
+4. Untuk Tipografi (Typography) wajib mengikuti aturan Keterbacaan Minimum, Jarak Antar Baris (Line Height), Batas Jenis Font dan Panjang Baris
+
+5. Untuk Palet Warna (Color Palette) wajib mengikuti aturan Rasio Kontras Aksesibilitas (WCAG AA) dan Konsistensi Semantik
+
+6. UntukSistem Ikon (Iconography) wajib mengikuti aturan Konsistensi Gaya (Style), Area Ketukan Minimum (Target Touch Size) dan Atribut Label (Alt Text)
+
+7. Untuk Formulir & Input (Form Inputs) wajib mengikuti aturan Label Tetap Terlihat, Indikator Fokus (Focus State) dan Penempatan Teks Error
+
+8. Untuk Media & Gambar (Media Elements) wajib mengikuti aturan Format Generasi Baru, Rasio Aspek Konsisten dan Atribut Gambar Kosong
+
+9. Untuk Navigasi (Navigation) wajib mengikuti aturan Responsivitas Menu, Konsistensi Posisi dan Indikator Halaman Aktif
+
+10. Untuk Animasi & Transisi (Motion) wajib mengikuti aturan Batasan Durasi dan Opsi Matikan Animasi
+
+11. Untuk Keadaan Sistem (System States) wajib mengikuti aturan Responsivitas Loading dan Tombol Aksi pada Empty State
+
+12. Untuk Mode Tampilan (Theme Modes) wajib mengikuti aturan Dukungan Dark Mode dan Kontras Konsisten
+
+13. Untuk Titik Henti Layar (Responsive Breakpoints) wajib mengikuti aturan Standar Ukuran Layar dan Penyusunan Konten
+
+14. Untuk  Struktur Link & Elemen Interaktif (Links & Focus Indicators) wajib mengikuti aturan Pemberian Tanda Link dan Fokus Navigasi Keyboard
+
+15. Untuk Keamanan Konten & Batas Karakter (Data Overflow & Content Safety) wajib mengikuti aturan Aturan Pemotongan Teks (Truncation) dan Batas Karakter Maksimal (Max Character Limit)
+
+16. Untuk Struktur Hirarki Judul Kode (HTML Heading Semantics) wajib mengikuti aturan Urutan H1 sampai H6 Secara Berurutan
+
+17. Untuk Lokalisasi & Bahasa (Localization & Internationalization) wajib mengikuti aturan Fleksibilitas Ruang Teks (Text Expansion)
+
+18. Untuk Performa Visual & Metrik Kecepatan (Core Web Vitals - Visual Stability) wajib mengikuti aturan Aturan Stabilitas Tata Letak (Cumulative Layout Shift)
+
+19. Untuk Keamanan Hak Cipta & Hak Milik Aset (Asset Attribution & License) wajib mengikuti aturan Lisensi Komersial Terpusat
+
+20. Untuk Penamaan Komponen & Dokumentasi Berkas (Naming Convention & Component Handover) wajib mengikuti aturan Penamaan Token Desain Berstandar (Design Tokens) dan Struktur Folder Aset yang Konsisten

@@ -42,7 +42,7 @@ const CcrDataEntryHeader: React.FC<CcrDataEntryHeaderProps> = ({
             <BarChart3 className="w-7 h-7 text-indigo-200" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-white tracking-tight">{t.op_ccr_data_entry}</h2>
+            <h1 className="text-2xl font-bold text-white tracking-tight">{t.op_ccr_data_entry}</h1>
             <p className="text-sm text-indigo-200/80 font-medium mt-0.5">
               {t.ccr_page_description || 'Manage CCR data for plant performance monitoring'}
             </p>

@@ -5,6 +5,7 @@ import { usePicSettings } from '../../hooks/usePicSettings';
 // Import Enhanced Components
 import { EnhancedButton, EnhancedInput } from '../../components/ui/EnhancedComponents';
 import { RcaAnalysisButton } from '@features/ai-advisor/presentation/components/RcaAnalysisButton';
+import { TimeInput24h } from './components/TimeInput24h';
 
 interface FormProps {
   recordToEdit: CcrDowntimeData | null;
@@ -292,25 +293,21 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <EnhancedInput
-              type="time"
-              label={t.start_time}
+            <TimeInput24h
+              label={t.start_time || 'Start Time'}
               required
               value={formatTimeForInput(formData.start_time)}
               onChange={(val) => handleInputChange('start_time', val)}
               error={isFieldInvalid('start_time') ? errors.start_time : undefined}
-              className="bg-white"
               readOnly={readOnly}
             />
 
-            <EnhancedInput
-              type="time"
-              label={t.end_time}
+            <TimeInput24h
+              label={t.end_time || 'End Time'}
               required
               value={formatTimeForInput(formData.end_time)}
               onChange={(val) => handleInputChange('end_time', val)}
               error={isFieldInvalid('end_time') ? errors.end_time : undefined}
-              className="bg-white"
               readOnly={readOnly}
             />
           </div>

@@ -23,7 +23,9 @@ const DEFAULT_PERMISSIONS: UserPermission = {
   dashboard: 'NONE',
   cm_plant_operations: 'NONE',
   rkc_plant_operations: 'NONE',
+  derivative_plant_operations: 'NONE',
   project_management: 'NONE',
+  contract_sla_management: 'NONE',
   database: 'NONE',
   inspection: 'NONE',
 };

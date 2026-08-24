@@ -1,4 +1,4 @@
-﻿/// <reference types="node" />
+/// <reference types="node" />
 
 import React, { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
 import { ChevronDown, TrendingUp, Layers, Building2, Calendar, CalendarDays } from 'lucide-react';
@@ -471,12 +471,22 @@ const ChartContainer: React.FC<{
 
     const allValues = chartData
       .map((item) => item.value)
-      .filter((val) => val !== null && val !== undefined);
-    const yMin = min !== undefined ? Math.min(min, ...allValues) : Math.min(...allValues);
-    const yMax = max !== undefined ? Math.max(max, ...allValues) : Math.max(...allValues);
+      .filter((val): val is number => val !== null && val !== undefined && !isNaN(val));
 
-    // Add padding (10% of range)
-    const range = yMax - yMin;
+    let yMin: number;
+    let yMax: number;
+
+    if (allValues.length === 0) {
+      yMin = min !== undefined && !isNaN(min) ? min : 0;
+      yMax = max !== undefined && !isNaN(max) ? max : 100;
+    } else {
+      const dataMin = Math.min(...allValues);
+      const dataMax = Math.max(...allValues);
+      yMin = min !== undefined && !isNaN(min) ? Math.min(min, dataMin) : dataMin;
+      yMax = max !== undefined && !isNaN(max) ? Math.max(max, dataMax) : dataMax;
+    }
+
+    const range = yMax > yMin ? yMax - yMin : Math.abs(yMax) || 10;
     const padding = range * 0.1;
     return {
       yAxisMin: yMin - padding,
@@ -696,7 +706,7 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
       try {
         // (Keep existing Raw Calculation Logic - it is robust)
         // ... (Parameter fetching logic) ...
-        const paramSettings = (await pb.collection('parameter_settings').getFullList({
+        const paramSettings = (await pb.collection('derivative_parameter_settings').getFullList({
           filter: `unit='${selectedUnit}' && (parameter~'H2O' || parameter~'Set. Feeder')`,
         })) as unknown as ParameterSetting[];
 
@@ -2543,7 +2553,7 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
             <div className="space-y-1.5 sm:space-y-2 col-span-2 sm:col-span-1">
               <label
                 htmlFor="cop-filter-category"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <Layers className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Category
@@ -2569,7 +2579,7 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
             <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-unit"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <Building2 className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Unit
@@ -2596,7 +2606,7 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
             <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-month"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <Calendar className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Month
@@ -2622,7 +2632,7 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
             <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-year"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <CalendarDays className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Year
@@ -2716,10 +2726,10 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
         </Card>
         {/* Statistical Summary Panel */}
         {showStatisticalSummary && statisticalSummary.length > 0 && (
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-3xl lg:rounded-[2.5rem] p-6 sm:p-8 lg:p-10 border border-white/20 animate-slide-up shadow-xl transition-all duration-300">
+          <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900/10 dark:to-slate-800/10 rounded-2xl p-6 sm:p-8 lg:p-10 border border-slate-200 dark:border-slate-800 animate-slide-up shadow-xl transition-all duration-300">
             <div className="mb-8">
               <h2 className="text-xl sm:text-2xl font-black text-blue-900 dark:text-blue-400 uppercase tracking-widest">
-                ðŸ“Š Statistical Summary
+                📊 Statistical Summary
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1.5 font-bold italic">
                 Advanced statistical breakdown of Derivative parameters for the current month.
@@ -2786,10 +2796,10 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
         )}
         {/* Anomaly Detection Panel */}
         {showAnomalyDetection && anomalyDetection.length > 0 && (
-          <div className="bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-900/10 dark:to-pink-900/10 rounded-3xl lg:rounded-[2.5rem] p-6 sm:p-8 lg:p-10 border border-white/20 animate-slide-up shadow-xl transition-all duration-300">
+          <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900/10 dark:to-slate-800/10 rounded-2xl p-6 sm:p-8 lg:p-10 border border-slate-200 dark:border-slate-800 animate-slide-up shadow-xl transition-all duration-300">
             <div className="mb-8">
               <h2 className="text-xl sm:text-2xl font-black text-rose-900 dark:text-rose-400 uppercase tracking-widest">
-                âš ï¸ Anomaly Detection
+                ⚠️ Anomaly Detection
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1.5 font-bold italic">
                 Intelligent outlier detection using the advanced 3-sigma rule methodology.
@@ -2839,10 +2849,10 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
         )}
         {/* Correlation Matrix Panel */}
         {showCorrelationMatrix && correlationMatrix.length > 0 && (
-          <div className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/10 dark:to-violet-900/10 rounded-3xl lg:rounded-[2.5rem] p-6 sm:p-8 lg:p-10 border border-white/20 animate-slide-up shadow-xl transition-all duration-300 overflow-hidden">
+          <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900/10 dark:to-slate-800/10 rounded-2xl p-6 sm:p-8 lg:p-10 border border-slate-200 dark:border-slate-800 animate-slide-up shadow-xl transition-all duration-300 overflow-hidden">
             <div className="mb-8">
               <h2 className="text-xl sm:text-2xl font-black text-purple-900 dark:text-purple-400 uppercase tracking-widest">
-                ðŸ”— Parameter Correlation
+                🔗 Parameter Correlation
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1.5 font-bold italic">
                 Identifying hidden dependencies and process relationships across Derivative
@@ -2918,7 +2928,7 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
         )}
         {/* Quality Metrics Dashboard */}
         {showQualityMetrics && (
-          <div className="bg-gradient-to-br from-indigo-900/10 via-slate-900/5 to-blue-900/10 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-3xl lg:rounded-[2.5rem] p-6 sm:p-8 lg:p-10 border border-slate-200 dark:border-slate-800 animate-slide-up shadow-xl">
+          <div className="bg-gradient-to-br from-slate-900/5 via-slate-900/5 to-slate-900/5 dark:from-slate-900/20 dark:to-slate-800/20 rounded-2xl p-6 sm:p-8 lg:p-10 border border-slate-200 dark:border-slate-800 animate-slide-up shadow-xl">
             <div className="mb-8">
               <h2 className="text-xl sm:text-2xl font-black text-indigo-900 dark:text-indigo-400 uppercase tracking-[0.2em]">
                 ðŸ † Quality Metrics
@@ -2933,28 +2943,28 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
                 {
                   label: 'Stability Score',
                   val: `${qualityMetrics.overallStability.toFixed(1)}%`,
-                  icon: 'ðŸ“Š',
+                  icon: '📊',
                   color: 'text-blue-600 dark:text-blue-400',
                   desc: 'Average parameter stability index',
                 },
                 {
                   label: 'Data Completeness',
                   val: `${qualityMetrics.averageCompleteness.toFixed(1)}%`,
-                  icon: 'âœ…',
+                  icon: '✅',
                   color: 'text-emerald-600 dark:text-emerald-400',
                   desc: 'Data capture rate across Derivative',
                 },
                 {
                   label: 'Monitored Metrics',
                   val: qualityMetrics.parameterCount,
-                  icon: 'ðŸ”¢',
+                  icon: '🔢',
                   color: 'text-purple-600 dark:text-purple-400',
                   desc: 'Total active sensors monitored',
                 },
                 {
                   label: 'Data Points',
                   val: `${qualityMetrics.validDataPoints}/${qualityMetrics.totalDataPoints}`,
-                  icon: 'ðŸ“ˆ',
+                  icon: '📈',
                   color: 'text-primary-600',
                   desc: 'Verified vs expected captures',
                 },
@@ -2985,11 +2995,11 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
 
         {/* Period Comparison Panel */}
         {showPeriodComparison && (
-          <div className="bg-gradient-to-br from-emerald-900/5 via-slate-900/5 to-teal-900/5 dark:from-emerald-900/10 dark:to-teal-900/10 rounded-3xl lg:rounded-[2.5rem] p-6 sm:p-8 lg:p-10 border border-white/20 animate-slide-up shadow-2xl backdrop-blur-3xl transition-all duration-500">
+          <div className="bg-gradient-to-br from-slate-900/5 via-slate-900/5 to-slate-900/5 dark:from-slate-900/10 dark:to-slate-800/10 rounded-2xl p-6 sm:p-8 lg:p-10 border border-slate-200 dark:border-slate-800 animate-slide-up shadow-2xl backdrop-blur-3xl transition-all duration-500">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
               <div>
                 <h2 className="text-xl sm:text-2xl font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-[0.2em]">
-                  ðŸ“ˆ Period Comparison
+                  📈 Period Comparison
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2 font-bold italic opacity-80">
                   Benchmarking real-time Derivative performance against deep historical baselines.
@@ -3027,7 +3037,7 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
               </div>
             ) : periodComparison.length === 0 ? (
               <div className="text-center py-20">
-                <div className="text-4xl mb-4 opacity-20">ðŸ“Š</div>
+                <div className="text-4xl mb-4 opacity-20">📊</div>
                 <div className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-[0.3em]">
                   No Historical Alignment Found
                 </div>
@@ -3075,7 +3085,7 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
                           }`}
                         >
                           <span className="text-xs">
-                            {comparison.delta !== null && comparison.delta > 0 ? 'â†—' : 'â†˜'}
+                            {comparison.delta !== null && comparison.delta > 0 ? '↗' : '↘'}
                           </span>
                           {comparison.delta !== null
                             ? `${Math.abs(comparison.delta).toFixed(1)}%`
@@ -3091,7 +3101,7 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
         )}
         {/* Predictive Insights Panel */}
         {showPredictiveInsights && predictiveInsights.length > 0 && (
-          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/10 dark:to-teal-900/10 rounded-3xl lg:rounded-[2.5rem] p-6 sm:p-8 lg:p-10 border border-white/20 animate-slide-up shadow-xl transition-all duration-300">
+          <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900/10 dark:to-slate-800/10 rounded-2xl p-6 sm:p-8 lg:p-10 border border-slate-200 dark:border-slate-800 animate-slide-up shadow-xl transition-all duration-300">
             <div className="mb-8">
               <h2 className="text-xl sm:text-2xl font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-widest">
                 🔮 Predictive Insights
@@ -3165,10 +3175,10 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
                         }`}
                       >
                         {insight.trend === 'increasing'
-                          ? 'â†—ï¸'
+                          ? '↗️'
                           : insight.trend === 'decreasing'
-                            ? 'â†˜ï¸'
-                            : 'âž¡ï¸'}
+                            ? '↘️'
+                            : '➡️'}
                       </span>
                     </div>
                   </div>
@@ -3675,7 +3685,7 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
               <div className="mt-4 flex justify-end">
                 <button
                   onClick={exportToExcel}
-                  className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2.5 bg-[#059669] hover:bg-[#047857] text-white text-sm font-semibold rounded-xl shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#059669]/50 focus:ring-offset-2 min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold rounded-xl shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500/50 focus:ring-offset-2 min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={analysisData.length === 0}
                 >
                   <svg
@@ -3706,7 +3716,7 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
           >
             <div className="mb-8">
               <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-3">
-                ðŸ“ˆ Trend Parameter COP
+                📈 Trend Parameter COP
               </h2>
               <p className="text-base text-slate-700 leading-relaxed">
                 Visualisasi tren nilai parameter sepanjang bulan untuk monitoring performa dan
@@ -3715,14 +3725,16 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
             </div>
             <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-8">
               {analysisData.map((paramData, index) => {
-                // Prepare chart data
-                const chartData = paramData.dailyValues
-                  .map((day, dayIndex) => ({
-                    day: dayIndex + 1,
-                    value: day.raw !== undefined && day.raw !== null ? day.raw : null,
-                    date: new Date(Date.UTC(filterYear, filterMonth, dayIndex + 1)),
-                  }))
-                  .filter((item) => item.value !== null);
+                // Prepare full monthly chart data (preserving 1..N days timeline on X-axis)
+                const chartData = paramData.dailyValues.map((day, dayIndex) => ({
+                  day: dayIndex + 1,
+                  value:
+                    day.raw !== undefined && day.raw !== null && !isNaN(day.raw) ? day.raw : null,
+                  date: new Date(Date.UTC(filterYear, filterMonth, dayIndex + 1)),
+                }));
+
+                const validDataCount = chartData.filter((item) => item.value !== null).length;
+                const hasValidData = validDataCount > 0;
 
                 const min = paramData.parameter.min_value;
                 const max = paramData.parameter.max_value;
@@ -3762,8 +3774,8 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
                 ];
                 const colorScheme = colorSchemes[index % colorSchemes.length];
 
-                // Skip rendering if no data
-                if (!chartData || chartData.length === 0) {
+                // Render "No Data" card if no valid values exist for the month
+                if (!hasValidData) {
                   return (
                     <div
                       key={paramData.parameter.id}
@@ -3787,7 +3799,7 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
                         <span className="text-slate-500">{paramData.parameter.unit}</span>
                       </p>
                       <div className="flex flex-col items-center justify-center h-64 bg-white/60 rounded-xl border-2 border-dashed border-slate-300">
-                        <div className="text-4xl mb-3">ðŸ“Š</div>
+                        <div className="text-4xl mb-3">📊</div>
                         <p className="text-slate-500 font-medium text-center">
                           Tidak ada data
                           <br />
@@ -3810,7 +3822,7 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
                       <div
                         className={`px-3 py-1 bg-white/90 rounded-full text-xs font-semibold ${colorScheme.accent} border border-white/50 shadow-sm`}
                       >
-                        {chartData.length} hari
+                        {validDataCount} / {chartData.length} hari
                       </div>
                     </div>
                     <p className="text-sm text-slate-600 mb-6 font-medium">
@@ -3998,7 +4010,7 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
               ))}
             </div>
             <div className="text-sm text-slate-600 mt-6 p-4 bg-slate-50 rounded-lg">
-              ðŸ’¡ Kotak berwarna merah menunjukkan jam-jam dimana parameter di luar range target.
+              💡 Kotak berwarna merah menunjukkan jam-jam dimana parameter di luar range target.
             </div>
           </div>
         </Modal>

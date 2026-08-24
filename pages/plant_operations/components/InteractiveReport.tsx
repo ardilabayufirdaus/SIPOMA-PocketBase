@@ -126,13 +126,21 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
 
       {/* Compact Horizontal Layout for Remaining Tables */}
       {isDailyOperationalReport && (
-        <div className="grid gap-6 mt-6 xl:grid-cols-[0.8fr_1.8fr_1.8fr] lg:grid-cols-1">
+        <div
+          className={`grid gap-6 mt-6 ${
+            title.toUpperCase().includes('DERIVATIVE')
+              ? 'xl:grid-cols-[1fr_2.2fr] lg:grid-cols-1'
+              : 'xl:grid-cols-[0.8fr_1.8fr_1.8fr] lg:grid-cols-1'
+          }`}
+        >
           <div className="shadow-sm rounded-xl overflow-hidden bg-white border border-slate-200 h-fit">
             <OperatorTable operatorData={operatorData} t={t} />
           </div>
-          <div className="shadow-sm rounded-xl overflow-hidden bg-white border border-slate-200 h-fit">
-            <MaterialUsageTable materialUsageData={materialUsageData} t={t} />
-          </div>
+          {!title.toUpperCase().includes('DERIVATIVE') && (
+            <div className="shadow-sm rounded-xl overflow-hidden bg-white border border-slate-200 h-fit">
+              <MaterialUsageTable materialUsageData={materialUsageData} t={t} />
+            </div>
+          )}
           <div className="shadow-sm rounded-xl overflow-hidden bg-white border border-slate-200 h-fit">
             <SiloTable
               siloData={siloData}

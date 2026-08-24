@@ -74,7 +74,7 @@ type ModalType =
   | null;
 
 const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
-  const { canWrite } = usePlantOperationsAccess();
+  const { canWrite } = usePlantOperationsAccess('RKC');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Plant Units State
@@ -1191,9 +1191,13 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900">
-                      {t['cop_parameter_title']}
+                      {t['cop_parameter_title'] || t['cop_parameters_title'] || 'Parameter COP'}
                     </h3>
-                    <p className="text-sm text-slate-600">{t['cop_parameter_subtitle']}</p>
+                    <p className="text-sm text-slate-600">
+                      {t['cop_parameter_subtitle'] ||
+                        t['cop_parameters_subtitle'] ||
+                        'Pemilihan parameter operasi kritis'}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">

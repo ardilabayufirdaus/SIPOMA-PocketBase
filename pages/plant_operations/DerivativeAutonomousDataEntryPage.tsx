@@ -25,7 +25,7 @@ const DerivativeAutonomousDataEntryPage: React.FC<{ t: Record<string, string> }>
   // Permission checker
   const { currentUser: loggedInUser } = useCurrentUser();
   const permissionChecker = usePermissions(loggedInUser);
-  const { canWrite } = usePlantOperationsAccess();
+  const { canWrite } = usePlantOperationsAccess('DERIVATIVE');
 
   // Downtime State
   const { getAllDowntime, updateDowntime } = useCcrDowntimeData();

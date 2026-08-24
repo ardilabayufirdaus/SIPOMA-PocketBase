@@ -2704,7 +2704,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="space-y-1.5 sm:space-y-2 col-span-2 sm:col-span-1">
               <label
                 htmlFor="cop-filter-category"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <Layers className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Category
@@ -2730,7 +2730,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-unit"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <Building2 className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Unit
@@ -2757,7 +2757,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-cement-type"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <Beaker className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Type
@@ -2781,7 +2781,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-month"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <Calendar className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Month
@@ -2807,7 +2807,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-year"
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1"
               >
                 <CalendarDays className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Year
@@ -3415,15 +3415,15 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                       ...provided.draggableProps.style,
                                     }}
                                   >
-                                    <td className="sticky left-0 z-30 px-2 sm:px-3 py-4 text-slate-900 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-[#F3F3F3] dark:bg-slate-800 w-10 sm:w-14 font-black text-center shadow-lg group-hover/row:bg-emerald-500/10 group-hover/row:text-primary-600 transition-colors text-[11px] sm:text-[13px]">
+                                    <td className="sticky left-0 z-30 px-2 sm:px-3 py-4 text-slate-900 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-slate-100 dark:bg-slate-800 w-10 sm:w-14 font-black text-center shadow-lg group-hover/row:bg-emerald-500/10 group-hover/row:text-primary-600 transition-colors text-xs sm:text-[13px]">
                                       {rowIndex + 1}
                                     </td>
-                                    <td className="sticky left-10 sm:left-14 z-30 px-3 sm:px-6 py-4 font-black text-slate-800 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-900 min-w-[120px] sm:min-w-[220px] shadow-lg group-hover/row:text-primary-600 transition-colors text-[11px] sm:text-[13px]">
+                                    <td className="sticky left-10 sm:left-14 z-30 px-3 sm:px-6 py-4 font-black text-slate-800 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-900 min-w-[120px] sm:min-w-[220px] shadow-lg group-hover/row:text-primary-600 transition-colors text-xs sm:text-[13px]">
                                       <div className="flex flex-col">
                                         <span className="truncate">{row.parameter.parameter}</span>
                                       </div>
                                     </td>
-                                    <td className="px-2 sm:px-3 py-4 text-center text-red-600 dark:text-red-400 border-r border-slate-200 dark:border-slate-700/50 bg-red-50/20 dark:bg-red-900/10 font-bold font-mono text-[10px] sm:text-[13px]">
+                                    <td className="px-2 sm:px-3 py-4 text-center text-red-600 dark:text-red-400 border-r border-slate-200 dark:border-slate-700/50 bg-red-50/20 dark:bg-red-900/10 font-bold font-mono text-xs sm:text-[13px]">
                                       {(() => {
                                         const { min } = getMinMaxForCementType(
                                           row.parameter,
@@ -3432,7 +3432,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                         return formatCopNumber(min);
                                       })()}
                                     </td>
-                                    <td className="px-2 sm:px-3 py-4 text-center text-emerald-600 dark:text-emerald-400 border-r border-slate-200 dark:border-slate-700/50 bg-emerald-50/20 dark:bg-emerald-900/10 font-bold font-mono text-[10px] sm:text-[13px]">
+                                    <td className="px-2 sm:px-3 py-4 text-center text-emerald-600 dark:text-emerald-400 border-r border-slate-200 dark:border-slate-700/50 bg-emerald-50/20 dark:bg-emerald-900/10 font-bold font-mono text-xs sm:text-[13px]">
                                       {(() => {
                                         const { max } = getMinMaxForCementType(
                                           row.parameter,
@@ -3450,7 +3450,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                         >
                                           <div className="relative group/cell h-full w-full flex items-center justify-center">
                                             <span
-                                              className={`font-bold text-[10px] sm:text-[13px] ${colors.text}`}
+                                              className={`font-bold text-xs sm:text-[13px] ${colors.text}`}
                                             >
                                               {formatCopNumber(day.raw)}
                                             </span>
@@ -3469,7 +3469,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                                     )}
                                                   </span>
                                                   <span
-                                                    className={`px-2.5 py-1 rounded-lg text-white text-[10px] uppercase font-black ${colors.bg} ring-1 ring-white/20`}
+                                                    className={`px-2.5 py-1 rounded-lg text-white text-xs uppercase font-black ${colors.bg} ring-1 ring-white/20`}
                                                   >
                                                     {colors.status}
                                                   </span>
@@ -3621,12 +3621,12 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         <tr className="border-t border-white/10 bg-blue-500/5 transition-colors hover:bg-blue-500/10">
                           <td
                             colSpan={2}
-                            className="sticky left-0 z-30 px-3 sm:px-6 py-5 text-right text-[10px] sm:text-[13px] font-black tracking-widest text-blue-800 dark:text-blue-300 uppercase bg-[#F3F6FF] dark:bg-slate-800 shadow-xl border-r border-slate-200"
+                            className="sticky left-0 z-30 px-3 sm:px-6 py-5 text-right text-xs sm:text-[13px] font-black tracking-widest text-blue-800 dark:text-blue-300 uppercase bg-blue-50 dark:bg-slate-800 shadow-xl border-r border-slate-200"
                           >
                             Moisture Content (%)
                           </td>
-                          <td className="bg-[#F3F6FF] dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
-                          <td className="bg-[#F3F6FF] dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
+                          <td className="bg-blue-50 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
+                          <td className="bg-blue-50 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
                           {Array.from(
                             { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
                             (_, i) => {
@@ -3637,7 +3637,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                               return (
                                 <td
                                   key={`moisture-${day}`}
-                                  className="py-4 px-1 sm:px-2 text-center border-r border-slate-200 dark:border-slate-700/50 text-blue-700 dark:text-blue-400 font-bold text-[11px] sm:text-[13px] bg-blue-50/10"
+                                  className="py-4 px-1 sm:px-2 text-center border-r border-slate-200 dark:border-slate-700/50 text-blue-700 dark:text-blue-400 font-bold text-xs sm:text-[13px] bg-blue-50/10"
                                 >
                                   {dailyAverage !== undefined && !isNaN(dailyAverage)
                                     ? `${formatCopNumber(dailyAverage)}%`
@@ -3662,12 +3662,12 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         <tr className="border-t border-white/10 bg-emerald-500/5 transition-colors hover:bg-emerald-500/10">
                           <td
                             colSpan={2}
-                            className="sticky left-0 z-30 px-3 sm:px-6 py-5 text-right text-[10px] sm:text-[13px] font-black tracking-widest text-emerald-800 dark:text-emerald-300 uppercase bg-[#F3FFF6] dark:bg-slate-800 shadow-xl border-r border-slate-200"
+                            className="sticky left-0 z-30 px-3 sm:px-6 py-5 text-right text-xs sm:text-[13px] font-black tracking-widest text-emerald-800 dark:text-emerald-300 uppercase bg-emerald-50 dark:bg-slate-800 shadow-xl border-r border-slate-200"
                           >
                             Throughput Capacity (TPH)
                           </td>
-                          <td className="bg-[#F3FFF6] dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
-                          <td className="bg-[#F3FFF6] dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
+                          <td className="bg-emerald-50 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
+                          <td className="bg-emerald-50 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
                           {Array.from(
                             { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
                             (_, i) => {

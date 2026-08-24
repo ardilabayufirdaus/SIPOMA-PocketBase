@@ -300,20 +300,20 @@ const DatabasePage: React.FC = () => {
             className="flex flex-col"
           >
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#333333] dark:text-white">
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
                 Database <span className="text-primary-600 dark:text-primary-400">Management</span>
               </h1>
-              <span className="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-primary-600 text-white">
+              <span className="px-2.5 py-0.5 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary-600 text-white">
                 Admin Tools
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-1 pl-0.5">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-[0.2em] mt-1 pl-0.5">
               CENTRALIZED DATA REPOSITORY • OPERATIONAL REPORTING
             </p>
           </motion.div>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2.5 px-4 py-2 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="flex items-center gap-2.5 px-4 py-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
               <Activity className="w-3.5 h-3.5 text-primary-600" />
               <span className="text-xs font-bold text-slate-800 dark:text-slate-300 uppercase tracking-widest">
                 Database Online
@@ -330,8 +330,9 @@ const DatabasePage: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
+                aria-current={isActive ? 'page' : undefined}
                 className={`
-                  relative px-5 py-2.5 rounded text-[11px] font-bold uppercase tracking-widest transition-all duration-200 flex items-center gap-2 border
+                  min-h-[44px] relative px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-200 flex items-center gap-2 border focus:outline-none focus:ring-2 focus:ring-primary-500
                   ${
                     isActive
                       ? 'bg-primary-600 text-white border-primary-600 shadow-sm transform scale-105'

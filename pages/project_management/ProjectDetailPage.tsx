@@ -6,6 +6,7 @@ import { formatDate, formatNumber, formatRupiah } from '../../utils/formatters';
 import { InteractiveCardModal, BreakdownData } from '../../components/InteractiveCardModal';
 import Modal from '../../components/Modal';
 import ProjectTaskForm from '../../components/ProjectTaskForm';
+import { useProjectManagementAccess } from '../../hooks/useProjectManagementAccess';
 
 // Import Enhanced Components
 import {
@@ -323,6 +324,7 @@ const PerformanceMetricCard: React.FC<PerformanceMetricCardProps> = ({
 };
 
 const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, projectId }) => {
+  const { canWrite } = useProjectManagementAccess();
   const {
     projects,
     loading,
@@ -961,26 +963,28 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-3">
-              <EnhancedButton
-                onClick={handleEditProject}
-                variant="custom"
-                className="bg-secondary-800 hover:bg-secondary-700 text-white border border-secondary-700 shadow-sm rounded-xl px-4 py-2"
-                aria-label={t.edit_project}
-              >
-                <EditIcon className="w-4 h-4 mr-2" aria-hidden="true" />
-                <span>{t.edit_project || 'Edit Project'}</span>
-              </EnhancedButton>
-              <EnhancedButton
-                onClick={() => setFormModalOpen(true)}
-                variant="custom"
-                className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-600/30 rounded-xl px-5 py-2 font-bold"
-                aria-label={t.add_task}
-              >
-                <PlusIcon className="w-5 h-5 mr-2" aria-hidden="true" />
-                <span>{t.add_task || 'Add Task'}</span>
-              </EnhancedButton>
-            </div>
+            {canWrite && (
+              <div className="flex flex-wrap gap-3">
+                <EnhancedButton
+                  onClick={handleEditProject}
+                  variant="custom"
+                  className="bg-secondary-800 hover:bg-secondary-700 text-white border border-secondary-700 shadow-sm rounded-xl px-4 py-2"
+                  aria-label={t.edit_project}
+                >
+                  <EditIcon className="w-4 h-4 mr-2" aria-hidden="true" />
+                  <span>{t.edit_project || 'Edit Project'}</span>
+                </EnhancedButton>
+                <EnhancedButton
+                  onClick={() => setFormModalOpen(true)}
+                  variant="custom"
+                  className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-600/30 rounded-xl px-5 py-2 font-bold"
+                  aria-label={t.add_task}
+                >
+                  <PlusIcon className="w-5 h-5 mr-2" aria-hidden="true" />
+                  <span>{t.add_task || 'Add Task'}</span>
+                </EnhancedButton>
+              </div>
+            )}
           </div>
         </div>
 
@@ -1206,15 +1210,17 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                 <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                   <h3 className="text-lg font-bold text-secondary-900">Project Tasks</h3>
                   <div className="flex gap-2">
-                    <EnhancedButton
-                      onClick={handleImportClick}
-                      variant="secondary"
-                      size="sm"
-                      className="border-slate-200 text-slate-600 hover:text-primary-600"
-                    >
-                      <DocumentArrowUpIcon className="w-4 h-4 mr-2" />
-                      Import
-                    </EnhancedButton>
+                    {canWrite && (
+                      <EnhancedButton
+                        onClick={handleImportClick}
+                        variant="secondary"
+                        size="sm"
+                        className="border-slate-200 text-slate-600 hover:text-primary-600"
+                      >
+                        <DocumentArrowUpIcon className="w-4 h-4 mr-2" />
+                        Import
+                      </EnhancedButton>
+                    )}
                     <EnhancedButton
                       onClick={handleExport}
                       variant="secondary"
@@ -1244,9 +1250,11 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                           <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
                             {t.task_percent_complete}
                           </th>
-                          <th className="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-wider">
-                            {t.actions}
-                          </th>
+                          {canWrite && (
+                            <th className="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-wider">
+                              {t.actions}
+                            </th>
+                          )}
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-slate-100">
@@ -1274,25 +1282,27 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                                 </span>
                               </div>
                             </td>
-                            <td className="px-6 py-4 text-right text-sm font-medium">
-                              <div className="flex justify-end gap-2">
-                                <button
-                                  onClick={() => {
-                                    setEditingTask(task);
-                                    setFormModalOpen(true);
-                                  }}
-                                  className="text-slate-400 hover:text-primary-600 p-1"
-                                >
-                                  <EditIcon className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleOpenDeleteModal(task.id)}
-                                  className="text-slate-400 hover:text-red-600 p-1"
-                                >
-                                  <TrashIcon className="w-4 h-4" />
-                                </button>
-                              </div>
-                            </td>
+                            {canWrite && (
+                              <td className="px-6 py-4 text-right text-sm font-medium">
+                                <div className="flex justify-end gap-2">
+                                  <button
+                                    onClick={() => {
+                                      setEditingTask(task);
+                                      setFormModalOpen(true);
+                                    }}
+                                    className="text-slate-400 hover:text-primary-600 p-1"
+                                  >
+                                    <EditIcon className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleOpenDeleteModal(task.id)}
+                                    className="text-slate-400 hover:text-red-600 p-1"
+                                  >
+                                    <TrashIcon className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </td>
+                            )}
                           </tr>
                         ))}
                       </tbody>
@@ -1306,16 +1316,18 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                       {t.get_started_by_creating_a_task ||
                         'Get started by creating your first task for this project.'}
                     </p>
-                    <div className="mt-8">
-                      <EnhancedButton
-                        onClick={() => setFormModalOpen(true)}
-                        variant="custom"
-                        className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-600/20 rounded-xl px-6 py-2.5 font-bold"
-                      >
-                        <PlusIcon className="w-5 h-5 mr-2" />
-                        {t.add_first_task || 'Add New Task'}
-                      </EnhancedButton>
-                    </div>
+                    {canWrite && (
+                      <div className="mt-8">
+                        <EnhancedButton
+                          onClick={() => setFormModalOpen(true)}
+                          variant="custom"
+                          className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-600/20 rounded-xl px-6 py-2.5 font-bold"
+                        >
+                          <PlusIcon className="w-5 h-5 mr-2" />
+                          {t.add_first_task || 'Add New Task'}
+                        </EnhancedButton>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

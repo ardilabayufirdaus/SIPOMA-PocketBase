@@ -277,13 +277,15 @@ const ReportSettingForm: React.FC<FormProps> = ({
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
-              className="bg-[#F9F9F9] border border-[#94a3b8]/20 rounded-lg p-4 mb-6"
+              className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-4 mb-6"
             >
               <div className="flex items-center space-x-2">
-                <Filter className="h-4 w-4 text-[#059669]" />
-                <span className="text-sm font-medium text-[#333333]">Filter Applied</span>
+                <Filter className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                  Filter Applied
+                </span>
               </div>
-              <p className="text-sm text-[#555555] mt-1">
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                 Showing parameters for <strong>{selectedCategory}</strong> -{' '}
                 <strong>{selectedUnit}</strong>
               </p>
@@ -303,12 +305,15 @@ const ReportSettingForm: React.FC<FormProps> = ({
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3, duration: 0.3 }}
           >
-            <label htmlFor="parameter_id" className="block text-sm font-medium text-[#333333] mb-2">
+            <label
+              htmlFor="parameter_id"
+              className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2"
+            >
               {t.parameter_select_label}
-              <span className="text-[#C7162B] ml-1">*</span>
+              <span className="text-red-600 dark:text-red-400 ml-1">*</span>
             </label>
             <motion.select
-              whileFocus={{ scale: 1.02 }}
+              whileFocus={{ scale: 1.01 }}
               name="parameter_id"
               id="parameter_id"
               value={formData.parameter_id}
@@ -316,8 +321,8 @@ const ReportSettingForm: React.FC<FormProps> = ({
               onBlur={handleBlur}
               required
               disabled={availableParameters.length === 0 || isSubmitting}
-              className={`block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all duration-200 sm:text-sm disabled:bg-[#F2F2F2] disabled:text-[#94a3b8] ${
-                errors.parameter_id ? 'border-[#C7162B]' : 'border-[#94a3b8]/50'
+              className={`block w-full pl-3 pr-10 py-3 bg-white dark:bg-slate-800 border rounded-xl shadow-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 sm:text-sm disabled:bg-slate-100 dark:disabled:bg-slate-800/50 disabled:text-slate-400 ${
+                errors.parameter_id ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
               }`}
             >
               <option value="">
@@ -326,14 +331,13 @@ const ReportSettingForm: React.FC<FormProps> = ({
                   : 'Select a parameter...'}
               </option>
               {availableParameters.map((param) => (
-                <motion.option
+                <option
                   key={param.id}
                   value={param.id}
-                  whileHover={{ backgroundColor: '#f0fdf4' }}
-                  className="py-2"
+                  className="py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                 >
                   {param.parameter} - {param.category} ({param.unit})
-                </motion.option>
+                </option>
               ))}
             </motion.select>
 
@@ -343,7 +347,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="mt-2 text-sm text-amber-600 flex items-center"
+                  className="mt-2 text-sm text-amber-600 dark:text-amber-400 flex items-center"
                 >
                   <AlertCircle className="h-4 w-4 mr-1" />
                   No numeric parameters available for the selected category and unit. Please
@@ -355,7 +359,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="mt-2 text-sm text-[#C7162B] flex items-center"
+                  className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center"
                   role="alert"
                 >
                   <AlertCircle className="h-4 w-4 mr-1" />
@@ -371,12 +375,15 @@ const ReportSettingForm: React.FC<FormProps> = ({
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4, duration: 0.3 }}
           >
-            <label htmlFor="category" className="block text-sm font-medium text-[#333333] mb-2">
+            <label
+              htmlFor="category"
+              className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2"
+            >
               {t.report_category_label}
-              <span className="text-[#C7162B] ml-1">*</span>
+              <span className="text-red-600 dark:text-red-400 ml-1">*</span>
             </label>
             <motion.input
-              whileFocus={{ scale: 1.02 }}
+              whileFocus={{ scale: 1.01 }}
               type="text"
               name="category"
               id="category"
@@ -386,8 +393,8 @@ const ReportSettingForm: React.FC<FormProps> = ({
               required
               disabled={isSubmitting}
               placeholder="Enter category name..."
-              className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all duration-200 sm:text-sm disabled:bg-slate-50 disabled:text-slate-500 ${
-                errors.category ? 'border-[#C7162B]' : 'border-[#94a3b8]/50'
+              className={`block w-full px-4 py-3 bg-white dark:bg-slate-800 border rounded-xl shadow-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 sm:text-sm disabled:bg-slate-100 dark:disabled:bg-slate-800/50 disabled:text-slate-400 ${
+                errors.category ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
               }`}
             />
             <AnimatePresence>
@@ -396,7 +403,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="mt-2 text-sm text-blue-600 flex items-center"
+                  className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center"
                   role="alert"
                 >
                   <AlertCircle className="h-4 w-4 mr-1" />
@@ -412,7 +419,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.3 }}
-          className="mt-8 flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 pt-6 border-t border-[#94a3b8]/20"
+          className="mt-8 flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 pt-6 border-t border-slate-200 dark:border-slate-700"
         >
           <AnimatePresence>
             {isSubmitting && (
@@ -420,12 +427,12 @@ const ReportSettingForm: React.FC<FormProps> = ({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                className="flex items-center justify-center space-x-2 text-[#0E8420] bg-[#0E8420]/5 px-4 py-2 rounded-lg"
+                className="flex items-center justify-center space-x-2 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-2 rounded-xl"
               >
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  className="w-4 h-4 border-2 border-[#0E8420] border-t-transparent rounded-full"
+                  className="w-4 h-4 border-2 border-emerald-600 dark:border-emerald-400 border-t-transparent rounded-full"
                 />
                 <span className="text-sm font-medium">
                   {recordToEdit ? 'Updating report settings...' : 'Adding parameter...'}
@@ -434,13 +441,13 @@ const ReportSettingForm: React.FC<FormProps> = ({
             )}
           </AnimatePresence>
 
-          <div className="flex space-x-3">
+          <div className="flex items-center space-x-3">
             <EnhancedButton
               type="button"
               variant="secondary"
               onClick={onCancel}
               disabled={isSubmitting}
-              className="px-6 py-2"
+              className="min-h-[44px] px-6 py-2.5"
             >
               {t.cancel_button}
             </EnhancedButton>
@@ -454,7 +461,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
                   !formData.parameter_id ||
                   !formData.category.trim()
                 }
-                className="px-6 py-2 bg-[#059669] hover:bg-[#d94612] text-white border-transparent"
+                className="min-h-[44px] px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 border-transparent"
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
                 {recordToEdit ? t.save_button : 'Add Parameter'}

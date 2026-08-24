@@ -1,4 +1,4 @@
-﻿/// <reference types="node" />
+/// <reference types="node" />
 
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
@@ -36,6 +36,7 @@ import { useDerivativePlantUnits as usePlantUnits } from '../../hooks/useDerivat
 import Modal from '../../components/Modal';
 import CcrDowntimeForm from './CcrDowntimeForm';
 import CcrTableFooter from '../../components/ccr/CcrTableFooter';
+import DerivativeOperatingHoursCard from '../../components/ccr/DerivativeOperatingHoursCard';
 import CcrTableSkeleton from '../../components/ccr/CcrTableSkeleton';
 import CcrNavigationHelp from '../../components/ccr/CcrNavigationHelp';
 import PlusIcon from '../../components/icons/PlusIcon';
@@ -54,13 +55,14 @@ import { useFooterCalculations } from '../../hooks/useFooterCalculations';
 import { useDerivativeCcrFooterData as useCcrFooterData } from '../../hooks/useDerivativeCcrFooterData';
 import { useDerivativeCcrInformationData as useCcrInformationData } from '../../hooks/useDerivativeCcrInformationData';
 import { usePermissions } from '../../utils/permissions';
-import { isSuperAdmin } from '../../utils/roleHelpers';
+import { isSuperAdmin, canAccessMonthlyExportImport } from '../../utils/roleHelpers';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 // Import PocketBase client and hooks
 import { pb } from '../../utils/pocketbase-simple';
 import { useDerivativeUserParameterOrder as useUserParameterOrder } from '../../hooks/useDerivativeUserParameterOrder';
 import { formatDateToISO8601, formatToWITA, formatDate } from '../../utils/dateUtils';
+import MonthlyExportImportModal from '../../components/ccr/modals/MonthlyExportImportModal';
 
 // Import Enhanced Components
 import {
@@ -86,6 +88,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
   const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isDeletingAllNames, setIsDeletingAllNames] = useState(false);
+  const [showMonthlyModal, setShowMonthlyModal] = useState(false);
   const [columnSearchQuery, setColumnSearchQuery] = useState('');
   const [isFooterVisible, setIsFooterVisible] = useState(false);
 
@@ -132,7 +135,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
   // Permission checker
   const { currentUser: loggedInUser } = useCurrentUser();
   const permissionChecker = usePermissions(loggedInUser);
-  const { canWrite } = usePlantOperationsAccess();
+  const { canWrite } = usePlantOperationsAccess('DERIVATIVE');
   const hasPermission = (
     feature: Parameters<typeof permissionChecker.hasPermission>[0],
     level?: Parameters<typeof permissionChecker.hasPermission>[1]
@@ -1078,34 +1081,41 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
 
   const [dailyParameterData, setDailyParameterData] = useState<CcrParameterDataFlat[]>([]);
 
-  const fetchParameterData = useCallback(async () => {
-    if (!selectedDate || selectedDate.trim() === '') {
-      return;
-    }
+  const fetchParameterData = useCallback(
+    async (showLoadingSpinner = true) => {
+      if (!selectedDate || selectedDate.trim() === '') {
+        return;
+      }
 
-    setLoading(true); // Set loading state before fetching data
+      if (showLoadingSpinner) {
+        setLoading(true); // Set loading state before fetching data
+      }
 
-    try {
-      // Pass selectedUnit to properly filter data by unit
-      const data = await getParameterDataForDate(selectedDate, selectedUnit);
-      setDailyParameterData(data);
+      try {
+        // Pass selectedUnit to properly filter data by unit
+        const data = await getParameterDataForDate(selectedDate, selectedUnit);
+        setDailyParameterData(data);
 
-      // No need to update legacy records as the new flat structure is now used
-      // const _userName = loggedInUser?.full_name || currentUser.full_name || 'Unknown User';
-    } catch {
-      // Error logging removed for production
-      showToast(t.error_fetching_parameter_data);
-    } finally {
-      setLoading(false); // Clear loading state when done, regardless of success or failure
-    }
-    // Remove dataVersion from the dependency array to prevent infinite loops
-  }, [selectedDate, selectedUnit, getParameterDataForDate, showToast, loggedInUser, currentUser]);
+        // No need to update legacy records as the new flat structure is now used
+        // const _userName = loggedInUser?.full_name || currentUser.full_name || 'Unknown User';
+      } catch {
+        // Error logging removed for production
+        showToast(t.error_fetching_parameter_data);
+      } finally {
+        if (showLoadingSpinner) {
+          setLoading(false); // Clear loading state when done, regardless of success or failure
+        }
+      }
+      // Remove dataVersion from the dependency array to prevent infinite loops
+    },
+    [selectedDate, selectedUnit, getParameterDataForDate, showToast, loggedInUser, currentUser]
+  );
 
   // Pendekatan client-server standar: fetch data hanya ketika ada perubahan input
   useEffect(() => {
     // Initial data fetch - loading state is handled inside fetchParameterData
     if (selectedDate && selectedUnit && selectedCategory) {
-      fetchParameterData();
+      fetchParameterData(true);
       // Debug logging removed for production
     }
     // Remove fetchParameterData from dependency array to prevent infinite loops
@@ -1116,13 +1126,13 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
   const lastDataVersion = useRef(dataVersion);
 
   useEffect(() => {
-    // Hanya refresh jika dataVersion berubah dan lebih besar dari sebelumnya
+    // Hanya refresh jika dataVersion berubah dan lebih besar dari sebelumnya (secara background tanpa skeleton flash)
     if (dataVersion > 0 && dataVersion > lastDataVersion.current) {
       // Debug logging removed for production
       lastDataVersion.current = dataVersion;
-      fetchParameterData();
+      fetchParameterData(false);
     }
-  }, [dataVersion]);
+  }, [dataVersion, fetchParameterData]);
 
   const parameterDataMap = useMemo(
     () => new Map(dailyParameterData.map((p) => [p.parameter_id, p])),
@@ -1231,7 +1241,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
   // Table dimension functions for keyboard navigation
   const getSiloTableDimensions = () => {
     const rows = dailySiloData.length;
-    const cols = 3; // 1 input field (Isi Stock) per shift * 3 shifts
+    const cols = 6; // 2 input fields (Ruang Isi, Isi Stock) per shift * 3 shifts
     return { rows, cols };
   };
 
@@ -1425,7 +1435,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
         // First, check if record exists to determine if we need to update or create
         const filter = `date="${formattedDate}" && silo_id="${siloId}"`;
 
-        const existingRecords = await pb.collection('ccr_silo_data').getFullList({
+        const existingRecords = await pb.collection('derivative_ccr_silo_data').getFullList({
           filter,
           sort: '-created',
           expand: 'silo_id',
@@ -1445,7 +1455,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
           // Record exists - update it
           const recordId = unitFilteerrorRecords[0].id;
 
-          await pb.collection('ccr_silo_data').update(recordId, updateData);
+          await pb.collection('derivative_ccr_silo_data').update(recordId, updateData);
         } else {
           // No record - create new one
           const createData = {
@@ -1455,7 +1465,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
             [flatFieldName]: value,
           };
 
-          await pb.collection('ccr_silo_data').create(createData);
+          await pb.collection('derivative_ccr_silo_data').create(createData);
         }
 
         // Refetch data to update the UI with force refresh to ensure freshest data
@@ -1790,9 +1800,11 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
 
               // Get existing record for this parameter and date
               const filter = `date="${selectedDate}" && parameter_id="${paramId}"`;
-              const existingRecords = await pb.collection('ccr_parameter_data').getFullList({
-                filter: filter,
-              });
+              const existingRecords = await pb
+                .collection('derivative_ccr_parameter_data')
+                .getFullList({
+                  filter: filter,
+                });
 
               const updateFields: Record<string, string | number | null> = {};
 
@@ -1810,7 +1822,9 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                 const existingRecord = existingRecords[0];
                 updateFields.name = effectiveUserName; // For backward compatibility
 
-                await pb.collection('ccr_parameter_data').update(existingRecord.id, updateFields);
+                await pb
+                  .collection('derivative_ccr_parameter_data')
+                  .update(existingRecord.id, updateFields);
               } else {
                 // Create new record
                 const createFields: Record<string, string | number | null> = {
@@ -1821,7 +1835,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                   ...updateFields,
                 };
 
-                await pb.collection('ccr_parameter_data').create(createFields);
+                await pb.collection('derivative_ccr_parameter_data').create(createFields);
               }
 
               successCount += paramChanges.length;
@@ -1876,7 +1890,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
     try {
       // Get all parameter records for the selected date and unit
       const filter = `date='${selectedDate}' && plant_unit='${selectedUnit}'`;
-      const records = await pb.collection('ccr_parameter_data').getFullList({
+      const records = await pb.collection('derivative_ccr_parameter_data').getFullList({
         filter: filter,
       });
 
@@ -1893,7 +1907,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
         const batch = records.slice(i, i + batchSize);
         await Promise.all(
           batch.map(async (record) => {
-            await pb.collection('ccr_parameter_data').delete(record.id);
+            await pb.collection('derivative_ccr_parameter_data').delete(record.id);
             deletedCount++;
           })
         );
@@ -1937,7 +1951,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
     try {
       // Get all parameter records for the selected date and unit
       const filter = `date='${selectedDate}' && plant_unit='${selectedUnit}'`;
-      const records = await pb.collection('ccr_parameter_data').getFullList({
+      const records = await pb.collection('derivative_ccr_parameter_data').getFullList({
         filter: filter,
       });
 
@@ -1966,7 +1980,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
             updateData.name = null;
 
             if (Object.keys(updateData).length > 0) {
-              await pb.collection('ccr_parameter_data').update(record.id, updateData);
+              await pb.collection('derivative_ccr_parameter_data').update(record.id, updateData);
               updatedCount++;
             }
           })
@@ -2151,6 +2165,63 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
     setDeleteModalOpen(false);
     setDeletingRecord(null);
   };
+
+  // Calculate total downtime from events for the selected unit & date
+  const totalDowntimeFromEvents = useMemo(() => {
+    if (!dailyDowntimeData || dailyDowntimeData.length === 0) return 0;
+    return dailyDowntimeData.reduce((acc, dt) => {
+      if (!dt.start_time || !dt.end_time) return acc;
+      const [h1, m1] = dt.start_time.split(':').map((n) => parseInt(n, 10) || 0);
+      const [h2, m2] = dt.end_time.split(':').map((n) => parseInt(n, 10) || 0);
+      const diff = h2 * 60 + m2 - (h1 * 60 + m1);
+      return acc + (diff > 0 ? diff / 60 : 0);
+    }, 0);
+  }, [dailyDowntimeData]);
+
+  // Handler untuk menyinkronkan hasil kalkulasi Log Sesi Jam Operasi ke Grid CCR
+  const handleSyncTotalRunningHours = useCallback(
+    async (totalNetHours: number, hourlyMap?: Record<number, number>) => {
+      if (!selectedCategory || !selectedUnit || !selectedDate) return;
+
+      const runningHoursParam = filteredParameterSettings.find((p) => {
+        const pName = p.parameter.toLowerCase();
+        return (
+          pName.includes('running hours') ||
+          pName.includes('jam operasi') ||
+          pName.includes('operation hours')
+        );
+      });
+
+      if (!runningHoursParam) {
+        alert(
+          `Informasi: Total Jam Operasi (${totalNetHours} Jam) tersimpan di log sesi. Parameter "Jam Operasi" di Master Data belum dikonfigurasi untuk Unit ${selectedUnit}.`
+        );
+        return;
+      }
+
+      if (hourlyMap && bulkSaveParameterChanges) {
+        const changes = Object.entries(hourlyMap).map(([hStr, val]) => ({
+          paramId: runningHoursParam.id,
+          hour: parseInt(hStr, 10),
+          value: val > 0 ? val.toString() : '0',
+        }));
+
+        await bulkSaveParameterChanges(changes);
+        triggerRefresh();
+        alert(
+          `Berhasil menerapkan ${totalNetHours} Jam Operasi ke parameter grid CCR Unit ${selectedUnit}!`
+        );
+      }
+    },
+    [
+      selectedCategory,
+      selectedUnit,
+      selectedDate,
+      filteredParameterSettings,
+      bulkSaveParameterChanges,
+      triggerRefresh,
+    ]
+  );
 
   // Keyboard navigation for delete modal
   useEffect(() => {
@@ -3143,18 +3214,20 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                 try {
                   // Console statement removed for production
                   // Delete existing downtime data for import dates
-                  const existingRecords = await pb.collection('ccr_downtime_data').getFullList({
-                    filter: importDates.map((date) => `date='${date}'`).join(' || '),
-                  });
+                  const existingRecords = await pb
+                    .collection('derivative_ccr_downtime_data')
+                    .getFullList({
+                      filter: importDates.map((date) => `date='${date}'`).join(' || '),
+                    });
                   console.log(
-                    'ðŸ” DEBUG: Found',
+                    'ðŸ”  DEBUG: Found',
                     existingRecords.length,
                     'existing downtime records to delete'
                   );
 
                   for (const record of existingRecords) {
                     // Console statement removed for production
-                    await pb.collection('ccr_downtime_data').delete(record.id);
+                    await pb.collection('derivative_ccr_downtime_data').delete(record.id);
                   }
 
                   showToast(`Deleted existing downtime data for dates: ${importDates.join(', ')}`);
@@ -3173,7 +3246,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
               for (const row of downtimeData) {
                 try {
                   console.log(
-                    'ðŸ” DEBUG: Processing downtime row for date:',
+                    'ðŸ”  DEBUG: Processing downtime row for date:',
                     row.Date,
                     'PIC:',
                     row.PIC
@@ -3245,7 +3318,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                 .map((v) => String(v || '').trim());
               siloHeaders = rawHeaders.filter((h) => h !== '');
               console.log(
-                'ðŸ” DEBUG: Silo headers found (skipping empty first column):',
+                'ðŸ”  DEBUG: Silo headers found (skipping empty first column):',
                 siloHeaders
               );
             } else {
@@ -3267,7 +3340,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
               const missingFields = requierrorFields.filter((field) => !row[field]);
               if (missingFields.length > 0) {
                 console.warn(
-                  'âš ï¸ DEBUG: Invalid silo row',
+                  'âš ï¸  DEBUG: Invalid silo row',
                   index + 2,
                   'missing fields:',
                   missingFields
@@ -3281,7 +3354,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
             });
 
             console.log(
-              'ðŸ” DEBUG: Silo validation complete, invalid rows:',
+              'ðŸ”  DEBUG: Silo validation complete, invalid rows:',
               invalidRows.length,
               'valid rows:',
               siloData.length - invalidRows.length
@@ -3298,18 +3371,20 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                 try {
                   // Console statement removed for production
                   // Delete existing silo data for import dates
-                  const existingRecords = await pb.collection('ccr_silo_data').getFullList({
-                    filter: importDates.map((date) => `date='${date}'`).join(' || '),
-                  });
+                  const existingRecords = await pb
+                    .collection('derivative_ccr_silo_data')
+                    .getFullList({
+                      filter: importDates.map((date) => `date='${date}'`).join(' || '),
+                    });
                   console.log(
-                    'ðŸ” DEBUG: Found',
+                    'ðŸ”  DEBUG: Found',
                     existingRecords.length,
                     'existing silo records to delete'
                   );
 
                   for (const record of existingRecords) {
                     // Console statement removed for production
-                    await pb.collection('ccr_silo_data').delete(record.id);
+                    await pb.collection('derivative_ccr_silo_data').delete(record.id);
                   }
 
                   // Refresh silo data to reflect changes
@@ -3569,9 +3644,9 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
 
           {/* Filter Card - White Background */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-4">
-            <div className="flex flex-wrap items-end gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
               {/* Plant Category */}
-              <div className="flex-1 min-w-[200px]">
+              <div>
                 <label
                   htmlFor="ccr-category"
                   className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
@@ -3610,7 +3685,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
               </div>
 
               {/* Unit Name */}
-              <div className="flex-1 min-w-[200px]">
+              <div>
                 <label
                   htmlFor="ccr-unit"
                   className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
@@ -3650,7 +3725,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
               </div>
 
               {/* Select Date */}
-              <div className="flex-1 min-w-[180px]">
+              <div>
                 <label
                   htmlFor="ccr-date"
                   className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
@@ -3704,6 +3779,19 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
           </div>
         </div>
 
+        {/* Derivative Operating Hours Multi-Session Logger */}
+        {selectedUnit && (
+          <DerivativeOperatingHoursCard
+            date={selectedDate}
+            selectedUnit={selectedUnit}
+            canWrite={canWrite}
+            downtimeRecords={dailyDowntimeData}
+            totalDowntimeFromEvents={totalDowntimeFromEvents}
+            onSyncTotalRunningHours={handleSyncTotalRunningHours}
+            t={t}
+          />
+        )}
+
         {/* Enhanced Parameter Data Table */}
         <EnhancedCard className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 flex-wrap">
@@ -3743,7 +3831,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                   <button
                     onClick={refreshData}
                     disabled={isRefreshing || !selectedCategory || !selectedUnit}
-                    className="h-9 px-3.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium text-xs flex items-center gap-2 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-9 px-3.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium text-xs flex items-center gap-2 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
                     title={t.refresh_data || 'Refresh Data'}
                   >
                     <div className={isRefreshing ? 'animate-spin' : ''}>
@@ -3777,7 +3865,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                 {/* Show/Hide Footer */}
                 <button
                   onClick={() => setIsFooterVisible(!isFooterVisible)}
-                  className={`h-9 px-3.5 rounded-xl font-medium text-xs flex items-center gap-2 transition-all shadow-sm ${
+                  className={`h-9 px-3.5 rounded-xl font-medium text-xs flex items-center gap-2 transition-all shadow-sm active:scale-[0.98] ${
                     isFooterVisible
                       ? 'bg-[#059669] text-white hover:bg-[#047857]'
                       : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
@@ -3816,7 +3904,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                   disabled={
                     !selectedCategory || !selectedUnit || filteredParameterSettings.length === 0
                   }
-                  className="h-9 px-3.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium text-xs flex items-center gap-2 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="h-9 px-3.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium text-xs flex items-center gap-2 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
                   title={t.reorder_parameters_title || 'Urutan Parameter'}
                 >
                   <ArrowsUpDownIcon className="w-4 h-4 text-[#059669]" />
@@ -3829,18 +3917,11 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                   selectedUnit && (
                     <div className="flex items-center gap-2">
                       {/* AI Parameter Optimization */}
-                      <OptimizationAdvisorButton
-                        unit={selectedUnit}
-                        className="h-9 text-xs px-3.5 shadow-sm bg-gradient-to-r from-[#059669] to-[#047857] hover:from-[#047857] hover:to-[#065f46] text-white rounded-xl transition-all duration-200"
-                      />
+                      <OptimizationAdvisorButton unit={selectedUnit} />
 
                       {/* AI Shift Report */}
                       {selectedDate && (
-                        <ShiftHandoverButton
-                          date={selectedDate}
-                          unit={selectedUnit}
-                          className="h-9 text-xs px-3.5 shadow-sm bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white rounded-xl transition-all duration-200"
-                        />
+                        <ShiftHandoverButton date={selectedDate} unit={selectedUnit} />
                       )}
                     </div>
                   )}
@@ -3866,7 +3947,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                         <button
                           onClick={() => fileInputRef.current?.click()}
                           disabled={isImporting || !selectedCategory || !selectedUnit}
-                          className="h-9 px-3.5 bg-[#059669] hover:bg-[#047857] text-white rounded-xl font-medium text-xs flex items-center gap-2 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="h-9 px-3.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-medium text-xs flex items-center gap-2 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
                           title={t.import || 'Import Excel'}
                         >
                           <DocumentArrowUpIcon className="w-4 h-4 text-white" />
@@ -3884,7 +3965,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                         !selectedUnit ||
                         filteredParameterSettings.length === 0
                       }
-                      className="h-9 px-3.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-medium text-xs flex items-center gap-2 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="h-9 px-3.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-medium text-xs flex items-center gap-2 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
                       title={t.template || 'Template Excel'}
                     >
                       <DocumentArrowDownIcon className="w-4 h-4 text-white" />
@@ -3900,12 +3981,28 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                         !selectedUnit ||
                         filteredParameterSettings.length === 0
                       }
-                      className="h-9 px-3.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-medium text-xs flex items-center gap-2 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="min-h-[44px] px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
                       title={t.export || 'Export Excel'}
+                      aria-label="Export Excel"
                     >
                       <DocumentArrowDownIcon className="w-4 h-4 text-white" />
                       <span>{t.export || 'Export Excel'}</span>
                     </button>
+
+                    {/* Monthly Export & Import Button */}
+                    {canAccessMonthlyExportImport(
+                      loggedInUser?.role || pb.authStore.model?.role
+                    ) && (
+                      <button
+                        onClick={() => setShowMonthlyModal(true)}
+                        aria-label="Ekspor & Impor Data Bulanan"
+                        className="min-h-[44px] px-3.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        title="Ekspor & Impor Data Bulanan"
+                      >
+                        <DocumentArrowDownIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        <span>Bulanan (Excel)</span>
+                      </button>
+                    )}
                   </div>
                 )}
 
@@ -3920,7 +4017,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                         !selectedUnit ||
                         dailyParameterData.length === 0
                       }
-                      className="h-9 px-3.5 bg-[#C7162B] hover:bg-[#9e1122] text-white rounded-xl font-medium text-xs flex items-center gap-2 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="h-9 px-3.5 bg-[#C7162B] hover:bg-[#9e1122] text-white rounded-xl font-medium text-xs flex items-center gap-2 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
                       title={t.delete_data || 'Hapus Data'}
                     >
                       <TrashIcon className="w-4 h-4 text-white" />
@@ -3934,7 +4031,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                         !selectedUnit ||
                         dailyParameterData.length === 0
                       }
-                      className="h-9 px-3.5 bg-[#C7162B] hover:bg-[#9e1122] text-white rounded-xl font-medium text-xs flex items-center gap-2 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="h-9 px-3.5 bg-[#C7162B] hover:bg-[#9e1122] text-white rounded-xl font-medium text-xs flex items-center gap-2 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
                       title={t.delete_names || 'Hapus Operator'}
                     >
                       <svg
@@ -4117,12 +4214,12 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                           scope="col"
                         >
                           <div className="text-center space-y-1">
-                            <div className="text-[6px] leading-tight text-[#111827] font-medium">
+                            <div className="text-xs leading-tight text-slate-700 dark:text-slate-300 font-medium">
                               {param.min_value !== undefined
                                 ? `Min: ${formatNumberIndonesian(param.min_value, 1)}`
                                 : '-'}
                             </div>
-                            <div className="text-[6px] leading-tight text-[#111827] font-medium">
+                            <div className="text-xs leading-tight text-slate-700 dark:text-slate-300 font-medium">
                               {param.max_value !== undefined
                                 ? `Max: ${formatNumberIndonesian(param.max_value, 1)}`
                                 : '-'}
@@ -4132,34 +4229,36 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="bg-white" role="rowgroup">
+                  <tbody className="bg-white dark:bg-slate-900" role="rowgroup">
                     {filteredParameterSettings.length > 0 ? (
                       Array.from({ length: 24 }, (_, i) => i + 1).map((hour) => (
                         <tr
                           key={hour}
-                          className={`border-b border-neutral-200/50 group ${
-                            hour % 2 === 0 ? 'bg-white' : 'bg-neutral-50'
-                          } hover:bg-slate-100`}
+                          className={`border-b border-neutral-200/50 dark:border-slate-800 group ${
+                            hour % 2 === 0
+                              ? 'bg-white dark:bg-slate-900'
+                              : 'bg-neutral-50 dark:bg-slate-800/40'
+                          } hover:bg-slate-100 dark:hover:bg-slate-800`}
                           role="row"
                         >
                           <td
-                            className="px-3 py-3 whitespace-nowrap text-sm font-medium text-neutral-900 border-r border-neutral-200/50 sticky left-0 bg-white group-hover:bg-slate-100 z-30 sticky-col"
+                            className="px-3 py-3 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-white border-r border-neutral-200/50 dark:border-slate-800 sticky left-0 bg-white dark:bg-slate-900 group-hover:bg-slate-100 dark:group-hover:bg-slate-800 z-30 sticky-col"
                             style={{ width: '60px' }}
                             role="gridcell"
                           >
                             <div className="flex items-center justify-center h-8">
-                              <span className="font-mono font-semibold text-neutral-800">
+                              <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
                                 {String(hour).padStart(2, '0')}:00
                               </span>
                             </div>
                           </td>
                           <td
-                            className="px-3 py-3 whitespace-nowrap text-xs text-neutral-600 border-r border-neutral-200/50"
+                            className="px-3 py-3 whitespace-nowrap text-xs text-slate-600 dark:text-slate-300 border-r border-neutral-200/50 dark:border-slate-800"
                             style={{ width: '80px' }}
                             role="gridcell"
                           >
                             <div className="flex items-center h-8">
-                              <span className="px-2 py-1 rounded-md bg-[#111827]/10 text-[#111827] font-medium text-xs">
+                              <span className="px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-medium text-xs">
                                 {getShiftForHour(hour)}
                               </span>
                             </div>
@@ -4496,18 +4595,18 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
               </div>
               <div>
                 <h3 className="text-xl font-bold text-slate-800">
-                  Penyimpanan Material Trass Kering
+                  {t.trass_material_storage_title || 'Material Storage'}
                 </h3>
                 <p className="text-sm text-neutral-600">
-                  Pencatatan stok dan sisa ruang simpan pada Gudang Penyimpanan Material Trass
-                  Kering
+                  {t.trass_material_storage_subtitle ||
+                    'Pencatatan stok dan sisa ruang simpan pada Gudang Penyimpanan Material'}
                 </p>
               </div>
             </div>
             <div className="overflow-x-auto rounded-xl border border-neutral-200/50 shadow-inner">
               <table
                 className="min-w-full divide-y divide-neutral-200 border border-neutral-200"
-                aria-label="Tabel Gudang Material Trass Kering"
+                aria-label={t.trass_material_storage_header || 'Tabel Material Storage'}
               >
                 <thead className="bg-slate-800 text-white shadow-sm">
                   <tr>
@@ -4515,22 +4614,22 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                       rowSpan={2}
                       className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-slate-600/50 align-middle"
                     >
-                      Gudang Material Trass Kering
+                      {t.trass_material_storage_header || 'Material Storage'}
                     </th>
                     <th
-                      colSpan={2}
+                      colSpan={3}
                       className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-slate-600/50 border-b border-slate-600/50"
                     >
                       {t.shift_1}
                     </th>
                     <th
-                      colSpan={2}
+                      colSpan={3}
                       className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-slate-600/50 border-b border-slate-600/50"
                     >
                       {t.shift_2}
                     </th>
                     <th
-                      colSpan={2}
+                      colSpan={3}
                       className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-b border-slate-600/50"
                     >
                       {t.shift_3}
@@ -4538,6 +4637,12 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                   </tr>
                   <tr>
                     {[...Array(3)].flatMap((_, i) => [
+                      <th
+                        key={`es-${i}`}
+                        className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-600/50"
+                      >
+                        {t.ruang_isi || 'Ruang Isi (m)'}
+                      </th>,
                       <th
                         key={`c-${i}`}
                         className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-600/50"
@@ -4558,7 +4663,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                 <tbody className="bg-white divide-y divide-slate-200">
                   {loading ? (
                     <tr>
-                      <td colSpan={7} className="text-center py-16">
+                      <td colSpan={10} className="text-center py-16">
                         <div className="flex items-center justify-center">
                           <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
                           <span className="ml-3 text-neutral-600 font-medium">
@@ -4585,6 +4690,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                           </td>
                           {shifts.map((shift, i) => {
                             const content = siloData[shift]?.content;
+                            const emptySpace = siloData[shift]?.emptySpace;
                             const capacity = masterSilo.capacity;
                             const percentage =
                               capacity > 0 && typeof content === 'number'
@@ -4600,7 +4706,39 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                                 >
                                   <input
                                     ref={(el) => {
-                                      const refKey = getInputRef('silo', siloIndex, i);
+                                      const refKey = getInputRef('silo', siloIndex, i * 2);
+                                      setInputRef(refKey, el);
+                                    }}
+                                    type="text"
+                                    defaultValue={formatIndonesianInput(emptySpace, 1)}
+                                    onChange={(e) => {
+                                      const parsed = parseIndonesianNumber(e.target.value);
+                                      handleSiloDataChange(
+                                        siloData.silo_id,
+                                        shift,
+                                        'emptySpace',
+                                        parsed !== null ? parsed.toString() : ''
+                                      );
+                                    }}
+                                    onBlur={() => {
+                                      handleSiloDataBlur(siloData.silo_id, shift, 'emptySpace');
+                                    }}
+                                    onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i * 2)}
+                                    className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm hover:border-neutral-400"
+                                    aria-label={`Ruang Isi ${masterSilo.silo_name} ${shift}`}
+                                    disabled={!canWrite}
+                                    title={`Ruang Isi ${masterSilo.silo_name} ${t.shift} ${i + 1}`}
+                                    placeholder="0,0"
+                                  />
+                                </td>
+                                <td
+                                  className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
+                                    siloIndex % 2 === 0 ? 'bg-neutral-50' : 'bg-white'
+                                  }`}
+                                >
+                                  <input
+                                    ref={(el) => {
+                                      const refKey = getInputRef('silo', siloIndex, i * 2 + 1);
                                       setInputRef(refKey, el);
                                     }}
                                     type="text"
@@ -4617,7 +4755,9 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                                     onBlur={() => {
                                       handleSiloDataBlur(siloData.silo_id, shift, 'content');
                                     }}
-                                    onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i)}
+                                    onKeyDown={(e) =>
+                                      handleKeyDown(e, 'silo', siloIndex, i * 2 + 1)
+                                    }
                                     className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm hover:border-neutral-400"
                                     aria-label={`Isi Stock ${masterSilo.silo_name} ${shift}`}
                                     disabled={!canWrite}
@@ -4651,10 +4791,10 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                   )}
                   {dailySiloData.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="text-center py-6 text-neutral-500">
+                      <td colSpan={10} className="text-center py-6 text-neutral-500">
                         {!selectedCategory
                           ? t.no_plant_categories_found
-                          : `Tidak ada data Gudang Material Trass Kering untuk kategori ${selectedCategory}`}
+                          : `${t.no_trass_storage_data || 'Tidak ada data Material Storage untuk kategori'} ${selectedCategory}`}
                       </td>
                     </tr>
                   )}
@@ -5447,6 +5587,15 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
             </button>
           </div>
         </Modal>
+
+        {/* Monthly Export & Import Modal */}
+        <MonthlyExportImportModal
+          isOpen={showMonthlyModal}
+          onClose={() => setShowMonthlyModal(false)}
+          selectedUnit={selectedUnit}
+          t={t}
+          onSuccess={refreshData}
+        />
 
         {/* Navigation Help Modal */}
         <CcrNavigationHelp

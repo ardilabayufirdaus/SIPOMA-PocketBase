@@ -7,6 +7,8 @@ import FactoryIcon from '../../../components/icons/FactoryIcon';
 import ClipboardDocumentListIcon from '../../../components/icons/ClipboardDocumentListIcon';
 import CircleStackIcon from '../../../components/icons/CircleStackIcon';
 import EyeIcon from '../../../components/icons/EyeIcon';
+import BeakerIcon from '../../../components/icons/BeakerIcon';
+import DocumentTextIcon from '../../../components/icons/DocumentTextIcon';
 
 interface UserAccessControllerProps {
   permissions: UserPermission;
@@ -39,10 +41,22 @@ const MODULES: {
     icon: <FactoryIcon className="w-5 h-5" />,
   },
   {
+    key: 'derivative_plant_operations',
+    label: 'Derivative Plant Operations',
+    description: 'Specialty cement & packaging operations.',
+    icon: <BeakerIcon className="w-5 h-5" />,
+  },
+  {
     key: 'project_management',
     label: 'Capital Project Mgmt',
     description: 'Timeline and resource allocation.',
     icon: <ClipboardDocumentListIcon className="w-5 h-5" />,
+  },
+  {
+    key: 'contract_sla_management',
+    label: 'Contract & SLA Management',
+    description: 'PO monitoring, budget absorption & SLA KPIs.',
+    icon: <DocumentTextIcon className="w-5 h-5" />,
   },
   {
     key: 'database',
@@ -128,7 +142,7 @@ export const UserAccessController: React.FC<UserAccessControllerProps> = ({
               <EnhancedTooltip key={level} content={`Assign ${level} access`}>
                 <PermissionOption
                   level={level}
-                  current={permissions[module.key]}
+                  current={permissions[module.key] || 'NONE'}
                   onClick={() => onPermissionChange(module.key, level)}
                   disabled={readOnly}
                 />
