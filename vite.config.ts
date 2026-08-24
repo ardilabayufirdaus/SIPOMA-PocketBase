@@ -45,6 +45,7 @@ export default defineConfig(async (_env) => {
       VitePWA({
         registerType: 'autoUpdate',
         workbox: {
+          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MiB limit for larger vendor chunks
           globPatterns: ['**/*.{js,css,html,ico,svg}'], // Exclude png from global patterns
           // Force service worker update dan cleanup cache lama
           skipWaiting: true,
