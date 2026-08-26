@@ -12,6 +12,8 @@ import { User } from '../types';
 import { TranslationProvider } from '../hooks/useTranslation';
 import { useAuth } from '../hooks/useAuth';
 
+import { pb } from '../utils/pocketbase-simple';
+
 // Initialize Sentry for monitoring
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
@@ -40,74 +42,32 @@ const queryClient = new QueryClient({
   },
 });
 
-const RootRouter: React.FC = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
-  const [checking, setChecking] = useState(true);
-  const { login } = useAuth();
+const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const storedUser = secureStorage.getItem<User>('currentUser');
+  const hasAuth = pb.authStore.isValid || !!storedUser;
 
-  const checkAuthStatus = useCallback(async () => {
-    try {
-      const storedUser = secureStorage.getItem<User>('currentUser');
-      if (storedUser) {
-        setIsLoggedIn(true);
-        setChecking(false);
-        return true;
-      }
-
-      // Konsisten antara development dan preview mode
-      // Tidak ada auto-login seperti sebelumnya
-
-      setIsLoggedIn(false);
-      setChecking(false);
-      return false;
-    } catch (error) {
-      // Error logging removed for production
-      setIsLoggedIn(false);
-      setChecking(false);
-      return false;
-    }
-  }, [login]);
-
-  useEffect(() => {
-    // Initial check
-    checkAuthStatus();
-
-    // Listen for storage changes immediately (no debouncing for auth)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'currentUser') {
-        checkAuthStatus();
-      }
-    };
-
-    // Listen for custom auth events immediately
-    const handleAuthChange = () => {
-      checkAuthStatus();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('authStateChanged', handleAuthChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('authStateChanged', handleAuthChange);
-    };
-  }, [checkAuthStatus]);
-
-  if (checking || isLoggedIn === null) {
-    return (
-      <div className="h-screen w-screen flex items-center justify-center bg-slate-100">
-        <div className="rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent animate-spin"></div>
-      </div>
-    );
+  if (!hasAuth) {
+    return <Navigate to="/login" replace />;
   }
 
+  return <>{children}</>;
+};
+
+const RootRouter: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TranslationProvider>
         <Router>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/*" element={isLoggedIn ? <App /> : <Navigate to="/login" replace />} />
+            <Route
+              path="/*"
+              element={
+                <RequireAuth>
+                  <App />
+                </RequireAuth>
+              }
+            />
           </Routes>
           <ReactQueryDevtools initialIsOpen={false} />
         </Router>
@@ -117,5 +77,3 @@ const RootRouter: React.FC = () => {
 };
 
 export default RootRouter;
-
-

@@ -7,6 +7,8 @@ import EyeIcon from '../components/icons/EyeIcon';
 import EyeSlashIcon from '../components/icons/EyeSlashIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '../hooks/useTranslation';
+import { secureStorage } from '../utils/secureStorage';
+import { pb } from '../utils/pocketbase-simple';
 
 const LoginPage: React.FC = () => {
   const [identifier, setIdentifier] = useState('');
@@ -17,14 +19,14 @@ const LoginPage: React.FC = () => {
   const { user, loading, login } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [loginAttempted, setLoginAttempted] = useState(false);
 
-  // Redirect if already logged in, but only if a login was actually attempted
+  // Redirect if already logged in
   useEffect(() => {
-    if (user && !loading && loginAttempted) {
+    const storedUser = secureStorage.getItem('currentUser');
+    if (storedUser || pb.authStore.isValid) {
       navigate('/', { replace: true });
     }
-  }, [user, loading, navigate, loginAttempted]);
+  }, [navigate]);
 
   const handleLogin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
