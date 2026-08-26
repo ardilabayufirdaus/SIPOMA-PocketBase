@@ -125,89 +125,45 @@ export default defineConfig(async (_env) => {
         output: {
           manualChunks: (id) => {
             if (id.includes('node_modules')) {
-              // Database and auth
-              if (id.includes('pocketbase')) {
-                return 'data-vendor';
-              }
-              // Security utilities
-              if (id.includes('crypto-js') || id.includes('bcrypt')) {
-                return 'crypto-vendor';
-              }
-              // Excel libraries (lazy loaded)
-              if (id.includes('exceljs')) {
-                return 'excel-vendor';
-              }
-              // Small utilities
-              if (id.includes('uuid') || id.includes('focus-trap') || id.includes('classnames')) {
-                return 'utils-light';
-              }
-              // Chart libraries
+              // React Core & Router - High Priority
               if (
-                id.includes('chart.js') ||
-                id.includes('react-chartjs-2') ||
-                id.includes('recharts') ||
-                id.includes('d3')
+                id.includes('/react/') ||
+                id.includes('/react-dom/') ||
+                id.includes('/scheduler/') ||
+                id.includes('/react-router/') ||
+                id.includes('/react-router-dom/') ||
+                id.includes('/@remix-run/')
               ) {
-                return 'charts-vendor';
+                return 'vendor-react';
               }
-              // UI libraries
+              // Heavy export libraries
+              if (id.includes('exceljs') || id.includes('xlsx') || id.includes('file-saver')) {
+                return 'vendor-excel';
+              }
+              if (id.includes('jspdf') || id.includes('html2canvas')) {
+                return 'vendor-pdf';
+              }
+              // Database & API
               if (
-                id.includes('@heroicons') ||
+                id.includes('pocketbase') ||
+                id.includes('@tanstack/react-query') ||
+                id.includes('zustand')
+              ) {
+                return 'vendor-data';
+              }
+              // UI Icons & Animation
+              if (
                 id.includes('lucide-react') ||
-                id.includes('framer-motion') ||
-                id.includes('@headlessui')
+                id.includes('@heroicons') ||
+                id.includes('framer-motion')
               ) {
-                return 'ui-vendor';
+                return 'vendor-ui';
               }
-              // Form and query libraries
-              if (id.includes('@tanstack/react-query') || id.includes('react-hook-form')) {
-                return 'query-vendor';
+              // Charts
+              if (id.includes('chart.js') || id.includes('react-chartjs-2')) {
+                return 'vendor-charts';
               }
-              // Date/time utilities
-              if (id.includes('date-fns') || id.includes('dayjs') || id.includes('moment')) {
-                return 'date-vendor';
-              }
-              // Router
-              if (id.includes('react-router')) {
-                return 'router-vendor';
-              }
-              // State management
-              if (id.includes('zustand') || id.includes('immer')) {
-                return 'state-vendor';
-              }
-              // Everything else
-              return 'vendor-misc';
             }
-
-            // Application chunks - split pages more granularly
-            if (id.includes('pages/')) {
-              // Only group the common shell or small pages
-              if (id.includes('PlaceholderPage')) {
-                return 'page-shell';
-              }
-              // Let Vite generate individual chunks for most sub-pages
-              // This ensures clicking "Dashboard" doesn't download "Reports" if not opened.
-            }
-
-            // Locale chunks
-            if (id.includes('src/locales/')) {
-              if (id.includes('/en.ts')) return 'locale-en';
-              if (id.includes('/id.ts')) return 'locale-id';
-              return 'locales-misc';
-            }
-
-            // Component chunks
-            if (id.includes('components/plant-operations')) {
-              return 'components-plant-ops';
-            }
-            if (id.includes('components/charts') || id.includes('Chart')) {
-              return 'components-charts';
-            }
-            if (id.includes('components/dashboard')) {
-              return 'components-dashboard';
-            }
-
-            // Specific vendor / heavy library separation only
           },
         },
       },
