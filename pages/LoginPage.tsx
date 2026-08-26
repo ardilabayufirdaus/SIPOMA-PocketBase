@@ -45,7 +45,7 @@ const LoginPage: React.FC = () => {
     }
 
     try {
-      const loggedInUser = await login(identifier, password);
+      const loggedInUser = await login(identifier.trim(), password);
 
       if (loggedInUser) {
         localStorage.removeItem('savedIdentifier');
@@ -55,8 +55,8 @@ const LoginPage: React.FC = () => {
       } else {
         setError('Invalid username or password');
       }
-    } catch (error) {
-      setError('An error occurred during login. Please try again.');
+    } catch (error: any) {
+      setError(error?.message || 'An error occurred during login. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

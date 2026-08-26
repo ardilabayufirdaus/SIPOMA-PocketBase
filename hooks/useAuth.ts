@@ -29,7 +29,10 @@ export const useAuth = () => {
             dashboard: (item.dashboard as PermissionLevel) || 'NONE',
             cm_plant_operations: (item.cm_plant_operations as PermissionLevel) || 'NONE',
             rkc_plant_operations: (item.rkc_plant_operations as PermissionLevel) || 'NONE',
+            derivative_plant_operations:
+              (item.derivative_plant_operations as PermissionLevel) || 'NONE',
             project_management: (item.project_management as PermissionLevel) || 'NONE',
+            contract_sla_management: (item.contract_sla_management as PermissionLevel) || 'NONE',
             database: (item.database as PermissionLevel) || 'NONE',
             inspection: (item.inspection as PermissionLevel) || 'NONE',
           };
@@ -40,7 +43,9 @@ export const useAuth = () => {
           dashboard: 'NONE',
           cm_plant_operations: 'NONE',
           rkc_plant_operations: 'NONE',
+          derivative_plant_operations: 'NONE',
           project_management: 'NONE',
+          contract_sla_management: 'NONE',
           database: 'NONE',
           inspection: 'NONE',
         } as PermissionMatrix;
