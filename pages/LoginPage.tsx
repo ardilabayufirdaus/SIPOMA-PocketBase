@@ -32,7 +32,6 @@ const LoginPage: React.FC = () => {
     if (e) e.preventDefault();
     setError(null);
     setIsSubmitting(true);
-    setLoginAttempted(true);
 
     if (!identifier.trim()) {
       setError(t.login_username_required || 'Username is required');
