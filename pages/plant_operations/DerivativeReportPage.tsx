@@ -309,18 +309,53 @@ const DerivativeReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) =>
         .filter((d) => d.unit === selectedUnit)
         .sort((a, b) => timeToMinutes(a.start_time) - timeToMinutes(b.start_time));
 
-      const allSiloDataForDate = await getSiloDataForDate(selectedDate);
-      const siloMasterMap = new Map(siloMasterData.map((s) => [s.id, s]));
-      const filteredSiloData = allSiloDataForDate
-        .filter((data) => {
-          const master = siloMasterMap.get(data.silo_id) as SiloCapacity | undefined;
-          return master && master.unit === selectedUnit;
-        })
-        .map((data) => ({
-          ...data,
-          master: siloMasterMap.get(data.silo_id) as SiloCapacity | undefined,
-        }))
-        .filter((data): data is typeof data & { master: SiloCapacity } => !!data.master);
+      const relevantMasterSilos = siloMasterData.filter((silo) => {
+        const categoryMatch = !selectedCategory || silo.plant_category === selectedCategory;
+        const unitMatch = !selectedUnit || silo.unit === selectedUnit;
+        return categoryMatch && unitMatch;
+      });
+
+      const allSiloDataForDate = await getSiloDataForDate(selectedDate, selectedUnit);
+      const existingSiloDataMap = new Map<string, (typeof allSiloDataForDate)[0]>();
+      allSiloDataForDate.forEach((data) => {
+        const sId =
+          typeof data.silo_id === 'object' && data.silo_id
+            ? (data.silo_id as any).id
+            : data.silo_id;
+        if (sId) {
+          existingSiloDataMap.set(sId, data);
+        }
+      });
+
+      const filteredSiloData = relevantMasterSilos.map((masterSilo) => {
+        const existingData = existingSiloDataMap.get(masterSilo.id);
+        return {
+          id: existingData?.id || `temp-${masterSilo.id}`,
+          silo_id: masterSilo.id,
+          date: selectedDate,
+          capacity: masterSilo.capacity,
+          silo_name: masterSilo.silo_name,
+          master: {
+            silo_name: masterSilo.silo_name,
+            capacity: masterSilo.capacity,
+          },
+          shift1: {
+            emptySpace:
+              existingData?.shift1?.emptySpace ?? (existingData as any)?.shift1_empty_space,
+            content: existingData?.shift1?.content ?? (existingData as any)?.shift1_content,
+          },
+          shift2: {
+            emptySpace:
+              existingData?.shift2?.emptySpace ?? (existingData as any)?.shift2_empty_space,
+            content: existingData?.shift2?.content ?? (existingData as any)?.shift2_content,
+          },
+          shift3: {
+            emptySpace:
+              existingData?.shift3?.emptySpace ?? (existingData as any)?.shift3_empty_space,
+            content: existingData?.shift3?.content ?? (existingData as any)?.shift3_content,
+          },
+        };
+      });
 
       const materialUsageDataForDate = await getMaterialUsageForDate(
         selectedDate,
@@ -529,18 +564,53 @@ const DerivativeReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) =>
         .filter((d) => d.unit === selectedUnit)
         .sort((a, b) => timeToMinutes(a.start_time) - timeToMinutes(b.start_time));
 
-      const allSiloDataForDate = await getSiloDataForDate(selectedDate);
-      const siloMasterMap = new Map(siloMasterData.map((s) => [s.id, s]));
-      const filteredSiloData = allSiloDataForDate
-        .filter((data) => {
-          const master = siloMasterMap.get(data.silo_id) as SiloCapacity | undefined;
-          return master && master.unit === selectedUnit;
-        })
-        .map((data) => ({
-          ...data,
-          master: siloMasterMap.get(data.silo_id) as SiloCapacity | undefined,
-        }))
-        .filter((data): data is typeof data & { master: SiloCapacity } => !!data.master);
+      const relevantMasterSilosSimple = siloMasterData.filter((silo) => {
+        const categoryMatch = !selectedCategory || silo.plant_category === selectedCategory;
+        const unitMatch = !selectedUnit || silo.unit === selectedUnit;
+        return categoryMatch && unitMatch;
+      });
+
+      const allSiloDataForDateSimple = await getSiloDataForDate(selectedDate, selectedUnit);
+      const existingSiloDataMapSimple = new Map<string, (typeof allSiloDataForDateSimple)[0]>();
+      allSiloDataForDateSimple.forEach((data) => {
+        const sId =
+          typeof data.silo_id === 'object' && data.silo_id
+            ? (data.silo_id as any).id
+            : data.silo_id;
+        if (sId) {
+          existingSiloDataMapSimple.set(sId, data);
+        }
+      });
+
+      const filteredSiloData = relevantMasterSilosSimple.map((masterSilo) => {
+        const existingData = existingSiloDataMapSimple.get(masterSilo.id);
+        return {
+          id: existingData?.id || `temp-${masterSilo.id}`,
+          silo_id: masterSilo.id,
+          date: selectedDate,
+          capacity: masterSilo.capacity,
+          silo_name: masterSilo.silo_name,
+          master: {
+            silo_name: masterSilo.silo_name,
+            capacity: masterSilo.capacity,
+          },
+          shift1: {
+            emptySpace:
+              existingData?.shift1?.emptySpace ?? (existingData as any)?.shift1_empty_space,
+            content: existingData?.shift1?.content ?? (existingData as any)?.shift1_content,
+          },
+          shift2: {
+            emptySpace:
+              existingData?.shift2?.emptySpace ?? (existingData as any)?.shift2_empty_space,
+            content: existingData?.shift2?.content ?? (existingData as any)?.shift2_content,
+          },
+          shift3: {
+            emptySpace:
+              existingData?.shift3?.emptySpace ?? (existingData as any)?.shift3_empty_space,
+            content: existingData?.shift3?.content ?? (existingData as any)?.shift3_content,
+          },
+        };
+      });
 
       const materialUsageDataForDate = await getMaterialUsageForDate(
         selectedDate,

@@ -21,7 +21,9 @@ export interface PermissionMatrix {
   rkc_plant_operations: PermissionLevel | PlantOperationsPermissions;
   derivative_plant_operations?: PermissionLevel | PlantOperationsPermissions;
   project_management: PermissionLevel | PlantOperationsPermissions;
+  contract_sla_management?: PermissionLevel | PlantOperationsPermissions;
   database: PermissionLevel;
+  inspection?: PermissionLevel;
 }
 
 export interface User {

@@ -5,8 +5,11 @@ const permissionModuleMap: Record<string, keyof PermissionMatrix> = {
   plant_operations: 'cm_plant_operations', // Map legacy to new
   cm_plant_operations: 'cm_plant_operations',
   rkc_plant_operations: 'rkc_plant_operations',
+  derivative_plant_operations: 'derivative_plant_operations',
   project_management: 'project_management',
+  contract_sla_management: 'contract_sla_management',
   database: 'database',
+  inspection: 'inspection',
 };
 
 export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatrix => {
@@ -15,8 +18,11 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
     dashboard: 'NONE',
     cm_plant_operations: 'NONE',
     rkc_plant_operations: 'NONE',
+    derivative_plant_operations: 'NONE',
     project_management: 'NONE',
+    contract_sla_management: 'NONE',
     database: 'NONE',
+    inspection: 'NONE',
   };
 
   // Jika tidak ada izin, kembalikan matrix default
@@ -31,8 +37,11 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
       dashboard: p.dashboard || 'NONE',
       cm_plant_operations: p.cm_plant_operations || 'NONE',
       rkc_plant_operations: p.rkc_plant_operations || 'NONE',
+      derivative_plant_operations: p.derivative_plant_operations || 'NONE',
       project_management: p.project_management || 'NONE',
+      contract_sla_management: p.contract_sla_management || 'NONE',
       database: p.database || 'NONE',
+      inspection: p.inspection || 'NONE',
     };
   }
 
@@ -44,8 +53,11 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
         dashboard: 'WRITE',
         cm_plant_operations: 'WRITE',
         rkc_plant_operations: 'WRITE',
+        derivative_plant_operations: 'WRITE',
         project_management: 'WRITE',
+        contract_sla_management: 'WRITE',
         database: 'WRITE',
+        inspection: 'WRITE',
       };
     }
     if (role.includes('operator')) {
@@ -54,6 +66,7 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
         dashboard: 'READ',
         cm_plant_operations: 'WRITE',
         rkc_plant_operations: 'WRITE',
+        derivative_plant_operations: 'WRITE',
       };
     }
   }

@@ -83,7 +83,9 @@ export class PocketBaseUserRepository implements IUserRepository {
       dashboard: data.permissions.dashboard,
       cm_plant_operations: data.permissions.cm_plant_operations,
       rkc_plant_operations: data.permissions.rkc_plant_operations,
+      derivative_plant_operations: data.permissions.derivative_plant_operations || 'NONE',
       project_management: data.permissions.project_management,
+      contract_sla_management: data.permissions.contract_sla_management || 'NONE',
       database: data.permissions.database,
       inspection: data.permissions.inspection,
     });
@@ -119,7 +121,9 @@ export class PocketBaseUserRepository implements IUserRepository {
         dashboard: data.permissions.dashboard,
         cm_plant_operations: data.permissions.cm_plant_operations,
         rkc_plant_operations: data.permissions.rkc_plant_operations,
+        derivative_plant_operations: data.permissions.derivative_plant_operations || 'NONE',
         project_management: data.permissions.project_management,
+        contract_sla_management: data.permissions.contract_sla_management || 'NONE',
         database: data.permissions.database,
         inspection: data.permissions.inspection,
       };
@@ -163,7 +167,9 @@ export class PocketBaseUserRepository implements IUserRepository {
           dashboard: item.dashboard || 'NONE',
           cm_plant_operations: item.cm_plant_operations || 'NONE',
           rkc_plant_operations: item.rkc_plant_operations || 'NONE',
+          derivative_plant_operations: item.derivative_plant_operations || 'NONE',
           project_management: item.project_management || 'NONE',
+          contract_sla_management: item.contract_sla_management || 'NONE',
           database: item.database || 'NONE',
           inspection: item.inspection || 'NONE',
         };
@@ -177,7 +183,9 @@ export class PocketBaseUserRepository implements IUserRepository {
       dashboard: 'NONE',
       cm_plant_operations: 'NONE',
       rkc_plant_operations: 'NONE',
+      derivative_plant_operations: 'NONE',
       project_management: 'NONE',
+      contract_sla_management: 'NONE',
       database: 'NONE',
       inspection: 'NONE',
     };

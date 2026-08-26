@@ -147,11 +147,11 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
               t={t}
               customTitle={
                 title.toUpperCase().includes('DERIVATIVE')
-                  ? 'LAPORAN STOK GUDANG TRASS KERING'
+                  ? 'LAPORAN STOK MATERIAL STORAGE'
                   : undefined
               }
               customNameHeader={
-                title.toUpperCase().includes('DERIVATIVE') ? 'NAMA GUDANG TRASS KERING' : undefined
+                title.toUpperCase().includes('DERIVATIVE') ? 'NAMA MATERIAL STORAGE' : undefined
               }
             />
           </div>

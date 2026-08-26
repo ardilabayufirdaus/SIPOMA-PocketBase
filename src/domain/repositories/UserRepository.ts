@@ -13,7 +13,9 @@ export interface CreateUserDTO {
     dashboard: string;
     cm_plant_operations: string;
     rkc_plant_operations: string;
+    derivative_plant_operations?: string;
     project_management: string;
+    contract_sla_management?: string;
     database: string;
     inspection: string;
   };
@@ -31,7 +33,9 @@ export interface UpdateUserDTO {
     dashboard: string;
     cm_plant_operations: string;
     rkc_plant_operations: string;
+    derivative_plant_operations?: string;
     project_management: string;
+    contract_sla_management?: string;
     database: string;
     inspection: string;
   };
