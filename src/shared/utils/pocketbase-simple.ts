@@ -72,17 +72,30 @@ export const detectWorkingProtocol = async (): Promise<Protocol> => {
 let pbInstance: PocketBase | null = null;
 
 // Fungsi untuk mendapatkan instance PocketBase
-const getPocketBaseInstance = (): PocketBase => {
+export const getPocketBaseInstance = (): PocketBase => {
   if (!pbInstance) {
     pbInstance = new PocketBase(getPocketbaseUrl());
     pbInstance.autoCancellation(false);
-    logger.info('PocketBase instance diinisialisasi dengan HTTPS langsung');
+    logger.info('PocketBase instance diinisialisasi');
   }
   return pbInstance;
 };
 
-// Export instance PocketBase
-export const pb = getPocketBaseInstance();
+// Export instance PocketBase via lazy Proxy
+export const pb: PocketBase = new Proxy({} as PocketBase, {
+  get(_target, prop, receiver) {
+    const instance = getPocketBaseInstance();
+    const value = Reflect.get(instance, prop, receiver);
+    if (typeof value === 'function') {
+      return value.bind(instance);
+    }
+    return value;
+  },
+  set(_target, prop, value, receiver) {
+    const instance = getPocketBaseInstance();
+    return Reflect.set(instance, prop, value, receiver);
+  },
+});
 
 // Export fungsi untuk reset koneksi jika diperlukan
 export const resetConnection = (): void => {

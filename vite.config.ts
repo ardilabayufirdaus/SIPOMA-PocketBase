@@ -207,21 +207,7 @@ export default defineConfig(async (_env) => {
               return 'components-dashboard';
             }
 
-            // Hook chunks
-            if (id.includes('hooks/use') && id.includes('Data')) {
-              return 'hooks-data';
-            }
-
-            // Utility chunks
-            if (id.includes('utils/Microinteractions.tsx')) {
-              return 'utils-interactions';
-            }
-            if (id.includes('utils/ResponsiveLayout.tsx')) {
-              return 'utils-layout';
-            }
-            if (id.includes('utils/') && !id.includes('permissions')) {
-              return 'app-utils';
-            }
+            // Specific vendor / heavy library separation only
           },
         },
       },
