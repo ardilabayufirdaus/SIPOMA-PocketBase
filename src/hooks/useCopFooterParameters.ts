@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import PocketBase from 'pocketbase/cjs';
 
+import { getPocketbaseUrl } from '../../utils/pocketbase-simple';
+
 export interface CopFooterParameter {
   id: string;
   plant_category: string;
@@ -11,9 +13,7 @@ export interface CopFooterParameter {
 }
 
 export const useCopFooterParameters = () => {
-  const [pb] = useState(
-    () => new PocketBase(import.meta.env.VITE_POCKETBASE_URL || 'https://db.sipoma.online')
-  );
+  const [pb] = useState(() => new PocketBase(getPocketbaseUrl()));
   const [data, setData] = useState<CopFooterParameter[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -1,4 +1,4 @@
-import { pb } from './pocketbase-simple';
+import { pb, getPocketbaseUrl } from './pocketbase-simple';
 import { logger } from './logger';
 
 // Class untuk mengelola koneksi pool ke PocketBase
@@ -43,8 +43,7 @@ class ConnectionPool {
     try {
       logger.info('Inisialisasi koneksi ke PocketBase...');
 
-      // Always use direct URL for health check to avoid proxy issues
-      const healthCheckUrl = 'https://db.sipoma.online/api/health';
+      const healthCheckUrl = `${getPocketbaseUrl()}/api/health`;
 
       // Coba ping server untuk memverifikasi koneksi
       const response = await fetch(healthCheckUrl, {
@@ -83,8 +82,7 @@ class ConnectionPool {
     // Periksa koneksi setiap 30 detik
     this.healthCheckInterval = setInterval(async () => {
       try {
-        // Always use direct URL for health check to avoid proxy issues
-        const response = await fetch('https://db.sipoma.online/api/health', {
+        const response = await fetch(`${getPocketbaseUrl()}/api/health`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

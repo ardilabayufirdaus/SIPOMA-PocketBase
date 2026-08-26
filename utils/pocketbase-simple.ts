@@ -45,9 +45,22 @@ export const isSecureContext = (): boolean => {
  * Menggunakan proxy di development, direct HTTPS di production
  */
 export const getPocketbaseUrl = (): string => {
-  // Use environment variable if available, otherwise fallback
-  const url = import.meta.env.VITE_POCKETBASE_URL || 'https://db.sipoma.online';
-  return url.replace(/\/$/, ''); // Remove trailing slash
+  if (typeof window !== 'undefined' && window.location) {
+    const { origin, hostname, port } = window.location;
+    if (
+      port === '8090' ||
+      hostname === '172.18.6.98' ||
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      origin.includes('172.18.6.98')
+    ) {
+      return origin;
+    }
+  }
+  const url =
+    import.meta.env.VITE_POCKETBASE_URL ||
+    (typeof window !== 'undefined' ? window.location.origin : 'http://172.18.6.98:8090');
+  return url.replace(/\/$/, '');
 };
 
 // Fungsi untuk mendeteksi protokol yang berfungsi (selalu return https)

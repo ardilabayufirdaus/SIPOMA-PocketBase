@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getPocketbaseUrl } from '../utils/pocketbase-simple';
 
 /**
  * Custom hook to detect mixed content issues in the application
@@ -44,7 +45,7 @@ export const useMixedContentDetection = () => {
       // For other deployments, do actual check
       const checkForMixedContent = async () => {
         try {
-          const backendUrl = import.meta.env.VITE_POCKETBASE_URL || 'https://db.sipoma.online';
+          const backendUrl = getPocketbaseUrl();
           const url =
             backendUrl.startsWith('http') || backendUrl.startsWith('/')
               ? backendUrl

@@ -65,7 +65,22 @@ const authRequired = import.meta.env.VITE_AUTH_REQUIRED !== 'false'; // Defaultn
  * Sekarang menggunakan URL langsung tanpa proxy karena PocketBase sudah HTTPS.
  */
 export const getPocketbaseUrl = (): string => {
-  return 'https://db.sipoma.online/';
+  if (typeof window !== 'undefined' && window.location) {
+    const { origin, hostname, port } = window.location;
+    if (
+      port === '8090' ||
+      hostname === '172.18.6.98' ||
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      origin.includes('172.18.6.98')
+    ) {
+      return origin;
+    }
+  }
+  const url =
+    import.meta.env.VITE_POCKETBASE_URL ||
+    (typeof window !== 'undefined' ? window.location.origin : 'http://172.18.6.98:8090');
+  return url.replace(/\/$/, '');
 };
 
 // Fungsi untuk mendeteksi protokol yang berfungsi (dinonaktifkan)
