@@ -160,8 +160,6 @@ export const useDerivativeCcrParameterDataFlat = () => {
   const getDataForDate = useCallback(
     async (date: string, plantUnit?: string): Promise<CcrParameterDataFlat[]> => {
       if (
-        paramsLoading ||
-        parameters.length === 0 ||
         !date ||
         typeof date !== 'string' ||
         date.trim() === '' ||
@@ -191,9 +189,21 @@ export const useDerivativeCcrParameterDataFlat = () => {
           return [];
         }
 
-        let filteredParameters = parameters;
+        let currentParams = parameters;
+        if (currentParams.length === 0) {
+          try {
+            const fetched = await safeApiCall(() =>
+              pb.collection('derivative_parameter_settings').getFullList({ sort: 'parameter' })
+            );
+            if (fetched) currentParams = fetched as unknown as ParameterSetting[];
+          } catch {
+            // ignore
+          }
+        }
+
+        let filteredParameters = currentParams;
         if (plantUnit && plantUnit !== 'all') {
-          filteredParameters = parameters.filter((param) => param.unit === plantUnit);
+          filteredParameters = currentParams.filter((param) => param.unit === plantUnit);
         }
 
         let filter = `date="${isoDate}"`;
@@ -224,9 +234,10 @@ export const useDerivativeCcrParameterDataFlat = () => {
 
         return freshData;
       } catch {
-        let filteredParameters = parameters;
+        const currentParams = parameters;
+        let filteredParameters = currentParams;
         if (plantUnit && plantUnit !== 'all') {
-          filteredParameters = parameters.filter((param) => param.unit === plantUnit);
+          filteredParameters = currentParams.filter((param) => param.unit === plantUnit);
         }
         return filteredParameters.map(
           (param) =>
@@ -240,7 +251,7 @@ export const useDerivativeCcrParameterDataFlat = () => {
         setLoading(false);
       }
     },
-    [parameters, paramsLoading, processRecord]
+    [parameters, processRecord]
   );
 
   const saveParameterValue = useCallback(

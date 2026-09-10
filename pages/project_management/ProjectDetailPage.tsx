@@ -1,21 +1,23 @@
-import React, { useState, useMemo, useCallback, useRef, Suspense, lazy } from 'react';
+import React, { useState, useMemo, useCallback, useRef, Suspense, useEffect } from 'react';
 import ExcelJS from 'exceljs';
 import { useProjects } from '../../hooks/useProjects';
 import { Project, ProjectTask } from '../../types';
-import { formatDate, formatNumber, formatRupiah } from '../../utils/formatters';
+import { formatDate, formatRupiah } from '../../utils/formatters';
+import {
+  parseExcelDateWithFormat,
+  detectSheetDateFormat,
+  DateFormatPreference,
+  detectExcelColumnMapping,
+  extractCellString,
+} from '../../utils/dateUtils';
+import { exportProjectDetailReportToPDF, ProjectDetailPDFData } from '../../utils/pdfExportUtils';
 import { InteractiveCardModal, BreakdownData } from '../../components/InteractiveCardModal';
 import Modal from '../../components/Modal';
 import ProjectTaskForm from '../../components/ProjectTaskForm';
 import { useProjectManagementAccess } from '../../hooks/useProjectManagementAccess';
 
-// Import Enhanced Components
-import {
-  EnhancedButton,
-  useAccessibility,
-  useHighContrast,
-  useReducedMotion,
-  useColorScheme,
-} from '../../components/ui/EnhancedComponents';
+// Enhanced UI Components
+import { EnhancedButton, useAccessibility } from '../../components/ui/EnhancedComponents';
 
 // Icons
 import PlusIcon from '../../components/icons/PlusIcon';
@@ -30,11 +32,17 @@ import ArrowTrendingDownIcon from '../../components/icons/ArrowTrendingDownIcon'
 import CalendarDaysIcon from '../../components/icons/CalendarDaysIcon';
 import ClipboardDocumentListIcon from '../../components/icons/ClipboardDocumentListIcon';
 import CurrencyDollarIcon from '../../components/icons/CurrencyDollarIcon';
-import XCircleIcon from '../../components/icons/XCircleIcon';
 import ChartPieIcon from '../../components/icons/ChartPieIcon';
 import Bars4Icon from '../../components/icons/Bars4Icon';
+import ChevronLeftIcon from '../../components/icons/ChevronLeftIcon';
+import MagnifyingGlassIcon from '../../components/icons/MagnifyingGlassIcon';
+import ShieldCheckIcon from '../../components/icons/ShieldCheckIcon';
+import ClockIcon from '../../components/icons/ClockIcon';
+import ExclamationTriangleIcon from '../../components/icons/ExclamationTriangleIcon';
+import XMarkIcon from '../../components/icons/XMarkIcon';
+import CheckIcon from '../../components/icons/CheckIcon';
 
-// Import Chart.js components
+// Chart.js imports
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -44,286 +52,402 @@ import {
   Title,
   Tooltip,
   Legend,
+  Filler,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 
-// Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+// Register Chart.js components including Filler for gradient area under S-Curve
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 type ChartView = 's-curve' | 'gantt';
-
-const parseExcelDate = (val: any): Date | null => {
-  if (!val) return null;
-
-  if (val instanceof Date) {
-    return isNaN(val.getTime()) ? null : val;
-  }
-
-  if (typeof val === 'object' && val !== null && 'result' in val) {
-    return parseExcelDate(val.result);
-  }
-
-  if (typeof val === 'number') {
-    const excelEpoch = new Date(Date.UTC(1899, 11, 30));
-    const dt = new Date(excelEpoch.getTime() + val * 86400000);
-    return isNaN(dt.getTime()) ? null : dt;
-  }
-
-  const strVal = String(val).trim();
-
-  const dmmyyyyMatch = strVal.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
-  if (dmmyyyyMatch) {
-    const d = parseInt(dmmyyyyMatch[1], 10);
-    const m = parseInt(dmmyyyyMatch[2], 10) - 1;
-    const y = parseInt(dmmyyyyMatch[3], 10);
-    const dt = new Date(y, m, d);
-    if (!isNaN(dt.getTime())) return dt;
-  }
-
-  const dt = new Date(strVal);
-  if (!isNaN(dt.getTime())) return dt;
-
-  return null;
-};
+type TaskFilter = 'all' | 'in_progress' | 'overdue' | 'completed';
 
 const LoadingSpinner: React.FC = () => (
-  <div className="flex items-center justify-center h-full p-10">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+  <div className="flex flex-col items-center justify-center min-h-[360px] p-10">
+    <div className="relative">
+      <div className="w-14 h-14 rounded-full border-4 border-indigo-200 dark:border-indigo-900 border-t-indigo-600 animate-spin"></div>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <PresentationChartLineIcon className="w-6 h-6 text-indigo-600 dark:text-indigo-400 animate-pulse" />
+      </div>
+    </div>
+    <p className="text-sm font-semibold text-slate-600 dark:text-slate-300 mt-4 tracking-wide">
+      Memuat Detail Analisis Proyek...
+    </p>
   </div>
 );
 
-// Helper function for status classes
-const getStatusClasses = (status: string, t: any) => {
-  if (status === t.proj_status_completed) {
-    return 'bg-success-50 text-success-700 border border-success-200';
-  } else if (status === t.proj_status_delayed) {
-    return 'bg-primary-50 text-primary-700 border border-primary-200';
-  } else {
-    return 'bg-blue-50 text-blue-700 border border-blue-200';
-  }
-};
-
-const GanttChart: React.FC<{
+// ─────────────────────────────────────────────────────────────
+// Modern Interactive Gantt Chart
+// ─────────────────────────────────────────────────────────────
+interface GanttChartProps {
   tasks: ProjectTask[];
   startDate: Date;
   duration: number;
-  t: any;
-}> = React.memo(({ tasks, startDate, duration, t }) => {
-  const [hoveredTask, setHoveredTask] = useState<ProjectTask | null>(null);
-  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  t: Record<string, string>;
+}
 
-  if (tasks.length === 0 || duration <= 0) {
+const ModernGanttChart: React.FC<GanttChartProps> = React.memo(
+  ({ tasks, startDate, duration, t }) => {
+    const [hoveredTask, setHoveredTask] = useState<ProjectTask | null>(null);
+    const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+
+    if (tasks.length === 0 || duration <= 0) {
+      return (
+        <div className="h-80 flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 font-medium">
+          <ClipboardDocumentListIcon
+            className="w-12 h-12 mb-2 text-slate-300 dark:text-slate-600"
+            aria-hidden="true"
+          />
+          <p>{t.status_not_started || 'Belum Ada Tugas / Aktivitas'}</p>
+        </div>
+      );
+    }
+
+    const ganttDimensions = {
+      taskHeight: 28,
+      taskGap: 14,
+      leftPadding: 220,
+      topPadding: 50,
+      rightPadding: 40,
+    };
+
+    const dayWidth = Math.max(16, Math.min(40, 800 / duration));
+    const chartWidth = Math.max(
+      900,
+      ganttDimensions.leftPadding + duration * dayWidth + ganttDimensions.rightPadding
+    );
+    const totalHeight =
+      tasks.length * (ganttDimensions.taskHeight + ganttDimensions.taskGap) +
+      ganttDimensions.topPadding +
+      20;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const daysFromStart = (today.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
+    const todayX = ganttDimensions.leftPadding + daysFromStart * dayWidth;
+
+    const handleMouseMove = (e: React.MouseEvent, task: ProjectTask) => {
+      setHoveredTask(task);
+      const container = e.currentTarget.closest('.gantt-scroll-container');
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      setTooltipPos({
+        x: e.clientX - rect.left + container.scrollLeft,
+        y: e.clientY - rect.top,
+      });
+    };
+
+    // Generate calendar scale columns
+    const calendarMarkers: { day: number; label: string; isWeekStart: boolean }[] = [];
+    for (let i = 0; i < duration; i++) {
+      const cur = new Date(startDate);
+      cur.setDate(startDate.getDate() + i);
+      const isWeekStart = cur.getDay() === 1 || i === 0;
+      const label = `${cur.getDate()}/${cur.getMonth() + 1}`;
+      calendarMarkers.push({ day: i, label, isWeekStart });
+    }
+
     return (
-      <div className="h-96 flex items-center justify-center text-slate-500 font-medium">
-        {t.status_not_started}
+      <div className="w-full overflow-x-auto relative rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/90 shadow-inner gantt-scroll-container">
+        <svg width={chartWidth} height={totalHeight} className="min-w-full font-sans">
+          <defs>
+            <linearGradient id="ganttProgressDone" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#10b981" />
+              <stop offset="100%" stopColor="#059669" />
+            </linearGradient>
+            <linearGradient id="ganttProgressActive" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#6366f1" />
+              <stop offset="100%" stopColor="#4f46e5" />
+            </linearGradient>
+            <linearGradient id="ganttProgressOverdue" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#f43f5e" />
+              <stop offset="100%" stopColor="#e11d48" />
+            </linearGradient>
+            <pattern
+              id="ganttGrid"
+              width={dayWidth}
+              height={ganttDimensions.taskHeight + ganttDimensions.taskGap}
+              patternUnits="userSpaceOnUse"
+            >
+              <line
+                x1={dayWidth}
+                y1="0"
+                x2={dayWidth}
+                y2={ganttDimensions.taskHeight + ganttDimensions.taskGap}
+                stroke="currentColor"
+                className="text-slate-100 dark:text-slate-800/60"
+                strokeWidth="1"
+              />
+            </pattern>
+          </defs>
+
+          {/* Background Grid */}
+          <rect
+            x={ganttDimensions.leftPadding}
+            y={ganttDimensions.topPadding}
+            width={duration * dayWidth}
+            height={totalHeight - ganttDimensions.topPadding}
+            fill="url(#ganttGrid)"
+          />
+
+          {/* Calendar Header */}
+          <rect
+            x={0}
+            y={0}
+            width={chartWidth}
+            height={ganttDimensions.topPadding - 8}
+            className="fill-slate-50 dark:fill-slate-950/80"
+          />
+          <text
+            x={16}
+            y={26}
+            className="text-xs font-bold fill-slate-700 dark:fill-slate-300 uppercase tracking-wider"
+          >
+            Aktivitas Proyek
+          </text>
+
+          {calendarMarkers.map((marker) => {
+            const markerX = ganttDimensions.leftPadding + marker.day * dayWidth;
+            if (marker.isWeekStart || marker.day % 5 === 0) {
+              return (
+                <g key={`marker-${marker.day}`}>
+                  <line
+                    x1={markerX}
+                    y1={12}
+                    x2={markerX}
+                    y2={totalHeight}
+                    stroke="currentColor"
+                    className="text-slate-200 dark:text-slate-800"
+                    strokeWidth={marker.isWeekStart ? '1.5' : '0.8'}
+                    strokeDasharray={marker.isWeekStart ? 'none' : '2,2'}
+                  />
+                  <text
+                    x={markerX + 4}
+                    y={26}
+                    className="text-[10px] font-semibold fill-slate-500 dark:fill-slate-400"
+                  >
+                    {marker.label}
+                  </text>
+                </g>
+              );
+            }
+            return null;
+          })}
+
+          {/* Task Rows & Bars */}
+          {tasks.map((task, i) => {
+            const taskStart = task.planned_start ? new Date(task.planned_start) : new Date();
+            const taskEnd = task.planned_end ? new Date(task.planned_end) : new Date();
+            const taskDuration = Math.max(
+              1,
+              (taskEnd.getTime() - taskStart.getTime()) / (1000 * 3600 * 24) + 1
+            );
+            const startOffset = Math.max(
+              0,
+              (taskStart.getTime() - startDate.getTime()) / (1000 * 3600 * 24)
+            );
+
+            const x = ganttDimensions.leftPadding + startOffset * dayWidth;
+            const y =
+              i * (ganttDimensions.taskHeight + ganttDimensions.taskGap) +
+              ganttDimensions.topPadding;
+            const barWidth = Math.max(12, taskDuration * dayWidth);
+            const percent = Math.min(100, Math.max(0, task.percent_complete || 0));
+            const progressWidth = (barWidth * percent) / 100;
+
+            const isDone = percent >= 100;
+            const isOverdue = taskEnd < today && !isDone;
+
+            const progressGradient = isDone
+              ? 'url(#ganttProgressDone)'
+              : isOverdue
+                ? 'url(#ganttProgressOverdue)'
+                : 'url(#ganttProgressActive)';
+
+            const rowBg = i % 2 === 0 ? 'transparent' : 'rgba(148, 163, 184, 0.04)';
+
+            return (
+              <g
+                key={task.id}
+                onMouseMove={(e) => handleMouseMove(e, task)}
+                onMouseLeave={() => setHoveredTask(null)}
+                className="cursor-pointer group"
+              >
+                {/* Row Background */}
+                <rect
+                  x={0}
+                  y={y - 6}
+                  width={chartWidth}
+                  height={ganttDimensions.taskHeight + 12}
+                  fill={rowBg}
+                  className="group-hover:fill-indigo-50/50 dark:group-hover:fill-indigo-950/20 transition-colors"
+                />
+
+                {/* Task Label with Status Dot */}
+                <circle
+                  cx={20}
+                  cy={y + ganttDimensions.taskHeight / 2}
+                  r={4}
+                  className={
+                    isDone
+                      ? 'fill-emerald-500'
+                      : isOverdue
+                        ? 'fill-rose-500'
+                        : percent > 0
+                          ? 'fill-indigo-500'
+                          : 'fill-slate-400'
+                  }
+                />
+                <text
+                  x={32}
+                  y={y + ganttDimensions.taskHeight / 2}
+                  dy=".35em"
+                  className="text-xs font-semibold fill-slate-800 dark:fill-slate-200 group-hover:fill-indigo-600 dark:group-hover:fill-indigo-400 transition-colors"
+                >
+                  {task.activity.length > 24
+                    ? task.activity.substring(0, 24) + '...'
+                    : task.activity}
+                </text>
+
+                {/* Planned Range Bar (Ghost Outline) */}
+                <rect
+                  x={x}
+                  y={y}
+                  width={barWidth}
+                  height={ganttDimensions.taskHeight}
+                  rx={8}
+                  ry={8}
+                  className="fill-slate-100 dark:fill-slate-800/80 stroke-slate-300/80 dark:stroke-slate-700/80"
+                  strokeWidth={1}
+                />
+
+                {/* Actual Progress Fill */}
+                {progressWidth > 0 && (
+                  <rect
+                    x={x}
+                    y={y}
+                    width={progressWidth}
+                    height={ganttDimensions.taskHeight}
+                    rx={8}
+                    ry={8}
+                    fill={progressGradient}
+                    className="shadow-sm filter drop-shadow-sm transition-all duration-300"
+                  />
+                )}
+
+                {/* Percentage Text on Bar */}
+                <text
+                  x={x + barWidth + 8}
+                  y={y + ganttDimensions.taskHeight / 2}
+                  dy=".35em"
+                  className="text-[11px] font-bold fill-slate-600 dark:fill-slate-300"
+                >
+                  {percent}%
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Today Marker Vertical Line */}
+          {todayX >= ganttDimensions.leftPadding && todayX <= chartWidth && (
+            <g>
+              <line
+                x1={todayX}
+                y1={ganttDimensions.topPadding - 12}
+                x2={todayX}
+                y2={totalHeight}
+                stroke="#ef4444"
+                strokeWidth="2"
+                strokeDasharray="4,3"
+              />
+              <rect
+                x={todayX - 26}
+                y={ganttDimensions.topPadding - 24}
+                width={52}
+                height={18}
+                rx={9}
+                className="fill-rose-600 shadow-md"
+              />
+              <text
+                x={todayX}
+                y={ganttDimensions.topPadding - 12}
+                textAnchor="middle"
+                className="text-[9px] font-black fill-white uppercase tracking-wider"
+              >
+                HARI INI
+              </text>
+            </g>
+          )}
+        </svg>
+
+        {/* Floating Rich Tooltip */}
+        {hoveredTask && (
+          <div
+            className="absolute pointer-events-none z-50 p-4 text-xs bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-md text-white rounded-2xl shadow-2xl border border-slate-700/80 dark:border-slate-800 min-w-[240px] transform -translate-x-1/2 transition-all duration-75"
+            style={{ left: tooltipPos.x, top: tooltipPos.y + 16 }}
+          >
+            <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-2 mb-2">
+              <span className="font-bold text-sm text-white truncate max-w-[180px]">
+                {hoveredTask.activity}
+              </span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                  (hoveredTask.percent_complete || 0) >= 100
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                    : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40'
+                }`}
+              >
+                {hoveredTask.percent_complete || 0}%
+              </span>
+            </div>
+            <div className="space-y-1.5 text-slate-300 text-[11px]">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Rencana Mulai:</span>
+                <span className="font-semibold text-white">
+                  {formatDate(hoveredTask.planned_start)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Rencana Selesai:</span>
+                <span className="font-semibold text-white">
+                  {formatDate(hoveredTask.planned_end)}
+                </span>
+              </div>
+              {hoveredTask.actual_start && (
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Realisasi Mulai:</span>
+                  <span className="font-semibold text-emerald-400">
+                    {formatDate(hoveredTask.actual_start)}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
+);
 
-  const ganttDimensions = {
-    width: 800,
-    taskHeight: 24, // Increased for better touch targets
-    taskGap: 12,
-    leftPadding: 160,
-    topPadding: 40,
-  };
-  const totalHeight =
-    tasks.length * (ganttDimensions.taskHeight + ganttDimensions.taskGap) +
-    ganttDimensions.topPadding;
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const daysFromStart = (today.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
-  const todayX =
-    (daysFromStart / duration) * (ganttDimensions.width - ganttDimensions.leftPadding) +
-    ganttDimensions.leftPadding;
-
-  const handleMouseMove = (e: React.MouseEvent, task: ProjectTask) => {
-    setHoveredTask(task);
-    const svg = e.currentTarget.closest('svg');
-    if (!svg) return;
-    const rect = svg.getBoundingClientRect();
-    setTooltipPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-  };
-
-  return (
-    <div className="w-full overflow-x-auto relative rounded-xl border border-slate-200 bg-white">
-      <svg width={ganttDimensions.width} height={totalHeight} className="min-w-full">
-        {/* Today Marker */}
-        {todayX > ganttDimensions.leftPadding && todayX < ganttDimensions.width && (
-          <line
-            x1={todayX}
-            y1={ganttDimensions.topPadding - 5}
-            x2={todayX}
-            y2={totalHeight}
-            stroke="#059669" // Vibrant Emerald
-            strokeWidth="1.5"
-            strokeDasharray="4,2"
-          />
-        )}
-        {tasks.map((task, i) => {
-          const taskStart = new Date(task.planned_start);
-          const taskEnd = new Date(task.planned_end);
-          const taskDuration = Math.max(
-            1,
-            (taskEnd.getTime() - taskStart.getTime()) / (1000 * 3600 * 24) + 1
-          );
-          const startOffset = (taskStart.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
-
-          const x =
-            (startOffset / duration) * (ganttDimensions.width - ganttDimensions.leftPadding) +
-            ganttDimensions.leftPadding;
-          const y =
-            i * (ganttDimensions.taskHeight + ganttDimensions.taskGap) + ganttDimensions.topPadding;
-          const width =
-            (taskDuration / duration) * (ganttDimensions.width - ganttDimensions.leftPadding);
-          const progressWidth = width * (task.percent_complete / 100);
-
-          const isOverdue = taskEnd < today && task.percent_complete < 100;
-
-          // Option B Styled Bars
-          const plannedBarColor = isOverdue ? 'text-red-100' : 'text-slate-200';
-          const progressBarColor = isOverdue ? 'text-primary-500' : 'text-secondary-600';
-
-          return (
-            <g
-              key={task.id}
-              onMouseMove={(e) => handleMouseMove(e, task)}
-              onMouseLeave={() => setHoveredTask(null)}
-              className="cursor-pointer"
-            >
-              <text
-                x="5"
-                y={y + ganttDimensions.taskHeight / 2}
-                dy=".35em"
-                className="text-xs fill-slate-700 font-medium truncate"
-                style={{ maxWidth: `${ganttDimensions.leftPadding - 10}px` }}
-              >
-                {task.activity}
-              </text>
-              <rect
-                x={x}
-                y={y}
-                width={width}
-                height={ganttDimensions.taskHeight}
-                rx="4"
-                ry="4"
-                className={`fill-current ${plannedBarColor} transition-colors duration-200`}
-              />
-              <rect
-                x={x}
-                y={y}
-                width={progressWidth}
-                height={ganttDimensions.taskHeight}
-                rx="4"
-                ry="4"
-                className={`fill-current ${progressBarColor} transition-colors duration-200 shadow-sm`}
-              />
-            </g>
-          );
-        })}
-      </svg>
-      {hoveredTask && (
-        <div
-          className="absolute p-3 text-xs text-white bg-secondary-900 rounded-lg shadow-xl pointer-events-none transform -translate-x-1/2 z-50 border border-secondary-800"
-          style={{ left: tooltipPos.x, top: tooltipPos.y + 10 }}
-        >
-          <div className="font-bold mb-1 text-sm">{hoveredTask.activity}</div>
-          <div className="space-y-0.5 opacity-90">
-            <div>
-              {t.task_planned_start}: {formatDate(hoveredTask.planned_start)}
-            </div>
-            <div>
-              {t.task_planned_end}: {formatDate(hoveredTask.planned_end)}
-            </div>
-            <div>
-              {t.task_percent_complete}: {hoveredTask.percent_complete}%
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-});
-
-interface PerformanceMetricCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  subText?: string;
-  subTextColor?: string;
-  breakdownData?: BreakdownData;
-  onClick?: () => void;
+// ─────────────────────────────────────────────────────────────
+// Project Detail Page Props & Main Component
+// ─────────────────────────────────────────────────────────────
+interface ProjectDetailPageProps {
+  t: Record<string, string>;
+  projectId: string;
+  onNavigateBack?: () => void;
 }
-const PerformanceMetricCard: React.FC<PerformanceMetricCardProps> = ({
-  title,
-  value,
-  icon,
-  subText,
-  subTextColor,
-  breakdownData,
-  onClick,
-}) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleClick = () => {
-    if (onClick) {
-      onClick();
-    } else if (breakdownData) {
-      setIsModalOpen(true);
-    }
-  };
-
-  const isInteractive = breakdownData || onClick;
-
-  return (
-    <>
-      <div
-        className={`bg-white p-5 rounded-2xl shadow-soft border border-slate-100 flex items-center transition-all duration-300 ${
-          isInteractive
-            ? 'cursor-pointer hover:shadow-medium hover:scale-[1.02] border-secondary-100'
-            : ''
-        }`}
-        onClick={handleClick}
-      >
-        <div className="p-3.5 rounded-xl bg-slate-50 text-primary-600 mr-4 shadow-sm">{icon}</div>
-        <div className="flex-1">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">{title}</p>
-            {isInteractive && (
-              <div className="text-slate-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
-              </div>
-            )}
-          </div>
-          <p className="text-2xl font-bold text-secondary-900 mt-1">{value}</p>
-          {subText && (
-            <p className={`text-xs font-medium mt-1 ${subTextColor || 'text-slate-500'}`}>
-              {subText}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {breakdownData && (
-        <InteractiveCardModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          data={breakdownData}
-        />
-      )}
-    </>
-  );
-};
-
-const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, projectId }) => {
+const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onNavigateBack }) => {
   const { canWrite } = useProjectManagementAccess();
   const {
     projects,
@@ -332,7 +456,6 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
     addTask,
     updateTask,
     deleteTask,
-    addBulkTasks,
     replaceBulkTasks,
     updateProject,
   } = useProjects();
@@ -341,101 +464,146 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isImportConfirmModalOpen, setImportConfirmModalOpen] = useState(false);
   const [isProjectEditMode, setProjectEditMode] = useState(false);
+  const [isPresentationMode, setIsPresentationMode] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
+
+  const [taskSearchQuery, setTaskSearchQuery] = useState('');
+  const [taskFilter, setTaskFilter] = useState<TaskFilter>('all');
+  const [chartView, setChartView] = useState<ChartView>('s-curve');
+
   const [editingProjectData, setEditingProjectData] = useState({
     title: '',
+    description: '',
     budget: 0,
+  });
+  const [rawImportData, setRawImportData] = useState<(string | number | null)[][]>([]);
+  const [selectedDateFormat, setSelectedDateFormat] = useState<DateFormatPreference>('DD/MM/YYYY');
+  const [detectedDateFormatInfo, setDetectedDateFormatInfo] = useState<{
+    detectedFormat: DateFormatPreference;
+    confidence: 'HIGH' | 'DEFAULT';
+    hasEvidence: boolean;
+  }>({
+    detectedFormat: 'DD/MM/YYYY',
+    confidence: 'DEFAULT',
+    hasEvidence: false,
   });
   const [pendingImportTasks, setPendingImportTasks] = useState<
     Omit<ProjectTask, 'id' | 'project_id'>[]
   >([]);
   const [editingTask, setEditingTask] = useState<ProjectTask | null>(null);
   const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
-  const [hoveredDay, setHoveredDay] = useState<{
-    day: number;
-    planned: number;
-    actual: number | null;
-    x: number;
-    tasks: ProjectTask[];
-  } | null>(null);
-  const [highlightedTaskIds, setHighlightedTaskIds] = useState<string[]>([]);
-  const [filteredDate, setFilteredDate] = useState<string | null>(null);
-  const [chartView, setChartView] = useState<ChartView>('s-curve');
-
-  // Enhanced accessibility hooks
-  const { announceToScreenReader } = useAccessibility();
-  const isHighContrast = useHighContrast();
-  const prefersReducedMotion = useReducedMotion();
-  const colorScheme = useColorScheme();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const chartRef = useRef<HTMLDivElement>(null);
+  const sCurveChartRef = useRef<any>(null);
+  const { announceToScreenReader } = useAccessibility();
+
+  // Keyboard shortcut to close Presentation Mode
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isPresentationMode) {
+        setIsPresentationMode(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isPresentationMode]);
 
   const activeProject = useMemo(
     () => projects.find((p) => p.id === projectId),
     [projects, projectId]
   );
+
   const activeProjectTasks = useMemo(
     () => getTasksByProjectId(projectId),
     [getTasksByProjectId, projectId]
   );
 
-  // --- Optimized Overview Calculations ---
+  // Overview Calculations
   const projectOverview = useMemo(() => {
     if (!activeProjectTasks || activeProjectTasks.length === 0) {
       return {
         duration: 0,
         totalTasks: 0,
+        completedTasks: 0,
+        inProgressTasks: 0,
+        overdueTasks: 0,
         budget: activeProject?.budget || 0,
+        startDate: null,
+        endDate: null,
       };
     }
 
-    const taskCount = activeProjectTasks.length;
-    const budget = activeProject?.budget || 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    if (taskCount === 0) {
-      return { duration: 0, totalTasks: 0, budget };
-    }
+    let completed = 0;
+    let inProgress = 0;
+    let overdue = 0;
 
-    const startDates = activeProjectTasks.map((t) => new Date(t.planned_start).getTime());
-    const endDates = activeProjectTasks.map((t) => new Date(t.planned_end).getTime());
+    activeProjectTasks.forEach((task) => {
+      const pct = task.percent_complete || 0;
+      const plannedEnd = task.planned_end ? new Date(task.planned_end) : null;
+      if (pct >= 100) {
+        completed++;
+      } else {
+        if (pct > 0) inProgress++;
+        if (plannedEnd && plannedEnd < today) overdue++;
+      }
+    });
 
-    const minDate = Math.min(...startDates);
-    const maxDate = Math.max(...endDates);
-    const duration = Math.ceil((maxDate - minDate) / (1000 * 3600 * 24)) + 1;
+    const startDates = activeProjectTasks
+      .map((t_task) => (t_task.planned_start ? new Date(t_task.planned_start).getTime() : 0))
+      .filter((d) => d > 0);
+    const endDates = activeProjectTasks
+      .map((t_task) => (t_task.planned_end ? new Date(t_task.planned_end).getTime() : 0))
+      .filter((d) => d > 0);
+
+    const minDate = startDates.length > 0 ? new Date(Math.min(...startDates)) : null;
+    const maxDate = endDates.length > 0 ? new Date(Math.max(...endDates)) : null;
+    const duration =
+      minDate && maxDate
+        ? Math.ceil((maxDate.getTime() - minDate.getTime()) / (1000 * 3600 * 24)) + 1
+        : 0;
 
     return {
       duration: Math.max(0, duration),
-      totalTasks: taskCount,
-      budget,
+      totalTasks: activeProjectTasks.length,
+      completedTasks: completed,
+      inProgressTasks: inProgress,
+      overdueTasks: overdue,
+      budget: activeProject?.budget || 0,
+      startDate: minDate,
+      endDate: maxDate,
     };
-  }, [activeProjectTasks?.length, activeProject?.budget]);
+  }, [activeProjectTasks, activeProject?.budget]);
 
-  // --- Optimized Performance Calculations ---
+  // Performance & Earned Value Metrics
   const performanceMetrics = useMemo(() => {
     if (!activeProjectTasks || activeProjectTasks.length === 0) {
       return {
         overallProgress: 0,
-        projectStatus: t.proj_status_on_track,
+        plannedProgress: 0,
+        projectStatus: t.proj_status_on_track || 'On Track',
+        statusKey: 'on_track',
         deviation: 0,
+        spi: 1.0,
+        healthScore: 100,
+        healthGrade: 'A+',
         predictedCompletion: null,
-      };
-    }
-
-    const taskCount = activeProjectTasks.length;
-    if (taskCount === 0) {
-      return {
-        overallProgress: 0,
-        projectStatus: t.proj_status_on_track,
-        deviation: 0,
-        predictedCompletion: null,
+        daysElapsed: 0,
+        daysRemaining: 0,
       };
     }
 
     const tasksWithDurations = activeProjectTasks.map((task) => {
-      const plannedStart = new Date(task.planned_start);
-      const plannedEnd = new Date(task.planned_end);
+      const plannedStart = task.planned_start ? new Date(task.planned_start) : new Date();
+      const plannedEnd = task.planned_end ? new Date(task.planned_end) : new Date();
       const duration = Math.max(
         1,
         (plannedEnd.getTime() - plannedStart.getTime()) / (1000 * 3600 * 24) + 1
@@ -448,98 +616,145 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
     if (totalWeight === 0) {
       return {
         overallProgress: 0,
-        projectStatus: t.proj_status_on_track,
+        plannedProgress: 0,
+        projectStatus: t.proj_status_on_track || 'On Track',
+        statusKey: 'on_track',
         deviation: 0,
+        spi: 1.0,
+        healthScore: 100,
+        healthGrade: 'A+',
         predictedCompletion: null,
+        daysElapsed: 0,
+        daysRemaining: 0,
       };
     }
 
     const overallProgress =
       tasksWithDurations.reduce((sum, task) => {
         const weight = task.duration / totalWeight;
-        return sum + (task.percent_complete / 100) * weight;
+        return sum + ((task.percent_complete || 0) / 100) * weight;
       }, 0) * 100;
 
     const projectStartDate = tasksWithDurations[0]?.plannedStart;
-    const projectEndDate = tasksWithDurations[0]?.plannedEnd;
+    const projectEndDate = tasksWithDurations[tasksWithDurations.length - 1]?.plannedEnd;
     const today = new Date();
 
     let plannedProgress = 0;
-    if (projectStartDate && today >= projectStartDate) {
-      const elapsedDays = Math.max(
-        0,
-        (today.getTime() - projectStartDate.getTime()) / (1000 * 3600 * 24)
-      );
-      const totalDuration = projectEndDate
-        ? (projectEndDate.getTime() - projectStartDate.getTime()) / (1000 * 3600 * 24)
-        : 0;
+    let daysElapsed = 0;
+    let totalProjectDays = 0;
 
-      if (totalDuration > 0) {
-        plannedProgress = Math.min(100, (elapsedDays / totalDuration) * 100);
+    if (projectStartDate && projectEndDate) {
+      totalProjectDays = Math.max(
+        1,
+        Math.ceil((projectEndDate.getTime() - projectStartDate.getTime()) / (1000 * 3600 * 24)) + 1
+      );
+      if (today >= projectStartDate) {
+        daysElapsed = Math.max(
+          0,
+          Math.floor((today.getTime() - projectStartDate.getTime()) / (1000 * 3600 * 24))
+        );
+        plannedProgress = Math.min(100, (daysElapsed / totalProjectDays) * 100);
       }
     }
 
     const deviation = overallProgress - plannedProgress;
+    const daysRemaining = Math.max(0, totalProjectDays - daysElapsed);
 
-    let projectStatus;
+    // Schedule Performance Index (SPI)
+    const effectivePlanned = Math.max(1, plannedProgress);
+    const spi = Math.round((overallProgress / effectivePlanned) * 100) / 100;
+
+    // Status mapping
+    let projectStatus: string;
+    let statusKey: 'completed' | 'ahead' | 'delayed' | 'on_track';
+
     if (overallProgress >= 100) {
-      projectStatus = t.proj_status_completed;
-    } else if (projectEndDate && today > projectEndDate) {
-      projectStatus = t.proj_status_delayed;
-    } else if (deviation > 5) {
-      projectStatus = t.proj_status_ahead;
-    } else if (deviation < -5) {
-      projectStatus = t.proj_status_delayed;
+      projectStatus = t.proj_status_completed || 'Completed';
+      statusKey = 'completed';
+    } else if (projectEndDate && today > projectEndDate && overallProgress < 100) {
+      projectStatus = t.proj_status_delayed || 'Delayed';
+      statusKey = 'delayed';
+    } else if (deviation > 3) {
+      projectStatus = t.proj_status_ahead || 'Ahead of Schedule';
+      statusKey = 'ahead';
+    } else if (deviation < -3) {
+      projectStatus = t.proj_status_delayed || 'Delayed';
+      statusKey = 'delayed';
     } else {
-      projectStatus = t.proj_status_on_track;
+      projectStatus = t.proj_status_on_track || 'On Track';
+      statusKey = 'on_track';
     }
 
-    let predictedCompletion: Date | null = null;
-    const elapsedDays = projectStartDate
-      ? Math.max(0, (today.getTime() - projectStartDate.getTime()) / (1000 * 3600 * 24))
-      : 0;
+    // Health Score calculation (0 - 100)
+    let healthScore = 100;
+    if (deviation < 0) {
+      healthScore -= Math.min(45, Math.abs(deviation) * 2.5);
+    }
+    if (projectOverview.overdueTasks > 0) {
+      const overduePenalty =
+        (projectOverview.overdueTasks / Math.max(1, projectOverview.totalTasks)) * 30;
+      healthScore -= overduePenalty;
+    }
+    healthScore = Math.max(20, Math.min(100, Math.round(healthScore)));
 
-    if (overallProgress > 0 && overallProgress < 100 && elapsedDays > 0) {
-      const dailyProgressRate = overallProgress / elapsedDays;
-      if (dailyProgressRate > 0) {
-        const remainingDays = (100 - overallProgress) / dailyProgressRate;
+    let healthGrade = 'A+';
+    if (healthScore < 60) healthGrade = 'Critical (D)';
+    else if (healthScore < 75) healthGrade = 'Attention Needed (C)';
+    else if (healthScore < 90) healthGrade = 'Good (B)';
+    else healthGrade = 'Excellent (A+)';
+
+    // Predicted Completion Date
+    let predictedCompletion: Date | null = null;
+    if (overallProgress > 0 && overallProgress < 100 && daysElapsed > 0) {
+      const dailyVelocity = overallProgress / daysElapsed;
+      if (dailyVelocity > 0) {
+        const remainingWorkDays = (100 - overallProgress) / dailyVelocity;
         predictedCompletion = new Date();
-        predictedCompletion.setDate(today.getDate() + remainingDays);
+        predictedCompletion.setDate(today.getDate() + Math.ceil(remainingWorkDays));
       }
     }
 
     return {
       overallProgress: Math.min(100, Math.max(0, overallProgress)),
+      plannedProgress: Math.min(100, Math.max(0, plannedProgress)),
       projectStatus,
+      statusKey,
       deviation: Math.round(deviation * 10) / 10,
+      spi,
+      healthScore,
+      healthGrade,
       predictedCompletion,
+      daysElapsed,
+      daysRemaining,
     };
-  }, [activeProjectTasks, t]);
+  }, [activeProjectTasks, projectOverview, t]);
 
-  // --- S-Curve Data Calculation ---
+  // S-Curve Points
   const sCurveData = useMemo(() => {
-    if (!activeProjectTasks || activeProjectTasks.length === 0)
+    if (!activeProjectTasks || activeProjectTasks.length === 0) {
       return { points: [], duration: 0, startDate: new Date() };
+    }
 
     const tasks = activeProjectTasks.map((task) => ({
       ...task,
-      plannedStart: new Date(task.planned_start),
-      plannedEnd: new Date(task.planned_end),
+      plannedStart: task.planned_start ? new Date(task.planned_start) : new Date(),
+      plannedEnd: task.planned_end ? new Date(task.planned_end) : new Date(),
       actualStart: task.actual_start ? new Date(task.actual_start) : null,
       actualEnd: task.actual_end ? new Date(task.actual_end) : null,
       duration:
-        (new Date(task.planned_end).getTime() - new Date(task.planned_start).getTime()) /
+        ((task.planned_end ? new Date(task.planned_end).getTime() : 0) -
+          (task.planned_start ? new Date(task.planned_start).getTime() : 0)) /
           (1000 * 3600 * 24) +
         1,
     }));
 
-    const startDate = new Date(Math.min(...tasks.map((t) => t.plannedStart.getTime())));
-    const endDate = new Date(Math.max(...tasks.map((t) => t.plannedEnd.getTime())));
+    const validStartTimes = tasks.map((task) => task.plannedStart.getTime());
+    const validEndTimes = tasks.map((task) => task.plannedEnd.getTime());
+
+    const startDate = new Date(Math.min(...validStartTimes));
+    const endDate = new Date(Math.max(...validEndTimes));
     const duration = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) + 1;
-    const totalWeight = tasks.reduce(
-      (sum, task) => sum + ((task as any).work_hours || task.duration),
-      0
-    );
+    const totalWeight = tasks.reduce((sum, task) => sum + task.duration, 0);
 
     if (duration <= 0 || totalWeight <= 0) return { points: [], duration: 0, startDate };
 
@@ -548,129 +763,119 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
       const currentDate = new Date(startDate);
       currentDate.setDate(startDate.getDate() + i);
 
-      const normalizedDay = i / (duration - 1);
-      const planned = Math.min(100, 100 * (1 / (1 + Math.exp(-8 * (normalizedDay - 0.5)))));
-
-      const baseline = Math.min(100, (i / (duration - 1)) * 100);
+      const normalizedDay = duration > 1 ? i / (duration - 1) : 1;
+      // Sigmoid S-Curve model for planned curve
+      const planned = Math.min(100, 100 * (1 / (1 + Math.exp(-7 * (normalizedDay - 0.5)))));
+      const baseline = Math.min(100, normalizedDay * 100);
 
       let actualCompleted = 0;
-      const activeTasks = [];
-
       tasks.forEach((task) => {
-        if (currentDate >= task.plannedStart && currentDate <= task.plannedEnd) {
-          activeTasks.push(task);
-        }
-
         if (task.actualEnd && currentDate >= task.actualEnd) {
-          actualCompleted += (task as any).work_hours || task.duration;
+          actualCompleted += task.duration;
         } else if (task.actualStart && currentDate >= task.actualStart) {
           const progress = task.percent_complete || 0;
-          actualCompleted += (((task as any).work_hours || task.duration) * progress) / 100;
+          actualCompleted += (task.duration * progress) / 100;
         }
       });
 
       const actual = totalWeight > 0 ? Math.min(100, (actualCompleted / totalWeight) * 100) : 0;
 
       points.push({
-        day: i,
+        day: i + 1,
         date: currentDate.toISOString().split('T')[0],
+        formattedDate: `${currentDate.getDate()}/${currentDate.getMonth() + 1}`,
         planned: Number(planned.toFixed(1)),
         actual: Number(actual.toFixed(1)),
         baseline: Number(baseline.toFixed(1)),
-        activeTasks,
-        completedWork: Number(actualCompleted.toFixed(1)),
-        totalWork: totalWeight,
       });
     }
+
     return { points, duration, startDate };
   }, [activeProjectTasks]);
 
-  // --- Nivo S-Curve Data for Chart ---
-  const nivoSCurveData = useMemo(() => {
-    if (!sCurveData.points || sCurveData.points.length === 0) {
-      return [];
-    }
+  // Chart.js S-Curve Datasets
+  const chartJSData = useMemo(() => {
+    const labels = sCurveData.points.map((p) => p.formattedDate || `Day ${p.day}`);
+    const planned = sCurveData.points.map((p) => p.planned);
+    const actual = sCurveData.points.map((p) => p.actual);
+    const baseline = sCurveData.points.map((p) => p.baseline);
 
-    const plannedData = sCurveData.points.map((point, index) => ({
-      x: `Day ${index + 1}`,
-      y: point.planned,
-    }));
-
-    const actualData = sCurveData.points.map((point, index) => ({
-      x: `Day ${index + 1}`,
-      y: point.actual,
-    }));
-
-    const baselineData = sCurveData.points.map((point, index) => ({
-      x: `Day ${index + 1}`,
-      y: point.baseline,
-    }));
-
-    return [
-      {
-        id: 'Planned Progress',
-        color: '#111827', // Deep Charcoal
-        data: plannedData,
-      },
-      {
-        id: 'Actual Progress',
-        color: '#059669', // Vibrant Emerald
-        data: actualData,
-      },
-      {
-        id: 'Baseline',
-        color: '#9ca3af', // Slate Neutral
-        data: baselineData,
-      },
-    ];
-  }, [sCurveData]);
-
-  // --- Today Marker for Chart ---
-  const todayMarker = useMemo(() => {
-    if (!sCurveData.points || sCurveData.points.length === 0) {
-      return [];
-    }
-
-    const today = new Date();
-    const startDate = sCurveData.startDate;
-    const duration = sCurveData.duration;
-
-    const daysFromStart = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 3600 * 24));
-
-    if (daysFromStart >= 0 && daysFromStart < duration) {
-      return [
+    return {
+      labels,
+      datasets: [
         {
-          axis: 'x' as const,
-          value: `Day ${daysFromStart + 1}`,
-          lineStyle: {
-            stroke: '#059669', // Orange
-            strokeWidth: 2,
-            strokeDasharray: '5,5',
-          },
-          textStyle: {
-            fill: '#059669',
-            fontSize: 12,
-            fontWeight: 'bold',
-          },
-          legend: 'Today',
-          legendPosition: 'top' as const,
+          label: t.legend_planned_progress || 'Rencana (Planned S-Curve)',
+          data: planned,
+          borderColor: '#6366f1', // Indigo
+          backgroundColor: 'rgba(99, 102, 241, 0.08)',
+          borderWidth: 3,
+          borderDash: [5, 5],
+          tension: 0.35,
+          pointRadius: 0,
+          pointHoverRadius: 6,
+          fill: true,
         },
-      ];
-    }
+        {
+          label: t.legend_actual_progress || 'Realisasi Aktual (Actual)',
+          data: actual,
+          borderColor: '#10b981', // Emerald
+          backgroundColor: 'rgba(16, 185, 129, 0.15)',
+          borderWidth: 3.5,
+          tension: 0.3,
+          pointRadius: 0,
+          pointHoverRadius: 7,
+          pointHoverBackgroundColor: '#10b981',
+          fill: true,
+        },
+        {
+          label: t.baseline_progress || 'Baseline Linear',
+          data: baseline,
+          borderColor: '#94a3b8', // Slate
+          borderWidth: 1.5,
+          borderDash: [3, 3],
+          tension: 0,
+          pointRadius: 0,
+          fill: false,
+        },
+      ],
+    };
+  }, [sCurveData, t]);
 
-    return [];
-  }, [sCurveData]);
+  // Filtered Tasks for Table
+  const filteredTasks = useMemo(() => {
+    if (!activeProjectTasks) return [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  // --- Handlers ---
+    return activeProjectTasks.filter((task) => {
+      const matchesSearch = task.activity.toLowerCase().includes(taskSearchQuery.toLowerCase());
+
+      if (!matchesSearch) return false;
+
+      const pct = task.percent_complete || 0;
+      const plannedEnd = task.planned_end ? new Date(task.planned_end) : null;
+
+      if (taskFilter === 'completed') return pct >= 100;
+      if (taskFilter === 'overdue') return pct < 100 && plannedEnd && plannedEnd < today;
+      if (taskFilter === 'in_progress') return pct > 0 && pct < 100;
+
+      return true;
+    });
+  }, [activeProjectTasks, taskSearchQuery, taskFilter]);
+
+  // Task Actions
   const handleSaveTask = useCallback(
     (task: Omit<ProjectTask, 'id' | 'project_id'> | ProjectTask) => {
       if ('id' in task) {
         updateTask(task as ProjectTask);
+        setFeedbackMessage({ type: 'success', text: 'Tugas berhasil diperbarui!' });
       } else {
         addTask(projectId, task as Omit<ProjectTask, 'id' | 'project_id'>);
+        setFeedbackMessage({ type: 'success', text: 'Tugas baru berhasil ditambahkan!' });
       }
       setFormModalOpen(false);
       setEditingTask(null);
+      setTimeout(() => setFeedbackMessage(null), 3500);
     },
     [addTask, updateTask, projectId]
   );
@@ -683,69 +888,50 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
   const handleDeleteConfirm = useCallback(() => {
     if (deletingTaskId) {
       deleteTask(deletingTaskId);
+      setFeedbackMessage({ type: 'success', text: 'Tugas berhasil dihapus.' });
+      setTimeout(() => setFeedbackMessage(null), 3000);
     }
     setDeleteModalOpen(false);
     setDeletingTaskId(null);
   }, [deleteTask, deletingTaskId]);
 
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
-  };
-
   const handleExport = async () => {
     if (!activeProjectTasks || activeProjectTasks.length === 0) {
-      alert('No tasks to export');
+      setFeedbackMessage({ type: 'error', text: 'Tidak ada tugas untuk diekspor.' });
+      setTimeout(() => setFeedbackMessage(null), 3000);
       return;
     }
 
     setIsExporting(true);
-
     try {
       const ExcelJS = (await import('exceljs')).default;
-
-      const exportData = activeProjectTasks.map((task) => ({
-        Activity: task.activity,
-        'Planned Start': task.planned_start ? formatDate(task.planned_start) : '',
-        'Planned End': task.planned_end ? formatDate(task.planned_end) : '',
-        'Actual Start': task.actual_start ? formatDate(task.actual_start) : '',
-        'Actual End': task.actual_end ? formatDate(task.actual_end) : '',
-        'Percent Complete': task.percent_complete || 0,
-      }));
-
       const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Project Tasks');
+      const worksheet = workbook.addWorksheet('Project Detail & Tasks');
 
-      worksheet.addRow([
-        'Activity',
-        'Planned Start',
-        'Planned End',
-        'Actual Start',
-        'Actual End',
-        'Percent Complete',
-      ]);
+      worksheet.columns = [
+        { header: 'No', width: 6 },
+        { header: 'Aktivitas / Task', width: 36 },
+        { header: 'Rencana Mulai', width: 16 },
+        { header: 'Rencana Selesai', width: 16 },
+        { header: 'Realisasi Mulai', width: 16 },
+        { header: 'Realisasi Selesai', width: 16 },
+        { header: 'Progress (%)', width: 14 },
+      ];
 
-      exportData.forEach((row) => {
+      activeProjectTasks.forEach((task, idx) => {
         worksheet.addRow([
-          row.Activity,
-          row['Planned Start'],
-          row['Planned End'],
-          row['Actual Start'],
-          row['Actual End'],
-          row['Percent Complete'],
+          idx + 1,
+          task.activity,
+          task.planned_start ? formatDate(task.planned_start) : '',
+          task.planned_end ? formatDate(task.planned_end) : '',
+          task.actual_start ? formatDate(task.actual_start) : '',
+          task.actual_end ? formatDate(task.actual_end) : '',
+          task.percent_complete || 0,
         ]);
       });
 
-      worksheet.columns = [
-        { header: 'Activity', width: 40 },
-        { header: 'Planned Start', width: 15 },
-        { header: 'Planned End', width: 15 },
-        { header: 'Actual Start', width: 15 },
-        { header: 'Actual End', width: 15 },
-        { header: 'Percent Complete', width: 15 },
-      ];
-
       const projectTitle = activeProject?.title || 'Project';
-      const filename = `${projectTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_tasks.xlsx`;
+      const filename = `Laporan_Proyek_${projectTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.xlsx`;
 
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
@@ -757,11 +943,151 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
       a.download = filename;
       a.click();
       window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Export error:', error);
-      alert('Failed to export tasks. Please try again.');
+      setFeedbackMessage({ type: 'success', text: 'Laporan Excel berhasil diunduh!' });
+      setTimeout(() => setFeedbackMessage(null), 3000);
+    } catch {
+      setFeedbackMessage({ type: 'error', text: 'Gagal mengekspor laporan.' });
+      setTimeout(() => setFeedbackMessage(null), 3000);
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleExportPDF = useCallback(async () => {
+    if (!activeProject) return;
+
+    setIsExportingPDF(true);
+    try {
+      setFeedbackMessage({ type: 'success', text: 'Menyiapkan dokumen PDF eksekutif...' });
+
+      // Capture S-Curve chart base64 image if available
+      let sCurveImage: string | null = null;
+      if (sCurveChartRef.current) {
+        try {
+          if (typeof sCurveChartRef.current.toBase64Image === 'function') {
+            sCurveImage = sCurveChartRef.current.toBase64Image('image/png', 1.0);
+          } else if (
+            sCurveChartRef.current.canvas &&
+            typeof sCurveChartRef.current.canvas.toDataURL === 'function'
+          ) {
+            sCurveImage = sCurveChartRef.current.canvas.toDataURL('image/png', 1.0);
+          }
+        } catch (err) {
+          console.warn('Could not export S-Curve image:', err);
+        }
+      }
+
+      const pdfData: ProjectDetailPDFData = {
+        projectTitle: activeProject.title,
+        projectDescription: activeProject.description,
+        budget: activeProject.budget || 0,
+        projectStatus: performanceMetrics.projectStatus,
+        healthScore: performanceMetrics.healthScore,
+        healthGrade: performanceMetrics.healthGrade,
+        overallProgress: performanceMetrics.overallProgress,
+        plannedProgress: performanceMetrics.plannedProgress,
+        deviation: performanceMetrics.deviation,
+        spi: performanceMetrics.spi,
+        duration: projectOverview.duration || 0,
+        daysElapsed: performanceMetrics.daysElapsed,
+        daysRemaining: performanceMetrics.daysRemaining,
+        startDateFormatted: projectOverview.startDate ? formatDate(projectOverview.startDate) : '-',
+        endDateFormatted: projectOverview.endDate ? formatDate(projectOverview.endDate) : '-',
+        predictedCompletionFormatted: performanceMetrics.predictedCompletion
+          ? formatDate(performanceMetrics.predictedCompletion)
+          : '',
+        totalTasks: projectOverview.totalTasks,
+        completedTasks: projectOverview.completedTasks,
+        inProgressTasks: projectOverview.inProgressTasks,
+        overdueTasks: projectOverview.overdueTasks,
+        sCurveImage,
+        tasks: (activeProjectTasks || []).map((t_item) => ({
+          activity: t_item.activity,
+          plannedStart: t_item.planned_start ? formatDate(t_item.planned_start) : '-',
+          plannedEnd: t_item.planned_end ? formatDate(t_item.planned_end) : '-',
+          actualStart: t_item.actual_start ? formatDate(t_item.actual_start) : '-',
+          actualEnd: t_item.actual_end ? formatDate(t_item.actual_end) : '-',
+          percentComplete: t_item.percent_complete || 0,
+          status:
+            (t_item.percent_complete || 0) >= 100
+              ? 'Selesai'
+              : t_item.planned_end &&
+                  new Date(t_item.planned_end) < new Date() &&
+                  (t_item.percent_complete || 0) < 100
+                ? 'Terlambat'
+                : (t_item.percent_complete || 0) > 0
+                  ? 'Berjalan'
+                  : 'Belum Mulai',
+        })),
+      };
+
+      await exportProjectDetailReportToPDF(pdfData, t);
+      setFeedbackMessage({ type: 'success', text: 'Laporan PDF eksekutif berhasil diunduh!' });
+      setTimeout(() => setFeedbackMessage(null), 3500);
+    } catch (err) {
+      console.error('Failed to export PDF:', err);
+      window.print();
+    } finally {
+      setIsExportingPDF(false);
+    }
+  }, [activeProject, performanceMetrics, projectOverview, activeProjectTasks, t]);
+
+  const parseTasksFromRawRows = useCallback(
+    (rows: (string | number | null)[][], formatPref: DateFormatPreference) => {
+      if (rows.length < 2) return [];
+
+      const mapping = detectExcelColumnMapping(rows[0] || []);
+      const parsedTasks: Omit<ProjectTask, 'id' | 'project_id'>[] = [];
+
+      const toYmd = (d: Date | null): string | null => {
+        if (!d || isNaN(d.getTime())) return null;
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row) continue;
+
+        const activityRaw = row[mapping.activityCol];
+        const activity = extractCellString(activityRaw);
+        if (!activity) continue;
+
+        const rawProgress = row[mapping.progressCol];
+        let percentComplete = 0;
+        if (typeof rawProgress === 'number') {
+          percentComplete = rawProgress <= 1 && rawProgress > 0 ? rawProgress * 100 : rawProgress;
+        } else {
+          const strProg = extractCellString(rawProgress).replace('%', '').trim();
+          percentComplete = parseFloat(strProg) || 0;
+        }
+
+        const plannedStart = parseExcelDateWithFormat(row[mapping.plannedStartCol], formatPref);
+        const plannedEnd = parseExcelDateWithFormat(row[mapping.plannedEndCol], formatPref);
+        const actualStart = parseExcelDateWithFormat(row[mapping.actualStartCol], formatPref);
+        const actualEnd = parseExcelDateWithFormat(row[mapping.actualEndCol], formatPref);
+
+        parsedTasks.push({
+          activity,
+          planned_start: toYmd(plannedStart),
+          planned_end: toYmd(plannedEnd),
+          percent_complete: Math.max(0, Math.min(100, Math.round(percentComplete))),
+          actual_start: toYmd(actualStart),
+          actual_end: toYmd(actualEnd),
+        });
+      }
+      return parsedTasks;
+    },
+    []
+  );
+
+  const handleToggleDateFormat = (formatPref: DateFormatPreference) => {
+    setSelectedDateFormat(formatPref);
+    if (rawImportData.length > 0) {
+      const updatedTasks = parseTasksFromRawRows(rawImportData, formatPref);
+      setPendingImportTasks(updatedTasks);
     }
   };
 
@@ -770,7 +1096,6 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
     if (!file) return;
 
     setIsImporting(true);
-
     try {
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -780,133 +1105,73 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
           await workbook.xlsx.load(arrayBuffer);
 
           const worksheet = workbook.worksheets[0];
-
           const jsonData: (string | number | null)[][] = [];
           worksheet.eachRow((row) => {
             jsonData.push(row.values as (string | number | null)[]);
           });
 
           if (jsonData.length < 2) {
-            alert('Excel file must contain at least a header row and one data row');
+            setFeedbackMessage({ type: 'error', text: 'Berkas Excel tidak memiliki baris data.' });
+            setTimeout(() => setFeedbackMessage(null), 3000);
             setIsImporting(false);
             return;
           }
 
-          const headers = jsonData[0] as string[];
-          const expectedHeaders = [
-            'Activity',
-            'Planned Start',
-            'Planned End',
-            'Actual Start',
-            'Actual End',
-            'Percent Complete',
+          // Dynamically map columns from header row
+          const mapping = detectExcelColumnMapping(jsonData[0] || []);
+          const dateCols = [
+            mapping.plannedStartCol,
+            mapping.plannedEndCol,
+            mapping.actualStartCol,
+            mapping.actualEndCol,
           ];
 
-          const normalizedHeaders = headers.map((h) => h?.toString().trim());
-          const hasValidHeaders = expectedHeaders.every((expected) =>
-            normalizedHeaders.some((header) => header.toLowerCase() === expected.toLowerCase())
-          );
+          // Auto-detect date format from sheet data
+          const detectResult = detectSheetDateFormat(jsonData, dateCols);
+          setDetectedDateFormatInfo(detectResult);
+          setSelectedDateFormat(detectResult.detectedFormat);
+          setRawImportData(jsonData);
 
-          if (!hasValidHeaders) {
-            alert(`Invalid Excel format. Expected columns: ${expectedHeaders.join(', ')}`);
-            setIsImporting(false);
-            return;
-          }
-
-          const parsedTasks: Omit<ProjectTask, 'id' | 'project_id'>[] = [];
-          for (let i = 1; i < jsonData.length; i++) {
-            const row = jsonData[i] as (string | number | null)[];
-
-            if (!row[1]) continue;
-
-            const activity = row[1]?.toString().trim();
-            const percentComplete =
-              typeof row[6] === 'number' ? row[6] : parseFloat(row[6]?.toString() || '0') || 0;
-
-            if (!activity) {
-              alert(`Row ${i + 1}: Activity is required`);
-              setIsImporting(false);
-              return;
-            }
-
-            const plannedStart = parseExcelDate(row[2]);
-            const plannedEnd = parseExcelDate(row[3]);
-            const actualStart = parseExcelDate(row[4]);
-            const actualEnd = parseExcelDate(row[5]);
-
-            if (row[2] && !plannedStart) {
-              alert(`Row ${i + 1}: Invalid Planned Start date format`);
-              setIsImporting(false);
-              return;
-            }
-            if (row[3] && !plannedEnd) {
-              alert(`Row ${i + 1}: Invalid Planned End date format`);
-              setIsImporting(false);
-              return;
-            }
-            if (row[4] && !actualStart) {
-              alert(`Row ${i + 1}: Invalid Actual Start date format`);
-              setIsImporting(false);
-              return;
-            }
-            if (row[5] && !actualEnd) {
-              alert(`Row ${i + 1}: Invalid Actual End date format`);
-              setIsImporting(false);
-              return;
-            }
-
-            if (percentComplete < 0 || percentComplete > 100) {
-              alert(`Row ${i + 1}: Percent Complete must be between 0 and 100`);
-              setIsImporting(false);
-              return;
-            }
-
-            parsedTasks.push({
-              activity,
-              planned_start: plannedStart ? plannedStart.toISOString().split('T')[0] : null,
-              planned_end: plannedEnd ? plannedEnd.toISOString().split('T')[0] : null,
-              percent_complete: percentComplete,
-              actual_start: actualStart ? actualStart.toISOString().split('T')[0] : null,
-              actual_end: actualEnd ? actualEnd.toISOString().split('T')[0] : null,
-            });
-          }
+          const parsedTasks = parseTasksFromRawRows(jsonData, detectResult.detectedFormat);
 
           if (parsedTasks.length === 0) {
-            alert('No valid tasks found in the Excel file');
+            setFeedbackMessage({ type: 'error', text: 'Tidak ada baris tugas yang valid.' });
+            setTimeout(() => setFeedbackMessage(null), 3000);
             setIsImporting(false);
             return;
           }
 
           setPendingImportTasks(parsedTasks);
           setImportConfirmModalOpen(true);
-        } catch (parseError) {
-          console.error('Parse error:', parseError);
-          alert('Failed to parse Excel file. Please check the format and try again.');
+        } catch {
+          setFeedbackMessage({ type: 'error', text: 'Format Excel tidak valid.' });
+          setTimeout(() => setFeedbackMessage(null), 3000);
         } finally {
           setIsImporting(false);
         }
       };
-
       reader.readAsArrayBuffer(file);
-    } catch (error) {
-      console.error('Import error:', error);
-      alert('Failed to read file. Please try again.');
+    } catch {
       setIsImporting(false);
     }
-
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleConfirmImport = () => {
     replaceBulkTasks(projectId, pendingImportTasks);
     setImportConfirmModalOpen(false);
+    setRawImportData([]);
     setPendingImportTasks([]);
+    setFeedbackMessage({ type: 'success', text: 'Import tugas berhasil disimpan!' });
+    announceToScreenReader('Tasks imported successfully');
+    setTimeout(() => setFeedbackMessage(null), 3000);
   };
 
   const handleEditProject = () => {
     if (activeProject) {
       setEditingProjectData({
         title: activeProject.title,
+        description: activeProject.description || '',
         budget: activeProject.budget || 0,
       });
       setProjectEditMode(true);
@@ -914,389 +1179,755 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
   };
 
   const handleSaveProject = () => {
-    if (activeProject && editingProjectData) {
+    if (activeProject && editingProjectData.title.trim()) {
       const updatedProject: Project = {
         ...activeProject,
-        title: editingProjectData.title,
+        title: editingProjectData.title.trim(),
+        description: editingProjectData.description.trim(),
         budget: editingProjectData.budget,
       };
       updateProject(updatedProject);
       setProjectEditMode(false);
+      setFeedbackMessage({ type: 'success', text: 'Detail proyek berhasil diperbarui.' });
+      setTimeout(() => setFeedbackMessage(null), 3000);
     }
   };
 
-  const handleCancelProjectEdit = () => {
-    setProjectEditMode(false);
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
-      <div className="w-full">
-        {/* Option B Header */}
-        <div className="bg-secondary-900 border-b border-secondary-800 px-4 py-6 sm:px-6 lg:px-8 shadow-md">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 max-w-[1400px] mx-auto">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-4 mb-2">
-                <h1
-                  className="text-2xl sm:text-3xl font-display font-bold text-white truncate leading-tight"
-                  role="heading"
-                  aria-level={1}
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans transition-colors pb-16">
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* Executive Command Header */}
+      {/* ───────────────────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-30 bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-800 shadow-lg px-4 py-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            {/* Breadcrumb Navigation */}
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-1.5">
+              {onNavigateBack && (
+                <button
+                  onClick={onNavigateBack}
+                  className="hover:text-white flex items-center gap-1 group transition-colors"
+                  aria-label="Kembali ke Daftar Proyek"
                 >
-                  {activeProject?.title || t.project_details}
-                </h1>
-                <span
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                    performanceMetrics.projectStatus === t.proj_status_completed
-                      ? 'bg-success-600 text-white'
-                      : performanceMetrics.projectStatus === t.proj_status_delayed
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-blue-600 text-white'
-                  }`}
-                >
-                  {performanceMetrics.projectStatus}
-                </span>
-              </div>
-              <p className="text-secondary-200/80 text-lg flex items-center gap-2">
-                <span className="font-bold text-white">{projectOverview.totalTasks}</span> Tasks
-                <span className="w-1 h-1 rounded-full bg-secondary-400"></span>
-                <span className="font-bold text-white">{projectOverview.duration}</span> Days
-              </p>
+                  <ChevronLeftIcon className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+                  <span>Daftar Proyek</span>
+                </button>
+              )}
+              <span>/</span>
+              <span className="text-indigo-400 truncate max-w-xs sm:max-w-md">
+                {activeProject?.title || 'Detail Proyek'}
+              </span>
             </div>
 
+            {/* Title & Status Badges */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight truncate">
+                {activeProject?.title || t.project_details || 'Detail Proyek'}
+              </h1>
+
+              {/* Status Pill with Pulsing Dot */}
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold tracking-wide uppercase shadow-sm border ${
+                  performanceMetrics.statusKey === 'completed'
+                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40'
+                    : performanceMetrics.statusKey === 'delayed'
+                      ? 'bg-rose-500/15 text-rose-300 border-rose-500/40'
+                      : performanceMetrics.statusKey === 'ahead'
+                        ? 'bg-teal-500/15 text-teal-300 border-teal-500/40'
+                        : 'bg-indigo-500/15 text-indigo-300 border-indigo-500/40'
+                }`}
+              >
+                <span
+                  className={`w-2 h-2 rounded-full animate-ping ${
+                    performanceMetrics.statusKey === 'completed'
+                      ? 'bg-emerald-400'
+                      : performanceMetrics.statusKey === 'delayed'
+                        ? 'bg-rose-400'
+                        : 'bg-indigo-400'
+                  }`}
+                />
+                {performanceMetrics.projectStatus}
+              </span>
+
+              {/* Health Score Pill */}
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-800/80 text-slate-200 border border-slate-700/80 shadow-sm">
+                <ShieldCheckIcon className="w-4 h-4 text-emerald-400" />
+                <span>
+                  Kesehatan: {performanceMetrics.healthScore}% ({performanceMetrics.healthGrade})
+                </span>
+              </span>
+            </div>
+          </div>
+
+          {/* Action Command Center */}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {/* Executive Presentation Mode Button */}
+            <button
+              onClick={() => setIsPresentationMode(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 shadow-md shadow-indigo-500/25 border border-indigo-400/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              title="Tampilkan ringkasan eksekutif berlayar penuh untuk rapat manajemen"
+            >
+              <PresentationChartLineIcon className="w-4 h-4" />
+              <span>Mode Presentasi</span>
+            </button>
+
+            {/* Export PDF Button */}
+            <EnhancedButton
+              onClick={handleExportPDF}
+              variant="secondary"
+              size="sm"
+              disabled={isExportingPDF}
+              className="bg-slate-800/90 hover:bg-slate-700 text-slate-200 border-slate-700 rounded-xl px-3.5 py-2 font-semibold text-xs"
+              aria-label="Cetak / Simpan Laporan PDF Eksekutif"
+            >
+              <DocumentArrowDownIcon className="w-4 h-4 mr-1.5 text-rose-400" />
+              <span>{isExportingPDF ? 'Menyiapkan PDF...' : 'PDF'}</span>
+            </EnhancedButton>
+
+            {/* Export Excel Button */}
+            <EnhancedButton
+              onClick={handleExport}
+              variant="secondary"
+              size="sm"
+              disabled={isExporting}
+              className="bg-slate-800/90 hover:bg-slate-700 text-slate-200 border-slate-700 rounded-xl px-3.5 py-2 font-semibold text-xs"
+              aria-label="Ekspor Laporan Excel"
+            >
+              <DocumentArrowDownIcon className="w-4 h-4 mr-1.5 text-emerald-400" />
+              <span>Excel</span>
+            </EnhancedButton>
+
             {canWrite && (
-              <div className="flex flex-wrap gap-3">
+              <>
                 <EnhancedButton
                   onClick={handleEditProject}
-                  variant="custom"
-                  className="bg-secondary-800 hover:bg-secondary-700 text-white border border-secondary-700 shadow-sm rounded-xl px-4 py-2"
-                  aria-label={t.edit_project}
+                  variant="secondary"
+                  size="sm"
+                  className="bg-slate-800/90 hover:bg-slate-700 text-slate-200 border-slate-700 rounded-xl px-3.5 py-2 font-semibold text-xs"
+                  aria-label="Edit Detail Proyek"
                 >
-                  <EditIcon className="w-4 h-4 mr-2" aria-hidden="true" />
-                  <span>{t.edit_project || 'Edit Project'}</span>
+                  <EditIcon className="w-4 h-4 mr-1.5 text-slate-300" />
+                  <span>Edit</span>
                 </EnhancedButton>
+
                 <EnhancedButton
-                  onClick={() => setFormModalOpen(true)}
-                  variant="custom"
-                  className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-600/30 rounded-xl px-5 py-2 font-bold"
-                  aria-label={t.add_task}
+                  onClick={() => {
+                    setEditingTask(null);
+                    setFormModalOpen(true);
+                  }}
+                  variant="primary"
+                  size="sm"
+                  className="bg-primary-600 hover:bg-primary-500 text-white rounded-xl px-4 py-2 font-bold text-xs shadow-md shadow-primary-600/30"
+                  aria-label="Tambah Tugas Baru"
                 >
-                  <PlusIcon className="w-5 h-5 mr-2" aria-hidden="true" />
-                  <span>{t.add_task || 'Add Task'}</span>
+                  <PlusIcon className="w-4 h-4 mr-1.5" />
+                  <span>Tambah Task</span>
                 </EnhancedButton>
-              </div>
+              </>
             )}
           </div>
         </div>
+      </header>
 
-        <div className="px-4 py-8 sm:px-6 lg:px-8 max-w-[1400px] mx-auto space-y-8">
-          {loading ? (
-            <LoadingSpinner />
-          ) : (
-            <>
-              {/* Project Main Metrics Card */}
-              <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-secondary-900 rounded-3xl shadow-xl shadow-secondary-900/20">
-                <div className="absolute top-0 right-0 p-12 opacity-10 transform translate-x-10 -translate-y-10">
-                  <PresentationChartLineIcon className="w-64 h-64 text-white" />
+      {/* Feedback Toast Banner */}
+      {feedbackMessage && (
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mt-4 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div
+            className={`px-4 py-3 rounded-2xl flex items-center justify-between shadow-lg border text-sm font-semibold ${
+              feedbackMessage.type === 'success'
+                ? 'bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-800'
+                : 'bg-rose-50 dark:bg-rose-950/80 text-rose-800 dark:text-rose-200 border-rose-300 dark:border-rose-800'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              {feedbackMessage.type === 'success' ? (
+                <CheckBadgeIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              ) : (
+                <ExclamationTriangleIcon className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+              )}
+              <span>{feedbackMessage.text}</span>
+            </div>
+            <button
+              onClick={() => setFeedbackMessage(null)}
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            >
+              <XMarkIcon className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content Body */}
+      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
+        {loading ? (
+          <LoadingSpinner />
+        ) : (
+          <>
+            {/* ───────────────────────────────────────────────────────────── */}
+            {/* 1. Executive Hero KPI & Earned Value Section */}
+            {/* ───────────────────────────────────────────────────────────── */}
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white shadow-2xl border border-indigo-500/20 p-6 sm:p-8">
+              {/* Background ambient lighting */}
+              <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none transform translate-x-1/3 -translate-y-1/3" />
+              <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none transform -translate-x-1/3 translate-y-1/3" />
+
+              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                {/* Left Column: Big Overall Progress & Deviation */}
+                <div className="lg:col-span-5 flex flex-col justify-center border-b lg:border-b-0 lg:border-r border-white/10 pb-6 lg:pb-0 lg:pr-8">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs font-black uppercase tracking-widest text-indigo-300">
+                      PROGRESS KUMULATIF PROYEK
+                    </span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  </div>
+
+                  <div className="flex items-baseline gap-4 my-2">
+                    <span className="text-5xl sm:text-6xl font-black text-white tracking-tight">
+                      {performanceMetrics.overallProgress.toFixed(1)}%
+                    </span>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-semibold text-slate-300">Target Kurva:</span>
+                      <span className="text-lg font-bold text-indigo-300">
+                        {performanceMetrics.plannedProgress.toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Dual Layer Progress Bar */}
+                  <div className="w-full bg-slate-950/60 rounded-full h-3.5 p-0.5 border border-white/10 overflow-hidden shadow-inner my-3 relative">
+                    {/* Planned Target Marker */}
+                    <div
+                      className="absolute top-0 bottom-0 bg-indigo-400/40 rounded-full transition-all duration-500"
+                      style={{ width: `${performanceMetrics.plannedProgress}%` }}
+                    />
+                    {/* Actual Progress Gradient Bar */}
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 shadow-md transition-all duration-700 relative z-10"
+                      style={{ width: `${performanceMetrics.overallProgress}%` }}
+                    />
+                  </div>
+
+                  {/* Variance Callout */}
+                  <div className="flex items-center justify-between text-xs mt-1">
+                    <span className="text-slate-300 font-medium">Deviasi Jadwal:</span>
+                    <span
+                      className={`font-black flex items-center gap-1 ${
+                        performanceMetrics.deviation > 0
+                          ? 'text-emerald-400'
+                          : performanceMetrics.deviation < 0
+                            ? 'text-rose-400'
+                            : 'text-slate-300'
+                      }`}
+                    >
+                      {performanceMetrics.deviation > 0 ? (
+                        <ArrowTrendingUpIcon className="w-4 h-4" />
+                      ) : (
+                        <ArrowTrendingDownIcon className="w-4 h-4" />
+                      )}
+                      {performanceMetrics.deviation > 0 ? '+' : ''}
+                      {performanceMetrics.deviation.toFixed(1)}% ({performanceMetrics.projectStatus}
+                      )
+                    </span>
+                  </div>
                 </div>
 
-                <div className="relative p-8">
-                  <div className="flex flex-col gap-8">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md">
-                        <PresentationChartLineIcon className="w-8 h-8 text-primary-400" />
-                      </div>
-                      <div>
-                        <h2 className="text-2xl font-bold text-white mb-1">Project Overview</h2>
-                        <p className="text-secondary-200">
-                          Real-time insights and progress tracking
-                        </p>
-                      </div>
+                {/* Right Column: 4-Grid Strategic Executive Metrics */}
+                <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-2 gap-4">
+                  {/* Metric 1: SPI Index */}
+                  <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/10 transition-colors">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                        Indeks Kinerja (SPI)
+                      </span>
+                      <CheckBadgeIcon className="w-4 h-4 text-indigo-400" />
                     </div>
+                    <p className="text-2xl sm:text-3xl font-black text-white">
+                      {performanceMetrics.spi.toFixed(2)}
+                    </p>
+                    <p className="text-[11px] text-indigo-200 mt-1 font-medium">
+                      {performanceMetrics.spi >= 1.0
+                        ? '🟢 Sesuai / Lebih Cepat'
+                        : '🔴 Perlu Akselerasi'}
+                    </p>
+                  </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                      {/* Metric Items */}
-                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-colors">
-                        <div className="flex items-center gap-3 mb-2">
-                          <ClipboardDocumentListIcon className="w-5 h-5 text-secondary-300" />
-                          <span className="text-secondary-200 text-sm font-medium uppercase tracking-wider">
-                            {t.total_tasks || 'Total Tasks'}
-                          </span>
-                        </div>
-                        <p className="text-3xl font-bold text-white">
-                          {projectOverview.totalTasks}
-                        </p>
-                      </div>
+                  {/* Metric 2: Timeline Days */}
+                  <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/10 transition-colors">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                        Durasi & Timeline
+                      </span>
+                      <CalendarDaysIcon className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <p className="text-2xl sm:text-3xl font-black text-white">
+                      {projectOverview.duration}{' '}
+                      <span className="text-sm font-normal text-slate-300">Hari</span>
+                    </p>
+                    <p className="text-[11px] text-emerald-300 mt-1 font-medium truncate">
+                      {performanceMetrics.daysRemaining} hari tersisa
+                    </p>
+                  </div>
 
-                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-colors">
-                        <div className="flex items-center gap-3 mb-2">
-                          <CalendarDaysIcon className="w-5 h-5 text-green-400" />
-                          <span className="text-secondary-200 text-sm font-medium uppercase tracking-wider">
-                            {t.project_duration || 'Duration'}
-                          </span>
-                        </div>
-                        <p className="text-3xl font-bold text-white">
-                          {projectOverview.duration}{' '}
-                          <span className="text-lg font-normal text-secondary-300">Days</span>
-                        </p>
-                      </div>
+                  {/* Metric 3: Budget Allocation */}
+                  <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/10 transition-colors">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                        Alokasi Anggaran
+                      </span>
+                      <CurrencyDollarIcon className="w-4 h-4 text-amber-400" />
+                    </div>
+                    <p
+                      className="text-xl sm:text-2xl font-black text-white truncate"
+                      title={formatRupiah(projectOverview.budget)}
+                    >
+                      {formatRupiah(projectOverview.budget)}
+                    </p>
+                    <p className="text-[11px] text-amber-200/90 mt-1 font-medium">
+                      Estimasi Biaya Proyek
+                    </p>
+                  </div>
 
-                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-colors">
-                        <div className="flex items-center gap-3 mb-2">
-                          <CurrencyDollarIcon className="w-5 h-5 text-yellow-400" />
-                          <span className="text-secondary-200 text-sm font-medium uppercase tracking-wider">
-                            {t.project_budget || 'Budget'}
-                          </span>
-                        </div>
-                        <p className="text-2xl font-bold text-white">
-                          {formatRupiah(projectOverview.budget)}
-                        </p>
-                      </div>
-
-                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-colors">
-                        <div className="flex items-center gap-3 mb-2">
-                          <ChartPieIcon className="w-5 h-5 text-primary-400" />
-                          <span className="text-secondary-200 text-sm font-medium uppercase tracking-wider">
-                            {t.overall_progress || 'Progress'}
-                          </span>
-                        </div>
-                        <div className="flex items-end gap-2">
-                          <p className="text-3xl font-bold text-white">
-                            {performanceMetrics.overallProgress.toFixed(1)}%
-                          </p>
-                          <div className="w-full bg-secondary-900/50 h-2 rounded-full mb-2 ml-2 flex-1 overflow-hidden">
-                            <div
-                              className="h-full bg-primary-500 rounded-full"
-                              style={{ width: `${performanceMetrics.overallProgress}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      </div>
+                  {/* Metric 4: Task Distribution Breakdown */}
+                  <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/10 transition-colors">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                        Status Tugas
+                      </span>
+                      <ChartPieIcon className="w-4 h-4 text-purple-400" />
+                    </div>
+                    <p className="text-2xl sm:text-3xl font-black text-white">
+                      {projectOverview.completedTasks} / {projectOverview.totalTasks}
+                    </p>
+                    <div className="flex items-center gap-1.5 text-[10px] text-slate-300 mt-1">
+                      <span className="text-emerald-400 font-bold">
+                        {projectOverview.completedTasks} Done
+                      </span>
+                      <span>•</span>
+                      <span className="text-rose-400 font-bold">
+                        {projectOverview.overdueTasks} Overdue
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Performance & Charts Layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Column: Metrics */}
-                <div className="space-y-6">
-                  <div className="bg-white rounded-2xl shadow-medium border border-slate-200 p-6">
-                    <h3 className="text-lg font-bold text-secondary-900 mb-4 flex items-center gap-2">
-                      <Bars4Icon className="w-5 h-5 text-primary-600" />
-                      Performance Metrics
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm text-slate-500 font-medium">Deviation</span>
-                          {performanceMetrics.deviation > 0 ? (
-                            <ArrowTrendingUpIcon className="w-4 h-4 text-green-600" />
-                          ) : (
-                            <ArrowTrendingDownIcon className="w-4 h-4 text-primary-600" /> // Orange for delay
-                          )}
-                        </div>
-                        <p
-                          className={`text-2xl font-bold ${performanceMetrics.deviation < -5 ? 'text-primary-600' : 'text-slate-800'}`}
-                        >
-                          {performanceMetrics.deviation > 0 ? '+' : ''}
-                          {performanceMetrics.deviation.toFixed(1)}%
-                        </p>
-                        <p className="text-xs text-slate-400 mt-1">
-                          {performanceMetrics.deviation > 5
-                            ? 'Ahead of Schedule'
-                            : performanceMetrics.deviation < -5
-                              ? 'Behind Schedule'
-                              : 'On Track'}
-                        </p>
-                      </div>
-
-                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm text-slate-500 font-medium">
-                            Predicted Completion
-                          </span>
-                          <CheckBadgeIcon className="w-4 h-4 text-blue-500" />
-                        </div>
-                        <p className="text-lg font-bold text-slate-800">
-                          {performanceMetrics.predictedCompletion
-                            ? formatDate(performanceMetrics.predictedCompletion)
-                            : 'Calculating...'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+            {/* ───────────────────────────────────────────────────────────── */}
+            {/* 2. Smart Executive AI & Health Insights Panel */}
+            {/* ───────────────────────────────────────────────────────────── */}
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400">
+                  <ShieldCheckIcon className="w-5 h-5" />
                 </div>
-
-                {/* Right Column: Charts */}
-                <div className="lg:col-span-2">
-                  <div className="bg-white rounded-2xl shadow-medium border border-slate-200 p-6 h-full">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-lg font-bold text-secondary-900">Project Timeline</h3>
-                      <div className="flex bg-slate-100 p-1 rounded-xl">
-                        <button
-                          onClick={() => setChartView('s-curve')}
-                          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${chartView === 's-curve' ? 'bg-white text-secondary-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                        >
-                          S-Curve
-                        </button>
-                        <button
-                          onClick={() => setChartView('gantt')}
-                          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${chartView === 'gantt' ? 'bg-white text-secondary-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                        >
-                          Gantt
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="h-[400px]">
-                      <Suspense fallback={<LoadingSpinner />}>
-                        {chartView === 's-curve' ? (
-                          <div className="h-full w-full relative">
-                            <Line
-                              data={{
-                                labels: nivoSCurveData[0]?.data.map((d) => d.x) || [],
-                                datasets: nivoSCurveData.map((series) => ({
-                                  label: series.id,
-                                  data: series.data.map((d) => d.y),
-                                  borderColor: series.color,
-                                  backgroundColor: series.color,
-                                  borderWidth: 2,
-                                  tension: 0.4,
-                                  pointRadius: 0,
-                                  pointHoverRadius: 6,
-                                })),
-                              }}
-                              options={{
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                  legend: {
-                                    position: 'top',
-                                    align: 'end',
-                                    labels: { usePointStyle: true, boxWidth: 8 },
-                                  },
-                                },
-                                scales: {
-                                  y: {
-                                    beginAtZero: true,
-                                    max: 100,
-                                    grid: { color: '#f1f5f9' },
-                                  },
-                                  x: {
-                                    grid: { display: false },
-                                  },
-                                },
-                              }}
-                            />
-                          </div>
-                        ) : (
-                          <div className="h-full overflow-auto">
-                            <GanttChart
-                              tasks={activeProjectTasks || []}
-                              startDate={sCurveData.startDate}
-                              duration={projectOverview.duration}
-                              t={t}
-                            />
-                          </div>
-                        )}
-                      </Suspense>
-                    </div>
-                  </div>
+                <div>
+                  <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                    Executive Briefing & Strategic Insights
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Analisis performa otomatis untuk kesiapan laporan rapat manajemen
+                  </p>
                 </div>
               </div>
 
-              {/* Tasks Table Section */}
-              <div className="bg-white rounded-2xl shadow-medium border border-slate-200 overflow-hidden">
-                <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-secondary-900">Project Tasks</h3>
-                  <div className="flex gap-2">
-                    {canWrite && (
-                      <EnhancedButton
-                        onClick={handleImportClick}
-                        variant="secondary"
-                        size="sm"
-                        className="border-slate-200 text-slate-600 hover:text-primary-600"
-                      >
-                        <DocumentArrowUpIcon className="w-4 h-4 mr-2" />
-                        Import
-                      </EnhancedButton>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Insight 1 */}
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-800">
+                  <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1">
+                    <span>🎯 Ringkasan Eksekutif</span>
+                  </div>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                    Proyek saat ini berada dalam status{' '}
+                    <strong className="text-slate-900 dark:text-white font-bold">
+                      {performanceMetrics.projectStatus}
+                    </strong>{' '}
+                    dengan deviasi kurva{' '}
+                    <strong className="text-indigo-600 dark:text-indigo-400">
+                      {performanceMetrics.deviation > 0 ? '+' : ''}
+                      {performanceMetrics.deviation}%
+                    </strong>
+                    .
+                  </p>
+                </div>
+
+                {/* Insight 2 */}
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-800">
+                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1">
+                    <span>⏱️ Estimasi Penyelesaian</span>
+                  </div>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                    Berdasarkan kecepatan kerja aktual, proyek diproyeksikan tuntas pada{' '}
+                    <strong className="text-slate-900 dark:text-white font-bold">
+                      {performanceMetrics.predictedCompletion
+                        ? formatDate(performanceMetrics.predictedCompletion)
+                        : projectOverview.endDate
+                          ? formatDate(projectOverview.endDate)
+                          : 'Sesuai Jadwal'}
+                    </strong>
+                    .
+                  </p>
+                </div>
+
+                {/* Insight 3 */}
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-800">
+                  <div className="flex items-center gap-2 text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">
+                    <span>⚠️ Early Warning System</span>
+                  </div>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                    {projectOverview.overdueTasks > 0 ? (
+                      <span className="text-rose-600 dark:text-rose-400 font-bold">
+                        Terdapat {projectOverview.overdueTasks} aktivitas melewati batas waktu
+                        rencana yang memerlukan percepatan.
+                      </span>
+                    ) : (
+                      'Seluruh aktivitas berjalan aman tanpa indikasi keterlambatan kritis.'
                     )}
+                  </p>
+                </div>
+
+                {/* Insight 4 */}
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-800">
+                  <div className="flex items-center gap-2 text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider mb-1">
+                    <span>💡 Rekomendasi Aksi</span>
+                  </div>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                    {performanceMetrics.statusKey === 'delayed'
+                      ? 'Lakukan relokasi sumber daya pada task prioritas untuk mengejar ketertinggalan kurva.'
+                      : 'Pertahankan ritme kerja dan pantau milestone mingguan agar tetap pada target kurva.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* ───────────────────────────────────────────────────────────── */}
+            {/* 3. Timeline & Curve Visualization Hub (Tabbed) */}
+            {/* ───────────────────────────────────────────────────────────── */}
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4 mb-6">
+                <div>
+                  <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <PresentationChartLineIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    <span>Visualisasi Progress & Jadwal Proyek</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Evaluasi komprehensif antara Kurva-S dan diagram alur kerja Gantt
+                  </p>
+                </div>
+
+                {/* Tab Switcher */}
+                <div
+                  role="tablist"
+                  className="flex bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80"
+                >
+                  <button
+                    role="tab"
+                    aria-selected={chartView === 's-curve'}
+                    onClick={() => setChartView('s-curve')}
+                    className={`px-5 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 ${
+                      chartView === 's-curve'
+                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-md shadow-slate-200 dark:shadow-none'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <PresentationChartLineIcon className="w-4 h-4" />
+                    <span>Kurva-S Pro</span>
+                  </button>
+                  <button
+                    role="tab"
+                    aria-selected={chartView === 'gantt'}
+                    onClick={() => setChartView('gantt')}
+                    className={`px-5 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 ${
+                      chartView === 'gantt'
+                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-md shadow-slate-200 dark:shadow-none'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <Bars4Icon className="w-4 h-4" />
+                    <span>Gantt Chart Timeline</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Chart Content Area */}
+              <div className="min-h-[400px]">
+                <Suspense fallback={<LoadingSpinner />}>
+                  {chartView === 's-curve' ? (
+                    <div className="h-[420px] w-full relative">
+                      <Line
+                        ref={sCurveChartRef}
+                        data={chartJSData}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          interaction: {
+                            mode: 'index',
+                            intersect: false,
+                          },
+                          plugins: {
+                            legend: {
+                              position: 'top',
+                              align: 'end',
+                              labels: {
+                                usePointStyle: true,
+                                boxWidth: 8,
+                                font: { weight: 'bold', size: 12 },
+                                color: '#64748b',
+                              },
+                            },
+                            tooltip: {
+                              backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                              titleColor: '#ffffff',
+                              bodyColor: '#e2e8f0',
+                              padding: 12,
+                              cornerRadius: 12,
+                              boxPadding: 6,
+                              usePointStyle: true,
+                            },
+                          },
+                          scales: {
+                            y: {
+                              beginAtZero: true,
+                              max: 100,
+                              title: {
+                                display: true,
+                                text: 'Persentase Kumulatif (%)',
+                                color: '#94a3b8',
+                                font: { size: 11, weight: 'bold' },
+                              },
+                              grid: { color: 'rgba(148, 163, 184, 0.12)' },
+                              ticks: { color: '#94a3b8' },
+                            },
+                            x: {
+                              title: {
+                                display: true,
+                                text: 'Timeline Proyek',
+                                color: '#94a3b8',
+                                font: { size: 11, weight: 'bold' },
+                              },
+                              grid: { display: false },
+                              ticks: { color: '#94a3b8', maxRotation: 45 },
+                            },
+                          },
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="py-2">
+                      <ModernGanttChart
+                        tasks={activeProjectTasks || []}
+                        startDate={sCurveData.startDate}
+                        duration={projectOverview.duration}
+                        t={t}
+                      />
+                    </div>
+                  )}
+                </Suspense>
+              </div>
+            </div>
+
+            {/* ───────────────────────────────────────────────────────────── */}
+            {/* 4. Executive Tasks Management Table */}
+            {/* ───────────────────────────────────────────────────────────── */}
+            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+              {/* Header & Controls */}
+              <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-black text-slate-900 dark:text-white">
+                    Daftar Aktivitas & Deliverables
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Menampilkan rincian pengerjaan dan status persentase setiap aktivitas
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  {/* Search Bar */}
+                  <div className="relative min-w-[220px]">
+                    <MagnifyingGlassIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={taskSearchQuery}
+                      onChange={(e) => setTaskSearchQuery(e.target.value)}
+                      placeholder="Cari aktivitas..."
+                      className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                    />
+                  </div>
+
+                  {/* Filter Chips */}
+                  <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                    <button
+                      onClick={() => setTaskFilter('all')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        taskFilter === 'all'
+                          ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                          : 'text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
+                      Semua ({activeProjectTasks.length})
+                    </button>
+                    <button
+                      onClick={() => setTaskFilter('in_progress')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        taskFilter === 'in_progress'
+                          ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
+                          : 'text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
+                      Aktif ({projectOverview.inProgressTasks})
+                    </button>
+                    <button
+                      onClick={() => setTaskFilter('overdue')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        taskFilter === 'overdue'
+                          ? 'bg-white dark:bg-slate-700 text-rose-600 dark:text-rose-300 shadow-sm'
+                          : 'text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
+                      Terlambat ({projectOverview.overdueTasks})
+                    </button>
+                    <button
+                      onClick={() => setTaskFilter('completed')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        taskFilter === 'completed'
+                          ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-300 shadow-sm'
+                          : 'text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
+                      Selesai ({projectOverview.completedTasks})
+                    </button>
+                  </div>
+
+                  {canWrite && (
                     <EnhancedButton
-                      onClick={handleExport}
+                      onClick={() => fileInputRef.current?.click()}
                       variant="secondary"
                       size="sm"
-                      className="border-slate-200 text-slate-600 hover:text-green-600"
+                      disabled={isImporting}
+                      className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold"
+                      aria-label="Import Excel"
                     >
-                      <DocumentArrowDownIcon className="w-4 h-4 mr-2" />
-                      Export
+                      <DocumentArrowUpIcon className="w-4 h-4 mr-1 text-indigo-500" />
+                      <span>Import</span>
                     </EnhancedButton>
-                  </div>
+                  )}
                 </div>
+              </div>
 
-                {activeProjectTasks && activeProjectTasks.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-slate-100">
-                      <thead className="bg-secondary-800 dark:bg-secondary-900 border-b border-secondary-700">
-                        <tr>
-                          <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
-                            {t.task_activity}
+              {/* Table Render */}
+              {filteredTasks.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
+                    <thead className="bg-slate-800 dark:bg-slate-950 text-white">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-wider">
+                          Aktivitas / Deliverables
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-wider">
+                          Rencana Mulai
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-wider">
+                          Rencana Selesai
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-wider">
+                          Progress Pengerjaan
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-wider">
+                          Status
+                        </th>
+                        {canWrite && (
+                          <th className="px-6 py-4 text-right text-xs font-extrabold uppercase tracking-wider">
+                            Aksi
                           </th>
-                          <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
-                            {t.task_planned_start}
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
-                            {t.task_planned_end}
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
-                            {t.task_percent_complete}
-                          </th>
-                          {canWrite && (
-                            <th className="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-wider">
-                              {t.actions}
-                            </th>
-                          )}
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-slate-100">
-                        {activeProjectTasks.map((task) => (
-                          <tr key={task.id} className="hover:bg-slate-50 transition-colors">
-                            <td className="px-6 py-4 text-sm font-medium text-slate-900">
-                              {task.activity}
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800/80 text-sm">
+                      {filteredTasks.map((task) => {
+                        const pct = task.percent_complete || 0;
+                        const isDone = pct >= 100;
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const plannedEnd = task.planned_end ? new Date(task.planned_end) : null;
+                        const isOverdue = plannedEnd && plannedEnd < today && !isDone;
+
+                        return (
+                          <tr
+                            key={task.id}
+                            className="hover:bg-indigo-50/40 dark:hover:bg-slate-800/60 transition-colors"
+                          >
+                            <td className="px-6 py-4">
+                              <span
+                                className="font-bold text-slate-900 dark:text-white block max-w-sm truncate"
+                                title={task.activity}
+                              >
+                                {task.activity}
+                              </span>
                             </td>
-                            <td className="px-6 py-4 text-sm text-slate-500">
+                            <td className="px-6 py-4 text-slate-600 dark:text-slate-400 font-medium">
                               {formatDate(task.planned_start)}
                             </td>
-                            <td className="px-6 py-4 text-sm text-slate-500">
+                            <td className="px-6 py-4 text-slate-600 dark:text-slate-400 font-medium">
                               {formatDate(task.planned_end)}
                             </td>
-                            <td className="px-6 py-4 text-sm">
-                              <div className="flex items-center gap-2">
-                                <div className="w-full bg-slate-100 rounded-full h-1.5 max-w-[100px]">
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 max-w-[120px] overflow-hidden shadow-inner">
                                   <div
-                                    className={`h-1.5 rounded-full ${task.percent_complete >= 100 ? 'bg-success-500' : 'bg-primary-500'}`}
-                                    style={{ width: `${task.percent_complete}%` }}
-                                  ></div>
+                                    className={`h-full rounded-full transition-all duration-500 ${
+                                      isDone
+                                        ? 'bg-emerald-500'
+                                        : isOverdue
+                                          ? 'bg-rose-500'
+                                          : 'bg-indigo-600'
+                                    }`}
+                                    style={{ width: `${pct}%` }}
+                                  />
                                 </div>
-                                <span className="text-slate-600 font-medium">
-                                  {task.percent_complete}%
+                                <span className="font-black text-xs text-slate-800 dark:text-slate-200">
+                                  {pct}%
                                 </span>
                               </div>
                             </td>
+                            <td className="px-6 py-4">
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase ${
+                                  isDone
+                                    ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                    : isOverdue
+                                      ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                                      : pct > 0
+                                        ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800'
+                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                }`}
+                              >
+                                {isDone
+                                  ? 'Selesai'
+                                  : isOverdue
+                                    ? 'Terlambat'
+                                    : pct > 0
+                                      ? 'Berjalan'
+                                      : 'Belum Mulai'}
+                              </span>
+                            </td>
                             {canWrite && (
-                              <td className="px-6 py-4 text-right text-sm font-medium">
-                                <div className="flex justify-end gap-2">
+                              <td className="px-6 py-4 text-right">
+                                <div className="flex justify-end gap-1">
                                   <button
                                     onClick={() => {
                                       setEditingTask(task);
                                       setFormModalOpen(true);
                                     }}
-                                    className="text-slate-400 hover:text-primary-600 p-1"
+                                    className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                                    title="Edit Tugas"
+                                    aria-label={`Edit ${task.activity}`}
                                   >
                                     <EditIcon className="w-4 h-4" />
                                   </button>
                                   <button
                                     onClick={() => handleOpenDeleteModal(task.id)}
-                                    className="text-slate-400 hover:text-red-600 p-1"
+                                    className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                                    title="Hapus Tugas"
+                                    aria-label={`Hapus ${task.activity}`}
                                   >
                                     <TrashIcon className="w-4 h-4" />
                                   </button>
@@ -1304,175 +1935,573 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                               </td>
                             )}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="py-16 px-6 text-center">
+                  <ClipboardDocumentListIcon className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                  <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
+                    Tidak ada aktivitas yang sesuai kriteria pencarian
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
+                    Coba reset kata kunci pencarian atau ubah filter status di atas.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Hidden Input for Excel Import */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImport}
+              accept=".xlsx,.xls"
+              className="hidden"
+              aria-label="Upload file Excel proyek"
+            />
+          </>
+        )}
+      </main>
+
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* 5. Fullscreen Executive Presentation Mode Modal */}
+      {/* ───────────────────────────────────────────────────────────── */}
+      {isPresentationMode && (
+        <div className="fixed inset-0 z-50 bg-slate-950 text-white overflow-y-auto p-6 sm:p-10 animate-in fade-in zoom-in-95 duration-200">
+          <div className="max-w-[1440px] mx-auto space-y-8">
+            {/* Top Deck Bar */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-6">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">
+                  <span>EXECUTIVE MANAGEMENT BRIEFING DECK</span>
+                  <span>•</span>
+                  <span>CONFIDENTIAL</span>
+                </div>
+                <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+                  {activeProject?.title}
+                </h1>
+                <p className="text-slate-400 text-sm mt-1">
+                  {activeProject?.description || 'Laporan Eksekutif Perkembangan Proyek'}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleExportPDF}
+                  disabled={isExportingPDF}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl border border-indigo-400/30 transition-all flex items-center gap-2 shadow-lg shadow-indigo-600/30"
+                  title="Cetak / Simpan Dokumen Laporan PDF Eksekutif Resmi"
+                >
+                  <DocumentArrowDownIcon className="w-4 h-4 text-white" />
+                  <span>{isExportingPDF ? 'Menyiapkan PDF...' : 'Cetak / Simpan PDF'}</span>
+                </button>
+                <button
+                  onClick={() => setIsPresentationMode(false)}
+                  className="p-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-rose-600/30"
+                  title="Tutup Mode Presentasi (ESC)"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* 4 Big Presentation KPI Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Overall Progress
+                </span>
+                <p className="text-5xl font-black text-emerald-400 my-2">
+                  {performanceMetrics.overallProgress.toFixed(1)}%
+                </p>
+                <span className="text-xs text-slate-300 font-medium">
+                  Target Kurva: {performanceMetrics.plannedProgress.toFixed(1)}%
+                </span>
+              </div>
+
+              <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Status & Deviasi
+                </span>
+                <p className="text-3xl font-black text-indigo-300 my-3">
+                  {performanceMetrics.projectStatus}
+                </p>
+                <span className="text-xs text-slate-300 font-medium">
+                  Deviasi: {performanceMetrics.deviation > 0 ? '+' : ''}
+                  {performanceMetrics.deviation}%
+                </span>
+              </div>
+
+              <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Project Health Score
+                </span>
+                <p className="text-5xl font-black text-indigo-400 my-2">
+                  {performanceMetrics.healthScore}%
+                </p>
+                <span className="text-xs text-slate-300 font-medium">
+                  Kategori: {performanceMetrics.healthGrade}
+                </span>
+              </div>
+
+              <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Total Anggaran
+                </span>
+                <p
+                  className="text-2xl font-black text-amber-400 my-3 truncate"
+                  title={formatRupiah(projectOverview.budget)}
+                >
+                  {formatRupiah(projectOverview.budget)}
+                </p>
+                <span className="text-xs text-slate-300 font-medium">
+                  Durasi: {projectOverview.duration} Hari
+                </span>
+              </div>
+            </div>
+
+            {/* Big S-Curve in Presentation Mode */}
+            <div className="bg-slate-900 rounded-3xl p-8 border border-slate-800 shadow-2xl">
+              <h3 className="text-xl font-bold text-white mb-4">Analisis Kurva-S Eksekutif</h3>
+              <div className="h-[420px] w-full">
+                <Line
+                  data={chartJSData}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        position: 'top',
+                        labels: { color: '#cbd5e1', font: { size: 13, weight: 'bold' } },
+                      },
+                    },
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: 'rgba(255, 255, 255, 0.08)' },
+                        ticks: { color: '#94a3b8' },
+                      },
+                      x: {
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8' },
+                      },
+                    },
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* 6. Form & Action Modals */}
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* Add / Edit Task Modal */}
+      {isFormModalOpen && (
+        <Modal
+          isOpen={isFormModalOpen}
+          onClose={() => {
+            setFormModalOpen(false);
+            setEditingTask(null);
+          }}
+          title={editingTask ? t.edit_task || 'Edit Task' : t.add_task || 'Tambah Task Baru'}
+        >
+          <ProjectTaskForm
+            taskToEdit={editingTask}
+            onSave={handleSaveTask}
+            onCancel={() => {
+              setFormModalOpen(false);
+              setEditingTask(null);
+            }}
+            t={t}
+          />
+        </Modal>
+      )}
+
+      {/* Delete Task Modal */}
+      {isDeleteModalOpen && (
+        <Modal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
+          title={t.confirm_delete || 'Konfirmasi Hapus Task'}
+        >
+          <div className="space-y-6 text-slate-800 dark:text-slate-100 p-2">
+            <div className="flex items-start gap-4 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50">
+              <div className="p-2.5 bg-white dark:bg-slate-800 rounded-full text-rose-600 dark:text-rose-400 shadow-sm shrink-0">
+                <TrashIcon className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-rose-900 dark:text-rose-200 text-base">
+                  Peringatan Penghapusan
+                </h3>
+                <p className="text-xs text-rose-800/90 dark:text-rose-300/80 mt-1 leading-relaxed">
+                  Apakah Anda yakin ingin menghapus aktivitas ini? Tindakan ini tidak dapat
+                  dibatalkan.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <EnhancedButton
+                onClick={() => setDeleteModalOpen(false)}
+                variant="secondary"
+                size="md"
+                className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl px-5 py-2.5 font-semibold"
+              >
+                {t.cancel || 'Batal'}
+              </EnhancedButton>
+              <EnhancedButton
+                onClick={handleDeleteConfirm}
+                variant="error"
+                size="md"
+                className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl px-5 py-2.5 font-bold shadow-md shadow-rose-600/30"
+              >
+                {t.delete || 'Hapus Aktivitas'}
+              </EnhancedButton>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Import Tasks Modal with Smart Date Format Selector & Live Preview */}
+      {isImportConfirmModalOpen && (
+        <Modal
+          isOpen={isImportConfirmModalOpen}
+          onClose={() => {
+            setImportConfirmModalOpen(false);
+            setRawImportData([]);
+            setPendingImportTasks([]);
+          }}
+          title={t.confirm_import || 'Konfirmasi Import Tugas Proyek'}
+          maxWidth="4xl"
+        >
+          <div className="space-y-5 text-slate-800 dark:text-slate-100 p-1">
+            {/* Header info & Date Format Configuration */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-slate-800/90 dark:to-indigo-950/50 border border-indigo-100 dark:border-indigo-900/60">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-indigo-600 text-white shadow-sm">
+                    <CalendarDaysIcon className="w-5 h-5" />
                   </div>
-                ) : (
-                  <div className="text-center py-16 bg-slate-50/50">
-                    <ClipboardDocumentListIcon className="mx-auto h-16 w-16 text-slate-300" />
-                    <h3 className="mt-4 text-lg font-bold text-slate-900">{t.no_tasks_found}</h3>
-                    <p className="mt-2 text-slate-500 max-w-sm mx-auto">
-                      {t.get_started_by_creating_a_task ||
-                        'Get started by creating your first task for this project.'}
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900 dark:text-white">
+                      Pilihan Format Tanggal Excel
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Sistem mampu membedakan format hari-bulan (DD/MM) vs bulan-hari (MM/DD)
                     </p>
-                    {canWrite && (
-                      <div className="mt-8">
-                        <EnhancedButton
-                          onClick={() => setFormModalOpen(true)}
-                          variant="custom"
-                          className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-600/20 rounded-xl px-6 py-2.5 font-bold"
-                        >
-                          <PlusIcon className="w-5 h-5 mr-2" />
-                          {t.add_first_task || 'Add New Task'}
-                        </EnhancedButton>
-                      </div>
-                    )}
                   </div>
+                </div>
+
+                {detectedDateFormatInfo.hasEvidence && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                    <CheckBadgeIcon className="w-3.5 h-3.5" />
+                    <span>Format Terdeteksi Otomatis</span>
+                  </span>
                 )}
               </div>
 
-              {/* Hidden file input for import */}
+              {/* Segmented Format Switcher */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                <button
+                  type="button"
+                  onClick={() => handleToggleDateFormat('DD/MM/YYYY')}
+                  className={`p-3 rounded-xl border text-left transition-all relative ${
+                    selectedDateFormat === 'DD/MM/YYYY'
+                      ? 'bg-white dark:bg-slate-900 border-indigo-500 ring-2 ring-indigo-500/20 shadow-md text-indigo-950 dark:text-white'
+                      : 'bg-white/60 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black tracking-wide">DD / MM / YYYY</span>
+                    {selectedDateFormat === 'DD/MM/YYYY' && (
+                      <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
+                    )}
+                  </div>
+                  <p className="text-[11px] mt-1 text-slate-500 dark:text-slate-400">
+                    Hari / Bulan / Tahun (Standar Indonesia & Internasional)
+                  </p>
+                  <p className="text-[10px] mt-1 font-mono text-indigo-600 dark:text-indigo-400 font-bold">
+                    Contoh: 25/08/2026 ➔ 25 Agustus 2026
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleToggleDateFormat('MM/DD/YYYY')}
+                  className={`p-3 rounded-xl border text-left transition-all relative ${
+                    selectedDateFormat === 'MM/DD/YYYY'
+                      ? 'bg-white dark:bg-slate-900 border-indigo-500 ring-2 ring-indigo-500/20 shadow-md text-indigo-950 dark:text-white'
+                      : 'bg-white/60 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black tracking-wide">MM / DD / YYYY</span>
+                    {selectedDateFormat === 'MM/DD/YYYY' && (
+                      <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
+                    )}
+                  </div>
+                  <p className="text-[11px] mt-1 text-slate-500 dark:text-slate-400">
+                    Bulan / Hari / Tahun (Standar Format US)
+                  </p>
+                  <p className="text-[10px] mt-1 font-mono text-indigo-600 dark:text-indigo-400 font-bold">
+                    Contoh: 08/25/2026 ➔ 25 Agustus 2026
+                  </p>
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Metrics Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs px-1">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-slate-700 dark:text-slate-300">
+                  Pratinjau Hasil Parsing:
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/80 font-bold text-indigo-700 dark:text-indigo-300 text-[11px] border border-indigo-200 dark:border-indigo-800">
+                  {pendingImportTasks.length} Tugas Ditemukan
+                </span>
+              </div>
+              <span className="text-amber-600 dark:text-amber-400 font-medium text-[11px]">
+                ⚠️ Import ini akan menggantikan seluruh daftar tugas aktif proyek
+              </span>
+            </div>
+
+            {/* Scrollable Tasks Preview Table */}
+            <div className="max-h-72 overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 font-bold uppercase tracking-wider text-[10px] sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700">
+                  <tr>
+                    <th className="px-3 py-2.5 text-center w-10">No</th>
+                    <th className="px-3 py-2.5">Aktivitas / Task</th>
+                    <th className="px-3 py-2.5">Rencana Mulai</th>
+                    <th className="px-3 py-2.5">Rencana Selesai</th>
+                    <th className="px-3 py-2.5">Realisasi Mulai</th>
+                    <th className="px-3 py-2.5">Realisasi Selesai</th>
+                    <th className="px-3 py-2.5 text-center">Progress</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-slate-900">
+                  {pendingImportTasks.map((task, idx) => (
+                    <tr
+                      key={idx}
+                      className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
+                    >
+                      <td className="px-3 py-2 text-center text-slate-400 font-mono">{idx + 1}</td>
+                      <td className="px-3 py-2 font-bold text-slate-800 dark:text-slate-200 max-w-[200px] truncate">
+                        {task.activity}
+                      </td>
+                      <td className="px-3 py-2">
+                        {task.planned_start ? (
+                          <span className="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-semibold text-[11px]">
+                            {formatDate(task.planned_start)}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2">
+                        {task.planned_end ? (
+                          <span className="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-semibold text-[11px]">
+                            {formatDate(task.planned_end)}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2">
+                        {task.actual_start ? (
+                          <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold text-[11px]">
+                            {formatDate(task.actual_start)}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2">
+                        {task.actual_end ? (
+                          <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold text-[11px]">
+                            {formatDate(task.actual_end)}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[11px]">
+                          {task.percent_complete}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <EnhancedButton
+                onClick={() => {
+                  setImportConfirmModalOpen(false);
+                  setRawImportData([]);
+                  setPendingImportTasks([]);
+                }}
+                variant="secondary"
+                size="md"
+                className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl px-5 py-2.5 font-semibold"
+              >
+                {t.cancel || 'Batal'}
+              </EnhancedButton>
+              <EnhancedButton
+                onClick={handleConfirmImport}
+                variant="primary"
+                size="md"
+                className="bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-6 py-2.5 font-bold shadow-md shadow-primary-600/30"
+              >
+                {t.import || 'Simpan & Terapkan Import'} ({pendingImportTasks.length} Task)
+              </EnhancedButton>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Project Edit Quick Modal */}
+      {isProjectEditMode && (
+        <Modal
+          isOpen={isProjectEditMode}
+          onClose={() => setProjectEditMode(false)}
+          title={t.edit_project || 'Edit Rincian Proyek'}
+        >
+          <div className="p-2 space-y-4 text-slate-800 dark:text-slate-100">
+            <div>
+              <label
+                htmlFor="quick-edit-project-title"
+                className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5 uppercase tracking-wider"
+              >
+                Nama / Judul Proyek <span className="text-rose-500">*</span>
+              </label>
               <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleImport}
-                accept=".xlsx,.xls"
-                className="hidden"
+                type="text"
+                id="quick-edit-project-title"
+                value={editingProjectData.title}
+                onChange={(e) =>
+                  setEditingProjectData({
+                    ...editingProjectData,
+                    title: e.target.value,
+                  })
+                }
+                maxLength={100}
+                required
+                className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
-
-              {/* Modals using generic styling, could be enhanced further */}
-              {isFormModalOpen && (
-                <Modal
-                  isOpen={isFormModalOpen}
-                  onClose={() => {
-                    setFormModalOpen(false);
-                    setEditingTask(null);
-                  }}
-                  title={editingTask ? t.edit_task : t.add_task}
-                >
-                  <ProjectTaskForm
-                    taskToEdit={editingTask}
-                    onSave={handleSaveTask}
-                    onCancel={() => {
-                      setFormModalOpen(false);
-                      setEditingTask(null);
-                    }}
-                    t={t}
-                  />
-                </Modal>
-              )}
-
-              {isDeleteModalOpen && (
-                <Modal
-                  isOpen={isDeleteModalOpen}
-                  onClose={() => setDeleteModalOpen(false)}
-                  title={t.confirm_delete}
-                >
-                  <div className="p-6">
-                    <p className="text-slate-700 mb-6 font-medium">
-                      {t.confirm_delete_task_message}
-                    </p>
-                    <div className="flex justify-end gap-3">
-                      <EnhancedButton onClick={() => setDeleteModalOpen(false)} variant="secondary">
-                        {t.cancel}
-                      </EnhancedButton>
-                      <EnhancedButton onClick={handleDeleteConfirm} variant="error">
-                        {t.delete}
-                      </EnhancedButton>
-                    </div>
-                  </div>
-                </Modal>
-              )}
-
-              {isImportConfirmModalOpen && (
-                <Modal
-                  isOpen={isImportConfirmModalOpen}
-                  onClose={() => setImportConfirmModalOpen(false)}
-                  title={t.confirm_import}
-                >
-                  <div className="p-6">
-                    <p className="text-slate-700 mb-6">
-                      {(
-                        t.confirm_import_message ||
-                        'Are you sure you want to import {count} tasks? This will replace all existing tasks.'
-                      ).replace('{count}', pendingImportTasks.length.toString())}
-                    </p>
-                    <div className="flex justify-end gap-3">
-                      <EnhancedButton
-                        onClick={() => setImportConfirmModalOpen(false)}
-                        variant="secondary"
-                      >
-                        {t.cancel}
-                      </EnhancedButton>
-                      <EnhancedButton onClick={handleConfirmImport} variant="primary">
-                        {t.import}
-                      </EnhancedButton>
-                    </div>
-                  </div>
-                </Modal>
-              )}
-
-              {isProjectEditMode && (
-                <Modal
-                  isOpen={isProjectEditMode}
-                  onClose={handleCancelProjectEdit}
-                  title={t.edit_project}
-                >
-                  <div className="p-6">
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">
-                          {t.project_title}
-                        </label>
-                        <input
-                          type="text"
-                          value={editingProjectData.title}
-                          onChange={(e) =>
-                            setEditingProjectData({
-                              ...editingProjectData,
-                              title: e.target.value,
-                            })
-                          }
-                          className="w-full px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all font-medium"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">
-                          {t.project_budget}
-                        </label>
-                        <input
-                          type="number"
-                          value={editingProjectData.budget}
-                          onChange={(e) =>
-                            setEditingProjectData({
-                              ...editingProjectData,
-                              budget: parseFloat(e.target.value) || 0,
-                            })
-                          }
-                          className="w-full px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all font-medium"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex justify-end gap-3 mt-8">
-                      <EnhancedButton onClick={handleCancelProjectEdit} variant="secondary">
-                        {t.cancel}
-                      </EnhancedButton>
-                      <EnhancedButton
-                        onClick={handleSaveProject}
-                        variant="primary"
-                        className="bg-primary-600 hover:bg-primary-700 text-white"
-                      >
-                        {t.save}
-                      </EnhancedButton>
-                    </div>
-                  </div>
-                </Modal>
-              )}
-            </>
-          )}
-        </div>
-      </div>
+            </div>
+            <div>
+              <label
+                htmlFor="quick-edit-project-description"
+                className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5 uppercase tracking-wider"
+              >
+                Deskripsi / Scope Proyek
+              </label>
+              <textarea
+                id="quick-edit-project-description"
+                rows={3}
+                value={editingProjectData.description}
+                onChange={(e) =>
+                  setEditingProjectData({
+                    ...editingProjectData,
+                    description: e.target.value,
+                  })
+                }
+                maxLength={500}
+                className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="quick-edit-project-budget"
+                className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5 uppercase tracking-wider"
+              >
+                Total Anggaran Proyek (Rp)
+              </label>
+              <input
+                type="number"
+                id="quick-edit-project-budget"
+                value={editingProjectData.budget}
+                onChange={(e) =>
+                  setEditingProjectData({
+                    ...editingProjectData,
+                    budget: Math.max(0, parseFloat(e.target.value) || 0),
+                  })
+                }
+                min="0"
+                step="100000"
+                className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 mt-6">
+              <EnhancedButton
+                onClick={() => setProjectEditMode(false)}
+                variant="secondary"
+                size="md"
+                className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl px-5 py-2.5 font-semibold"
+              >
+                {t.cancel || 'Batal'}
+              </EnhancedButton>
+              <EnhancedButton
+                onClick={handleSaveProject}
+                variant="primary"
+                size="md"
+                className="bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-6 py-2.5 font-bold shadow-md shadow-primary-600/30"
+              >
+                {t.save || 'Simpan Perubahan'}
+              </EnhancedButton>
+            </div>
+          </div>
+        </Modal>
+      )}
+      {/* Print Media Styles */}
+      <style>{`
+        @media print {
+          @page {
+            size: A4 landscape;
+            margin: 10mm;
+          }
+          body {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          header, nav, aside, button, input, .no-print {
+            display: none !important;
+          }
+          .shadow-xl, .shadow-2xl, .shadow-md, .shadow-sm {
+            box-shadow: none !important;
+          }
+          .bg-gradient-to-br, .bg-slate-900, .bg-slate-950 {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+          }
+          .text-white {
+            color: #0f172a !important;
+          }
+          .text-slate-300, .text-slate-400, .text-slate-500 {
+            color: #475569 !important;
+          }
+          table {
+            border-collapse: collapse !important;
+            width: 100% !important;
+          }
+          th, td {
+            border: 1px solid #cbd5e1 !important;
+            color: #0f172a !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

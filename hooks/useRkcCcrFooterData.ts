@@ -58,11 +58,11 @@ export const useRkcCcrFooterData = () => {
     };
 
     // Check if record already exists for this date and parameter_id
-    // Use date as-is (YYYY-MM-DD format)
+    // Parameter ID is globally unique to a specific parameter setting, so matching date and parameter_id is exact and cleans up legacy plant_unit mismatches
     const existingRecords = await safeApiCall(
       () =>
         pb.collection('rkc_ccr_footer_data').getFullList({
-          filter: `date="${footerData.date}" && parameter_id="${footerData.parameter_id}" && plant_unit="${footerData.plant_unit || 'RKC'}"`,
+          filter: `date="${footerData.date}" && parameter_id="${footerData.parameter_id}"`,
         }),
       { retries: 3, retryDelay: 3000, handleNetworkChange: true }
     );
@@ -149,6 +149,27 @@ export const useRkcCcrFooterData = () => {
     return records || [];
   }, []);
 
+  const getFooterDataForDateRange = useCallback(
+    async (startDate: string, endDate: string, plantUnit?: string) => {
+      let filter = `date >= "${startDate}" && date <= "${endDate}"`;
+      if (plantUnit && plantUnit !== 'all') {
+        filter += ` && plant_unit="${plantUnit}"`;
+      }
+      const records = await safeApiCall(
+        () =>
+          pb.collection('rkc_ccr_footer_data').getFullList({
+            filter,
+            fields:
+              'id,parameter_id,date,plant_unit,total,average,minimum,maximum,shift1_total,shift1_average,shift1_counter,shift2_total,shift2_average,shift2_counter,shift3_total,shift3_average,shift3_counter,shift3_cont_total,shift3_cont_average,shift3_cont_counter',
+          }),
+        { retries: 2, retryDelay: 2000 }
+      );
+
+      return (records || []) as unknown as CcrFooterData[];
+    },
+    []
+  );
+
   const deleteFooterData = useCallback(
     async (date: string, parameterId: string, plantUnit?: string) => {
       // Use date as-is (YYYY-MM-DD format)
@@ -177,6 +198,7 @@ export const useRkcCcrFooterData = () => {
     saveFooterData,
     batchSaveFooterData,
     getFooterDataForDate,
+    getFooterDataForDateRange,
     deleteFooterData,
   };
 };

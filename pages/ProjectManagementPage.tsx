@@ -50,7 +50,13 @@ const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
       return <ProjectListPage t={t} onNavigateToDetail={handleSelectProjectAndNavigate} />;
     case 'proj_detail':
       if (selectedProjectId) {
-        return <ProjectDetailPage t={t} projectId={selectedProjectId} />;
+        return (
+          <ProjectDetailPage
+            t={t}
+            projectId={selectedProjectId}
+            onNavigateBack={() => onNavigate('proj_list')}
+          />
+        );
       }
       // If no project is selected, default to showing the list page.
       return <ProjectListPage t={t} onNavigateToDetail={handleSelectProjectAndNavigate} />;
@@ -60,5 +66,3 @@ const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
 };
 
 export default ProjectManagementPage;
-
-

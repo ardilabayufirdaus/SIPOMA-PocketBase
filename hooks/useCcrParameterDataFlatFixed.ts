@@ -264,8 +264,6 @@ export const useCcrParameterDataFlat = () => {
     async (date: string, plantUnit?: string): Promise<CcrParameterDataFlat[]> => {
       // Enhanced validation for date parameter
       if (
-        paramsLoading ||
-        parameters.length === 0 ||
         !date ||
         typeof date !== 'string' ||
         date.trim() === '' ||
@@ -302,10 +300,23 @@ export const useCcrParameterDataFlat = () => {
           return [];
         }
 
+        // Get parameters (fallback to direct fetch if not loaded yet)
+        let currentParams = parameters;
+        if (currentParams.length === 0) {
+          try {
+            const fetched = await safeApiCall(() =>
+              pb.collection('parameter_settings').getFullList({ sort: 'parameter' })
+            );
+            if (fetched) currentParams = fetched as unknown as ParameterSetting[];
+          } catch {
+            // ignore
+          }
+        }
+
         // Filter parameters based on plant unit if specified
-        let filteredParameters = parameters;
+        let filteredParameters = currentParams;
         if (plantUnit && plantUnit !== 'all') {
-          filteredParameters = parameters.filter((param) => param.unit === plantUnit);
+          filteredParameters = currentParams.filter((param) => param.unit === plantUnit);
         }
 
         // Try to get data from IndexedDB first (offline support)
@@ -349,7 +360,7 @@ export const useCcrParameterDataFlat = () => {
             });
 
             // Cache the fresh data
-            await storeData(STORES.CCR_PARAMETERS, freshData);
+            storeData(STORES.CCR_PARAMETERS, freshData).catch(() => {});
 
             return freshData;
           } catch (serverError) {
@@ -393,7 +404,7 @@ export const useCcrParameterDataFlat = () => {
         setLoading(false);
       }
     },
-    [parameters, paramsLoading, processRecord, setLoading, setError, isOnline]
+    [parameters, processRecord, setLoading, setError, isOnline]
   );
 
   const getDataForDatePaginated = useCallback(

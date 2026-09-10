@@ -548,25 +548,21 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   );
 
   useEffect(() => {
-    // Initial data fetch with force refresh to ensure fresh data
-    setLoading(true);
-    fetchSiloData(true).then(() => setLoading(false));
+    if (selectedDate && selectedCategory && selectedUnit) {
+      fetchSiloData(true);
+    }
 
-    // Counter to track poll count for occasional force refresh
     let pollCount = 0;
-
-    // OPTIMIZED: Polling interval increased from 5s to 15s for better performance
     const pollInterval = setInterval(() => {
       if (document.visibilityState === 'visible') {
-        // Every 3rd poll (45 seconds), do a force refresh to ensure UI matches DB
         const shouldForceRefresh = pollCount % 3 === 0;
         fetchSiloData(shouldForceRefresh);
         pollCount++;
       }
-    }, 15000); // Optimized: 15s polling interval (was 5s)
+    }, 30000); // 30s polling interval
 
     return () => clearInterval(pollInterval);
-  }, [selectedDate, selectedCategory, selectedUnit, fetchSiloData]);
+  }, [selectedDate, selectedCategory, selectedUnit, siloMasterData.length, fetchSiloData]);
 
   // Parameter Data Hooks and Filtering
   const { records: parameterSettings } = useParameterSettings();
@@ -1100,22 +1096,22 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   } = useCcrParameterDataFlat();
 
   const [dailyParameterData, setDailyParameterData] = useState<CcrParameterDataFlat[]>([]);
+  const clearDraftRef = useRef(offlineSync.clearDraft);
+  clearDraftRef.current = offlineSync.clearDraft;
 
   const fetchParameterData = useCallback(async () => {
     if (!selectedDate || selectedDate.trim() === '') {
       return;
     }
 
-    setLoading(true); // Set loading state before fetching data
+    setLoading(true);
 
     try {
-      // Pass selectedUnit to properly filter data by unit
       const data = await getParameterDataForDate(selectedDate, selectedUnit);
       setDailyParameterData(data);
 
-      // Phase 4: Clear old draft after successful fresh data load from server
       if (data.length > 0) {
-        offlineSync.clearDraft();
+        clearDraftRef.current?.();
         setInitialDraftExists(false);
       }
     } catch {
@@ -1123,30 +1119,23 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     } finally {
       setLoading(false);
     }
-  }, [selectedDate, selectedUnit, getParameterDataForDate, showToast, offlineSync]);
+  }, [selectedDate, selectedUnit, getParameterDataForDate, showToast]);
 
-  // Pendekatan client-server standar: fetch data hanya ketika ada perubahan input
+  // Initial and reactive data fetch when filters or parameter settings change
   useEffect(() => {
-    // Initial data fetch - loading state is handled inside fetchParameterData
     if (selectedDate && selectedUnit && selectedCategory) {
       fetchParameterData();
-      // Debug logging removed for production
     }
-    // Remove fetchParameterData from dependency array to prevent infinite loops
-  }, [selectedDate, selectedUnit, selectedCategory]);
+  }, [selectedDate, selectedUnit, selectedCategory, parameterSettings.length, fetchParameterData]);
 
-  // Jika masih perlu dataVersion sebagai picu refresh (sudah diperbaiki di useCcrParameterData.ts)
-  // Menggunakan useRef untuk mencegah double fetching
   const lastDataVersion = useRef(dataVersion);
 
   useEffect(() => {
-    // Hanya refresh jika dataVersion berubah dan lebih besar dari sebelumnya
     if (dataVersion > 0 && dataVersion > lastDataVersion.current) {
-      // Debug logging removed for production
       lastDataVersion.current = dataVersion;
       fetchParameterData();
     }
-  }, [dataVersion]);
+  }, [dataVersion, fetchParameterData]);
 
   const parameterDataMap = useMemo(
     () => new Map(dailyParameterData.map((p) => [p.parameter_id, p])),
@@ -1196,7 +1185,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
     try {
       // Get footer data for counter feeders
-      const footerData = await getFooterDataForDate(selectedDate, selectedCategory);
+      const footerData = await getFooterDataForDate(selectedDate, selectedUnit || selectedCategory);
 
       // Calculate material usage from counters for each shift
       const savePromises = shifts.map(async (shift) => {
@@ -1286,27 +1275,41 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             const averageData = parameterShiftAverageData;
             const counterData = parameterShiftCounterData;
 
-            if (footerData) {
+            const hasShiftData =
+              shiftData &&
+              (shiftData.shift1[param.id] !== undefined ||
+                shiftData.shift2[param.id] !== undefined ||
+                shiftData.shift3[param.id] !== undefined ||
+                shiftData.shift3Cont[param.id] !== undefined);
+
+            const hasCounterData =
+              counterData &&
+              (counterData.shift1[param.id] !== undefined ||
+                counterData.shift2[param.id] !== undefined ||
+                counterData.shift3[param.id] !== undefined ||
+                counterData.shift3Cont[param.id] !== undefined);
+
+            if (footerData || hasShiftData || hasCounterData) {
               return {
                 date: selectedDate,
                 parameter_id: param.id,
-                plant_unit: selectedCategory || 'CCR',
-                total: footerData.total,
-                average: footerData.avg,
-                minimum: footerData.min,
-                maximum: footerData.max,
-                shift1_total: shiftData.shift1[param.id] || 0,
-                shift2_total: shiftData.shift2[param.id] || 0,
-                shift3_total: shiftData.shift3[param.id] || 0,
-                shift3_cont_total: shiftData.shift3Cont[param.id] || 0,
-                shift1_average: averageData.shift1[param.id] || 0,
-                shift2_average: averageData.shift2[param.id] || 0,
-                shift3_average: averageData.shift3[param.id] || 0,
-                shift3_cont_average: averageData.shift3Cont[param.id] || 0,
-                shift1_counter: counterData.shift1[param.id] || 0,
-                shift2_counter: counterData.shift2[param.id] || 0,
-                shift3_counter: counterData.shift3[param.id] || 0,
-                shift3_cont_counter: counterData.shift3Cont[param.id] || 0,
+                plant_unit: selectedUnit || selectedCategory || 'CCR',
+                total: footerData ? footerData.total : 0,
+                average: footerData ? footerData.avg : 0,
+                minimum: footerData ? footerData.min : 0,
+                maximum: footerData ? footerData.max : 0,
+                shift1_total: shiftData?.shift1[param.id] || 0,
+                shift2_total: shiftData?.shift2[param.id] || 0,
+                shift3_total: shiftData?.shift3[param.id] || 0,
+                shift3_cont_total: shiftData?.shift3Cont[param.id] || 0,
+                shift1_average: averageData?.shift1[param.id] || 0,
+                shift2_average: averageData?.shift2[param.id] || 0,
+                shift3_average: averageData?.shift3[param.id] || 0,
+                shift3_cont_average: averageData?.shift3Cont[param.id] || 0,
+                shift1_counter: counterData?.shift1[param.id] || 0,
+                shift2_counter: counterData?.shift2[param.id] || 0,
+                shift3_counter: counterData?.shift3[param.id] || 0,
+                shift3_cont_counter: counterData?.shift3Cont[param.id] || 0,
                 operator_id: loggedInUser?.id,
               };
             }
@@ -1317,6 +1320,14 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         if (allFooterDataToSave.length > 0) {
           // Use batch save for efficiency and to prevent parallel request flood
           await batchSaveFooterData(allFooterDataToSave);
+
+          // Clear indexedDB cache for this unit/date so COP Analysis fetches fresh data
+          try {
+            const cacheKey = `footer-data-${selectedDate}-${selectedCategory}-${selectedUnit}`;
+            await indexedDBCache.delete(cacheKey);
+          } catch {
+            // Ignore cache delete error
+          }
         }
 
         // Auto-save material usage data when footer data is saved
@@ -1329,7 +1340,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       } finally {
         footerSaveInProgress.current = false;
       }
-    }, 2000); // 2 second debounce
+    }, 1500); // 1.5 second debounce
 
     return () => clearTimeout(timer);
   }, [
