@@ -15,7 +15,11 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import { motion, AnimatePresence } from 'framer-motion';
 import { exportMultipleSheets, importMultipleSheets } from '../../utils/excelUtils';
 import { useCopParameters } from '../../hooks/useCopParameters';
-import { useCopFooterParameters } from '../../hooks/useCopFooterParameters';
+import {
+  useCopFooterParameters,
+  CopFooterParameterConfig,
+  CopFooterAggregationType,
+} from '../../hooks/useCopFooterParameters';
 import Modal from '../../components/Modal';
 import { SearchInput } from '../../components/ui/Input';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
@@ -245,33 +249,50 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
 
   // COP Footer Parameters State
   const {
+    copFooterConfigs,
     copFooterParameterIds,
+    setCopFooterConfigs,
     setCopFooterParameterIds,
     loading: copFooterParametersLoading,
     refetch: refetchCopFooterParameters,
   } = useCopFooterParameters(copFooterCategoryFilter, copFooterUnitFilter);
   const [isCopFooterModalOpen, setIsCopFooterModalOpen] = useState(false);
-  const [tempCopFooterSelection, setTempCopFooterSelection] = useState<string[]>([]);
+  const [tempCopFooterSelection, setTempCopFooterSelection] = useState<CopFooterParameterConfig[]>(
+    []
+  );
 
   const copFooterParameters = useMemo(() => {
     // Filter COP Footer Parameters by selected category and unit
     if (!copFooterCategoryFilter || !copFooterUnitFilter) return [];
-    return copFooterParameterIds
-      .map((id) => allParametersMap.get(id))
-      .filter((p): p is ParameterSetting => {
-        if (!p) return false;
-        const categoryMatch = p.category === copFooterCategoryFilter;
-        const unitMatch = p.unit === copFooterUnitFilter;
-        return categoryMatch && unitMatch;
-      });
-  }, [copFooterParameterIds, allParametersMap, copFooterCategoryFilter, copFooterUnitFilter]);
+    return copFooterConfigs
+      .map((config) => {
+        const param = allParametersMap.get(config.id);
+        if (!param) return null;
+        const categoryMatch = param.category === copFooterCategoryFilter;
+        const unitMatch = param.unit === copFooterUnitFilter;
+        if (!categoryMatch || !unitMatch) return null;
+        return {
+          ...param,
+          copFooterAggregation: config.aggregation,
+        };
+      })
+      .filter(
+        (p): p is ParameterSetting & { copFooterAggregation: CopFooterAggregationType } =>
+          p !== null
+      );
+  }, [copFooterConfigs, allParametersMap, copFooterCategoryFilter, copFooterUnitFilter]);
 
   const {
     paginatedData: paginatedCopFooterParams,
     currentPage: copFooterCurrentPage,
     totalPages: copFooterTotalPages,
     setCurrentPage: setCopFooterCurrentPage,
-  } = usePagination(copFooterParameters as ParameterSetting[], 10);
+  } = usePagination(
+    copFooterParameters as (ParameterSetting & {
+      copFooterAggregation?: CopFooterAggregationType;
+    })[],
+    10
+  );
 
   // Handlers for COP Parameters
   const handleOpenCopModal = () => {
@@ -294,21 +315,42 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
 
   // Handlers for COP Footer Parameters
   const handleOpenCopFooterModal = () => {
-    setTempCopFooterSelection([...copFooterParameterIds]);
+    setTempCopFooterSelection([...copFooterConfigs]);
     setIsCopFooterModalOpen(true);
   };
   const handleCloseCopFooterModal = () => setIsCopFooterModalOpen(false);
+
+  // Synchronize modal temp selection whenever the underlying category or unit configs change
+  useEffect(() => {
+    if (isCopFooterModalOpen) {
+      setTempCopFooterSelection([...copFooterConfigs]);
+    }
+  }, [copFooterConfigs, isCopFooterModalOpen]);
+
   const handleCopFooterSelectionChange = (paramId: string) => {
+    setTempCopFooterSelection((prev) => {
+      const exists = prev.some((item) => item.id === paramId);
+      if (exists) {
+        return prev.filter((item) => item.id !== paramId);
+      } else {
+        return [...prev, { id: paramId, aggregation: 'average' }];
+      }
+    });
+  };
+  const handleCopFooterAggregationChange = (
+    paramId: string,
+    aggregation: CopFooterAggregationType
+  ) => {
     setTempCopFooterSelection((prev) =>
-      prev.includes(paramId) ? prev.filter((id) => id !== paramId) : [...prev, paramId]
+      prev.map((item) => (item.id === paramId ? { ...item, aggregation } : item))
     );
   };
   const handleSaveCopFooterSelection = () => {
-    setCopFooterParameterIds(tempCopFooterSelection.sort());
+    setCopFooterConfigs(tempCopFooterSelection);
     handleCloseCopFooterModal();
   };
   const handleRemoveCopFooterParameter = (paramId: string) => {
-    setCopFooterParameterIds(copFooterParameterIds.filter((id) => id !== paramId));
+    setCopFooterConfigs(copFooterConfigs.filter((item) => item.id !== paramId));
   };
 
   // Parameter Search Handlers
@@ -2083,6 +2125,9 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                       <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         Category
                       </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                        Tipe Agregasi
+                      </th>
                       {canWrite && (
                         <th className="relative px-4 py-3 w-20">
                           <span className="sr-only">{t['actions']}</span>
@@ -2093,7 +2138,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                   <tbody className="bg-white divide-y divide-[#94a3b8]/20">
                     {copFooterParametersLoading ? (
                       <tr>
-                        <td colSpan={4} className="px-4 py-8 text-center">
+                        <td colSpan={5} className="px-4 py-8 text-center">
                           <div className="flex items-center justify-center gap-2">
                             <LoadingSpinner size="sm" />
                             <span className="text-[#555555]">Loading COP footer parameters...</span>
@@ -2102,7 +2147,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                       </tr>
                     ) : paginatedCopFooterParams.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="px-4 py-8 text-center text-[#555555]">
+                        <td colSpan={5} className="px-4 py-8 text-center text-[#555555]">
                           No COP footer parameters selected for the current filters
                         </td>
                       </tr>
@@ -2120,6 +2165,23 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                             {param.category}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm">
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
+                                param.copFooterAggregation === 'total'
+                                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-300'
+                                  : param.copFooterAggregation === 'min'
+                                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-300'
+                                    : param.copFooterAggregation === 'max'
+                                      ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300 border border-rose-300'
+                                      : 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300 border border-sky-300'
+                              }`}
+                            >
+                              {param.copFooterAggregation
+                                ? param.copFooterAggregation.toUpperCase()
+                                : 'AVERAGE'}
+                            </span>
                           </td>
                           {canWrite && (
                             <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -3200,25 +3262,29 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                             return categoryMatch && unitMatch;
                           })
                           .map((param) => {
-                            const isSelected = tempCopFooterSelection.includes(param.id);
+                            const selectedItem = tempCopFooterSelection.find(
+                              (item) => item.id === param.id
+                            );
+                            const isSelected = !!selectedItem;
+                            const currentAggregation = selectedItem?.aggregation || 'average';
                             return (
-                              <motion.label
+                              <motion.div
                                 key={param.id}
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.7 + Math.random() * 0.3, duration: 0.3 }}
-                                className={`flex items-center justify-between p-4 hover:bg-[#059669]/5 cursor-pointer transition-colors ${
+                                className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-[#059669]/5 transition-colors gap-3 ${
                                   isSelected ? 'bg-[#111827]/10 border-l-4 border-[#111827]' : ''
                                 }`}
                               >
-                                <div className="flex items-center space-x-3">
+                                <label className="flex items-center space-x-3 cursor-pointer flex-1 select-none">
                                   <input
                                     type="checkbox"
                                     checked={isSelected}
                                     onChange={() => handleCopFooterSelectionChange(param.id)}
-                                    className="h-4 w-4 text-[#111827] focus:ring-[#111827] border-slate-300 rounded"
+                                    className="h-4 w-4 text-[#111827] focus:ring-[#111827] border-slate-300 rounded cursor-pointer"
                                   />
-                                  <div>
+                                  <div className="flex-1">
                                     <div className="text-sm font-medium text-[#333333]">
                                       {param.parameter}
                                     </div>
@@ -3226,17 +3292,34 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                       {param.unit} • {param.category}
                                     </div>
                                   </div>
-                                </div>
+                                </label>
                                 {isSelected && (
-                                  <motion.div
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    className="text-purple-600"
+                                  <div
+                                    className="flex items-center space-x-2 pl-7 sm:pl-0"
+                                    onClick={(e) => e.stopPropagation()}
                                   >
-                                    ✓
-                                  </motion.div>
+                                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                      Tipe:
+                                    </span>
+                                    <select
+                                      value={currentAggregation}
+                                      onChange={(e) =>
+                                        handleCopFooterAggregationChange(
+                                          param.id,
+                                          e.target.value as CopFooterAggregationType
+                                        )
+                                      }
+                                      className="text-xs font-bold py-1.5 px-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] cursor-pointer"
+                                    >
+                                      <option value="average">Average (Rata-rata)</option>
+                                      <option value="total">Total (Jumlah)</option>
+                                      <option value="min">Min (Nilai Terendah)</option>
+                                      <option value="max">Max (Nilai Tertinggi)</option>
+                                    </select>
+                                    <div className="text-emerald-600 font-bold ml-1">✓</div>
+                                  </div>
                                 )}
-                              </motion.label>
+                              </motion.div>
                             );
                           })}
                       </div>
