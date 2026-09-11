@@ -1,12 +1,44 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { pb } from '../utils/pocketbase-simple';
 import { safeApiCall } from '../utils/connectionCheck';
 
 const COLLECTION_NAME = 'derivative_cop_footer_parameters';
 
+export type CopFooterAggregationType = 'average' | 'total' | 'min' | 'max';
+
+export interface CopFooterParameterConfig {
+  id: string;
+  aggregation: CopFooterAggregationType;
+}
+
+export const normalizeCopFooterConfigs = (raw: any): CopFooterParameterConfig[] => {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((item) => {
+      if (typeof item === 'string') {
+        return { id: item, aggregation: 'average' as CopFooterAggregationType };
+      }
+      if (item && typeof item === 'object' && item.id) {
+        const agg: CopFooterAggregationType = ['average', 'total', 'min', 'max'].includes(
+          item.aggregation
+        )
+          ? item.aggregation
+          : 'average';
+        return { id: String(item.id), aggregation: agg };
+      }
+      return null;
+    })
+    .filter((x): x is CopFooterParameterConfig => x !== null);
+};
+
 export const useDerivativeCopFooterParameters = (plantCategory?: string, plantUnit?: string) => {
-  const [copFooterParameterIds, setCopFooterParameterIds] = useState<string[]>([]);
+  const [copFooterConfigs, setCopFooterConfigs] = useState<CopFooterParameterConfig[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const copFooterParameterIds = useMemo(
+    () => copFooterConfigs.map((c) => c.id),
+    [copFooterConfigs]
+  );
 
   // Use refs to store current filter values for real-time subscription
   const currentPlantCategoryRef = useRef(plantCategory);
@@ -18,7 +50,7 @@ export const useDerivativeCopFooterParameters = (plantCategory?: string, plantUn
 
   const fetchCopFooterParameters = useCallback(async () => {
     if (!plantCategory || !plantUnit) {
-      setCopFooterParameterIds([]);
+      setCopFooterConfigs([]);
       setLoading(false);
       return;
     }
@@ -30,13 +62,20 @@ export const useDerivativeCopFooterParameters = (plantCategory?: string, plantUn
         .collection(COLLECTION_NAME)
         .getFirstListItem(`plant_category = "${plantCategory}" && plant_unit = "${plantUnit}"`);
 
-      if (record && record.parameter_ids && record.parameter_ids.length > 0) {
-        setCopFooterParameterIds(record.parameter_ids);
+      if (record && record.parameter_ids) {
+        setCopFooterConfigs(normalizeCopFooterConfigs(record.parameter_ids));
       } else {
-        setCopFooterParameterIds([]);
+        setCopFooterConfigs([]);
       }
-    } catch {
-      setCopFooterParameterIds([]);
+    } catch (error: any) {
+      if (error?.status === 404) {
+        // Set empty array as fallback
+        setCopFooterConfigs([]);
+      } else if (error?.message?.includes('autocancelled')) {
+        // Ignore autocancelled requests
+      } else {
+        setCopFooterConfigs([]);
+      }
     }
     setLoading(false);
   }, [plantCategory, plantUnit]);
@@ -46,7 +85,7 @@ export const useDerivativeCopFooterParameters = (plantCategory?: string, plantUn
 
     // Enhanced realtime subscription for COP footer parameters changes
     let isSubscribed = true;
-    let unsubPromise: (() => void) | Promise<unknown> | undefined;
+    let unsubPromise: any;
 
     const subscribe = async () => {
       try {
@@ -70,17 +109,20 @@ export const useDerivativeCopFooterParameters = (plantCategory?: string, plantUn
               e.record.plant_unit === currentUnit
             ) {
               if (e.action === 'create' || e.action === 'update') {
-                // Update local state with the new parameter_ids
-                setCopFooterParameterIds(e.record.parameter_ids || []);
+                // Update local state with the new configs
+                setCopFooterConfigs(normalizeCopFooterConfigs(e.record.parameter_ids));
               } else if (e.action === 'delete') {
                 // Clear local state if the record is deleted
-                setCopFooterParameterIds([]);
+                setCopFooterConfigs([]);
               }
             }
           })
         );
-      } catch (error) {
+      } catch (error: any) {
         // Ignore connection errors
+        if (!error?.message?.includes('autocancelled') && !error?.message?.includes('connection')) {
+          // Do nothing for other errors
+        }
       }
     };
 
@@ -100,14 +142,16 @@ export const useDerivativeCopFooterParameters = (plantCategory?: string, plantUn
           try {
             unsubPromise();
           } catch {
-            /* ignore */
+            // Ignore cleanup errors
           }
-        } else if (typeof (unsubPromise as Promise<any>).then === 'function') {
-          (unsubPromise as Promise<any>)
-            .then((unsub) => {
+        } else if (unsubPromise && typeof unsubPromise.then === 'function') {
+          unsubPromise
+            .then((unsub: any) => {
               if (typeof unsub === 'function') unsub();
             })
-            .catch(() => {});
+            .catch(() => {
+              // Ignore cleanup errors
+            });
         }
       }
 
@@ -116,10 +160,24 @@ export const useDerivativeCopFooterParameters = (plantCategory?: string, plantUn
   }, [plantCategory, plantUnit, fetchCopFooterParameters]);
 
   const updateCopFooterParameters = useCallback(
-    async (parameterIds: string[]) => {
+    async (configsOrIds: (CopFooterParameterConfig | string)[]) => {
       if (!plantCategory || !plantUnit) {
         return;
       }
+
+      const existingMap = new Map(copFooterConfigs.map((c) => [c.id, c.aggregation]));
+      const newConfigs: CopFooterParameterConfig[] = configsOrIds.map((item) => {
+        if (typeof item === 'string') {
+          return {
+            id: item,
+            aggregation: existingMap.get(item) || 'average',
+          };
+        }
+        return {
+          id: item.id,
+          aggregation: item.aggregation || existingMap.get(item.id) || 'average',
+        };
+      });
 
       try {
         // Try to find existing record
@@ -129,31 +187,32 @@ export const useDerivativeCopFooterParameters = (plantCategory?: string, plantUn
 
         // Update existing record
         await pb.collection(COLLECTION_NAME).update(existingRecord.id, {
-          parameter_ids: parameterIds,
+          parameter_ids: newConfigs,
         });
 
-        // Note: Local state will be updated via real-time subscription
-        // But let's also update immediately for better UX
-        setCopFooterParameterIds(parameterIds);
-      } catch (error) {
-        if ((error as any).status === 404) {
+        // Update locally immediately
+        setCopFooterConfigs(newConfigs);
+      } catch (error: any) {
+        if (error?.status === 404) {
           // Create new record if not exists
           await pb.collection(COLLECTION_NAME).create({
             plant_category: plantCategory,
             plant_unit: plantUnit,
-            parameter_ids: parameterIds,
+            parameter_ids: newConfigs,
           });
-          setCopFooterParameterIds(parameterIds);
+          setCopFooterConfigs(newConfigs);
         } else {
           throw error;
         }
       }
     },
-    [plantCategory, plantUnit]
+    [plantCategory, plantUnit, copFooterConfigs]
   );
 
   return {
+    copFooterConfigs,
     copFooterParameterIds,
+    setCopFooterConfigs: updateCopFooterParameters,
     setCopFooterParameterIds: updateCopFooterParameters,
     loading,
     refetch: fetchCopFooterParameters,

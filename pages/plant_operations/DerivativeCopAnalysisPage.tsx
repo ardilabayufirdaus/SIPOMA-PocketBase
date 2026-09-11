@@ -8,7 +8,10 @@ import { useDerivativePlantUnits } from '../../hooks/useDerivativePlantUnits';
 
 import { useDerivativeParameterSettings } from '../../hooks/useDerivativeParameterSettings';
 import { useDerivativeCopParameters } from '../../hooks/useDerivativeCopParameters';
-import { useDerivativeCopFooterParameters } from '../../hooks/useDerivativeCopFooterParameters';
+import {
+  useDerivativeCopFooterParameters,
+  CopFooterAggregationType,
+} from '../../hooks/useDerivativeCopFooterParameters';
 import { useDerivativeCcrFooterData } from '../../hooks/useDerivativeCcrFooterData';
 
 import { pb } from '../../utils/pocketbase-simple';
@@ -131,6 +134,7 @@ interface AnalysisDataRow {
   dailyValues: { value: number | null; raw: number | undefined }[];
   monthlyAverage: number | null;
   monthlyAverageRaw: number | null;
+  aggregationType?: CopFooterAggregationType;
 }
 
 // Statistical utility functions
@@ -1056,9 +1060,14 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
   const { copParameterIds } = useDerivativeCopParameters(selectedCategory, selectedUnit);
 
   // Hook untuk COP Footer Parameters
-  const { copFooterParameterIds } = useDerivativeCopFooterParameters(
+  const { copFooterConfigs, copFooterParameterIds } = useDerivativeCopFooterParameters(
     selectedCategory,
     selectedUnit
+  );
+
+  const copFooterAggregationMap = useMemo(
+    () => new Map(copFooterConfigs.map((c) => [c.id, c.aggregation])),
+    [copFooterConfigs]
   );
 
   // State untuk urutan parameter per user
@@ -1263,6 +1272,10 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
       }
 
       const dailyAverages = new Map<string, Map<string, number>>();
+      const dailyMetrics = new Map<
+        string,
+        Map<string, { average: number; total: number; min: number; max: number }>
+      >();
 
       (monthlyFooterData || []).forEach((footerData) => {
         if (
@@ -1276,6 +1289,25 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
             dailyAverages.set(footerData.parameter_id, new Map());
           }
           dailyAverages.get(footerData.parameter_id)!.set(footerData.date, footerData.average);
+
+          if (!dailyMetrics.has(footerData.parameter_id)) {
+            dailyMetrics.set(footerData.parameter_id, new Map());
+          }
+          dailyMetrics.get(footerData.parameter_id)!.set(footerData.date, {
+            average: footerData.average,
+            total:
+              typeof footerData.total === 'number' && !isNaN(footerData.total)
+                ? footerData.total
+                : footerData.average,
+            min:
+              typeof footerData.minimum === 'number' && !isNaN(footerData.minimum)
+                ? footerData.minimum
+                : footerData.average,
+            max:
+              typeof footerData.maximum === 'number' && !isNaN(footerData.maximum)
+                ? footerData.maximum
+                : footerData.average,
+          });
         }
       });
 
@@ -1314,7 +1346,21 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
                   }
                   if (vals.length > 0) {
                     const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+                    const tot = vals.reduce((a, b) => a + b, 0);
+                    const minVal = Math.min(...vals);
+                    const maxVal = Math.max(...vals);
+
                     dailyAverages.get(rec.parameter_id)!.set(recDate, avg);
+
+                    if (!dailyMetrics.has(rec.parameter_id)) {
+                      dailyMetrics.set(rec.parameter_id, new Map());
+                    }
+                    dailyMetrics.get(rec.parameter_id)!.set(recDate, {
+                      average: avg,
+                      total: tot,
+                      min: minVal,
+                      max: maxVal,
+                    });
                   }
                 }
               }
@@ -1417,11 +1463,23 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
                   return null;
                 }
 
-                const dailyValues = dates.map((dateString) => {
-                  const avg = dailyAverages.get(parameter.id)?.get(dateString);
+                const aggType: CopFooterAggregationType =
+                  copFooterAggregationMap.get(parameter.id) || 'average';
 
-                  // Validate average value
-                  if (avg !== undefined && (isNaN(avg) || !isFinite(avg))) {
+                const dailyValues = dates.map((dateString) => {
+                  const metric = dailyMetrics.get(parameter.id)?.get(dateString);
+                  let dailyVal: number | undefined = undefined;
+                  if (metric) {
+                    if (aggType === 'total') dailyVal = metric.total;
+                    else if (aggType === 'min') dailyVal = metric.min;
+                    else if (aggType === 'max') dailyVal = metric.max;
+                    else dailyVal = metric.average;
+                  } else {
+                    dailyVal = dailyAverages.get(parameter.id)?.get(dateString);
+                  }
+
+                  // Validate daily value
+                  if (dailyVal !== undefined && (isNaN(dailyVal) || !isFinite(dailyVal))) {
                     return { value: null, raw: undefined };
                   }
 
@@ -1431,25 +1489,25 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
 
                   // Validate min/max values
                   if (min_value === undefined || max_value === undefined) {
-                    return { value: null, raw: avg };
+                    return { value: null, raw: dailyVal };
                   }
 
                   if (max_value <= min_value) {
-                    return { value: null, raw: avg };
+                    return { value: null, raw: dailyVal };
                   }
 
-                  if (avg === undefined) {
-                    return { value: null, raw: avg };
+                  if (dailyVal === undefined) {
+                    return { value: null, raw: dailyVal };
                   }
 
-                  const percentage = ((avg - min_value) / (max_value - min_value)) * 100;
+                  const percentage = ((dailyVal - min_value) / (max_value - min_value)) * 100;
 
                   // Validate percentage calculation
                   if (isNaN(percentage) || !isFinite(percentage)) {
-                    return { value: null, raw: avg };
+                    return { value: null, raw: dailyVal };
                   }
 
-                  return { value: percentage, raw: avg };
+                  return { value: percentage, raw: dailyVal };
                 });
 
                 const validDailyPercentages = dailyValues
@@ -1466,16 +1524,27 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
                   .filter(
                     (v): v is number => v !== undefined && v !== null && !isNaN(v) && isFinite(v)
                   );
-                const monthlyAverageRaw =
-                  validDailyRaw.length > 0
-                    ? validDailyRaw.reduce((a, b) => a + b, 0) / validDailyRaw.length
-                    : null;
+
+                let monthlyAverageRaw: number | null = null;
+                if (validDailyRaw.length > 0) {
+                  if (aggType === 'total') {
+                    monthlyAverageRaw = validDailyRaw.reduce((a, b) => a + b, 0);
+                  } else if (aggType === 'min') {
+                    monthlyAverageRaw = Math.min(...validDailyRaw);
+                  } else if (aggType === 'max') {
+                    monthlyAverageRaw = Math.max(...validDailyRaw);
+                  } else {
+                    monthlyAverageRaw =
+                      validDailyRaw.reduce((a, b) => a + b, 0) / validDailyRaw.length;
+                  }
+                }
 
                 return {
                   parameter,
                   dailyValues,
                   monthlyAverage,
                   monthlyAverageRaw,
+                  aggregationType: aggType,
                 };
               } catch {
                 return null;
@@ -2593,6 +2662,50 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
         right: { style: 'thin' },
       };
       cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    });
+
+    // Footer Parameters Rows in Excel
+    footerData.forEach((row) => {
+      const aggType = row.aggregationType || 'average';
+      const aggLabel =
+        aggType === 'total'
+          ? 'TOTAL'
+          : aggType === 'min'
+            ? 'MIN'
+            : aggType === 'max'
+              ? 'MAX'
+              : 'AVG';
+
+      const paramTitle = `${row.parameter.parameter}${row.parameter.unit ? ` (${row.parameter.unit})` : ''} (${aggLabel})`;
+
+      const footerParamRow = worksheet.addRow([
+        '',
+        '',
+        '',
+        paramTitle,
+        ...row.dailyValues.map((day) =>
+          day.raw !== undefined && day.raw !== null ? formatCopNumber(day.raw) : '-'
+        ),
+        row.monthlyAverageRaw !== null && row.monthlyAverageRaw !== undefined
+          ? formatCopNumber(row.monthlyAverageRaw)
+          : '-',
+      ]);
+
+      footerParamRow.eachCell((cell) => {
+        cell.font = { size: 9 };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFF0F4F8' },
+        };
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' },
+        };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      });
     });
 
     // Generate filename
@@ -3745,34 +3858,64 @@ const DerivativeCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t 
                       </td>
                     </tr>
                     {/* COP Footer Parameters */}
-                    {footerData.map((row, index) => (
-                      <tr key={`footer-${row.parameter.id}`} className="border-t border-slate-300">
-                        <td
-                          colSpan={4}
-                          className="sticky left-0 z-20 px-2 py-2 text-right text-sm text-slate-700 border-b border-r border-slate-200 bg-slate-100"
+                    {footerData.map((row, index) => {
+                      const aggType = row.aggregationType || 'average';
+                      const aggLabel =
+                        aggType === 'total'
+                          ? 'TOTAL'
+                          : aggType === 'min'
+                            ? 'MIN'
+                            : aggType === 'max'
+                              ? 'MAX'
+                              : 'AVG';
+                      const aggBadgeClass =
+                        aggType === 'total'
+                          ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                          : aggType === 'min'
+                            ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30'
+                            : aggType === 'max'
+                              ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30'
+                              : 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30';
+
+                      return (
+                        <tr
+                          key={`footer-${row.parameter.id}`}
+                          className="border-t border-slate-300"
                         >
-                          {row.parameter.parameter}
-                        </td>
-                        {row.dailyValues.map((day, dayIndex) => {
-                          const colors = getPercentageColor(day.value);
-                          return (
-                            <td
-                              key={dayIndex}
-                              className={`px-1 py-2 text-center border-b border-r border-slate-200 ${colors.bg}`}
-                            >
-                              <span className={`text-xs font-medium ${colors.text}`}>
-                                {formatCopNumber(day.raw)}
+                          <td
+                            colSpan={4}
+                            className="sticky left-0 z-20 px-2 py-2 text-right text-sm text-slate-700 border-b border-r border-slate-200 bg-slate-100 font-semibold"
+                          >
+                            <div className="flex items-center justify-end gap-1.5">
+                              <span
+                                className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${aggBadgeClass}`}
+                              >
+                                [{aggLabel}]
                               </span>
-                            </td>
-                          );
-                        })}
-                        <td className="sticky right-0 z-20 px-2 py-2 text-center border-b border-l-2 border-slate-300 bg-slate-100 font-bold text-sm">
-                          <span className="text-slate-800">
-                            {formatCopNumber(row.monthlyAverageRaw)}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                              <span>{row.parameter.parameter}</span>
+                            </div>
+                          </td>
+                          {row.dailyValues.map((day, dayIndex) => {
+                            const colors = getPercentageColor(day.value);
+                            return (
+                              <td
+                                key={dayIndex}
+                                className={`px-1 py-2 text-center border-b border-r border-slate-200 ${colors.bg}`}
+                              >
+                                <span className={`text-xs font-medium ${colors.text}`}>
+                                  {formatCopNumber(day.raw)}
+                                </span>
+                              </td>
+                            );
+                          })}
+                          <td className="sticky right-0 z-20 px-2 py-2 text-center border-b border-l-2 border-slate-300 bg-slate-100 font-bold text-sm">
+                            <span className="text-slate-800">
+                              {formatCopNumber(row.monthlyAverageRaw)}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tfoot>
                 </table>
               </div>

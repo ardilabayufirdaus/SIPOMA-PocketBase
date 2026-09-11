@@ -30,8 +30,11 @@ import { useDerivativeParameterSettings } from '../../hooks/useDerivativeParamet
 import { useDerivativeSiloCapacities } from '../../hooks/useDerivativeSiloCapacities';
 import { useDerivativePicSettings } from '../../hooks/useDerivativePicSettings';
 import { useDerivativeCopParameters } from '../../hooks/useDerivativeCopParameters';
-import { useDerivativeReportSettings } from '../../hooks/useDerivativeReportSettings';
-import { useDerivativeCopFooterParameters } from '../../hooks/useDerivativeCopFooterParameters';
+import {
+  useDerivativeCopFooterParameters,
+  CopFooterAggregationType,
+  CopFooterParameterConfig,
+} from '../../hooks/useDerivativeCopFooterParameters';
 import { usePlantOperationsAccess } from '../../hooks/usePlantOperationsAccess';
 import { usePermissions } from '../../utils/permissions';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
@@ -225,30 +228,50 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
 
   // COP Footer Parameters Logic
   const {
+    copFooterConfigs,
     copFooterParameterIds,
+    setCopFooterConfigs,
     setCopFooterParameterIds,
     loading: copFooterLoading,
   } = useDerivativeCopFooterParameters(copFooterCategoryFilter, copFooterUnitFilter);
 
   const [isCopFooterModalOpen, setIsCopFooterModalOpen] = useState(false);
-  const [tempCopFooterSelection, setTempCopFooterSelection] = useState<string[]>([]);
+  const [tempCopFooterSelection, setTempCopFooterSelection] = useState<CopFooterParameterConfig[]>(
+    []
+  );
+  const [copFooterSearchQuery, setCopFooterSearchQuery] = useState('');
 
   const copFooterParameters = useMemo(() => {
     if (!copFooterCategoryFilter || !copFooterUnitFilter) return [];
-    return copFooterParameterIds
-      .map((id) => allParametersMap.get(id))
-      .filter((p): p is ParameterSetting => {
-        if (!p) return false;
-        return p.category === copFooterCategoryFilter && p.unit === copFooterUnitFilter;
-      });
-  }, [copFooterParameterIds, allParametersMap, copFooterCategoryFilter, copFooterUnitFilter]);
+    return copFooterConfigs
+      .map((config) => {
+        const param = allParametersMap.get(config.id);
+        if (!param) return null;
+        const categoryMatch = param.category === copFooterCategoryFilter;
+        const unitMatch = param.unit === copFooterUnitFilter;
+        if (!categoryMatch || !unitMatch) return null;
+        return {
+          ...param,
+          copFooterAggregation: config.aggregation,
+        };
+      })
+      .filter(
+        (p): p is ParameterSetting & { copFooterAggregation: CopFooterAggregationType } =>
+          p !== null
+      );
+  }, [copFooterConfigs, allParametersMap, copFooterCategoryFilter, copFooterUnitFilter]);
 
   const {
     paginatedData: paginatedCopFooterParams,
     currentPage: copFooterCurrentPage,
     totalPages: copFooterTotalPages,
     setCurrentPage: setCopFooterCurrentPage,
-  } = usePagination(copFooterParameters as ParameterSetting[], 10);
+  } = usePagination(
+    copFooterParameters as (ParameterSetting & {
+      copFooterAggregation?: CopFooterAggregationType;
+    })[],
+    10
+  );
 
   // Filter Logic helpers
   const unitsForParameterFilter = useMemo(() => {
@@ -467,21 +490,42 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
 
   // COP Footer Handlers
   const handleOpenCopFooterModal = () => {
-    setTempCopFooterSelection([...copFooterParameterIds]);
+    setTempCopFooterSelection([...copFooterConfigs]);
+    setCopFooterSearchQuery('');
     setIsCopFooterModalOpen(true);
   };
   const handleCloseCopFooterModal = () => setIsCopFooterModalOpen(false);
+
+  useEffect(() => {
+    if (isCopFooterModalOpen) {
+      setTempCopFooterSelection([...copFooterConfigs]);
+    }
+  }, [copFooterConfigs, isCopFooterModalOpen]);
+
   const handleCopFooterSelectionChange = (paramId: string) => {
+    setTempCopFooterSelection((prev) => {
+      const exists = prev.some((item) => item.id === paramId);
+      if (exists) {
+        return prev.filter((item) => item.id !== paramId);
+      } else {
+        return [...prev, { id: paramId, aggregation: 'average' }];
+      }
+    });
+  };
+  const handleCopFooterAggregationChange = (
+    paramId: string,
+    aggregation: CopFooterAggregationType
+  ) => {
     setTempCopFooterSelection((prev) =>
-      prev.includes(paramId) ? prev.filter((id) => id !== paramId) : [...prev, paramId]
+      prev.map((item) => (item.id === paramId ? { ...item, aggregation } : item))
     );
   };
   const handleSaveCopFooterSelection = () => {
-    setCopFooterParameterIds(tempCopFooterSelection.sort());
+    setCopFooterConfigs(tempCopFooterSelection);
     handleCloseCopFooterModal();
   };
   const handleRemoveCopFooterParameter = (paramId: string) => {
-    setCopFooterParameterIds(copFooterParameterIds.filter((id) => id !== paramId));
+    setCopFooterConfigs(copFooterConfigs.filter((item) => item.id !== paramId));
   };
 
   const handleExportAll = async () => {
@@ -1548,6 +1592,9 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                       <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                         {t['measurement_unit']}
                       </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                        Tipe Agregasi
+                      </th>
                       {canWrite && (
                         <th className="relative px-4 py-3 w-20">
                           <span className="sr-only">{t['actions']}</span>
@@ -1558,7 +1605,7 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                   <tbody className="bg-white divide-y divide-slate-200">
                     {copFooterLoading ? (
                       <tr>
-                        <td colSpan={3} className="px-4 py-8 text-center">
+                        <td colSpan={4} className="px-4 py-8 text-center">
                           <div className="flex items-center justify-center gap-2">
                             <LoadingSpinner size="sm" />
                             <span className="text-slate-500">Loading Footer parameters...</span>
@@ -1567,7 +1614,7 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                       </tr>
                     ) : paginatedCopFooterParams.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="px-4 py-8 text-center text-slate-500">
+                        <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
                           {t['no_data_available']}
                         </td>
                       </tr>
@@ -1582,6 +1629,23 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
                             {param.unit}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm">
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
+                                param.copFooterAggregation === 'total'
+                                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-300'
+                                  : param.copFooterAggregation === 'min'
+                                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-300'
+                                    : param.copFooterAggregation === 'max'
+                                      ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300 border border-rose-300'
+                                      : 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300 border border-sky-300'
+                              }`}
+                            >
+                              {param.copFooterAggregation
+                                ? param.copFooterAggregation.toUpperCase()
+                                : 'AVERAGE'}
+                            </span>
                           </td>
                           {canWrite && (
                             <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -1816,39 +1880,106 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
               <div className="mb-4">
                 <input
                   type="text"
-                  placeholder="Search available parameters..."
-                  className="w-full px-4 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                  placeholder="Cari parameter..."
+                  value={copFooterSearchQuery}
+                  onChange={(e) => setCopFooterSearchQuery(e.target.value)}
+                  className="w-full px-4 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#059669] focus:border-[#059669]"
                 />
               </div>
               <div className="max-h-[60vh] overflow-y-auto space-y-2">
-                {filteredParameterSettings.length === 0 ? (
+                {parameterSettings
+                  .filter((p) => p.data_type === ParameterDataType.NUMBER)
+                  .filter((p) => {
+                    if (!copFooterCategoryFilter || !copFooterUnitFilter) return false;
+                    const catMatch = p.category === copFooterCategoryFilter;
+                    const unitMatch = p.unit === copFooterUnitFilter;
+                    if (!catMatch || !unitMatch) return false;
+                    if (copFooterSearchQuery.trim()) {
+                      return p.parameter
+                        .toLowerCase()
+                        .includes(copFooterSearchQuery.toLowerCase().trim());
+                    }
+                    return true;
+                  }).length === 0 ? (
                   <p className="text-center text-gray-500 py-4">
-                    No parameters available in current filter.
+                    No parameters available in current filter ({copFooterCategoryFilter} •{' '}
+                    {copFooterUnitFilter}).
                   </p>
                 ) : (
-                  filteredParameterSettings.map((param) => (
-                    <label
-                      key={param.id}
-                      className={`flex items-start p-3 rounded-lg border cursor-pointer transition-colors ${
-                        tempCopFooterSelection.includes(param.id)
-                          ? 'bg-[#059669]/5 border-[#059669]/30'
-                          : 'hover:bg-gray-50 border-gray-200'
-                      }`}
-                    >
-                      <div className="flex items-center h-5">
-                        <input
-                          type="checkbox"
-                          checked={tempCopFooterSelection.includes(param.id)}
-                          onChange={() => handleCopFooterSelectionChange(param.id)}
-                          className="w-4 h-4 text-[#059669] border-gray-300 rounded focus:ring-[#059669]"
-                        />
-                      </div>
-                      <div className="ml-3 text-sm">
-                        <span className="font-medium text-gray-900">{param.parameter}</span>
-                        <span className="ml-2 text-gray-500 text-xs">({param.unit})</span>
-                      </div>
-                    </label>
-                  ))
+                  parameterSettings
+                    .filter((p) => p.data_type === ParameterDataType.NUMBER)
+                    .filter((p) => {
+                      if (!copFooterCategoryFilter || !copFooterUnitFilter) return false;
+                      const catMatch = p.category === copFooterCategoryFilter;
+                      const unitMatch = p.unit === copFooterUnitFilter;
+                      if (!catMatch || !unitMatch) return false;
+                      if (copFooterSearchQuery.trim()) {
+                        return p.parameter
+                          .toLowerCase()
+                          .includes(copFooterSearchQuery.toLowerCase().trim());
+                      }
+                      return true;
+                    })
+                    .map((param) => {
+                      const selectedItem = tempCopFooterSelection.find(
+                        (item) => item.id === param.id
+                      );
+                      const isSelected = !!selectedItem;
+                      const currentAggregation = selectedItem?.aggregation || 'average';
+                      return (
+                        <div
+                          key={param.id}
+                          className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border transition-colors gap-3 ${
+                            isSelected
+                              ? 'bg-[#059669]/5 border-[#059669]/30'
+                              : 'hover:bg-gray-50 border-gray-200'
+                          }`}
+                        >
+                          <label className="flex items-center space-x-3 cursor-pointer flex-1 select-none">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleCopFooterSelectionChange(param.id)}
+                              className="h-4 w-4 text-[#059669] focus:ring-[#059669] border-gray-300 rounded cursor-pointer"
+                            />
+                            <div className="flex-1">
+                              <div className="text-sm font-medium text-gray-900">
+                                {param.parameter}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {param.unit} • {param.category}
+                              </div>
+                            </div>
+                          </label>
+                          {isSelected && (
+                            <div
+                              className="flex items-center space-x-2 pl-7 sm:pl-0"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                Tipe:
+                              </span>
+                              <select
+                                value={currentAggregation}
+                                onChange={(e) =>
+                                  handleCopFooterAggregationChange(
+                                    param.id,
+                                    e.target.value as CopFooterAggregationType
+                                  )
+                                }
+                                className="text-xs font-bold py-1.5 px-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] cursor-pointer"
+                              >
+                                <option value="average">Average (Rata-rata)</option>
+                                <option value="total">Total (Jumlah)</option>
+                                <option value="min">Min (Nilai Terendah)</option>
+                                <option value="max">Max (Nilai Tertinggi)</option>
+                              </select>
+                              <div className="text-emerald-600 font-bold ml-1">✓</div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
                 )}
               </div>
               <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
