@@ -75,7 +75,7 @@ const Header: React.FC<HeaderProps> = React.memo(
                     onClick={onToggleSidebar}
                     aria-label="Toggle navigation menu"
                     title="Menu Navigasi"
-                    className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors md:hidden"
+                    className="p-2 text-white/70 hover:text-white hover:bg-white/10 active:scale-95 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary-500/40 md:hidden"
                   >
                     <Bars3Icon className="w-5 h-5" />
                   </button>
@@ -105,7 +105,7 @@ const Header: React.FC<HeaderProps> = React.memo(
                 {showAddUserButton && !isMobile && (
                   <button
                     onClick={onAddUser}
-                    className="flex items-center gap-2 bg-primary-600 hover:bg-primary-500 text-white text-[11px] font-bold px-4 py-2 rounded-lg transition-all shadow-md mr-2 uppercase tracking-wide"
+                    className="flex items-center gap-2 bg-primary-600 hover:bg-primary-500 active:bg-primary-700 active:scale-95 text-white text-[11px] font-bold px-3.5 py-1.5 h-[34px] min-h-[34px] rounded-lg transition-all shadow-md mr-2 uppercase tracking-wide focus:outline-none focus:ring-2 focus:ring-primary-500/40"
                   >
                     <PlusIcon className="w-3.5 h-3.5" />
                     <span>{t.add_user_button}</span>
@@ -113,12 +113,16 @@ const Header: React.FC<HeaderProps> = React.memo(
                 )}
 
                 {/* System Tray Icons */}
-                <div className="flex items-center bg-white/5 rounded-xl p-1 gap-1 border border-white/5">
+                <div className="flex items-center bg-white/5 rounded-lg p-1 gap-1 border border-white/10 shadow-xs">
                   {/* Notifications */}
                   <div className="relative">
                     <button
                       onClick={() => setIsNotifMenuOpen(true)}
-                      className={`p-2 rounded-lg transition-colors ${unreadCount > 0 ? 'text-primary-400' : 'text-white/60 hover:text-white'}`}
+                      className={`p-2 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary-500/40 active:scale-95 ${
+                        unreadCount > 0
+                          ? 'text-primary-400 hover:text-primary-300 hover:bg-white/10'
+                          : 'text-white/60 hover:text-white hover:bg-white/10'
+                      }`}
                       aria-label="Notifications"
                       title={t.notifications_title || 'Notifikasi'}
                     >
@@ -128,7 +132,7 @@ const Header: React.FC<HeaderProps> = React.memo(
                         <BellSlashIcon className="w-5 h-5 opacity-40" />
                       )}
                       {unreadCount > 0 && (
-                        <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-[#1e1e1e]" />
+                        <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-slate-900" />
                       )}
                     </button>
                   </div>
@@ -143,7 +147,7 @@ const Header: React.FC<HeaderProps> = React.memo(
                   {/* Theme Toggle */}
                   <button
                     onClick={toggleTheme}
-                    className="p-2 text-white/60 hover:text-white rounded-lg transition-colors"
+                    className="p-2 text-white/60 hover:text-white hover:bg-white/10 active:scale-95 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary-500/40"
                     aria-label="Toggle theme"
                     title={theme === 'light' ? 'Mode Gelap' : 'Mode Terang'}
                   >
@@ -159,7 +163,7 @@ const Header: React.FC<HeaderProps> = React.memo(
                   {/* Sign Out */}
                   <button
                     onClick={onSignOut}
-                    className="p-2 text-white/40 hover:text-red-400 rounded-lg transition-colors"
+                    className="p-2 text-white/40 hover:text-rose-400 hover:bg-rose-500/10 active:scale-95 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-rose-500/40"
                     aria-label="Sign Out"
                     title="Keluar (Sign Out)"
                   >

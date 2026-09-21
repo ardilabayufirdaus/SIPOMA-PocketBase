@@ -16,6 +16,7 @@ import UnitManager from '../features/inspection/components/UnitManager';
 import CogIcon from '../components/icons/CogIcon';
 import { useEffect } from 'react';
 import { InspectionReport } from '../services/pocketbase';
+import RealtimeIndicator from '../components/ui/RealtimeIndicator';
 
 // Local Interface for UI development
 import { DailyReport } from '../types';
@@ -335,97 +336,98 @@ const InspectionPage: React.FC = () => {
   }, [filteredReports]);
 
   return (
-    <div className="min-h-full flex flex-col gap-6 relative font-sans">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200 dark:border-white/10 shadow-soft">
-        <div className="flex items-center gap-6">
-          <div className="p-4 bg-gradient-to-br from-primary-600 to-emerald-600 rounded-2xl text-white shadow-lg shadow-emerald-500/20">
-            <ClipboardCheckIcon className="w-8 h-8" />
+    <div className="w-full space-y-4 sm:space-y-5 font-sans">
+      {/* Hero Header Section - 20 Aturan Wajib */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-secondary-900 via-slate-900 to-secondary-950 rounded-2xl shadow-lg border border-slate-800 p-5 sm:p-6 text-white w-full">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2" />
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-emerald-400 shrink-0 shadow-inner">
+              <ClipboardCheckIcon className="w-6 h-6 text-emerald-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full">
+                  Plant Operations
+                </span>
+                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700 rounded-full">
+                  Inspection Logs
+                </span>
+                <RealtimeIndicator isConnected={true} lastUpdate={new Date()} />
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white font-display">
+                Shift Equipment Inspection
+              </h1>
+              <p className="text-xs text-slate-300 font-medium">
+                {viewMode === 'reports'
+                  ? 'Monitoring laporan patrol check peralatan operasional pabrik per shift harian'
+                  : 'Konfigurasi template checklist inspeksi dinamis (Grup > Alat > Titik Periksa)'}
+              </p>
+            </div>
           </div>
-          <div>
-            <motion.h1
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-3xl font-bold text-slate-800 dark:text-white tracking-tight"
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setViewMode(viewMode === 'reports' ? 'templates' : 'reports')}
+              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all shadow-sm min-h-[36px] ${
+                viewMode === 'templates'
+                  ? 'bg-slate-700 text-white border border-slate-600'
+                  : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
+              }`}
             >
-              Inspection
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-slate-500 dark:text-slate-400 mt-1 font-medium flex items-center gap-2"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
-              {viewMode === 'reports'
-                ? 'Manage daily production shift reports.'
-                : 'Configure dynamic report templates (Grup > Alat > Point).'}
-            </motion.p>
+              <FunnelIcon className="w-3.5 h-3.5" />
+              <span>{viewMode === 'reports' ? 'Pengaturan Template' : 'Kembali ke Laporan'}</span>
+            </button>
+
+            {isSuperAdmin && (
+              <button
+                type="button"
+                onClick={() => setIsUnitManagerOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-lg text-xs font-semibold shadow-sm transition-all min-h-[36px]"
+              >
+                <CogIcon className="w-3.5 h-3.5" />
+                <span>Kelola Unit</span>
+              </button>
+            )}
+
+            {canWrite && viewMode === 'reports' && (
+              <button
+                type="button"
+                onClick={() => setIsFormOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm hover:shadow transition-all min-h-[36px]"
+              >
+                <PlusIcon className="w-3.5 h-3.5" />
+                <span>Laporan Shift Baru</span>
+              </button>
+            )}
           </div>
         </div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          className="flex items-center gap-3"
-        >
-          <button
-            onClick={() => setViewMode(viewMode === 'reports' ? 'templates' : 'reports')}
-            className={`group flex items-center gap-2.5 px-5 py-2.5 border rounded-xl text-sm font-bold transition-all duration-300 shadow-sm ${
-              viewMode === 'templates'
-                ? 'bg-slate-700 text-white border-transparent'
-                : 'bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200'
-            }`}
-          >
-            <FunnelIcon className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-            {viewMode === 'reports' ? 'Template Settings' : 'Back to Reports'}
-          </button>
-
-          {isSuperAdmin && (
-            <button
-              onClick={() => setIsUnitManagerOpen(true)}
-              className="group flex items-center gap-2.5 px-5 py-2.5 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 rounded-xl text-sm font-bold shadow-sm hover:bg-white dark:hover:bg-slate-700 transition-all"
-            >
-              <CogIcon className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" />
-              Manage Units
-            </button>
-          )}
-
-          {canWrite && viewMode === 'reports' && (
-            <button
-              onClick={() => setIsFormOpen(true)}
-              className="group flex items-center gap-2.5 px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all active:scale-95"
-            >
-              <PlusIcon className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-              New Shift Report
-            </button>
-          )}
-        </motion.div>
       </div>
 
-      {/* Unit Selector Tabs */}
-      <div className="flex flex-col gap-4">
-        <div className="flex bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto no-scrollbar w-fit max-w-full">
+      {/* Unit Selector Tabs - COP Style Compact */}
+      <div className="flex flex-col gap-2.5">
+        <div className="flex bg-white dark:bg-slate-900 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto no-scrollbar w-fit max-w-full">
           {mainUnits.map((unit) => (
             <button
               key={unit.id}
+              type="button"
               onClick={() => {
                 setActiveUnitId(unit.id);
-                setActiveSubUnitId(null); // Reset sub-unit when changing main unit
+                setActiveSubUnitId(null);
               }}
-              className={`px-6 py-2.5 text-xs font-bold uppercase tracking-widest transition-all relative whitespace-nowrap rounded-xl ${
+              className={`px-3.5 py-1.5 text-xs font-semibold transition-all relative whitespace-nowrap rounded-lg ${
                 activeUnitId === unit.id
-                  ? 'text-white'
-                  : 'text-slate-700 hover:text-primary-600 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-800/50'
+                  ? 'text-white font-bold'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
               <span className="relative z-10">{unit.name}</span>
               {activeUnitId === unit.id && (
                 <motion.div
                   layoutId="activeUnitTab"
-                  className="absolute inset-0 bg-secondary-900 dark:bg-primary-600 shadow-md rounded-xl"
-                  transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                  className="absolute inset-0 bg-primary-600 shadow-xs rounded-lg"
+                  transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
                 />
               )}
             </button>
@@ -434,26 +436,23 @@ const InspectionPage: React.FC = () => {
 
         {/* Sub-Unit Selector Tabs (Dynamic) */}
         {subUnitsOfActive.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 ml-2"
-          >
-            <div className="flex bg-white/40 dark:bg-slate-900/40 backdrop-blur-md p-1 rounded-xl border border-slate-200/50 dark:border-white/5 shadow-inner overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-2">
+            <div className="flex bg-white/70 dark:bg-slate-850 p-1 rounded-lg border border-slate-200 dark:border-slate-800 shadow-inner overflow-x-auto no-scrollbar">
               <button
+                type="button"
                 onClick={() => setActiveSubUnitId(null)}
-                className={`px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all relative rounded-lg whitespace-nowrap ${
+                className={`px-3 py-1 text-[11px] font-semibold transition-all relative rounded-md whitespace-nowrap ${
                   activeSubUnitId === null
-                    ? 'text-white'
-                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                    ? 'text-white font-bold'
+                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
                 }`}
               >
                 <span className="relative z-10">Main Overview</span>
                 {activeSubUnitId === null && (
                   <motion.div
                     layoutId="activeSubTab"
-                    className="absolute inset-0 bg-slate-700 dark:bg-slate-700 rounded-lg shadow-sm"
-                    transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
+                    className="absolute inset-0 bg-slate-700 rounded-md shadow-xs"
+                    transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
                   />
                 )}
               </button>
@@ -461,247 +460,208 @@ const InspectionPage: React.FC = () => {
               {subUnitsOfActive.map((sub) => (
                 <button
                   key={sub.id}
+                  type="button"
                   onClick={() => setActiveSubUnitId(sub.id)}
-                  className={`px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all relative rounded-lg whitespace-nowrap ${
+                  className={`px-3 py-1 text-[11px] font-semibold transition-all relative rounded-md whitespace-nowrap ${
                     activeSubUnitId === sub.id
-                      ? 'text-white'
-                      : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                      ? 'text-white font-bold'
+                      : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
                   }`}
                 >
                   <span className="relative z-10">{sub.name}</span>
                   {activeSubUnitId === sub.id && (
                     <motion.div
                       layoutId="activeSubTab"
-                      className="absolute inset-0 bg-slate-700 dark:bg-slate-700 rounded-lg shadow-sm"
-                      transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
+                      className="absolute inset-0 bg-slate-700 rounded-md shadow-xs"
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
                     />
                   )}
                 </button>
               ))}
             </div>
-          </motion.div>
+          </div>
         )}
 
-        {/* Work Area Selector (Optional Filter) */}
+        {/* Work Area Selector (Filter Area) */}
         {areas.filter((a) => a.unit === (activeSubUnitId || activeUnitId)).length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-3 px-2"
-          >
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-              Filter Area:
+          <div className="flex items-center gap-2 px-1">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              Area:
             </span>
-            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+            <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
               <button
+                type="button"
                 onClick={() => setActiveAreaId('')}
-                className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
+                className={`px-2.5 py-0.5 rounded text-[11px] font-semibold transition-all ${
                   !activeAreaId
-                    ? 'bg-primary-600 text-white shadow-md'
-                    : 'bg-white/50 dark:bg-slate-800/50 text-slate-500 hover:text-primary-600'
+                    ? 'bg-primary-600 text-white shadow-xs'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-primary-600'
                 }`}
               >
-                SEMUA AREA
+                SEMUA
               </button>
               {areas
                 .filter((a) => a.unit === (activeSubUnitId || activeUnitId))
                 .map((area) => (
                   <button
                     key={area.id}
+                    type="button"
                     onClick={() => setActiveAreaId(area.id)}
-                    className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all whitespace-nowrap ${
+                    className={`px-2.5 py-0.5 rounded text-[11px] font-semibold transition-all whitespace-nowrap ${
                       activeAreaId === area.id
-                        ? 'bg-primary-600 text-white shadow-md'
-                        : 'bg-white/50 dark:bg-slate-800/50 text-slate-500 hover:text-primary-600'
+                        ? 'bg-primary-600 text-white shadow-xs'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-primary-600'
                     }`}
                   >
                     {area.name.toUpperCase()}
                   </button>
                 ))}
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
 
       {viewMode === 'reports' ? (
         <>
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="group p-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-soft hover:-translate-y-1 transition-all duration-300 overflow-hidden relative"
-            >
-              <div className="absolute top-0 right-0 p-12 bg-primary-600/5 rounded-full -mr-10 -mt-10 group-hover:bg-primary-600/10 transition-colors"></div>
-              <div className="flex items-center justify-between relative z-10">
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-                    {stats[0].label}
-                  </p>
-                  <h3 className="text-4xl font-bold text-slate-800 dark:text-white">
-                    {stats[0].value}
-                  </h3>
-                </div>
-                <div
-                  className={`p-4 rounded-2xl ${stats[0].bg} ${stats[0].color} shadow-sm transition-transform group-hover:scale-110 duration-300`}
-                >
-                  {React.createElement(stats[0].icon, { className: 'w-8 h-8' })}
-                </div>
+          {/* Stats Cards - Compact COP Style */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="p-3 sm:p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  {stats[0].label}
+                </p>
+                <h3 className="text-xl sm:text-2xl font-black font-mono text-slate-800 dark:text-white mt-0.5">
+                  {stats[0].value}
+                </h3>
               </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1 }}
-              className="group p-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-soft hover:-translate-y-1 transition-all duration-300 overflow-hidden relative"
-            >
-              <div className="absolute top-0 right-0 p-12 bg-rose-500/5 rounded-full -mr-10 -mt-10 group-hover:bg-rose-500/10 transition-colors"></div>
-              <div className="flex items-center justify-between relative z-10">
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-rose-500 uppercase tracking-[0.2em]">
-                    {stats[1].label}
-                  </p>
-                  <h3 className="text-4xl font-bold text-rose-600 dark:text-rose-400">
-                    {stats[1].value}
-                  </h3>
-                </div>
-                <div
-                  className={`p-4 rounded-2xl ${stats[1].bg} ${stats[1].color} shadow-sm transition-transform group-hover:scale-110 duration-300`}
-                >
-                  {React.createElement(stats[1].icon, { className: 'w-8 h-8' })}
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Reports Table Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex-1 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-soft overflow-hidden flex flex-col"
-          >
-            {/* Toolbar */}
-            <div className="p-6 border-b border-slate-200 dark:border-white/10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-slate-50/50 dark:bg-slate-800/50">
-              <div className="relative flex-1 max-w-lg">
-                <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
-                <input
-                  type="text"
-                  placeholder="Search by inspector or date..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all shadow-sm"
-                />
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-sm">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    Status
-                  </span>
-                  <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
-                  <select
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                    className="bg-transparent text-sm font-bold text-slate-800 dark:text-white focus:outline-none cursor-pointer pr-4 border-none !ring-0 !p-0"
-                  >
-                    <option className="bg-white dark:bg-slate-900">All Status</option>
-                    <option className="bg-white dark:bg-slate-900">Pending</option>
-                    <option className="bg-white dark:bg-slate-900">Completed</option>
-                    <option className="bg-white dark:bg-slate-900">Critical</option>
-                  </select>
-                </div>
+              <div className={`p-2.5 rounded-lg ${stats[0].bg} ${stats[0].color}`}>
+                {React.createElement(stats[0].icon, { className: 'w-5 h-5' })}
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700 scrollbar-track-transparent">
+            <div className="p-3 sm:p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-bold text-rose-500 uppercase tracking-wider">
+                  {stats[1].label}
+                </p>
+                <h3 className="text-xl sm:text-2xl font-black font-mono text-rose-600 dark:text-rose-400 mt-0.5">
+                  {stats[1].value}
+                </h3>
+              </div>
+              <div className={`p-2.5 rounded-lg ${stats[1].bg} ${stats[1].color}`}>
+                {React.createElement(stats[1].icon, { className: 'w-5 h-5' })}
+              </div>
+            </div>
+          </div>
+
+          {/* Reports Table Section - Sesuai COP Analysis Precision */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden flex flex-col">
+            {/* Toolbar */}
+            <div className="p-3 sm:p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/60 dark:bg-slate-850/50">
+              <div className="relative flex-1 max-w-md">
+                <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Cari berdasarkan pelapor atau tanggal..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/40"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-white py-2 px-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/40 cursor-pointer"
+                >
+                  <option value="All Status">Semua Status</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Critical">Critical</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto scroll-smooth">
               {filteredReports.length > 0 ? (
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="text-[10px] font-bold text-white uppercase tracking-[0.2em] border-b border-slate-700 bg-slate-600 dark:bg-slate-700">
-                      <th className="px-8 py-4">Report Date</th>
-                      <th className="px-8 py-4">Inspector</th>
-                      <th className="px-8 py-4 text-center">Status</th>
-                      <th className="px-8 py-4 text-right">Actions</th>
+                <table className="min-w-full text-xs border-collapse text-left" role="table">
+                  <thead className="bg-slate-700 dark:bg-slate-800 text-white uppercase text-[11px] font-bold tracking-wider sticky top-0 z-20 border-b border-slate-600 dark:border-slate-700">
+                    <tr>
+                      <th className="py-2.5 px-3.5">Tanggal Laporan</th>
+                      <th className="py-2.5 px-3.5">Pelapor Shift 1</th>
+                      <th className="py-2.5 px-3.5 text-center">Status</th>
+                      <th className="py-2.5 px-3.5 text-right">Aksi</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-white/5 text-sm">
+                  <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-200 dark:divide-slate-800">
                     {filteredReports.map((report) => (
                       <tr
                         key={report.id}
                         onClick={() => setSelectedReport(report)}
-                        className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200 cursor-pointer"
+                        className="hover:bg-slate-50/60 dark:hover:bg-slate-850/40 transition-colors cursor-pointer group"
                       >
-                        <td className="px-8 py-5">
-                          <span className="font-bold text-slate-800 dark:text-white group-hover:text-primary-600 transition-colors">
-                            {new Date(report.date).toLocaleDateString(undefined, {
+                        <td className="py-2 px-3.5 whitespace-nowrap font-mono text-xs">
+                          <span className="font-bold text-slate-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                            {new Date(report.date).toLocaleDateString('id-ID', {
                               weekday: 'short',
                               year: 'numeric',
-                              month: 'long',
+                              month: 'short',
                               day: 'numeric',
                             })}
                           </span>
                         </td>
-                        <td className="px-8 py-5">
-                          <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-4">
-                              <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center font-bold text-xs shadow-sm border border-slate-200 dark:border-white/10">
-                                {report.personnel.s1.tender.charAt(0)}
-                              </div>
-                              <span className="font-bold text-slate-800 dark:text-slate-200">
-                                {report.personnel.s1.tender}
-                              </span>
+                        <td className="py-2 px-3.5 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold text-[10px] border border-slate-200 dark:border-slate-700">
+                              {report.personnel.s1.tender.charAt(0) || '-'}
                             </div>
-                            {report.areaId && (
-                              <span className="text-[9px] font-bold text-slate-400 border border-slate-200 w-fit px-2 py-0.5 rounded ml-13 bg-slate-50">
-                                {areas.find((a) => a.id === report.areaId)?.name || 'Unknown Area'}
-                              </span>
-                            )}
+                            <span className="font-medium text-slate-800 dark:text-slate-200 text-xs">
+                              {report.personnel.s1.tender || '-'}
+                            </span>
                           </div>
                         </td>
-                        <td className="px-8 py-5 text-center">
+                        <td className="py-2 px-3.5 text-center whitespace-nowrap">
                           <span
-                            className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-widest border shadow-sm ${
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                               report.status === 'completed'
-                                ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                                ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                                 : report.status === 'critical'
-                                  ? 'bg-rose-50 text-rose-600 border-rose-200'
-                                  : 'bg-amber-50 text-amber-600 border-amber-200'
+                                  ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                                  : 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
                             }`}
                           >
-                            {report.status.toUpperCase()}
+                            {report.status}
                           </span>
                         </td>
-                        <td className="px-8 py-5 text-right">
-                          <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center ml-auto group-hover:bg-primary-600 group-hover:text-white transition-all duration-300 shadow-sm">
-                            <MagnifyingGlassIcon className="w-4 h-4" />
-                          </div>
+                        <td className="py-2 px-3.5 text-right whitespace-nowrap">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedReport(report);
+                            }}
+                            className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-semibold rounded-lg px-2.5 py-1 text-xs transition-all shadow-xs"
+                          >
+                            Detail
+                          </button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               ) : (
-                <div className="flex-1 flex flex-col items-center justify-center p-20 text-center">
-                  <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 border border-slate-100 dark:border-white/5">
-                    <ClipboardCheckIcon className="w-10 h-10 text-slate-300" />
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-white">
-                    No Reports Found
-                  </h3>
-                  <p className="text-slate-400 mt-2 font-medium text-sm">
-                    {currentContextName} has no reports yet.
-                  </p>
+                <div className="py-12 px-4 text-center text-xs text-slate-400">
+                  Belum ada laporan inspeksi shift untuk {currentContextName}.
                 </div>
               )}
             </div>
-          </motion.div>
+          </div>
         </>
       ) : (
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex-1 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-soft p-8 flex flex-col"
+          className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-4 sm:p-5 flex flex-col"
         >
           <TemplateManager
             groups={currentAreaTemplate as any}

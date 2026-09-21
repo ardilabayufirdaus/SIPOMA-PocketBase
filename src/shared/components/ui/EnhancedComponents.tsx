@@ -269,7 +269,7 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
   icon,
   iconPosition = 'left',
   fullWidth = false,
-  rounded = 'md',
+  rounded = 'lg',
   elevation = 'none',
   haptic = false,
   ariaLabel,

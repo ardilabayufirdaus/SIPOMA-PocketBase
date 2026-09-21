@@ -36,7 +36,7 @@ build/
 .vscode/
 .idea/
 __pycache__/
-*.swp
 *.bak
 *.tar.gz
 scratch/
+catboost_info/

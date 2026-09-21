@@ -15,6 +15,7 @@ import { Project } from '../../types';
 
 // Import Enhanced Components
 import { EnhancedButton } from '../../components/ui/EnhancedComponents';
+import RealtimeIndicator from '../../components/ui/RealtimeIndicator';
 
 const LoadingSpinner: React.FC = () => (
   <div className="flex flex-col items-center justify-center min-h-[300px] p-10">
@@ -192,258 +193,302 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
   ];
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen p-4 sm:p-6 lg:p-8 font-sans transition-colors">
-      <div className="max-w-[1400px] mx-auto space-y-6">
-        {/* Header Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-              {t.proj_list || 'Project Management'}
-            </h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm sm:text-base">
-              {t.project_overview_subtitle ||
-                'Manage your projects, track progress, and monitor deadlines effectively.'}
-            </p>
+    <div className="w-full space-y-4 sm:space-y-5 font-sans">
+      {/* Hero Header Section - 20 Aturan Wajib */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-secondary-900 via-slate-900 to-secondary-950 rounded-2xl shadow-lg border border-slate-800 p-5 sm:p-6 text-white w-full">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2" />
+        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-emerald-400 shrink-0 shadow-inner">
+              <ClipboardDocumentListIcon
+                className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-400"
+                aria-hidden="true"
+              />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full">
+                  Project Management
+                </span>
+                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700 rounded-full">
+                  Project List
+                </span>
+                <RealtimeIndicator isConnected={true} lastUpdate={new Date()} />
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white font-display">
+                {t.proj_list || 'Project Management'}
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-300 font-normal mt-0.5">
+                {t.project_overview_subtitle ||
+                  'Manage your projects, track progress, and monitor deadlines effectively.'}
+              </p>
+            </div>
           </div>
           {canWrite && (
-            <EnhancedButton
-              variant="primary"
-              size="md"
+            <button
               onClick={handleAddProject}
-              className="bg-primary-600 hover:bg-primary-700 text-white shadow-md shadow-primary-600/20 rounded-xl px-5 py-2.5 flex items-center font-bold transition-all shrink-0"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 rounded-lg shadow-sm hover:shadow transition-all min-h-[36px] shrink-0"
               aria-label={t.add_project || 'Add new project'}
             >
-              <PlusIcon className="w-5 h-5 mr-2" aria-hidden="true" />
-              {t.add_project || 'Add Project'}
-            </EnhancedButton>
+              <PlusIcon className="w-4 h-4" aria-hidden="true" />
+              <span>{t.add_project || 'Tambah Proyek'}</span>
+            </button>
           )}
         </div>
+      </div>
 
-        {/* Filter & Search Bar */}
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row gap-4 justify-between items-center">
+      {/* Compact Filter Toolbar - Sesuai COP Analysis */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row gap-3 justify-between items-center">
           <div className="relative w-full sm:max-w-md">
             <input
               type="text"
-              placeholder={t.search_projects || 'Search projects...'}
+              placeholder={t.search_projects || 'Cari proyek...'}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+              className="w-full pl-9 pr-3 py-2 text-xs font-medium border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40 transition-all"
             />
-            <div className="pointer-events-none absolute left-3 top-2.5 text-slate-400 dark:text-slate-500">
-              <MagnifyingGlassIcon className="w-5 h-5" aria-hidden="true" />
+            <div className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
+              <MagnifyingGlassIcon className="w-4 h-4" aria-hidden="true" />
             </div>
           </div>
 
-          <div className="flex w-full sm:w-auto gap-3 items-center">
+          <div className="flex w-full sm:w-auto gap-2 items-center">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full sm:w-auto px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer font-medium"
+              className="w-full sm:w-auto px-3 py-2 text-xs font-medium border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-primary-500/40 cursor-pointer"
             >
-              <option value="all">{t.all_statuses || 'All Status'}</option>
+              <option value="all">{t.all_statuses || 'Semua Status'}</option>
               <option value="on_track">{t.proj_status_on_track || 'On Track'}</option>
               <option value="delayed">{t.proj_status_delayed || 'Delayed'}</option>
               <option value="completed">{t.proj_status_completed || 'Completed'}</option>
             </select>
 
             {(searchTerm || statusFilter !== 'all') && (
-              <EnhancedButton
-                variant="secondary"
-                size="sm"
+              <button
+                type="button"
                 onClick={handleResetFilter}
-                className="border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs rounded-xl whitespace-nowrap"
-                aria-label={t.reset_filter || 'Reset search and status filters'}
+                className="px-3 py-2 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all min-h-[34px] whitespace-nowrap"
+                aria-label={t.reset_filter || 'Reset filter'}
               >
                 {t.reset_filter || 'Reset'}
-              </EnhancedButton>
+              </button>
             )}
           </div>
         </div>
+      </div>
 
-        {/* Table Container or Empty State */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-          {paginatedProjects.length > 0 ? (
-            <>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
-                  <thead className="bg-slate-800 dark:bg-slate-950 border-b border-slate-700 dark:border-slate-800">
-                    <tr>
-                      {tableHeaders.map((header, index) => (
-                        <th
-                          key={index}
-                          scope="col"
-                          className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider last:text-right first:pl-8"
-                        >
-                          {header}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800">
-                    {paginatedProjects.map((p, index) => (
-                      <tr
-                        key={p.id}
-                        className="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition-colors duration-150 group"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400 font-medium first:pl-8">
-                          {(currentPage - 1) * 10 + index + 1}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div
-                            className="text-sm font-bold text-slate-900 dark:text-white max-w-xs md:max-w-md truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors"
-                            title={p.title}
-                          >
-                            {p.title}
-                          </div>
-                          {p.description && (
-                            <p
-                              className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-xs md:max-w-md mt-0.5"
-                              title={p.description}
-                            >
-                              {p.description}
-                            </p>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 font-semibold">
-                          {formatBudgetCompact(p.budget || 0)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <span
-                            className={`px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full ${
-                              statusBadgeMap[p.statusKey] ||
-                              'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
-                            }`}
-                          >
-                            {p.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                          <div className="flex items-center gap-3">
-                            <div className="w-24 bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden shadow-inner">
-                              <div
-                                className={`h-2 rounded-full transition-all duration-500 ${
-                                  p.statusKey === 'delayed'
-                                    ? 'bg-rose-500'
-                                    : p.statusKey === 'completed'
-                                      ? 'bg-indigo-600'
-                                      : 'bg-emerald-500'
-                                }`}
-                                style={{ width: `${p.progress}%` }}
-                              ></div>
-                            </div>
-                            <span className="font-bold text-slate-800 dark:text-slate-200 text-xs">
-                              {p.progress.toFixed(0)}%
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 font-medium">
-                          {p.startDate}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 font-medium">
-                          {p.endDate}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-200 text-center font-bold">
-                          {p.totalTasks}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end gap-1.5">
-                            {canWrite && (
-                              <EnhancedButton
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEditProject(p)}
-                                className="min-w-[38px] min-h-[38px] p-2 text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-slate-800 rounded-xl transition-all"
-                                aria-label={`${t.edit || 'Edit'} ${p.title}`}
-                                title={t.edit || 'Edit'}
-                              >
-                                <EditIcon className="w-4 h-4" aria-hidden="true" />
-                              </EnhancedButton>
-                            )}
-                            <EnhancedButton
-                              variant="custom"
-                              size="sm"
-                              onClick={() => onNavigateToDetail(p.id)}
-                              className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-semibold rounded-xl px-3.5 py-1.5 text-xs transition-all shadow-sm"
-                              aria-label={`${t.view_details_button || 'View Details'} for ${p.title}`}
-                            >
-                              {t.view_details_button || 'View Details'}
-                            </EnhancedButton>
-                            {canWrite && (
-                              <EnhancedButton
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleOpenDeleteModal(p.id)}
-                                className="min-w-[38px] min-h-[38px] p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-slate-800 rounded-xl transition-all"
-                                aria-label={`${t.delete || 'Delete'} ${p.title}`}
-                                title={t.delete || 'Delete'}
-                              >
-                                <TrashIcon className="w-4 h-4" aria-hidden="true" />
-                              </EnhancedButton>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination */}
-              <div className="border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-4">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
-            </>
-          ) : (
-            /* Interactive Empty State */
-            <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 mb-4 shadow-inner">
-                <ClipboardDocumentListIcon className="w-8 h-8" aria-hidden="true" />
-              </div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                {searchTerm || statusFilter !== 'all'
-                  ? t.no_results_found || 'No Projects Match Filters'
-                  : t.no_projects_found || 'No Projects Registered'}
-              </h2>
-              <p className="text-slate-500 dark:text-slate-400 max-w-md mb-6 text-sm">
-                {searchTerm || statusFilter !== 'all'
-                  ? t.no_results_message ||
-                    'Try modifying your search keywords or resetting the status filter to see available projects.'
-                  : t.no_projects_message ||
-                    'There are currently no projects recorded. Create a new project to start tracking activities and schedules.'}
-              </p>
-              <div className="flex gap-3">
-                {searchTerm || statusFilter !== 'all' ? (
-                  <EnhancedButton
-                    variant="secondary"
-                    size="md"
-                    onClick={handleResetFilter}
-                    className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl px-5 py-2.5 font-medium"
-                    aria-label={t.reset_filter || 'Reset Filter'}
-                  >
-                    {t.reset_filter || 'Reset Filter'}
-                  </EnhancedButton>
-                ) : (
-                  canWrite && (
-                    <EnhancedButton
-                      variant="primary"
-                      size="md"
-                      onClick={handleAddProject}
-                      className="bg-primary-600 hover:bg-primary-700 text-white shadow-md shadow-primary-600/20 rounded-xl px-6 py-2.5 font-bold flex items-center"
-                      aria-label={t.add_project || 'Add New Project'}
-                    >
-                      <PlusIcon className="w-5 h-5 mr-2" aria-hidden="true" />
-                      {t.add_project || 'Add New Project'}
-                    </EnhancedButton>
-                  )
-                )}
-              </div>
+      {/* Table Container - COP Analysis Precision Framing */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+        {/* Table Header Bar */}
+        <div className="p-3 sm:p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-850/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-900/50">
+              <ClipboardDocumentListIcon className="w-4 h-4" />
             </div>
-          )}
+            <div>
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100">
+                {t.proj_list || 'Matriks Portofolio Proyek'}
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Monitoring progres fisik pelaksanaan proyek, alokasi anggaran, dan timeline
+                penyelesaian
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-0.5 text-[11px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-md border border-slate-200 dark:border-slate-700">
+              Total: {filteredProjects.length} Proyek
+            </span>
+          </div>
         </div>
+
+        {paginatedProjects.length > 0 ? (
+          <>
+            <div className="overflow-x-auto scroll-smooth">
+              <table className="min-w-full text-xs border-collapse text-left" role="table">
+                <thead className="bg-slate-700 dark:bg-slate-800 text-white uppercase text-[11px] font-bold tracking-wider sticky top-0 z-20 border-b border-slate-600 dark:border-slate-700">
+                  <tr>
+                    {tableHeaders.map((header, index) => (
+                      <th
+                        key={index}
+                        scope="col"
+                        className={`py-2.5 px-3 whitespace-nowrap ${
+                          index === 0
+                            ? 'text-center w-10'
+                            : index === tableHeaders.length - 1
+                              ? 'text-right'
+                              : 'text-left'
+                        }`}
+                      >
+                        {header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-200 dark:divide-slate-800">
+                  {paginatedProjects.map((p, index) => (
+                    <tr
+                      key={p.id}
+                      className="hover:bg-slate-50/60 dark:hover:bg-slate-850/40 transition-colors group"
+                    >
+                      <td className="py-2 px-2.5 whitespace-nowrap text-xs text-slate-500 dark:text-slate-400 font-mono text-center w-10">
+                        {(currentPage - 1) * 10 + index + 1}
+                      </td>
+                      <td className="py-2 px-3 whitespace-nowrap max-w-xs">
+                        <div
+                          className="text-xs font-bold text-slate-900 dark:text-white truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors cursor-pointer"
+                          title={p.title}
+                          onClick={() => onNavigateToDetail(p.id)}
+                        >
+                          {p.title}
+                        </div>
+                        {p.description && (
+                          <p
+                            className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-xs"
+                            title={p.description}
+                          >
+                            {p.description}
+                          </p>
+                        )}
+                      </td>
+                      <td className="py-2 px-3 whitespace-nowrap font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        {formatBudgetCompact(p.budget || 0)}
+                      </td>
+                      <td className="py-2 px-3 whitespace-nowrap">
+                        <span
+                          className={`px-2 py-0.5 inline-flex text-[10px] font-bold uppercase rounded-full ${
+                            statusBadgeMap[p.statusKey] ||
+                            'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
+                          }`}
+                        >
+                          {p.status}
+                        </span>
+                      </td>
+                      <td className="py-2 px-3 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <div className="w-20 bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden shadow-inner">
+                            <div
+                              className={`h-1.5 rounded-full transition-all duration-500 ${
+                                p.statusKey === 'delayed'
+                                  ? 'bg-rose-500'
+                                  : p.statusKey === 'completed'
+                                    ? 'bg-indigo-600'
+                                    : 'bg-emerald-500'
+                              }`}
+                              style={{ width: `${p.progress}%` }}
+                            ></div>
+                          </div>
+                          <span className="font-mono font-bold text-slate-800 dark:text-slate-200 text-xs">
+                            {p.progress.toFixed(0)}%
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-2 px-3 whitespace-nowrap font-mono text-xs text-slate-600 dark:text-slate-300">
+                        {p.startDate}
+                      </td>
+                      <td className="py-2 px-3 whitespace-nowrap font-mono text-xs text-slate-600 dark:text-slate-300">
+                        {p.endDate}
+                      </td>
+                      <td className="py-2 px-3 whitespace-nowrap text-xs text-slate-700 dark:text-slate-200 text-center font-mono font-bold">
+                        {p.totalTasks}
+                      </td>
+                      <td className="py-2 px-3 whitespace-nowrap text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          {canWrite && (
+                            <button
+                              type="button"
+                              onClick={() => handleEditProject(p as unknown as Project)}
+                              className="p-1.5 text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-slate-800 rounded-lg transition-all"
+                              aria-label={`${t.edit || 'Edit'} ${p.title}`}
+                              title={t.edit || 'Edit'}
+                            >
+                              <EditIcon className="w-3.5 h-3.5" aria-hidden="true" />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => onNavigateToDetail(p.id)}
+                            className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-semibold rounded-lg px-2.5 py-1 text-xs transition-all shadow-xs"
+                            aria-label={`${t.view_details_button || 'View Details'} for ${p.title}`}
+                          >
+                            {t.view_details_button || 'Detail'}
+                          </button>
+                          {canWrite && (
+                            <button
+                              type="button"
+                              onClick={() => handleOpenDeleteModal(p.id)}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-slate-800 rounded-lg transition-all"
+                              aria-label={`${t.delete || 'Delete'} ${p.title}`}
+                              title={t.delete || 'Delete'}
+                            >
+                              <TrashIcon className="w-3.5 h-3.5" aria-hidden="true" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination - Compact */}
+            <div className="border-t border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/50 p-2.5 sm:p-3">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          </>
+        ) : (
+          /* Interactive Empty State */
+          <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 mb-4 shadow-inner">
+              <ClipboardDocumentListIcon className="w-8 h-8" aria-hidden="true" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+              {searchTerm || statusFilter !== 'all'
+                ? t.no_results_found || 'No Projects Match Filters'
+                : t.no_projects_found || 'No Projects Registered'}
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400 max-w-md mb-6 text-sm">
+              {searchTerm || statusFilter !== 'all'
+                ? t.no_results_message ||
+                  'Try modifying your search keywords or resetting the status filter to see available projects.'
+                : t.no_projects_message ||
+                  'There are currently no projects recorded. Create a new project to start tracking activities and schedules.'}
+            </p>
+            <div className="flex gap-3">
+              {searchTerm || statusFilter !== 'all' ? (
+                <EnhancedButton
+                  variant="secondary"
+                  size="md"
+                  onClick={handleResetFilter}
+                  className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl px-5 py-2.5 font-medium"
+                  aria-label={t.reset_filter || 'Reset Filter'}
+                >
+                  {t.reset_filter || 'Reset Filter'}
+                </EnhancedButton>
+              ) : (
+                canWrite && (
+                  <EnhancedButton
+                    variant="primary"
+                    size="md"
+                    onClick={handleAddProject}
+                    className="bg-primary-600 hover:bg-primary-700 text-white shadow-md shadow-primary-600/20 rounded-xl px-6 py-2.5 font-bold flex items-center"
+                    aria-label={t.add_project || 'Add New Project'}
+                  >
+                    <PlusIcon className="w-5 h-5 mr-2" aria-hidden="true" />
+                    {t.add_project || 'Add New Project'}
+                  </EnhancedButton>
+                )
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Project Form Modal */}

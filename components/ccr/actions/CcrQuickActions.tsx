@@ -65,46 +65,42 @@ const CcrQuickActions: React.FC<CcrQuickActionsProps> = memo(
     }, [isDisabled, canWrite, onDeleteAll]);
 
     return (
-      <div className="relative group h-full">
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-slate-900/20 to-primary-600/20 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-        <div className="relative backdrop-blur-xl bg-white/40 border border-white/60 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] p-6 transition-all duration-300 h-full">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-secondary-900 flex items-center justify-center shadow-lg shadow-emerald-500/20 ring-4 ring-primary-500/10">
-              <svg
-                className="w-6 h-6 text-emerald-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+      <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs p-3.5 sm:p-4 h-full flex flex-col justify-between">
+        <div>
+          <div className="flex items-center gap-3 mb-3.5">
+            <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 border border-primary-100 dark:border-primary-900/50 flex items-center justify-center shrink-0 shadow-xs">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth={2.5}
+                  strokeWidth={2}
                   d="M13 10V3L4 14h7v7l9-11h-7z"
                 />
               </svg>
             </div>
-            <div>
-              <h3 className="text-2xl font-black tracking-tight text-slate-800">
+            <div className="min-w-0">
+              <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 truncate">
                 {t.quick_actions}
               </h3>
-              <p className="text-sm font-medium text-slate-500">{t.quick_actions_desc}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                {t.quick_actions_desc}
+              </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-2">
             {/* Refresh Button - Secondary */}
             <button
               onClick={handleRefresh}
               disabled={isDisabled || isRefreshing}
               aria-label={t.refresh_data || 'Refresh Data'}
-              className="min-h-[44px] flex items-center gap-2.5 px-5 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="min-h-[36px] h-[36px] inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold shadow-xs hover:shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/40 disabled:opacity-40 disabled:cursor-not-allowed"
               title={t.refresh_data || 'Refresh Data'}
             >
               <ArrowPathIcon
-                className={`w-5 h-5 text-primary-600 dark:text-primary-400 ${isRefreshing ? 'animate-spin' : ''}`}
+                className={`w-4 h-4 text-primary-600 dark:text-primary-400 ${isRefreshing ? 'animate-spin' : ''}`}
               />
-              <span className="font-bold tracking-wide">{t.refresh || 'Refresh'}</span>
+              <span>{t.refresh || 'Refresh'}</span>
             </button>
 
             {/* Export Button - Primary */}
@@ -112,11 +108,11 @@ const CcrQuickActions: React.FC<CcrQuickActionsProps> = memo(
               onClick={handleExport}
               disabled={isDisabled || isExporting}
               aria-label={t.export_to_excel || 'Export ke Excel'}
-              className="min-h-[44px] flex items-center gap-2.5 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="min-h-[36px] h-[36px] inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white border border-emerald-500/50 rounded-lg text-xs font-semibold shadow-xs hover:shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 disabled:opacity-40 disabled:cursor-not-allowed"
               title={t.export_to_excel || 'Export ke Excel'}
             >
-              <DocumentArrowDownIcon className="w-5 h-5" />
-              <span className="font-bold tracking-wide">{t.export || 'Export'}</span>
+              <DocumentArrowDownIcon className="w-4 h-4" />
+              <span>{t.export || 'Export'}</span>
             </button>
 
             {/* Import Button - Secondary */}
@@ -125,11 +121,11 @@ const CcrQuickActions: React.FC<CcrQuickActionsProps> = memo(
                 onClick={handleImport}
                 disabled={isDisabled}
                 aria-label={t.import_from_excel || 'Import dari Excel'}
-                className="min-h-[44px] flex items-center gap-2.5 px-5 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="min-h-[36px] h-[36px] inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold shadow-xs hover:shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/40 disabled:opacity-40 disabled:cursor-not-allowed"
                 title={t.import_from_excel || 'Import dari Excel'}
               >
-                <DocumentArrowUpIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                <span className="font-bold tracking-wide">{t.import || 'Import'}</span>
+                <DocumentArrowUpIcon className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                <span>{t.import || 'Import'}</span>
               </button>
             )}
 
@@ -138,11 +134,11 @@ const CcrQuickActions: React.FC<CcrQuickActionsProps> = memo(
               <button
                 onClick={onMonthlyExportImport}
                 aria-label="Ekspor & Impor Data Bulanan"
-                className="min-h-[44px] flex items-center gap-2.5 px-5 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1"
+                className="min-h-[36px] h-[36px] inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold shadow-xs hover:shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
                 title="Ekspor & Impor Data Bulanan"
               >
-                <DocumentArrowDownIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                <span className="font-bold tracking-wide">Bulanan (Excel)</span>
+                <DocumentArrowDownIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span>Bulanan (Excel)</span>
               </button>
             )}
 
@@ -152,11 +148,11 @@ const CcrQuickActions: React.FC<CcrQuickActionsProps> = memo(
                 onClick={handleDeleteAll}
                 disabled={isDisabled}
                 aria-label={t.delete_all_data || 'Hapus Semua Data'}
-                className="min-h-[44px] flex items-center gap-2.5 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-sm hover:shadow-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="min-h-[36px] h-[36px] inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white border border-rose-500/50 rounded-lg text-xs font-semibold shadow-xs hover:shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-rose-500/40 disabled:opacity-40 disabled:cursor-not-allowed"
                 title={t.delete_all_data || 'Hapus Semua Data'}
               >
-                <TrashIcon className="w-5 h-5" />
-                <span className="font-bold tracking-wide">{t.delete_all || 'Reset'}</span>
+                <TrashIcon className="w-4 h-4" />
+                <span>{t.delete_all || 'Reset'}</span>
               </button>
             )}
           </div>

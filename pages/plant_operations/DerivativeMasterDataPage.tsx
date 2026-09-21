@@ -1,25 +1,32 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
   ChevronDown,
+  GripVertical,
   Database,
   Users,
+  Settings,
   BarChart3,
+  FileText,
   Search,
   Filter,
   RefreshCw,
-  FileText,
+  Plus,
+  Pencil,
+  Trash2,
+  Download,
+  Upload,
+  Layers,
+  LayoutGrid,
+  Check,
+  AlertCircle,
+  X,
 } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { motion, AnimatePresence } from 'framer-motion';
 import { exportMultipleSheets, importMultipleSheets } from '../../utils/excelUtils';
 import Modal from '../../components/Modal';
-import { SearchInput } from '../../components/ui/Input';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import RealtimeIndicator from '../../components/ui/RealtimeIndicator';
-import PlusIcon from '../../components/icons/PlusIcon';
-import EditIcon from '../../components/icons/EditIcon';
-import TrashIcon from '../../components/icons/TrashIcon';
-import DocumentArrowDownIcon from '../../components/icons/DocumentArrowDownIcon';
-import DocumentArrowUpIcon from '../../components/icons/DocumentArrowUpIcon';
 import { formatNumber } from '../../utils/formatters';
 import { usePagination } from '../../hooks/usePagination';
 import Pagination from '../../components/Pagination';
@@ -29,6 +36,7 @@ import { useDerivativePlantUnits } from '../../hooks/useDerivativePlantUnits';
 import { useDerivativeParameterSettings } from '../../hooks/useDerivativeParameterSettings';
 import { useDerivativeSiloCapacities } from '../../hooks/useDerivativeSiloCapacities';
 import { useDerivativePicSettings } from '../../hooks/useDerivativePicSettings';
+import { useDerivativeReportSettings } from '../../hooks/useDerivativeReportSettings';
 import { useDerivativeCopParameters } from '../../hooks/useDerivativeCopParameters';
 import {
   useDerivativeCopFooterParameters,
@@ -36,8 +44,6 @@ import {
   CopFooterParameterConfig,
 } from '../../hooks/useDerivativeCopFooterParameters';
 import { usePlantOperationsAccess } from '../../hooks/usePlantOperationsAccess';
-import { usePermissions } from '../../utils/permissions';
-import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 // Types
 import {
@@ -76,9 +82,16 @@ type ModalType =
   | 'reportSetting'
   | null;
 
+type TabType = 'parameters' | 'units_pic' | 'silo' | 'cop' | 'reports' | 'all';
+type CopSubTab = 'cop_params' | 'cop_footer';
+
 const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const { canWrite } = usePlantOperationsAccess('DERIVATIVE');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Active View Tabs
+  const [activeTab, setActiveTab] = useState<TabType>('parameters');
+  const [copSubTab, setCopSubTab] = useState<CopSubTab>('cop_params');
 
   // Plant Units State
   const {
@@ -88,6 +101,13 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
     deleteRecord: deletePlantUnit,
     loading: plantUnitsLoading,
   } = useDerivativePlantUnits();
+  const [editingPlantUnit, setEditingPlantUnit] = useState<PlantUnit | null>(null);
+  const {
+    paginatedData: paginatedPlantUnits,
+    currentPage: puCurrentPage,
+    totalPages: puTotalPages,
+    setCurrentPage: setPuCurrentPage,
+  } = usePagination(plantUnits, 10);
 
   // Parameter Settings State
   const {
@@ -96,6 +116,7 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
     updateRecord: updateParameter,
     deleteRecord: deleteParameter,
   } = useDerivativeParameterSettings();
+  const [editingParameter, setEditingParameter] = useState<ParameterSetting | null>(null);
 
   // Silo Capacity State
   const {
@@ -105,6 +126,7 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
     updateRecord: updateSilo,
     deleteRecord: deleteSilo,
   } = useDerivativeSiloCapacities();
+  const [editingSilo, setEditingSilo] = useState<SiloCapacity | null>(null);
 
   // PIC Settings State
   const {
@@ -113,6 +135,13 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
     updateRecord: updatePicSetting,
     deleteRecord: deletePicSetting,
   } = useDerivativePicSettings();
+  const [editingPic, setEditingPic] = useState<PicSetting | null>(null);
+  const {
+    paginatedData: paginatedPicSettings,
+    currentPage: picCurrentPage,
+    totalPages: picTotalPages,
+    setCurrentPage: setPicCurrentPage,
+  } = usePagination(picSettings, 10);
 
   // Report Settings State
   const {
@@ -121,35 +150,19 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
     updateRecord: updateReportSetting,
     deleteRecord: deleteReportSetting,
     updateOrder: updateReportOrder,
+    loading: reportSettingsLoading,
   } = useDerivativeReportSettings();
-
-  // Pagination State
-  const {
-    paginatedData: paginatedPlantUnits,
-    currentPage: puCurrentPage,
-    totalPages: puTotalPages,
-    setCurrentPage: setPuCurrentPage,
-  } = usePagination(plantUnits, 10);
-
-  const [editingPlantUnit, setEditingPlantUnit] = useState<PlantUnit | null>(null);
-  const [editingParameter, setEditingParameter] = useState<ParameterSetting | null>(null);
-  const [editingSilo, setEditingSilo] = useState<SiloCapacity | null>(null);
   const [editingReportSetting, setEditingReportSetting] = useState<RkcReportSetting | null>(null);
-  const [editingPic, setEditingPic] = useState<PicSetting | null>(null);
-
-  const {
-    paginatedData: paginatedPicSettings,
-    currentPage: picCurrentPage,
-    totalPages: picTotalPages,
-    setCurrentPage: setPicCurrentPage,
-  } = usePagination(picSettings, 10);
-
   const {
     paginatedData: paginatedReportSettings,
     currentPage: reportCurrentPage,
     totalPages: reportTotalPages,
     setCurrentPage: setReportCurrentPage,
   } = usePagination(reportSettings, 10);
+
+  const maxReportSettingOrder = useMemo(() => {
+    return reportSettings.length > 0 ? Math.max(...reportSettings.map((rs) => rs.order)) + 1 : 0;
+  }, [reportSettings]);
 
   // Modal State
   const [activeModal, setActiveModal] = useState<ModalType>(null);
@@ -172,9 +185,35 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
   const [copFooterCategoryFilter, setCopFooterCategoryFilter] = useState('');
   const [copFooterUnitFilter, setCopFooterUnitFilter] = useState('');
 
+  const getDeletingRecordName = useMemo(() => {
+    if (!deletingRecord) return '';
+    switch (deletingRecord.type) {
+      case 'plantUnit':
+        return plantUnits.find((p) => p.id === deletingRecord.id)?.unit || 'Unknown Plant Unit';
+      case 'parameterSetting':
+        return (
+          parameterSettings.find((p) => p.id === deletingRecord.id)?.parameter ||
+          'Unknown Parameter'
+        );
+      case 'siloCapacity': {
+        const silo = siloCapacities.find((s) => s.id === deletingRecord.id);
+        return silo ? `${silo.plant_category} - ${silo.unit} - ${silo.silo_name}` : 'Unknown Silo';
+      }
+      case 'picSetting':
+        return picSettings.find((p) => p.id === deletingRecord.id)?.pic || 'Unknown PIC';
+      case 'reportSetting': {
+        const paramId = reportSettings.find((r) => r.id === deletingRecord.id)?.parameter_id;
+        const param = parameterSettings.find((p) => p.id === paramId);
+        return param ? `${param.parameter} (${param.unit})` : paramId || 'Unknown Report Setting';
+      }
+      default:
+        return 'Unknown Record';
+    }
+  }, [deletingRecord, plantUnits, parameterSettings, siloCapacities, picSettings, reportSettings]);
+
   // Derived data for filters
   const uniquePlantCategories = useMemo(
-    () => [...new Set(plantUnits.map((unit) => unit.category).sort())],
+    () => [...new Set(plantUnits.map((unit) => unit.category).filter(Boolean))].sort(),
     [plantUnits]
   );
 
@@ -194,86 +233,15 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
         setCopFooterCategoryFilter(uniquePlantCategories[0]);
       }
     }
-  }, [uniquePlantCategories, parameterCategoryFilter, siloCategoryFilter, copCategoryFilter]);
+  }, [
+    uniquePlantCategories,
+    parameterCategoryFilter,
+    siloCategoryFilter,
+    copCategoryFilter,
+    copFooterCategoryFilter,
+  ]);
 
-  // COP Parameters Logic
-  const allParametersMap = useMemo(
-    () => new Map(parameterSettings.map((p) => [p.id, p])),
-    [parameterSettings]
-  );
-  const {
-    copParameterIds,
-    setCopParameterIds,
-    loading: copParametersLoading,
-  } = useDerivativeCopParameters(copCategoryFilter, copUnitFilter);
-  const [isCopModalOpen, setIsCopModalOpen] = useState(false);
-  const [tempCopSelection, setTempCopSelection] = useState<string[]>([]);
-
-  const copParameters = useMemo(() => {
-    if (!copCategoryFilter || !copUnitFilter) return [];
-    return copParameterIds
-      .map((id) => allParametersMap.get(id))
-      .filter((p): p is ParameterSetting => {
-        if (!p) return false;
-        return p.category === copCategoryFilter && p.unit === copUnitFilter;
-      });
-  }, [copParameterIds, allParametersMap, copCategoryFilter, copUnitFilter]);
-
-  const {
-    paginatedData: paginatedCopParams,
-    currentPage: copCurrentPage,
-    totalPages: copTotalPages,
-    setCurrentPage: setCopCurrentPage,
-  } = usePagination(copParameters as ParameterSetting[], 10);
-
-  // COP Footer Parameters Logic
-  const {
-    copFooterConfigs,
-    copFooterParameterIds,
-    setCopFooterConfigs,
-    setCopFooterParameterIds,
-    loading: copFooterLoading,
-  } = useDerivativeCopFooterParameters(copFooterCategoryFilter, copFooterUnitFilter);
-
-  const [isCopFooterModalOpen, setIsCopFooterModalOpen] = useState(false);
-  const [tempCopFooterSelection, setTempCopFooterSelection] = useState<CopFooterParameterConfig[]>(
-    []
-  );
-  const [copFooterSearchQuery, setCopFooterSearchQuery] = useState('');
-
-  const copFooterParameters = useMemo(() => {
-    if (!copFooterCategoryFilter || !copFooterUnitFilter) return [];
-    return copFooterConfigs
-      .map((config) => {
-        const param = allParametersMap.get(config.id);
-        if (!param) return null;
-        const categoryMatch = param.category === copFooterCategoryFilter;
-        const unitMatch = param.unit === copFooterUnitFilter;
-        if (!categoryMatch || !unitMatch) return null;
-        return {
-          ...param,
-          copFooterAggregation: config.aggregation,
-        };
-      })
-      .filter(
-        (p): p is ParameterSetting & { copFooterAggregation: CopFooterAggregationType } =>
-          p !== null
-      );
-  }, [copFooterConfigs, allParametersMap, copFooterCategoryFilter, copFooterUnitFilter]);
-
-  const {
-    paginatedData: paginatedCopFooterParams,
-    currentPage: copFooterCurrentPage,
-    totalPages: copFooterTotalPages,
-    setCurrentPage: setCopFooterCurrentPage,
-  } = usePagination(
-    copFooterParameters as (ParameterSetting & {
-      copFooterAggregation?: CopFooterAggregationType;
-    })[],
-    10
-  );
-
-  // Filter Logic helpers
+  // Units for filters
   const unitsForParameterFilter = useMemo(() => {
     if (!parameterCategoryFilter) return [];
     return plantUnits
@@ -306,7 +274,6 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
       .sort();
   }, [plantUnits, copFooterCategoryFilter]);
 
-  // Auto-select unit
   useEffect(() => {
     if (unitsForParameterFilter.length > 0) {
       if (!parameterUnitFilter || !unitsForParameterFilter.includes(parameterUnitFilter)) {
@@ -347,7 +314,77 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
     }
   }, [unitsForCopFooterFilter, copFooterUnitFilter]);
 
-  // Filtered Lists
+  // COP Parameters Logic
+  const allParametersMap = useMemo(
+    () => new Map(parameterSettings.map((p) => [p.id, p])),
+    [parameterSettings]
+  );
+  const {
+    copParameterIds,
+    setCopParameterIds,
+    loading: copParametersLoading,
+  } = useDerivativeCopParameters(copCategoryFilter, copUnitFilter);
+  const [isCopModalOpen, setIsCopModalOpen] = useState(false);
+  const [tempCopSelection, setTempCopSelection] = useState<string[]>([]);
+
+  const copParameters = useMemo(() => {
+    if (!copCategoryFilter || !copUnitFilter) return [];
+    return copParameterIds
+      .map((id) => allParametersMap.get(id))
+      .filter((p): p is ParameterSetting => {
+        if (!p) return false;
+        return p.category === copCategoryFilter && p.unit === copUnitFilter;
+      });
+  }, [copParameterIds, allParametersMap, copCategoryFilter, copUnitFilter]);
+
+  const {
+    paginatedData: paginatedCopParams,
+    currentPage: copCurrentPage,
+    totalPages: copTotalPages,
+    setCurrentPage: setCopCurrentPage,
+  } = usePagination(copParameters, 10);
+
+  // COP Footer Parameters Logic
+  const {
+    copFooterConfigs,
+    setCopFooterConfigs,
+    loading: copFooterLoading,
+  } = useDerivativeCopFooterParameters(copFooterCategoryFilter, copFooterUnitFilter);
+
+  const [isCopFooterModalOpen, setIsCopFooterModalOpen] = useState(false);
+  const [tempCopFooterSelection, setTempCopFooterSelection] = useState<CopFooterParameterConfig[]>(
+    []
+  );
+  const [copFooterSearchQuery, setCopFooterSearchQuery] = useState('');
+
+  const copFooterParameters = useMemo(() => {
+    if (!copFooterCategoryFilter || !copFooterUnitFilter) return [];
+    return copFooterConfigs
+      .map((config) => {
+        const param = allParametersMap.get(config.id);
+        if (!param) return null;
+        const categoryMatch = param.category === copFooterCategoryFilter;
+        const unitMatch = param.unit === copFooterUnitFilter;
+        if (!categoryMatch || !unitMatch) return null;
+        return {
+          ...param,
+          copFooterAggregation: config.aggregation,
+        };
+      })
+      .filter(
+        (p): p is ParameterSetting & { copFooterAggregation: CopFooterAggregationType } =>
+          p !== null
+      );
+  }, [copFooterConfigs, allParametersMap, copFooterCategoryFilter, copFooterUnitFilter]);
+
+  const {
+    paginatedData: paginatedCopFooterParams,
+    currentPage: copFooterCurrentPage,
+    totalPages: copFooterTotalPages,
+    setCurrentPage: setCopFooterCurrentPage,
+  } = usePagination(copFooterParameters, 10);
+
+  // Filtered Tables
   const filteredParameterSettings = useMemo(() => {
     if (!parameterCategoryFilter || !parameterUnitFilter) return [];
     let filtered = parameterSettings.filter((param) => {
@@ -387,17 +424,7 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
     setCurrentPage: setSilosCurrentPage,
   } = usePagination(filteredSiloCapacities, 10);
 
-  // Search Helpers
-  const clearParameterSearch = useCallback(() => {
-    setParameterSearchQuery('');
-  }, []);
-
-  const isParameterSearchActive = useMemo(
-    () => parameterSearchQuery.trim().length > 0,
-    [parameterSearchQuery]
-  );
-
-  // Handlers
+  // Modal Handlers
   const handleOpenAddModal = (type: ModalType) => {
     if (type === 'plantUnit') setEditingPlantUnit(null);
     if (type === 'parameterSetting') setEditingParameter(null);
@@ -442,28 +469,36 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
       if (deletingRecord.type === 'reportSetting') deleteReportSetting(deletingRecord.id);
     }
     handleCloseModals();
-  }, [deletingRecord, deletePlantUnit, deleteParameter, deleteSilo, deletePicSetting, canWrite]);
+  }, [
+    deletingRecord,
+    deletePlantUnit,
+    deleteParameter,
+    deleteSilo,
+    deletePicSetting,
+    deleteReportSetting,
+    canWrite,
+  ]);
 
   const handleSave = (type: ModalType, record: MasterDataRecord) => {
     if (!canWrite) return;
     if (type === 'plantUnit') {
-      if ('id' in record) updatePlantUnit(record as PlantUnit);
+      if ('id' in record && record.id) updatePlantUnit(record as PlantUnit);
       else addPlantUnit(record as PlantUnit);
     }
     if (type === 'parameterSetting') {
-      if ('id' in record) updateParameter(record as ParameterSetting);
+      if ('id' in record && record.id) updateParameter(record as ParameterSetting);
       else addParameter(record as ParameterSetting);
     }
     if (type === 'siloCapacity') {
-      if ('id' in record) updateSilo(record as SiloCapacity);
+      if ('id' in record && record.id) updateSilo(record as SiloCapacity);
       else addSilo(record as SiloCapacity);
     }
     if (type === 'picSetting') {
-      if ('id' in record) updatePicSetting(record as PicSetting);
+      if ('id' in record && record.id) updatePicSetting(record as PicSetting);
       else addPicSetting(record as PicSetting);
     }
     if (type === 'reportSetting') {
-      if ('id' in record) updateReportSetting(record as RkcReportSetting);
+      if ('id' in record && record.id) updateReportSetting(record as RkcReportSetting);
       else addReportSetting(record as RkcReportSetting);
     }
     handleCloseModals();
@@ -528,6 +563,26 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
     setCopFooterConfigs(copFooterConfigs.filter((item) => item.id !== paramId));
   };
 
+  // Report Settings Drag & Drop
+  const handleReportDragEnd = (result: DropResult) => {
+    if (!result.destination || !canWrite) return;
+    const { source, destination } = result;
+    if (source.index === destination.index) return;
+
+    const reordered = Array.from(reportSettings);
+    const [movedItem] = reordered.splice(source.index, 1);
+    reordered.splice(destination.index, 0, movedItem);
+
+    const updatedWithOrder = reordered.map((item, index) => ({
+      ...item,
+      order: index,
+    }));
+
+    if (updateReportOrder) {
+      updateReportOrder(updatedWithOrder);
+    }
+  };
+
   const handleExportAll = async () => {
     if (isExporting) return;
     setIsExporting(true);
@@ -545,11 +600,14 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
       if (picSettings.length > 0) {
         sheets.push({ name: 'PIC Settings', data: picSettings.map((p) => ({ ...p })) });
       }
+      if (reportSettings.length > 0) {
+        sheets.push({ name: 'Report Settings', data: reportSettings.map((r) => ({ ...r })) });
+      }
 
       const timestamp = new Date().toISOString().split('T')[0];
       const filename = `Derivative_MasterData_${timestamp}`;
       exportMultipleSheets(sheets, filename);
-    } catch (error) {
+    } catch {
       alert('Export failed');
     } finally {
       setIsExporting(false);
@@ -561,719 +619,840 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
     if (!file) return;
     setIsImporting(true);
     try {
-      alert('Import feature is being restored. Please try again later.');
+      alert('Fitur import saat ini sedang diperbarui.');
     } finally {
       setIsImporting(false);
       if (event.target) event.target.value = '';
     }
   };
 
-  return (
-    <div className="min-h-screen bg-[#F0F0F0]">
-      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header Section */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-secondary-900 rounded-xl shadow-lg border border-white/10 p-6 mb-8"
+  // Visual Helper Components
+  const renderSectionHeader = (
+    title: string,
+    subtitle: string,
+    icon: React.ReactNode,
+    onAdd?: () => void,
+    addLabel: string = 'Tambah Data'
+  ) => (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 rounded-lg bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 flex items-center justify-center border border-primary-100 dark:border-primary-900/50">
+          {icon}
+        </div>
+        <div>
+          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">{title}</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>
+        </div>
+      </div>
+      {canWrite && onAdd && (
+        <button
+          type="button"
+          onClick={onAdd}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-primary-600 hover:bg-primary-700 active:bg-primary-800 rounded-lg shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none min-h-[36px]"
+          aria-label={addLabel}
         >
-          {/* Background Pattern */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent"></div>
-          <div className="absolute top-0 right-0 w-40 h-40 bg-primary-600/10 rounded-full -translate-y-20 translate-x-20"></div>
+          <Plus className="w-4 h-4" />
+          <span>{addLabel}</span>
+        </button>
+      )}
+    </div>
+  );
 
-          <div className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
-                <Database className="w-7 h-7 text-primary-400" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white tracking-tight">
-                  {t.derivative_master_data_title || 'Derivative Master Data'}
-                </h1>
-                <p className="text-sm text-white/80 font-medium mt-0.5">
-                  {t.derivative_master_data_subtitle ||
-                    'Manage Derivative plant operations master data and configurations'}
-                </p>
-              </div>
+  const renderEmptyState = (message: string, onAction?: () => void, actionLabel?: string) => (
+    <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+      <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center mb-3">
+        <AlertCircle className="w-6 h-6" />
+      </div>
+      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-sm mb-4">
+        {message}
+      </p>
+      {canWrite && onAction && actionLabel && (
+        <button
+          type="button"
+          onClick={onAction}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-700 bg-primary-50 dark:bg-primary-950/40 hover:bg-primary-100 dark:hover:bg-primary-900/50 rounded-lg border border-primary-200 dark:border-primary-800 transition-colors focus-visible:ring-2 focus-visible:ring-primary-500 min-h-[36px]"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>{actionLabel}</span>
+        </button>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="w-full space-y-6 font-sans">
+      {/* Compact Hero Header */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 rounded-2xl shadow-sm border border-slate-700/50 p-4 sm:p-6 text-white w-full">
+        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center ring-1 ring-white/20 text-primary-400">
+              <Database className="w-6 h-6" />
             </div>
-            <div className="flex items-center gap-3">
-              <RealtimeIndicator
-                isConnected={true}
-                lastUpdate={new Date()}
-                className="text-sm text-white/80"
-              />
-              <div className="flex gap-2">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleImportAll}
-                  accept=".xlsx, .xls"
-                  className="hidden"
-                />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isImporting || !canWrite}
-                  className="inline-flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-900 rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                  title={t.import_excel || 'Import Excel'}
-                >
-                  <DocumentArrowUpIcon className="w-4 h-4 text-white" />
-                  <span>
-                    {isImporting
-                      ? t.importing_excel || 'Importing...'
-                      : t.import_excel || 'Import Excel'}
-                  </span>
-                </button>
-                <button
-                  onClick={handleExportAll}
-                  disabled={isExporting}
-                  className="inline-flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-900 rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                  title={t.export_excel || 'Export Excel'}
-                >
-                  <DocumentArrowDownIcon className="w-4 h-4 text-white" />
-                  <span>
-                    {isExporting
-                      ? t.exporting_excel || 'Exporting...'
-                      : t.export_excel || 'Export Excel'}
-                  </span>
-                </button>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+                  {t['derivative_master_data_title'] || 'Derivative Master Data'}
+                </h1>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  Active
+                </span>
               </div>
+              <p className="text-xs sm:text-sm text-slate-300 font-normal mt-0.5">
+                {t['derivative_master_data_subtitle'] ||
+                  'Konfigurasi parameter unit, silo, COP, dan laporan harian Derivative'}
+              </p>
             </div>
           </div>
-        </motion.div>
 
-        {/* Data Cards Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          {/* Plant Unit Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="bg-white rounded-xl shadow-lg border border-[#94a3b8]/30 overflow-hidden"
+          <div className="flex flex-wrap items-center gap-2 sm:self-center">
+            <RealtimeIndicator
+              isConnected={true}
+              lastUpdate={new Date()}
+              className="text-xs text-slate-300"
+            />
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImportAll}
+              accept=".xlsx, .xls"
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isImporting || !canWrite}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white/10 hover:bg-white/15 active:bg-white/20 text-white rounded-lg border border-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[36px]"
+              title={t['import_excel'] || 'Import Excel'}
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span>{isImporting ? 'Mengimpor...' : 'Import'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleExportAll}
+              disabled={isExporting}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-primary-600 hover:bg-primary-500 active:bg-primary-700 text-white rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[36px]"
+              title={t['export_excel'] || 'Export Excel'}
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>{isExporting ? 'Mengekspor...' : 'Export'}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Segmented Tab Navigation */}
+      <div className="bg-white dark:bg-slate-900 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="flex flex-wrap items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setActiveTab('parameters')}
+            className={`flex-1 min-w-[140px] sm:min-w-0 inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all min-h-[38px] ${
+              activeTab === 'parameters'
+                ? 'bg-primary-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
           >
-            <div className="p-6 border-b border-[#94a3b8]/20">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary-600/10 rounded-lg">
-                    <Database className="w-5 h-5 text-primary-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-[#333333]">
-                      {t['plant_unit_title']}
-                    </h3>
-                    <p className="text-sm text-[#555555]">{t['plant_unit_subtitle']}</p>
-                  </div>
-                </div>
-                {canWrite && (
-                  <button
-                    onClick={() => handleOpenAddModal('plantUnit')}
-                    className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-white bg-[#059669] hover:bg-[#047857] rounded-xl shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <PlusIcon className="w-4 h-4" />
-                    <span>{t['add_data_button'] || 'Tambah Data'}</span>
-                  </button>
-                )}
+            <Settings className="w-4 h-4" />
+            <span>{t['parameter_settings_title'] || 'Parameter Settings'}</span>
+            <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-900/20 text-current">
+              {parameterSettings.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('units_pic')}
+            className={`flex-1 min-w-[140px] sm:min-w-0 inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all min-h-[38px] ${
+              activeTab === 'units_pic'
+                ? 'bg-primary-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            <span>Unit & PIC</span>
+            <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-900/20 text-current">
+              {plantUnits.length + picSettings.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('silo')}
+            className={`flex-1 min-w-[140px] sm:min-w-0 inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all min-h-[38px] ${
+              activeTab === 'silo'
+                ? 'bg-primary-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Database className="w-4 h-4" />
+            <span>{t['silo_capacity_title'] || 'Kapasitas Silo'}</span>
+            <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-900/20 text-current">
+              {siloCapacities.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('cop')}
+            className={`flex-1 min-w-[140px] sm:min-w-0 inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all min-h-[38px] ${
+              activeTab === 'cop'
+                ? 'bg-primary-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <BarChart3 className="w-4 h-4" />
+            <span>{t['cop_parameters_title'] || 'Konfigurasi COP'}</span>
+            <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-900/20 text-current">
+              {copParameters.length + copFooterParameters.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('reports')}
+            className={`flex-1 min-w-[140px] sm:min-w-0 inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all min-h-[38px] ${
+              activeTab === 'reports'
+                ? 'bg-primary-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>{t['report_settings_title'] || 'Konfigurasi Laporan'}</span>
+            <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-900/20 text-current">
+              {reportSettings.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('all')}
+            className={`flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg transition-all min-h-[38px] ${
+              activeTab === 'all'
+                ? 'bg-slate-800 text-white dark:bg-slate-700'
+                : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+            title="Tampilkan Semua Modul Sekaligus"
+          >
+            <LayoutGrid className="w-4 h-4" />
+            <span className="hidden md:inline">Semua</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Tab 1: Parameter Settings */}
+      {(activeTab === 'parameters' || activeTab === 'all') && (
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all">
+          {renderSectionHeader(
+            t['parameter_settings_title'] || 'Parameter Settings',
+            'Daftar variabel operasional dan batas normal mesin Derivative',
+            <Settings className="w-4 h-4" />,
+            () => handleOpenAddModal('parameterSetting'),
+            'Tambah Parameter'
+          )}
+
+          {/* Filter Bar */}
+          <div className="p-3 sm:p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-850/50 flex flex-col md:flex-row gap-3 items-center justify-between">
+            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+              <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 font-medium mr-1">
+                <Filter className="w-3.5 h-3.5" />
+                <span>Filter:</span>
               </div>
+              <select
+                value={parameterCategoryFilter}
+                onChange={(e) => setParameterCategoryFilter(e.target.value)}
+                className="text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-primary-500 focus:outline-none"
+                aria-label="Filter Kategori Parameter"
+              >
+                {uniquePlantCategories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={parameterUnitFilter}
+                onChange={(e) => setParameterUnitFilter(e.target.value)}
+                className="text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-primary-500 focus:outline-none"
+                aria-label="Filter Unit Parameter"
+              >
+                {unitsForParameterFilter.map((unit) => (
+                  <option key={unit} value={unit}>
+                    {unit}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-[#94a3b8]/20">
-                  <thead className="bg-slate-800 text-white shadow-sm">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        {t['measurement_unit']}
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        {t['plant_category']}
-                      </th>
-                      {canWrite && (
-                        <th className="relative px-4 py-3 w-20">
-                          <span className="sr-only">{t['actions']}</span>
-                        </th>
+
+            <div className="w-full md:w-64 relative">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Cari parameter..."
+                value={parameterSearchQuery}
+                onChange={(e) => setParameterSearchQuery(e.target.value)}
+                className="w-full text-xs pl-8 pr-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:ring-1 focus:ring-primary-500 focus:outline-none"
+              />
+              {parameterSearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setParameterSearchQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left border-collapse text-xs">
+              <thead className="bg-slate-700 dark:bg-slate-800 text-white uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10 border-b border-slate-600 dark:border-slate-700">
+                <tr>
+                  <th className="px-3.5 py-2.5 whitespace-nowrap">ID</th>
+                  <th className="px-3.5 py-2.5 whitespace-nowrap">
+                    {t['parameter'] || 'Parameter'}
+                  </th>
+                  <th className="px-3.5 py-2.5 whitespace-nowrap">
+                    {t['data_type'] || 'Tipe Data'}
+                  </th>
+                  <th className="px-3.5 py-2.5 whitespace-nowrap">{t['unit'] || 'Unit'}</th>
+                  <th className="px-3.5 py-2.5 whitespace-nowrap">{t['category'] || 'Kategori'}</th>
+                  <th className="px-3.5 py-2.5 whitespace-nowrap">Min</th>
+                  <th className="px-3.5 py-2.5 whitespace-nowrap">Max</th>
+                  <th className="px-3.5 py-2.5 whitespace-nowrap">OPC Min</th>
+                  <th className="px-3.5 py-2.5 whitespace-nowrap">OPC Max</th>
+                  <th className="px-3.5 py-2.5 whitespace-nowrap">PCC Min</th>
+                  <th className="px-3.5 py-2.5 whitespace-nowrap">PCC Max</th>
+                  {canWrite && (
+                    <th className="px-3.5 py-2.5 text-right whitespace-nowrap w-20">Aksi</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                {paginatedParams.length === 0 ? (
+                  <tr>
+                    <td colSpan={canWrite ? 12 : 11} className="p-0">
+                      {renderEmptyState(
+                        'Tidak ada parameter untuk filter yang dipilih.',
+                        () => handleOpenAddModal('parameterSetting'),
+                        'Tambah Parameter Baru'
                       )}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-[#94a3b8]/20">
-                    {plantUnitsLoading ? (
-                      <tr>
-                        <td colSpan={3} className="px-4 py-8 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <LoadingSpinner size="sm" />
-                            <span className="text-[#94a3b8]">Loading plant units...</span>
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedParams.map((param) => (
+                    <tr
+                      key={param.id}
+                      className="hover:bg-primary-50/40 dark:hover:bg-primary-950/20 transition-colors"
+                    >
+                      <td className="px-3.5 py-2 font-mono text-[11px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                        {param.id}
+                      </td>
+                      <td
+                        className="px-3.5 py-2 font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap max-w-[220px] truncate"
+                        title={param.parameter}
+                      >
+                        {param.parameter}
+                      </td>
+                      <td className="px-3.5 py-2 whitespace-nowrap">
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                            param.data_type === ParameterDataType.NUMBER
+                              ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                          }`}
+                        >
+                          {param.data_type}
+                        </span>
+                      </td>
+                      <td className="px-3.5 py-2 text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                        {param.unit}
+                      </td>
+                      <td className="px-3.5 py-2 text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                        {param.category}
+                      </td>
+                      <td className="px-3.5 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                        {param.data_type === ParameterDataType.NUMBER
+                          ? (param.min_value ?? '-')
+                          : '-'}
+                      </td>
+                      <td className="px-3.5 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                        {param.data_type === ParameterDataType.NUMBER
+                          ? (param.max_value ?? '-')
+                          : '-'}
+                      </td>
+                      <td className="px-3.5 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                        {param.data_type === ParameterDataType.NUMBER
+                          ? (param.opc_min_value ?? '-')
+                          : '-'}
+                      </td>
+                      <td className="px-3.5 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                        {param.data_type === ParameterDataType.NUMBER
+                          ? (param.opc_max_value ?? '-')
+                          : '-'}
+                      </td>
+                      <td className="px-3.5 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                        {param.data_type === ParameterDataType.NUMBER
+                          ? (param.pcc_min_value ?? '-')
+                          : '-'}
+                      </td>
+                      <td className="px-3.5 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                        {param.data_type === ParameterDataType.NUMBER
+                          ? (param.pcc_max_value ?? '-')
+                          : '-'}
+                      </td>
+                      {canWrite && (
+                        <td className="px-3.5 py-2 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditModal('parameterSetting', param)}
+                              className="p-1 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950/40 transition-colors focus-visible:ring-2 focus-visible:ring-primary-500"
+                              title="Edit Parameter"
+                              aria-label="Edit Parameter"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenDeleteModal(param.id, 'parameterSetting')}
+                              className="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
+                              title="Hapus Parameter"
+                              aria-label="Hapus Parameter"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
                           </div>
                         </td>
-                      </tr>
-                    ) : paginatedPlantUnits.length === 0 ? (
-                      <tr>
-                        <td colSpan={3} className="px-4 py-8 text-center text-[#94a3b8]">
-                          No plant units found
-                        </td>
-                      </tr>
-                    ) : (
-                      paginatedPlantUnits.map((unit, _index) => (
-                        <tr
-                          key={unit.id}
-                          className="hover:bg-[#059669]/5 transition-colors duration-200"
-                        >
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-[#333333]">
-                            {unit.unit}
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
-                            {unit.category}
-                          </td>
-                          {canWrite && (
-                            <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <div className="flex items-center justify-end space-x-1">
-                                <motion.button
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.9 }}
-                                  onClick={() => handleOpenEditModal('plantUnit', unit)}
-                                  className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#059669] hover:bg-[#059669]/10 rounded-lg transition-all duration-200"
-                                  aria-label="Edit plant unit"
-                                >
-                                  <EditIcon className="w-4 h-4" />
-                                </motion.button>
-                                <motion.button
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.9 }}
-                                  onClick={() => handleOpenDeleteModal(unit.id, 'plantUnit')}
-                                  className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
-                                  aria-label="Delete plant unit"
-                                >
-                                  <TrashIcon className="w-4 h-4" />
-                                </motion.button>
-                              </div>
-                            </td>
-                          )}
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              <div className="mt-4">
-                <Pagination
-                  currentPage={puCurrentPage}
-                  totalPages={puTotalPages}
-                  onPageChange={setPuCurrentPage}
-                />
-              </div>
-            </div>
-          </motion.div>
-
-          {/* PIC Settings Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-white rounded-xl shadow-lg border border-[#94a3b8]/30 overflow-hidden"
-          >
-            <div className="p-6 border-b border-[#94a3b8]/20">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#F9F9F9] rounded-lg">
-                    <Users className="w-5 h-5 text-[#333333]" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-[#333333]">
-                      {t['pic_setting_title']}
-                    </h3>
-                    <p className="text-sm text-[#555555]">{t['pic_setting_subtitle']}</p>
-                  </div>
-                </div>
-                {canWrite && (
-                  <button
-                    onClick={() => handleOpenAddModal('picSetting')}
-                    className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-white bg-[#059669] hover:bg-[#047857] rounded-xl shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <PlusIcon className="w-4 h-4" />
-                    <span>{t['add_data_button'] || 'Tambah Data'}</span>
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-[#94a3b8]/20">
-                  <thead className="bg-slate-800 text-white shadow-sm">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        {t['pic']}
-                      </th>
-                      <th className="relative px-4 py-3 w-20">
-                        <span className="sr-only">{t['actions']}</span>
-                      </th>
+                      )}
                     </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-[#94a3b8]/20">
-                    {paginatedPicSettings.map((pic, _index) => (
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          <div className="px-4 py-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-850/30">
+            <Pagination
+              currentPage={paramsCurrentPage}
+              totalPages={paramsTotalPages}
+              onPageChange={setParamsCurrentPage}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Tab 2: Plant Units & PIC Settings */}
+      {(activeTab === 'units_pic' || activeTab === 'all') && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Plant Units */}
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all">
+            {renderSectionHeader(
+              t['plant_unit_title'] || 'Unit Pabrik Derivative',
+              'Daftar unit pengukuran dan kategori fasilitas Derivative',
+              <Database className="w-4 h-4" />,
+              () => handleOpenAddModal('plantUnit')
+            )}
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-left border-collapse text-xs">
+                <thead className="bg-slate-700 dark:bg-slate-800 text-white uppercase text-[11px] font-bold tracking-wider border-b border-slate-600 dark:border-slate-700">
+                  <tr>
+                    <th className="px-4 py-2.5 whitespace-nowrap">
+                      {t['measurement_unit'] || 'Unit'}
+                    </th>
+                    <th className="px-4 py-2.5 whitespace-nowrap">
+                      {t['plant_category'] || 'Kategori Pabrik'}
+                    </th>
+                    {canWrite && (
+                      <th className="px-4 py-2.5 text-right whitespace-nowrap w-16">Aksi</th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                  {plantUnitsLoading ? (
+                    <tr>
+                      <td colSpan={3} className="py-8 text-center text-slate-400">
+                        <div className="flex items-center justify-center gap-2">
+                          <LoadingSpinner size="sm" />
+                          <span>Memuat unit pabrik...</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : paginatedPlantUnits.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="p-0">
+                        {renderEmptyState(
+                          'Belum ada data unit pabrik.',
+                          () => handleOpenAddModal('plantUnit'),
+                          'Tambah Unit'
+                        )}
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedPlantUnits.map((unit) => (
                       <tr
-                        key={pic.id}
-                        className="hover:bg-[#059669]/5 transition-colors duration-200"
+                        key={unit.id}
+                        className="hover:bg-primary-50/40 dark:hover:bg-primary-950/20 transition-colors"
                       >
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-[#333333]">
-                          {pic.pic}
+                        <td className="px-4 py-2 font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                          {unit.unit}
+                        </td>
+                        <td className="px-4 py-2 text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                          {unit.category}
                         </td>
                         {canWrite && (
-                          <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex items-center justify-end space-x-1">
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => handleOpenEditModal('picSetting', pic)}
-                                className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#059669] hover:bg-[#059669]/10 rounded-lg transition-all duration-200"
-                                aria-label="Edit PIC setting"
+                          <td className="px-4 py-2 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditModal('plantUnit', unit)}
+                                className="p-1 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950/40 transition-colors focus-visible:ring-2 focus-visible:ring-primary-500"
+                                title="Edit Unit"
+                                aria-label="Edit Unit"
                               >
-                                <EditIcon className="h-4 w-4" />
-                              </motion.button>
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => handleOpenDeleteModal(pic.id, 'picSetting')}
-                                className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
-                                aria-label="Delete PIC setting"
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenDeleteModal(unit.id, 'plantUnit')}
+                                className="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
+                                title="Hapus Unit"
+                                aria-label="Hapus Unit"
                               >
-                                <TrashIcon className="h-4 w-4" />
-                              </motion.button>
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
                             </div>
                           </td>
                         )}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="mt-4">
-                <Pagination
-                  currentPage={picCurrentPage}
-                  totalPages={picTotalPages}
-                  onPageChange={setPicCurrentPage}
-                />
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Parameter Settings Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="md:col-span-2 bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
-          >
-            <div className="p-6 border-b border-slate-200">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#059669]/10 rounded-lg">
-                    <BarChart3 className="w-5 h-5 text-[#059669]" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">
-                      {t['parameter_setting_title']}
-                    </h3>
-                    <p className="text-sm text-slate-600">
-                      {t['parameter_setting_subtitle_derivative'] ||
-                        'Parameter settings for Derivative plant units'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {canWrite && (
-                    <button
-                      onClick={() => handleOpenAddModal('parameterSetting')}
-                      className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-white bg-[#059669] hover:bg-[#047857] rounded-xl shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <PlusIcon className="w-4 h-4" />
-                      <span>{t['add_data_button'] || 'Tambah Data'}</span>
-                    </button>
+                    ))
                   )}
-                </div>
-              </div>
+                </tbody>
+              </table>
+            </div>
 
-              {/* Filters */}
-              <div className="mt-6 flex flex-col md:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <input
-                    type="text"
-                    value={parameterSearchQuery}
-                    onChange={(e) => setParameterSearchQuery(e.target.value)}
-                    placeholder="Search parameters..."
-                    className="w-full pl-9 pr-4 py-2 text-sm border border-[#94a3b8]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all"
-                  />
-                  {parameterSearchQuery && (
-                    <button
-                      onClick={clearParameterSearch}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                    >
-                      <span className="sr-only">Clear search</span>
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
+            <div className="px-4 py-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-850/30">
+              <Pagination
+                currentPage={puCurrentPage}
+                totalPages={puTotalPages}
+                onPageChange={setPuCurrentPage}
+              />
+            </div>
+          </div>
+
+          {/* PIC Settings */}
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all">
+            {renderSectionHeader(
+              t['pic_setting_title'] || 'PIC Settings',
+              'Daftar person in charge (petugas operasional) Derivative',
+              <Users className="w-4 h-4" />,
+              () => handleOpenAddModal('picSetting')
+            )}
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-left border-collapse text-xs">
+                <thead className="bg-slate-700 dark:bg-slate-800 text-white uppercase text-[11px] font-bold tracking-wider border-b border-slate-600 dark:border-slate-700">
+                  <tr>
+                    <th className="px-4 py-2.5 whitespace-nowrap">{t['pic'] || 'Nama PIC'}</th>
+                    {canWrite && (
+                      <th className="px-4 py-2.5 text-right whitespace-nowrap w-16">Aksi</th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                  {paginatedPicSettings.length === 0 ? (
+                    <tr>
+                      <td colSpan={2} className="p-0">
+                        {renderEmptyState(
+                          'Belum ada data PIC terdaftar.',
+                          () => handleOpenAddModal('picSetting'),
+                          'Tambah PIC'
+                        )}
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedPicSettings.map((pic) => (
+                      <tr
+                        key={pic.id}
+                        className="hover:bg-primary-50/40 dark:hover:bg-primary-950/20 transition-colors"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <div className="relative min-w-[140px]">
-                    <select
-                      value={parameterCategoryFilter}
-                      onChange={(e) => setParameterCategoryFilter(e.target.value)}
-                      className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#94a3b8]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all"
-                    >
-                      {uniquePlantCategories.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <ChevronDown className="w-4 h-4 text-slate-400" />
-                    </div>
-                  </div>
-                  <div className="relative min-w-[140px]">
-                    <select
-                      value={parameterUnitFilter}
-                      onChange={(e) => setParameterUnitFilter(e.target.value)}
-                      className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#94a3b8]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all"
-                    >
-                      {unitsForParameterFilter.map((unit) => (
-                        <option key={unit} value={unit}>
-                          {unit}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <ChevronDown className="w-4 h-4 text-slate-400" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-slate-800 text-white shadow-sm">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        {t['parameter_name']}
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        {t['data_type']}
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        {t['measurement_unit']}
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        {t['min_value']}
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        {t['max_value']}
-                      </th>
-                      <th className="relative px-4 py-3 w-20">
-                        <span className="sr-only">{t['actions']}</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-slate-200">
-                    {paginatedParams.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
-                          {isParameterSearchActive
-                            ? 'No parameters found matching your search.'
-                            : 'No parameters configured for this unit.'}
+                        <td className="px-4 py-2 font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                          {pic.pic}
                         </td>
+                        {canWrite && (
+                          <td className="px-4 py-2 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditModal('picSetting', pic)}
+                                className="p-1 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950/40 transition-colors focus-visible:ring-2 focus-visible:ring-primary-500"
+                                title="Edit PIC"
+                                aria-label="Edit PIC"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenDeleteModal(pic.id, 'picSetting')}
+                                className="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
+                                title="Hapus PIC"
+                                aria-label="Hapus PIC"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        )}
                       </tr>
-                    ) : (
-                      paginatedParams.map((param, index) => (
-                        <tr
-                          key={param.id}
-                          className="hover:bg-slate-50/50 transition-colors duration-200"
-                        >
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-[#333333]">
-                            {param.parameter}
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
-                            <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                param.data_type === ParameterDataType.NUMBER
-                                  ? 'bg-[#059669]/10 text-[#059669]'
-                                  : 'bg-slate-100 text-slate-800'
-                              }`}
-                            >
-                              {param.data_type}
-                            </span>
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
-                            {param.unit}
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555] font-mono">
-                            {param.data_type === ParameterDataType.NUMBER
-                              ? formatNumber(param.min_value)
-                              : '-'}
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555] font-mono">
-                            {param.data_type === ParameterDataType.NUMBER
-                              ? formatNumber(param.max_value)
-                              : '-'}
-                          </td>
-                          {canWrite && (
-                            <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <div className="flex items-center justify-end space-x-1">
-                                <motion.button
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  onClick={() => handleOpenEditModal('parameterSetting', param)}
-                                  className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#059669] hover:bg-[#059669]/10 rounded-lg transition-all duration-200"
-                                  aria-label="Edit parameter setting"
-                                >
-                                  <EditIcon className="h-4 w-4" />
-                                </motion.button>
-                                <motion.button
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  onClick={() =>
-                                    handleOpenDeleteModal(param.id, 'parameterSetting')
-                                  }
-                                  className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
-                                  aria-label="Delete parameter setting"
-                                >
-                                  <TrashIcon className="h-4 w-4" />
-                                </motion.button>
-                              </div>
-                            </td>
-                          )}
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              <div className="mt-4">
-                <Pagination
-                  currentPage={paramsCurrentPage}
-                  totalPages={paramsTotalPages}
-                  onPageChange={setParamsCurrentPage}
-                />
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Silo Capacity Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="md:col-span-2 bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
-          >
-            <div className="p-6 border-b border-slate-200">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#059669]/10 rounded-lg">
-                    <Database className="w-5 h-5 text-[#059669]" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">Material Storage</h3>
-                    <p className="text-sm text-slate-600">
-                      Pengaturan kapasitas dan dead stock Gudang Penyimpanan Material
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {canWrite && (
-                    <button
-                      onClick={() => handleOpenAddModal('siloCapacity')}
-                      className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-white bg-[#059669] hover:bg-[#047857] rounded-xl shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <PlusIcon className="w-4 h-4" />
-                      <span>{t['add_data_button'] || 'Tambah Data'}</span>
-                    </button>
+                    ))
                   )}
-                </div>
-              </div>
-
-              {/* Filters */}
-              <div className="mt-6 flex flex-wrap gap-4">
-                <div className="relative min-w-[200px]">
-                  <select
-                    value={siloCategoryFilter}
-                    onChange={(e) => setSiloCategoryFilter(e.target.value)}
-                    className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#94a3b8]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all"
-                  >
-                    {uniquePlantCategories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <ChevronDown className="w-4 h-4 text-slate-400" />
-                  </div>
-                </div>
-                <div className="relative min-w-[200px]">
-                  <select
-                    value={siloUnitFilter}
-                    onChange={(e) => setSiloUnitFilter(e.target.value)}
-                    className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#94a3b8]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all"
-                  >
-                    {unitsForSiloFilter.map((unit) => (
-                      <option key={unit} value={unit}>
-                        {unit}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <ChevronDown className="w-4 h-4 text-slate-400" />
-                  </div>
-                </div>
-              </div>
+                </tbody>
+              </table>
             </div>
 
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-slate-800 text-white shadow-sm">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        {t['plant_unit']}
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        Nama Gudang Material
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        {t['capacity']} (Ton) // Was max_capacity
-                      </th>
-                      {canWrite && (
-                        <th className="relative px-4 py-3 w-20">
-                          <span className="sr-only">{t['actions']}</span>
-                        </th>
+            <div className="px-4 py-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-850/30">
+              <Pagination
+                currentPage={picCurrentPage}
+                totalPages={picTotalPages}
+                onPageChange={setPicCurrentPage}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 3: Silo Capacities */}
+      {(activeTab === 'silo' || activeTab === 'all') && (
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all">
+          {renderSectionHeader(
+            t['silo_capacity_title'] || 'Kapasitas Silo Derivative',
+            'Kapasitas penampungan dan dead stock silo material unit Derivative',
+            <Layers className="w-4 h-4" />,
+            () => handleOpenAddModal('siloCapacity')
+          )}
+
+          {/* Filter */}
+          <div className="p-3 sm:p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/60 flex flex-wrap items-center gap-2.5">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+              <Filter className="w-3.5 h-3.5" />
+              <span>Filter:</span>
+            </div>
+
+            <div className="relative">
+              <label htmlFor="derivative-silo-cat-filter" className="sr-only">
+                Plant Category
+              </label>
+              <select
+                id="derivative-silo-cat-filter"
+                value={siloCategoryFilter}
+                onChange={(e) => setSiloCategoryFilter(e.target.value)}
+                className="pl-2.5 pr-7 py-1.5 text-xs font-medium bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-colors cursor-pointer appearance-none"
+              >
+                {uniquePlantCategories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+            </div>
+
+            <div className="relative">
+              <label htmlFor="derivative-silo-unit-filter" className="sr-only">
+                Plant Unit
+              </label>
+              <select
+                id="derivative-silo-unit-filter"
+                value={siloUnitFilter}
+                onChange={(e) => setSiloUnitFilter(e.target.value)}
+                disabled={unitsForSiloFilter.length === 0}
+                className="pl-2.5 pr-7 py-1.5 text-xs font-medium bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-colors disabled:bg-slate-100 dark:disabled:bg-slate-850 disabled:cursor-not-allowed cursor-pointer appearance-none"
+              >
+                {unitsForSiloFilter.map((unit) => (
+                  <option key={unit} value={unit}>
+                    {unit}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left border-collapse text-xs">
+              <thead className="bg-slate-700 dark:bg-slate-800 text-white uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10 border-b border-slate-600 dark:border-slate-700">
+                <tr>
+                  <th className="px-4 py-2.5 whitespace-nowrap">
+                    {t['plant_category'] || 'Kategori'}
+                  </th>
+                  <th className="px-4 py-2.5 whitespace-nowrap">{t['unit'] || 'Unit'}</th>
+                  <th className="px-4 py-2.5 whitespace-nowrap">{t['silo_name'] || 'Nama Silo'}</th>
+                  <th className="px-4 py-2.5 whitespace-nowrap">
+                    {t['capacity'] || 'Kapasitas (Ton)'}
+                  </th>
+                  <th className="px-4 py-2.5 whitespace-nowrap">
+                    {t['dead_stock'] || 'Dead Stock (Ton)'}
+                  </th>
+                  <th className="px-4 py-2.5 whitespace-nowrap">
+                    {t['silo_lifestock'] || 'Lifestock (Ton)'}
+                  </th>
+                  {canWrite && (
+                    <th className="px-4 py-2.5 text-right whitespace-nowrap w-16">Aksi</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                {siloCapacitiesLoading ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-slate-400">
+                      <div className="flex items-center justify-center gap-2">
+                        <LoadingSpinner size="sm" />
+                        <span>Memuat data silo...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : filteredSiloCapacities.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="p-0">
+                      {renderEmptyState(
+                        'Tidak ada data kapasitas silo untuk kategori & unit terpilih.',
+                        () => handleOpenAddModal('siloCapacity'),
+                        'Tambah Silo'
                       )}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-slate-200">
-                    {siloCapacitiesLoading ? (
-                      <tr>
-                        <td colSpan={5} className="px-4 py-8 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <LoadingSpinner size="sm" />
-                            <span className="text-slate-500">Loading silo capacities...</span>
-                          </div>
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedSilos.map((silo) => {
+                    const lifestock = silo.capacity - silo.dead_stock;
+                    return (
+                      <tr
+                        key={silo.id}
+                        className="hover:bg-primary-50/40 dark:hover:bg-primary-950/20 transition-colors"
+                      >
+                        <td className="px-4 py-2 text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                          {silo.plant_category}
                         </td>
-                      </tr>
-                    ) : paginatedSilos.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
-                          {t['no_data_available']}
+                        <td className="px-4 py-2 text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                          {silo.unit}
                         </td>
+                        <td className="px-4 py-2 font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                          {silo.silo_name}
+                        </td>
+                        <td className="px-4 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                          {formatNumber(silo.capacity)}
+                        </td>
+                        <td className="px-4 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                          {formatNumber(silo.dead_stock)}
+                        </td>
+                        <td className="px-4 py-2 font-mono font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                          {formatNumber(lifestock)}
+                        </td>
+                        {canWrite && (
+                          <td className="px-4 py-2 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditModal('siloCapacity', silo)}
+                                className="p-1 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950/40 transition-colors focus-visible:ring-2 focus-visible:ring-primary-500"
+                                title="Edit Silo"
+                                aria-label="Edit Silo"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenDeleteModal(silo.id, 'siloCapacity')}
+                                className="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
+                                title="Hapus Silo"
+                                aria-label="Hapus Silo"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        )}
                       </tr>
-                    ) : (
-                      paginatedSilos.map((silo, _index) => (
-                        <tr
-                          key={silo.id}
-                          className="hover:bg-slate-50/50 transition-colors duration-200"
-                        >
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-[#333333]">
-                            {silo.unit}
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-[#333333]">
-                            {silo.silo_name}
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555] font-mono">
-                            {formatNumber(silo.capacity)}
-                          </td>
-                          {canWrite && (
-                            <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <div className="flex items-center justify-end space-x-1">
-                                <motion.button
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  onClick={() => handleOpenEditModal('siloCapacity', silo)}
-                                  className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#059669] hover:bg-[#059669]/10 rounded-lg transition-all duration-200"
-                                  aria-label="Edit silo capacity"
-                                >
-                                  <EditIcon className="h-4 w-4" />
-                                </motion.button>
-                                <motion.button
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  onClick={() => handleOpenDeleteModal(silo.id, 'siloCapacity')}
-                                  className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
-                                  aria-label="Delete silo capacity"
-                                >
-                                  <TrashIcon className="h-4 w-4" />
-                                </motion.button>
-                              </div>
-                            </td>
-                          )}
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="px-4 py-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-850/30">
+            <Pagination
+              currentPage={silosCurrentPage}
+              totalPages={silosTotalPages}
+              onPageChange={setSilosCurrentPage}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Tab 4: COP Configuration */}
+      {(activeTab === 'cop' || activeTab === 'all') && (
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 flex items-center justify-center border border-primary-100 dark:border-primary-900/50">
+                <BarChart3 className="w-4 h-4" />
               </div>
-              <div className="mt-4">
-                <Pagination
-                  currentPage={silosCurrentPage}
-                  totalPages={silosTotalPages}
-                  onPageChange={setSilosCurrentPage}
-                />
+              <div>
+                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                  Konfigurasi COP Derivative
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Atur parameter tabel utama dan ringkasan footer analisis COP
+                </p>
               </div>
             </div>
-          </motion.div>
 
-          {/* COP Parameters Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="md:col-span-2 bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
-          >
-            <div className="p-6 border-b border-slate-200">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#059669]/10 rounded-lg">
-                    <BarChart3 className="w-5 h-5 text-[#059669]" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">
-                      {t['cop_parameter_title'] || t['cop_parameters_title'] || 'Parameter COP'}
-                    </h3>
-                    <p className="text-sm text-slate-600">
-                      {t['cop_parameter_subtitle'] ||
-                        t['cop_parameters_subtitle'] ||
-                        'Pemilihan parameter operasi kritis'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {canWrite && (
-                    <button
-                      onClick={handleOpenCopModal}
-                      className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-white bg-[#059669] hover:bg-[#047857] rounded-xl shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <EditIcon className="w-4 h-4" />
-                      <span>{t['edit_parameters'] || 'Edit Parameters'}</span>
-                    </button>
-                  )}
-                </div>
+            {/* Sub-Tabs Selector */}
+            <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+              <button
+                type="button"
+                onClick={() => setCopSubTab('cop_params')}
+                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                  copSubTab === 'cop_params'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                }`}
+              >
+                Parameter Tabel ({copParameters.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setCopSubTab('cop_footer')}
+                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                  copSubTab === 'cop_footer'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                }`}
+              >
+                Footer Parameters ({copFooterParameters.length})
+              </button>
+            </div>
+          </div>
+
+          {/* Filter Bar */}
+          <div className="p-3 sm:p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-850/50 flex flex-wrap gap-3 items-center justify-between">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                <Filter className="w-3.5 h-3.5" />
+                <span>Filter:</span>
               </div>
-
-              {/* Filters */}
-              <div className="mt-6 flex flex-wrap gap-4">
-                <div className="relative min-w-[200px]">
+              {copSubTab === 'cop_params' ? (
+                <>
                   <select
                     value={copCategoryFilter}
                     onChange={(e) => setCopCategoryFilter(e.target.value)}
-                    className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#94a3b8]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all"
+                    className="text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-primary-500 focus:outline-none"
                   >
                     {uniquePlantCategories.map((cat) => (
                       <option key={cat} value={cat}>
@@ -1281,15 +1460,10 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                       </option>
                     ))}
                   </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <ChevronDown className="w-4 h-4 text-slate-400" />
-                  </div>
-                </div>
-                <div className="relative min-w-[200px]">
                   <select
                     value={copUnitFilter}
                     onChange={(e) => setCopUnitFilter(e.target.value)}
-                    className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#94a3b8]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all"
+                    className="text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-primary-500 focus:outline-none"
                   >
                     {unitsForCopFilter.map((unit) => (
                       <option key={unit} value={unit}>
@@ -1297,260 +1471,13 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                       </option>
                     ))}
                   </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <ChevronDown className="w-4 h-4 text-slate-400" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-slate-800 text-white shadow-sm">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        {t['parameter_name']}
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        {t['measurement_unit']}
-                      </th>
-                      {canWrite && (
-                        <th className="relative px-4 py-3 w-20">
-                          <span className="sr-only">{t['actions']}</span>
-                        </th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-slate-200">
-                    {copParametersLoading ? (
-                      <tr>
-                        <td colSpan={3} className="px-4 py-8 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <LoadingSpinner size="sm" />
-                            <span className="text-slate-500">Loading COP parameters...</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : paginatedCopParams.length === 0 ? (
-                      <tr>
-                        <td colSpan={3} className="px-4 py-8 text-center text-slate-500">
-                          {t['no_data_available']}
-                        </td>
-                      </tr>
-                    ) : (
-                      paginatedCopParams.map((param, _index) => (
-                        <tr
-                          key={param.id}
-                          className="hover:bg-slate-50/50 transition-colors duration-200"
-                        >
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
-                            {param.parameter}
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
-                            {param.unit}
-                          </td>
-                          {canWrite && (
-                            <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => handleRemoveCopParameter(param.id)}
-                                className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
-                                title="Remove from COP"
-                              >
-                                <TrashIcon className="h-4 w-4" />
-                              </motion.button>
-                            </td>
-                          )}
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              <div className="mt-4">
-                <Pagination
-                  currentPage={copCurrentPage}
-                  totalPages={copTotalPages}
-                  onPageChange={setCopCurrentPage}
-                />
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Report Settings Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            className="md:col-span-2 bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
-          >
-            <div className="p-6 border-b border-slate-200">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#059669]/10 rounded-lg">
-                    <FileText className="w-5 h-5 text-[#059669]" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">
-                      {t['report_settings_title'] || 'Report Settings'}
-                    </h3>
-                    <p className="text-sm text-slate-600">
-                      {t['report_settings_subtitle'] || 'Configure report parameters and ordering'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {canWrite && (
-                    <button
-                      onClick={() => handleOpenAddModal('reportSetting')}
-                      className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-white bg-[#059669] hover:bg-[#047857] rounded-xl shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <PlusIcon className="w-4 h-4" />
-                      <span>{t['add_data_button'] || 'Tambah Data'}</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-slate-800 text-white shadow-sm">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        {t['order'] || 'Order'}
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        {t['parameter_name']}
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        {t['category'] || 'Category'}
-                      </th>
-                      {canWrite && (
-                        <th className="relative px-4 py-3 w-20">
-                          <span className="sr-only">{t['actions']}</span>
-                        </th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-slate-200">
-                    {paginatedReportSettings.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
-                          {t['no_data_available']}
-                        </td>
-                      </tr>
-                    ) : (
-                      paginatedReportSettings.map((setting, index) => {
-                        const param = allParametersMap.get(setting.parameter_id);
-                        return (
-                          <tr
-                            key={setting.id}
-                            className="hover:bg-slate-50/50 transition-colors duration-200"
-                          >
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
-                              {setting.order + 1}
-                            </td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
-                              {param ? param.parameter : setting.parameter_id}
-                              {param && (
-                                <span className="text-xs text-slate-500 ml-1">({param.unit})</span>
-                              )}
-                            </td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                {setting.category}
-                              </span>
-                            </td>
-                            {canWrite && (
-                              <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div className="flex items-center justify-end space-x-1">
-                                  <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => handleOpenEditModal('reportSetting', setting)}
-                                    className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#059669] hover:bg-[#059669]/10 rounded-lg transition-all duration-200"
-                                    aria-label="Edit report setting"
-                                  >
-                                    <EditIcon className="h-4 w-4" />
-                                  </motion.button>
-                                  <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() =>
-                                      handleOpenDeleteModal(setting.id, 'reportSetting')
-                                    }
-                                    className="w-11 h-11 min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
-                                    aria-label="Delete report setting"
-                                  >
-                                    <TrashIcon className="h-4 w-4" />
-                                  </motion.button>
-                                </div>
-                              </td>
-                            )}
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              <div className="mt-4">
-                <Pagination
-                  currentPage={reportCurrentPage}
-                  totalPages={reportTotalPages}
-                  onPageChange={setReportCurrentPage}
-                />
-              </div>
-            </div>
-          </motion.div>
-
-          {/* COP Footer Parameters Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.7 }}
-            className="md:col-span-2 bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
-          >
-            <div className="p-6 border-b border-[#94a3b8]/20">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#059669]/10 rounded-lg">
-                    <BarChart3 className="w-5 h-5 text-[#059669]" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">
-                      {t['cop_footer_parameter_title'] || 'COP Footer Parameters'}
-                    </h3>
-                    <p className="text-sm text-slate-600">
-                      {t['cop_footer_parameter_subtitle'] ||
-                        'Configure parameters shown in COP footer summary'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {canWrite && (
-                    <button
-                      onClick={handleOpenCopFooterModal}
-                      className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-white bg-[#059669] hover:bg-[#047857] rounded-xl shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <EditIcon className="w-4 h-4" />
-                      <span>{t['edit_parameters'] || 'Edit Parameters'}</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Filters */}
-              <div className="mt-6 flex flex-wrap gap-4">
-                <div className="relative min-w-[200px]">
+                </>
+              ) : (
+                <>
                   <select
                     value={copFooterCategoryFilter}
                     onChange={(e) => setCopFooterCategoryFilter(e.target.value)}
-                    className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#94a3b8]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all"
+                    className="text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-primary-500 focus:outline-none"
                   >
                     {uniquePlantCategories.map((cat) => (
                       <option key={cat} value={cat}>
@@ -1558,15 +1485,10 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                       </option>
                     ))}
                   </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <ChevronDown className="w-4 h-4 text-slate-400" />
-                  </div>
-                </div>
-                <div className="relative min-w-[200px]">
                   <select
                     value={copFooterUnitFilter}
                     onChange={(e) => setCopFooterUnitFilter(e.target.value)}
-                    className="w-full appearance-none pl-4 pr-10 py-2 text-sm font-medium text-[#333333] bg-white border border-[#94a3b8]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-all"
+                    className="text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-primary-500 focus:outline-none"
                   >
                     {unitsForCopFooterFilter.map((unit) => (
                       <option key={unit} value={unit}>
@@ -1574,99 +1496,181 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                       </option>
                     ))}
                   </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <ChevronDown className="w-4 h-4 text-slate-400" />
-                  </div>
-                </div>
-              </div>
+                </>
+              )}
             </div>
 
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-slate-800 text-white shadow-sm">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        {t['parameter_name']}
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        {t['measurement_unit']}
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                        Tipe Agregasi
-                      </th>
-                      {canWrite && (
-                        <th className="relative px-4 py-3 w-20">
-                          <span className="sr-only">{t['actions']}</span>
-                        </th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-slate-200">
-                    {copFooterLoading ? (
-                      <tr>
-                        <td colSpan={4} className="px-4 py-8 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <LoadingSpinner size="sm" />
-                            <span className="text-slate-500">Loading Footer parameters...</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : paginatedCopFooterParams.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
-                          {t['no_data_available']}
-                        </td>
-                      </tr>
-                    ) : (
-                      paginatedCopFooterParams.map((param, _index) => (
-                        <tr
-                          key={param.id}
-                          className="hover:bg-slate-50/50 transition-colors duration-200"
-                        >
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
-                            {param.parameter}
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
-                            {param.unit}
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm">
-                            <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
-                                param.copFooterAggregation === 'total'
-                                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-300'
-                                  : param.copFooterAggregation === 'min'
-                                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-300'
-                                    : param.copFooterAggregation === 'max'
-                                      ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300 border border-rose-300'
-                                      : 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300 border border-sky-300'
-                              }`}
-                            >
-                              {param.copFooterAggregation
-                                ? param.copFooterAggregation.toUpperCase()
-                                : 'AVERAGE'}
-                            </span>
-                          </td>
-                          {canWrite && (
-                            <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => handleRemoveCopFooterParameter(param.id)}
-                                className="p-2 text-slate-400 hover:text-[#C7162B] hover:bg-[#C7162B]/10 rounded-lg transition-all duration-200"
-                                title="Remove from Footer"
-                              >
-                                <TrashIcon className="h-4 w-4" />
-                              </motion.button>
-                            </td>
-                          )}
-                        </tr>
-                      ))
+            {canWrite && (
+              <button
+                type="button"
+                onClick={copSubTab === 'cop_params' ? handleOpenCopModal : handleOpenCopFooterModal}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg shadow-sm transition-colors min-h-[36px]"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>
+                  {copSubTab === 'cop_params' ? 'Pilih Parameter COP' : 'Atur Footer Parameter'}
+                </span>
+              </button>
+            )}
+          </div>
+
+          {/* COP Content */}
+          {copSubTab === 'cop_params' ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-left border-collapse text-xs">
+                <thead className="bg-slate-700 dark:bg-slate-800 text-white uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10 border-b border-slate-600 dark:border-slate-700">
+                  <tr>
+                    <th className="px-4 py-2.5 whitespace-nowrap">
+                      {t['parameter'] || 'Parameter'}
+                    </th>
+                    <th className="px-4 py-2.5 whitespace-nowrap">{t['unit'] || 'Unit'}</th>
+                    <th className="px-4 py-2.5 whitespace-nowrap">{t['category'] || 'Kategori'}</th>
+                    <th className="px-4 py-2.5 whitespace-nowrap">Batas Normal</th>
+                    {canWrite && (
+                      <th className="px-4 py-2.5 text-right whitespace-nowrap w-16">Aksi</th>
                     )}
-                  </tbody>
-                </table>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                  {copParametersLoading ? (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-400">
+                        <div className="flex items-center justify-center gap-2">
+                          <LoadingSpinner size="sm" />
+                          <span>Memuat konfigurasi COP...</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : paginatedCopParams.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="p-0">
+                        {renderEmptyState(
+                          'Belum ada parameter COP dipilih.',
+                          handleOpenCopModal,
+                          'Pilih Parameter COP'
+                        )}
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedCopParams.map((param) => (
+                      <tr
+                        key={param.id}
+                        className="hover:bg-primary-50/40 dark:hover:bg-primary-950/20 transition-colors"
+                      >
+                        <td className="px-4 py-2 font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                          {param.parameter}
+                        </td>
+                        <td className="px-4 py-2 text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                          {param.unit}
+                        </td>
+                        <td className="px-4 py-2 text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                          {param.category}
+                        </td>
+                        <td className="px-4 py-2 font-mono text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                          {param.min_value !== undefined ? formatNumber(param.min_value) : '-'} ~{' '}
+                          {param.max_value !== undefined ? formatNumber(param.max_value) : '-'}
+                        </td>
+                        {canWrite && (
+                          <td className="px-4 py-2 text-right whitespace-nowrap">
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCopParameter(param.id)}
+                              className="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
+                              title="Hapus dari COP"
+                              aria-label="Hapus dari COP"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+              <div className="px-4 py-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-850/30">
+                <Pagination
+                  currentPage={copCurrentPage}
+                  totalPages={copTotalPages}
+                  onPageChange={setCopCurrentPage}
+                />
               </div>
-              <div className="mt-4">
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-left border-collapse text-xs">
+                <thead className="bg-slate-700 dark:bg-slate-800 text-white uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10 border-b border-slate-600 dark:border-slate-700">
+                  <tr>
+                    <th className="px-4 py-2.5 whitespace-nowrap">
+                      {t['parameter'] || 'Parameter'}
+                    </th>
+                    <th className="px-4 py-2.5 whitespace-nowrap">{t['unit'] || 'Unit'}</th>
+                    <th className="px-4 py-2.5 whitespace-nowrap">{t['category'] || 'Kategori'}</th>
+                    <th className="px-4 py-2.5 whitespace-nowrap">Tipe Agregasi</th>
+                    {canWrite && (
+                      <th className="px-4 py-2.5 text-right whitespace-nowrap w-16">Aksi</th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                  {copFooterLoading ? (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-400">
+                        <div className="flex items-center justify-center gap-2">
+                          <LoadingSpinner size="sm" />
+                          <span>Memuat footer parameter...</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : paginatedCopFooterParams.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="p-0">
+                        {renderEmptyState(
+                          'Belum ada footer parameter dipilih.',
+                          handleOpenCopFooterModal,
+                          'Pilih Footer Parameter'
+                        )}
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedCopFooterParams.map((param) => (
+                      <tr
+                        key={param.id}
+                        className="hover:bg-primary-50/40 dark:hover:bg-primary-950/20 transition-colors"
+                      >
+                        <td className="px-4 py-2 font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                          {param.parameter}
+                        </td>
+                        <td className="px-4 py-2 text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                          {param.unit}
+                        </td>
+                        <td className="px-4 py-2 text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                          {param.category}
+                        </td>
+                        <td className="px-4 py-2 whitespace-nowrap">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/40">
+                            {param.copFooterAggregation || 'average'}
+                          </span>
+                        </td>
+                        {canWrite && (
+                          <td className="px-4 py-2 text-right whitespace-nowrap">
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCopFooterParameter(param.id)}
+                              className="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
+                              title="Hapus Footer Parameter"
+                              aria-label="Hapus Footer Parameter"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+              <div className="px-4 py-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-850/30">
                 <Pagination
                   currentPage={copFooterCurrentPage}
                   totalPages={copFooterTotalPages}
@@ -1674,332 +1678,459 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                 />
               </div>
             </div>
-          </motion.div>
+          )}
         </div>
-      </div>
+      )}
 
-      {/* Modals */}
-      <AnimatePresence>
+      {/* Tab 5: Report Settings (Drag & Drop) */}
+      {(activeTab === 'reports' || activeTab === 'all') && (
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all">
+          {renderSectionHeader(
+            t['report_settings_title'] || 'Konfigurasi Parameter Laporan Derivative',
+            'Atur urutan dan parameter yang muncul pada laporan shift harian Derivative',
+            <FileText className="w-4 h-4" />,
+            () => handleOpenAddModal('reportSetting'),
+            'Tambah Parameter Laporan'
+          )}
+
+          <div className="p-3 sm:p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/60 flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+              <GripVertical className="w-3.5 h-3.5 text-slate-400" />
+              <span>Geser baris untuk mengatur urutan parameter laporan</span>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <DragDropContext onDragEnd={handleReportDragEnd}>
+              <table className="min-w-full text-left border-collapse text-xs">
+                <thead className="bg-slate-700 dark:bg-slate-800 text-white uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10 border-b border-slate-600 dark:border-slate-700">
+                  <tr>
+                    <th className="px-3 py-2.5 w-16 text-center">Urutan</th>
+                    <th className="px-4 py-2.5 whitespace-nowrap">
+                      {t['parameter'] || 'Parameter'}
+                    </th>
+                    <th className="px-4 py-2.5 whitespace-nowrap">
+                      {t['category'] || 'Kategori Report'}
+                    </th>
+                    {canWrite && (
+                      <th className="px-4 py-2.5 text-right whitespace-nowrap w-16">Aksi</th>
+                    )}
+                  </tr>
+                </thead>
+                <Droppable droppableId="derivative-report-settings">
+                  {(provided) => (
+                    <tbody
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900"
+                    >
+                      {reportSettingsLoading ? (
+                        <tr>
+                          <td colSpan={4} className="py-8 text-center text-slate-400">
+                            <div className="flex items-center justify-center gap-2">
+                              <LoadingSpinner size="sm" />
+                              <span>Memuat parameter laporan...</span>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : paginatedReportSettings.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="p-0">
+                            {renderEmptyState(
+                              'Belum ada parameter laporan Derivative dikonfigurasi.',
+                              () => handleOpenAddModal('reportSetting'),
+                              'Tambah Parameter Laporan'
+                            )}
+                          </td>
+                        </tr>
+                      ) : (
+                        paginatedReportSettings.map((setting, index) => {
+                          const param = allParametersMap.get(setting.parameter_id);
+                          return (
+                            <Draggable key={setting.id} draggableId={setting.id} index={index}>
+                              {(provided, snapshot) => (
+                                <tr
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  className={`transition-colors ${
+                                    snapshot.isDragging
+                                      ? 'bg-primary-50 dark:bg-primary-950/50 shadow-md ring-1 ring-primary-500'
+                                      : 'hover:bg-primary-50/40 dark:hover:bg-primary-950/20'
+                                  }`}
+                                >
+                                  <td className="px-3 py-2 whitespace-nowrap">
+                                    <div className="flex items-center justify-center gap-1">
+                                      <div
+                                        {...provided.dragHandleProps}
+                                        className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-grab active:cursor-grabbing"
+                                        title="Geser untuk mengurutkan"
+                                      >
+                                        <GripVertical className="w-3.5 h-3.5" />
+                                      </div>
+                                      <span className="font-mono text-[11px] text-slate-500 font-semibold">
+                                        {(setting.order !== undefined ? setting.order : index) + 1}
+                                      </span>
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-2 font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                                    {param ? (
+                                      <span>
+                                        {param.parameter}
+                                        <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400 ml-1.5">
+                                          ({param.unit})
+                                        </span>
+                                      </span>
+                                    ) : (
+                                      <span className="text-slate-400 font-mono text-[11px]">
+                                        {setting.parameter_id}
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-2 whitespace-nowrap">
+                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                      {setting.category || 'Default'}
+                                    </span>
+                                  </td>
+                                  {canWrite && (
+                                    <td className="px-4 py-2 text-right whitespace-nowrap">
+                                      <div className="flex items-center justify-end gap-1">
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            handleOpenEditModal('reportSetting', setting)
+                                          }
+                                          className="p-1 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950/40 transition-colors focus-visible:ring-2 focus-visible:ring-primary-500"
+                                          title="Edit Parameter Laporan"
+                                          aria-label="Edit parameter laporan"
+                                        >
+                                          <Pencil className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            handleOpenDeleteModal(setting.id, 'reportSetting')
+                                          }
+                                          className="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
+                                          title="Hapus Parameter Laporan"
+                                          aria-label="Hapus parameter laporan"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+                                    </td>
+                                  )}
+                                </tr>
+                              )}
+                            </Draggable>
+                          );
+                        })
+                      )}
+                      {provided.placeholder}
+                    </tbody>
+                  )}
+                </Droppable>
+              </table>
+            </DragDropContext>
+          </div>
+
+          <div className="px-4 py-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-850/30">
+            <Pagination
+              currentPage={reportCurrentPage}
+              totalPages={reportTotalPages}
+              onPageChange={setReportCurrentPage}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODALS ================= */}
+
+      {/* Add / Edit Modal */}
+      <Modal
+        isOpen={activeModal !== null && !isDeleteModalOpen}
+        onClose={handleCloseModals}
+        title={
+          activeModal === 'plantUnit'
+            ? editingPlantUnit
+              ? t['edit_plant_unit_title'] || 'Edit Unit Pabrik Derivative'
+              : t['add_plant_unit_title'] || 'Tambah Unit Pabrik Derivative'
+            : activeModal === 'parameterSetting'
+              ? editingParameter
+                ? t['edit_parameter_title'] || 'Edit Parameter Derivative'
+                : t['add_parameter_title'] || 'Tambah Parameter Derivative'
+              : activeModal === 'siloCapacity'
+                ? editingSilo
+                  ? t['edit_silo_title'] || 'Edit Kapasitas Silo'
+                  : t['add_silo_title'] || 'Tambah Kapasitas Silo'
+                : activeModal === 'picSetting'
+                  ? editingPic
+                    ? t['edit_pic_title'] || 'Edit PIC Derivative'
+                    : t['add_pic_title'] || 'Tambah PIC Derivative'
+                  : activeModal === 'reportSetting'
+                    ? editingReportSetting
+                      ? t['edit_report_parameter_title'] || 'Edit Parameter Laporan'
+                      : t['add_report_parameter_title'] || 'Tambah Parameter Laporan'
+                    : ''
+        }
+      >
         {activeModal === 'plantUnit' && (
-          <Modal
-            isOpen={true}
-            onClose={handleCloseModals}
-            title={editingPlantUnit ? t['edit_plant_unit'] : t['add_plant_unit']}
-          >
-            <PlantUnitForm
-              recordToEdit={editingPlantUnit}
-              onSave={(record) => handleSave('plantUnit', record)}
-              onCancel={handleCloseModals}
-              t={t}
-            />
-          </Modal>
+          <PlantUnitForm
+            recordToEdit={editingPlantUnit}
+            onSave={(r) => handleSave('plantUnit', r)}
+            onCancel={handleCloseModals}
+            t={t}
+          />
         )}
-
         {activeModal === 'parameterSetting' && (
-          <Modal
-            isOpen={true}
-            onClose={handleCloseModals}
-            title={editingParameter ? t['edit_parameter'] : t['add_parameter']}
-            maxWidth="3xl"
-          >
-            <ParameterSettingForm
-              recordToEdit={editingParameter}
-              onSave={(record) => handleSave('parameterSetting', record)}
-              onCancel={handleCloseModals}
-              t={t}
-              plantUnits={plantUnits}
-              loading={plantUnitsLoading}
-              hideCementSettings={true}
-            />
-          </Modal>
+          <ParameterSettingForm
+            recordToEdit={editingParameter}
+            onSave={(r) => handleSave('parameterSetting', r)}
+            onCancel={handleCloseModals}
+            t={t}
+          />
         )}
-
         {activeModal === 'siloCapacity' && (
-          <Modal
-            isOpen={true}
-            onClose={handleCloseModals}
-            title={editingSilo ? 'Edit Material Storage' : 'Tambah Material Storage'}
-          >
-            <SiloCapacityForm
-              recordToEdit={editingSilo}
-              onSave={(record) => handleSave('siloCapacity', record)}
-              onCancel={handleCloseModals}
-              t={t}
-              plantUnits={plantUnits}
-              customTitle="Material Storage"
-              customSiloLabel="Nama Gudang Material"
-            />
-          </Modal>
+          <SiloCapacityForm
+            recordToEdit={editingSilo}
+            onSave={(r) => handleSave('siloCapacity', r)}
+            onCancel={handleCloseModals}
+            t={t}
+            plantUnits={plantUnits}
+          />
         )}
-
         {activeModal === 'picSetting' && (
-          <Modal
-            isOpen={true}
-            onClose={handleCloseModals}
-            title={editingPic ? t['edit_pic_setting'] : t['add_pic_setting']}
-          >
-            <PicSettingForm
-              recordToEdit={editingPic}
-              onSave={(record) => handleSave('picSetting', record)}
-              onCancel={handleCloseModals}
-              t={t}
-            />
-          </Modal>
+          <PicSettingForm
+            recordToEdit={editingPic}
+            onSave={(r) => handleSave('picSetting', r)}
+            onCancel={handleCloseModals}
+            t={t}
+          />
         )}
+        {activeModal === 'reportSetting' && (
+          <RkcReportSettingForm
+            recordToEdit={editingReportSetting}
+            onSave={(r) => handleSave('reportSetting', r)}
+            onCancel={handleCloseModals}
+            t={t}
+            allParameters={parameterSettings}
+            existingParameterIds={reportSettings.map((rs) => rs.parameter_id)}
+            maxOrder={maxReportSettingOrder}
+          />
+        )}
+      </Modal>
 
-        {/* Delete Confirmation Modal */}
-        {isDeleteModalOpen && (
-          <Modal
-            isOpen={true}
-            onClose={handleCloseModals}
-            title={t['confirm_delete']}
-            maxWidth="sm"
-          >
-            <div className="p-6">
-              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
-                <TrashIcon className="w-6 h-6 text-red-600" />
-              </div>
-              <p className="mb-6 text-center text-slate-600">{t['delete_confirmation_message']}</p>
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={handleCloseModals}
-                  className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-all duration-200"
-                >
-                  {t['cancel'] || 'Batal'}
-                </button>
-                <button
-                  onClick={handleDeleteConfirm}
-                  className="px-4 py-2 text-xs font-semibold text-white bg-[#C7162B] hover:bg-[#9e1122] rounded-xl transition-all duration-200 shadow-sm"
-                >
-                  {t['delete'] || 'Hapus'}
-                </button>
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCloseModals}
+        title={t['delete_confirmation_title'] || 'Konfirmasi Hapus Data'}
+      >
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 rounded-xl">
+            <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0">
+              <Trash2 className="w-5 h-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                Apakah Anda yakin ingin menghapus data ini?
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                Tindakan ini tidak dapat dibatalkan dan akan menghapus catatan dari sistem secara
+                permanen.
+              </p>
+              <div className="mt-3 p-2 bg-white dark:bg-slate-900 border border-red-200/60 dark:border-red-900/30 rounded-lg">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  Data yang akan dihapus:
+                </span>
+                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 mt-0.5 block truncate">
+                  {getDeletingRecordName}
+                </span>
               </div>
             </div>
-          </Modal>
-        )}
+          </div>
 
-        {/* COP Parameter Selection Modal */}
-        {isCopModalOpen && (
-          <Modal
-            isOpen={true}
-            onClose={handleCloseCopModal}
-            title={t['select_cop_parameters']}
-            maxWidth="2xl"
-          >
-            <div className="p-6">
-              <div className="mb-4">
-                <input
-                  type="text"
-                  placeholder="Search available parameters..."
-                  className="w-full px-4 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500"
-                />
-              </div>
-              <div className="max-h-[60vh] overflow-y-auto space-y-2">
-                {filteredParameterSettings.length === 0 ? (
-                  <p className="text-center text-gray-500 py-4">
-                    No parameters available in current filter.
-                  </p>
-                ) : (
-                  filteredParameterSettings.map((param) => (
+          <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={handleCloseModals}
+              className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors min-h-[36px]"
+            >
+              {t['cancel'] || 'Batal'}
+            </button>
+            <button
+              type="button"
+              onClick={handleDeleteConfirm}
+              className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-red-600 hover:bg-red-700 active:bg-red-800 text-white shadow-sm transition-colors min-h-[36px]"
+            >
+              {t['delete'] || 'Hapus Permanen'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Select COP Parameters Modal */}
+      {isCopModalOpen && (
+        <Modal isOpen={true} onClose={handleCloseCopModal} title="Pilih Parameter COP Derivative">
+          <div className="p-4 space-y-4 max-h-[70vh] flex flex-col">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              Pilih parameter yang akan ditampilkan pada tabel analitik COP untuk unit{' '}
+              <strong className="text-slate-900 dark:text-slate-100">
+                {copCategoryFilter} - {copUnitFilter}
+              </strong>
+              .
+            </p>
+            <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 bg-slate-50/40 dark:bg-slate-900/40">
+              {parameterSettings
+                .filter((p) => p.category === copCategoryFilter && p.unit === copUnitFilter)
+                .map((param) => {
+                  const isChecked = tempCopSelection.includes(param.id);
+                  return (
                     <label
                       key={param.id}
-                      className={`flex items-start p-3 rounded-lg border cursor-pointer transition-colors ${
-                        tempCopSelection.includes(param.id)
-                          ? 'bg-[#059669]/5 border-[#059669]/30'
-                          : 'hover:bg-gray-50 border-gray-200'
-                      }`}
+                      className="flex items-center gap-3 p-2 hover:bg-white dark:hover:bg-slate-800 rounded-md cursor-pointer transition-colors"
                     >
-                      <div className="flex items-center h-5">
-                        <input
-                          type="checkbox"
-                          checked={tempCopSelection.includes(param.id)}
-                          onChange={() => handleCopSelectionChange(param.id)}
-                          className="w-4 h-4 text-[#059669] border-gray-300 rounded focus:ring-[#059669]"
-                        />
-                      </div>
-                      <div className="ml-3 text-sm">
-                        <span className="font-medium text-gray-900">{param.parameter}</span>
-                        <span className="ml-2 text-gray-500 text-xs">({param.unit})</span>
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => handleCopSelectionChange(param.id)}
+                        className="w-4 h-4 text-primary-600 rounded border-slate-300 focus:ring-primary-500"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                          {param.parameter}
+                        </div>
+                        <div className="text-[11px] text-slate-500">
+                          Tipe: {param.data_type} | Normal: {param.min_value ?? '-'} ~{' '}
+                          {param.max_value ?? '-'}
+                        </div>
                       </div>
                     </label>
-                  ))
-                )}
-              </div>
-              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
-                <button
-                  onClick={handleCloseCopModal}
-                  className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-all duration-200"
-                >
-                  {t['cancel']}
-                </button>
-                <button
-                  onClick={handleSaveCopSelection}
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#059669] rounded-xl hover:bg-[#047857] transition-all duration-200 shadow-sm"
-                >
-                  {t['save_changes']}
-                </button>
-              </div>
+                  );
+                })}
             </div>
-          </Modal>
-        )}
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={handleCloseCopModal}
+                className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 min-h-[36px]"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveCopSelection}
+                className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-primary-600 hover:bg-primary-700 text-white shadow-sm min-h-[36px]"
+              >
+                Simpan Pilihan ({tempCopSelection.length})
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
-        {activeModal === 'reportSetting' && (
-          <Modal
-            isOpen={true}
-            onClose={handleCloseModals}
-            title={
-              editingReportSetting
-                ? t['edit_report_setting'] || 'Edit Report Setting'
-                : t['add_report_setting'] || 'Add Report Setting'
-            }
-            maxWidth="lg"
-          >
-            <RkcReportSettingForm
-              recordToEdit={editingReportSetting}
-              onSave={(record) => handleSave('reportSetting', record)}
-              onCancel={handleCloseModals}
-              t={t}
-              allParameters={parameterSettings}
-              existingParameterIds={reportSettings.map((r) => r.parameter_id)}
-              maxOrder={reportSettings.length}
-            />
-          </Modal>
-        )}
+      {/* Select COP Footer Parameters Modal */}
+      {isCopFooterModalOpen && (
+        <Modal
+          isOpen={true}
+          onClose={handleCloseCopFooterModal}
+          title="Konfigurasi Footer Parameter COP"
+        >
+          <div className="p-4 space-y-4 max-h-[70vh] flex flex-col">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              Pilih parameter dan rumus agregasi yang muncul di bagian footer ringkasan COP untuk
+              unit{' '}
+              <strong className="text-slate-900 dark:text-slate-100">
+                {copFooterCategoryFilter} - {copFooterUnitFilter}
+              </strong>
+              .
+            </p>
 
-        {/* COP Export Modal - not strictly needed based on request but keeping AnimatePresence clean */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Cari parameter..."
+                value={copFooterSearchQuery}
+                onChange={(e) => setCopFooterSearchQuery(e.target.value)}
+                className="w-full text-xs pl-8 pr-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:ring-1 focus:ring-primary-500 focus:outline-none"
+              />
+            </div>
 
-        {/* COP Footer Parameter Selection Modal */}
-        {isCopFooterModalOpen && (
-          <Modal
-            isOpen={true}
-            onClose={handleCloseCopFooterModal}
-            title={t['select_cop_footer_parameters'] || 'Select COP Footer Parameters'}
-            maxWidth="2xl"
-          >
-            <div className="p-6">
-              <div className="mb-4">
-                <input
-                  type="text"
-                  placeholder="Cari parameter..."
-                  value={copFooterSearchQuery}
-                  onChange={(e) => setCopFooterSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#059669] focus:border-[#059669]"
-                />
-              </div>
-              <div className="max-h-[60vh] overflow-y-auto space-y-2">
-                {parameterSettings
-                  .filter((p) => p.data_type === ParameterDataType.NUMBER)
-                  .filter((p) => {
-                    if (!copFooterCategoryFilter || !copFooterUnitFilter) return false;
-                    const catMatch = p.category === copFooterCategoryFilter;
-                    const unitMatch = p.unit === copFooterUnitFilter;
-                    if (!catMatch || !unitMatch) return false;
-                    if (copFooterSearchQuery.trim()) {
-                      return p.parameter
-                        .toLowerCase()
-                        .includes(copFooterSearchQuery.toLowerCase().trim());
-                    }
-                    return true;
-                  }).length === 0 ? (
-                  <p className="text-center text-gray-500 py-4">
-                    No parameters available in current filter ({copFooterCategoryFilter} •{' '}
-                    {copFooterUnitFilter}).
-                  </p>
-                ) : (
-                  parameterSettings
-                    .filter((p) => p.data_type === ParameterDataType.NUMBER)
-                    .filter((p) => {
-                      if (!copFooterCategoryFilter || !copFooterUnitFilter) return false;
-                      const catMatch = p.category === copFooterCategoryFilter;
-                      const unitMatch = p.unit === copFooterUnitFilter;
-                      if (!catMatch || !unitMatch) return false;
-                      if (copFooterSearchQuery.trim()) {
-                        return p.parameter
-                          .toLowerCase()
-                          .includes(copFooterSearchQuery.toLowerCase().trim());
-                      }
-                      return true;
-                    })
-                    .map((param) => {
-                      const selectedItem = tempCopFooterSelection.find(
-                        (item) => item.id === param.id
-                      );
-                      const isSelected = !!selectedItem;
-                      const currentAggregation = selectedItem?.aggregation || 'average';
-                      return (
-                        <div
-                          key={param.id}
-                          className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border transition-colors gap-3 ${
-                            isSelected
-                              ? 'bg-[#059669]/5 border-[#059669]/30'
-                              : 'hover:bg-gray-50 border-gray-200'
-                          }`}
-                        >
-                          <label className="flex items-center space-x-3 cursor-pointer flex-1 select-none">
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => handleCopFooterSelectionChange(param.id)}
-                              className="h-4 w-4 text-[#059669] focus:ring-[#059669] border-gray-300 rounded cursor-pointer"
-                            />
-                            <div className="flex-1">
-                              <div className="text-sm font-medium text-gray-900">
-                                {param.parameter}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                {param.unit} • {param.category}
-                              </div>
-                            </div>
-                          </label>
-                          {isSelected && (
-                            <div
-                              className="flex items-center space-x-2 pl-7 sm:pl-0"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                Tipe:
-                              </span>
-                              <select
-                                value={currentAggregation}
-                                onChange={(e) =>
-                                  handleCopFooterAggregationChange(
-                                    param.id,
-                                    e.target.value as CopFooterAggregationType
-                                  )
-                                }
-                                className="text-xs font-bold py-1.5 px-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] cursor-pointer"
-                              >
-                                <option value="average">Average (Rata-rata)</option>
-                                <option value="total">Total (Jumlah)</option>
-                                <option value="min">Min (Nilai Terendah)</option>
-                                <option value="max">Max (Nilai Tertinggi)</option>
-                              </select>
-                              <div className="text-emerald-600 font-bold ml-1">✓</div>
-                            </div>
-                          )}
+            <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 bg-slate-50/40 dark:bg-slate-900/40">
+              {parameterSettings
+                .filter(
+                  (p) =>
+                    p.category === copFooterCategoryFilter &&
+                    p.unit === copFooterUnitFilter &&
+                    p.parameter.toLowerCase().includes(copFooterSearchQuery.toLowerCase())
+                )
+                .map((param) => {
+                  const existingConfig = tempCopFooterSelection.find((c) => c.id === param.id);
+                  const isChecked = !!existingConfig;
+                  return (
+                    <div
+                      key={param.id}
+                      className="flex items-center justify-between gap-3 p-2 hover:bg-white dark:hover:bg-slate-800 rounded-md transition-colors"
+                    >
+                      <label className="flex items-center gap-3 cursor-pointer flex-1 min-w-0">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => handleCopFooterSelectionChange(param.id)}
+                          className="w-4 h-4 text-primary-600 rounded border-slate-300 focus:ring-primary-500"
+                        />
+                        <div className="min-w-0">
+                          <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
+                            {param.parameter}
+                          </div>
+                          <div className="text-[11px] text-slate-500">Unit: {param.unit}</div>
                         </div>
-                      );
-                    })
-                )}
-              </div>
-              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
-                <button
-                  onClick={handleCloseCopFooterModal}
-                  className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-all duration-200"
-                >
-                  {t['cancel']}
-                </button>
-                <button
-                  onClick={handleSaveCopFooterSelection}
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#059669] rounded-xl hover:bg-[#047857] transition-all duration-200 shadow-sm"
-                >
-                  {t['save_changes']}
-                </button>
-              </div>
+                      </label>
+
+                      {isChecked && (
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-[11px] text-slate-500 font-medium">Agregasi:</span>
+                          <select
+                            value={existingConfig.aggregation}
+                            onChange={(e) =>
+                              handleCopFooterAggregationChange(
+                                param.id,
+                                e.target.value as CopFooterAggregationType
+                              )
+                            }
+                            className="text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-slate-800 dark:text-slate-200"
+                          >
+                            <option value="average">Rata-rata (Avg)</option>
+                            <option value="total">Total (Sum)</option>
+                            <option value="min">Minimum (Min)</option>
+                            <option value="max">Maksimum (Max)</option>
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
             </div>
-          </Modal>
-        )}
-      </AnimatePresence>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={handleCloseCopFooterModal}
+                className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 min-h-[36px]"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveCopFooterSelection}
+                className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-primary-600 hover:bg-primary-700 text-white shadow-sm min-h-[36px]"
+              >
+                Simpan Pilihan ({tempCopFooterSelection.length})
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

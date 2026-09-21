@@ -397,7 +397,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           {!isMobile && onToggleExpand && (
             <motion.button
               onClick={onToggleExpand}
-              className="absolute -right-3 top-[70px] z-50 w-6 h-6 rounded-full border border-slate-700 shadow-xl cursor-pointer flex items-center justify-center hover:bg-slate-800 hover:border-slate-600 hover:text-primary-400 transition-all duration-300 bg-slate-900 text-white/50 group"
+              className="absolute -right-3 top-[70px] z-50 w-6 h-6 rounded-full border border-slate-700 shadow-xl cursor-pointer flex items-center justify-center hover:bg-slate-800 hover:border-slate-600 hover:text-primary-400 active:scale-90 transition-all duration-200 bg-slate-900 text-white/50 group focus:outline-none focus:ring-2 focus:ring-primary-500/40"
               aria-label={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
               initial={false}
               animate={{ rotate: isExpanded ? 0 : 180 }}
@@ -571,7 +571,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             <div
               className={`transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 scale-95 translate-y-2 h-0 overflow-hidden'}`}
             >
-              <div className="bg-white/5 rounded-xl p-3 flex items-center gap-3 border border-white/5">
+              <div className="bg-white/5 rounded-lg p-3 flex items-center gap-3 border border-white/5">
                 <div className="w-9 h-9 rounded-lg bg-primary-600/10 flex items-center justify-center text-primary-500">
                   <ClockIcon className="w-5 h-5" />
                 </div>
@@ -586,10 +586,17 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
               </div>
             </div>
-            <div className="mt-4 text-center">
-              <p className="text-[9px] uppercase tracking-[0.3em] text-white/20 font-bold">
-                SIPOMA v2.2.0
-              </p>
+            <div className="mt-3 text-center">
+              {isExpanded ? (
+                <p className="text-[9px] uppercase tracking-[0.25em] text-white/30 font-bold font-mono">
+                  SIPOMA v2.2.0
+                </p>
+              ) : (
+                <div className="flex flex-col items-center justify-center leading-none gap-0.5">
+                  <span className="text-[8px] font-bold text-white/30 tracking-wider">SIPOMA</span>
+                  <span className="text-[7.5px] font-mono font-medium text-white/25">v2.2.0</span>
+                </div>
+              )}
             </div>
           </div>
         </div>

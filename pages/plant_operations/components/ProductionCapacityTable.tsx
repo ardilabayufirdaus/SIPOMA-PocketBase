@@ -52,66 +52,73 @@ const ProductionCapacityTable: React.FC<ProductionCapacityTableProps> = ({
   const isLoading = capacityLoading || moistureLoading;
 
   return (
-    <div className="w-full mb-8">
-      <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
-        <div className="px-8 py-6 border-b border-slate-200/50 bg-gradient-to-r from-slate-900 to-secondary-900 flex justify-between items-center">
-          <div>
-            <h3 className="text-xl font-bold text-white font-display">
-              Kapasitas (Capacity) - {plantUnit}
-            </h3>
-            <p className="text-sm text-slate-300 mt-2">Total Produksi Semen ({filters.date})</p>
+    <div className="w-full">
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-800/60 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 flex items-center justify-center border border-primary-100 dark:border-primary-900/50 shadow-2xs">
+              <CheckCircleIcon className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 font-display">
+                Kapasitas (Capacity) - {plantUnit}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Total Produksi Semen ({filters.date})
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 text-primary-400 rounded-full text-xs font-medium border border-white/20">
-              <CheckCircleIcon className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded-md text-xs font-medium border border-emerald-200 dark:border-emerald-800">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
               <span>Auto-Sync Active</span>
             </div>
           </div>
         </div>
 
-        <div className="p-8">
-          <div className="overflow-hidden bg-white rounded-xl border border-slate-200 shadow-sm max-w-4xl">
-            <table className="min-w-full divide-y divide-slate-200">
-              <thead className="bg-slate-600 dark:bg-slate-700">
+        <div className="p-4 sm:p-5">
+          <div className="overflow-hidden bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-2xs max-w-4xl">
+            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+              <thead className="bg-slate-700 dark:bg-slate-800">
                 <tr>
                   <th
                     scope="col"
-                    className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider w-1/3"
+                    className="px-3 py-2.5 text-left text-[11px] font-bold text-white uppercase tracking-wider w-1/3"
                   >
                     Parameter
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider w-1/3"
+                    className="px-3 py-2.5 text-left text-[11px] font-bold text-white uppercase tracking-wider w-1/3"
                   >
                     Wet (Ton)
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider w-1/3"
+                    className="px-3 py-2.5 text-left text-[11px] font-bold text-white uppercase tracking-wider w-1/3"
                   >
                     Dry (Ton)
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
-                <tr className="bg-white hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                <tr className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                  <td className="px-3 py-2.5 whitespace-nowrap text-xs font-semibold text-slate-800 dark:text-slate-200">
                     Total Produksi Semen
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-primary-600">
+                  <td className="px-3 py-2.5 whitespace-nowrap text-xs font-mono font-bold text-primary-600 dark:text-primary-400">
                     {isLoading ? (
-                      <span className="inline-block w-20 h-5 bg-slate-200 animate-pulse rounded"></span>
+                      <span className="inline-block w-20 h-4 bg-slate-200 dark:bg-slate-700 animate-pulse rounded"></span>
                     ) : totalProduction !== null ? (
                       formatNumber(totalProduction)
                     ) : (
                       '-'
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-secondary-900">
+                  <td className="px-3 py-2.5 whitespace-nowrap text-xs font-mono font-bold text-secondary-900 dark:text-slate-100">
                     {isLoading ? (
-                      <span className="inline-block w-20 h-5 bg-slate-200 animate-pulse rounded"></span>
+                      <span className="inline-block w-20 h-4 bg-slate-200 dark:bg-slate-700 animate-pulse rounded"></span>
                     ) : dryProduction !== null ? (
                       formatNumber(dryProduction)
                     ) : (

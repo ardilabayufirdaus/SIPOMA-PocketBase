@@ -29,6 +29,7 @@ import {
 import { EnhancedButton, useAccessibility } from '../../components/ui/EnhancedComponents';
 import { LoadingSpinner } from '../../utils/Microinteractions';
 import { InteractiveReport } from './components/InteractiveReport';
+import RealtimeIndicator from '../../components/ui/RealtimeIndicator';
 
 declare global {
   interface Window {
@@ -845,46 +846,53 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   }, []);
 
   return (
-    <div className="space-y-6 font-sans">
-      {/* Header Title Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-secondary-900 rounded-xl shadow-lg border border-white/10 p-6">
-        <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.05)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.05)_50%,rgba(255,255,255,0.05)_75%,transparent_75%,transparent)] bg-[length:24px_24px] opacity-20"></div>
-
-        <div className="relative flex items-center gap-4">
-          <div className="w-14 h-14 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20 shadow-inner">
-            <svg
-              className="w-7 h-7 text-primary-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
+    <div className="w-full space-y-4 sm:space-y-5 font-sans">
+      {/* Hero Header Section - Sesuai Standar Presisi COP Analysis & 20 Aturan Wajib */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-secondary-900 via-slate-900 to-secondary-950 rounded-xl shadow-md border border-slate-800 p-4 sm:p-5 text-white w-full">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-primary-600/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2" />
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-primary-400 shrink-0 shadow-inner">
+              <FileSpreadsheet className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-primary-500/20 text-primary-300 border border-primary-500/30 rounded-full">
+                  CM Plant Operations
+                </span>
+                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700 rounded-full">
+                  Operational Report
+                </span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white font-display">
+                {t.op_report || 'Operational Report'}
+              </h1>
+              <p className="text-xs text-slate-300 font-medium mt-0.5">
+                {t.op_report_description ||
+                  'Generate daily operational log sheets and reports with full operational insights'}
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-2xl font-bold text-white tracking-tight">{t.op_report}</h2>
-            <p className="text-sm text-white/90 font-medium mt-0.5">
-              {t.op_report_description || 'Generate daily operational log sheets and reports'}
-            </p>
+          <div className="flex items-center gap-2.5 self-start md:self-auto bg-slate-800/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-700/80 shadow-xs">
+            <RealtimeIndicator
+              isConnected={true}
+              lastUpdate={new Date()}
+              className="text-xs text-slate-300 font-medium"
+            />
           </div>
         </div>
       </div>
 
       {/* Filter & Actions Section */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 p-3.5 sm:p-4">
+        <div className="flex flex-wrap items-end justify-between gap-3">
           {/* Filters & Core Actions */}
-          <div className="flex flex-wrap items-end gap-4 flex-1">
+          <div className="flex flex-wrap items-end gap-3 flex-1">
             {/* Plant Category */}
-            <div className="min-w-[170px] flex-1">
+            <div className="min-w-[160px] flex-1">
               <label
                 htmlFor="report-category"
-                className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
+                className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5"
               >
                 {t.plant_category_label || 'PLANT CATEGORY'}
               </label>
@@ -893,7 +901,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="report-category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-sm font-medium transition-all duration-200 hover:bg-slate-100 cursor-pointer"
+                  className="w-full appearance-none px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-xs font-medium min-h-[36px] transition-all cursor-pointer"
                 >
                   {plantCategories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -901,15 +909,15 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                <ChevronDown className="absolute right-2.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               </div>
             </div>
 
             {/* Unit Name */}
-            <div className="min-w-[170px] flex-1">
+            <div className="min-w-[160px] flex-1">
               <label
                 htmlFor="report-unit"
-                className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
+                className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5"
               >
                 {t.unit_label || 'UNIT NAME'}
               </label>
@@ -919,7 +927,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   value={selectedUnit}
                   onChange={(e) => setSelectedUnit(e.target.value)}
                   disabled={unitsForCategory.length === 0}
-                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-sm font-medium transition-all duration-200 hover:bg-slate-100 cursor-pointer"
+                  className="w-full appearance-none px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:text-slate-400 disabled:cursor-not-allowed text-xs font-medium min-h-[36px] transition-all cursor-pointer"
                 >
                   {unitsForCategory.map((unit) => (
                     <option key={unit} value={unit}>
@@ -927,7 +935,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                <ChevronDown className="absolute right-2.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               </div>
             </div>
 
@@ -935,7 +943,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="min-w-[150px] flex-1">
               <label
                 htmlFor="report-date"
-                className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
+                className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5"
               >
                 {t.select_date || 'REPORT DATE'}
               </label>
@@ -944,7 +952,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 id="report-date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm font-medium transition-all duration-200 hover:bg-slate-100 cursor-pointer"
+                className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-xs font-medium min-h-[36px] transition-all cursor-pointer"
               />
             </div>
 
@@ -954,8 +962,8 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 onClick={handleGenerateReport}
                 disabled={isLoading || reportConfig.length === 0}
                 variant="primary"
-                size="md"
-                className="px-5 py-2.5 h-[44px] min-h-[44px] text-sm font-bold bg-[#059669] hover:bg-[#047857] active:bg-[#065f46] text-white shadow-md hover:shadow-lg transition-all rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669]/40 flex items-center justify-center gap-2 whitespace-nowrap"
+                size="sm"
+                className="px-3.5 py-1.5 h-[36px] min-h-[36px] text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 border border-emerald-500/50 text-white shadow-xs hover:shadow transition-all rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/40 flex items-center justify-center gap-1.5 whitespace-nowrap"
                 ariaLabel={t.generate_report_button || 'Generate Log Sheet'}
                 loading={isLoading}
               >
@@ -969,8 +977,8 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 onClick={handleGenerateSimpleData}
                 disabled={isLoading || simpleReportConfig.length === 0}
                 variant="outline"
-                size="md"
-                className="px-5 py-2.5 h-[44px] min-h-[44px] text-sm font-bold border-2 border-[#059669] text-[#059669] hover:bg-[#059669]/10 active:bg-[#059669]/20 transition-all rounded-xl focus:outline-none focus:ring-2 focus:ring-[#059669]/40 flex items-center justify-center gap-2 whitespace-nowrap"
+                size="sm"
+                className="px-3.5 py-1.5 h-[36px] min-h-[36px] text-xs font-semibold border border-emerald-600 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 active:bg-emerald-100 transition-all rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/40 flex items-center justify-center gap-1.5 whitespace-nowrap"
                 ariaLabel={t.generate_simple_data_button || 'Simple Report'}
               >
                 SIMPLE
@@ -981,13 +989,13 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           {/* Export & Copy Actions */}
           {reportData && (
             <div className="flex items-center gap-2 flex-wrap">
-              <div className="w-px h-8 bg-slate-200 hidden sm:block mx-1"></div>
+              <div className="w-px h-7 bg-slate-200 dark:bg-slate-700 hidden sm:block mx-1"></div>
 
               <EnhancedButton
                 onClick={handleCopyImage}
                 variant="secondary"
-                size="md"
-                className={`px-4 py-2.5 h-[44px] min-h-[44px] text-sm font-bold shadow-md hover:shadow-lg transition-all rounded-xl border-0 focus:outline-none focus:ring-2 flex items-center justify-center gap-2 whitespace-nowrap ${
+                size="sm"
+                className={`px-3.5 py-1.5 h-[36px] min-h-[36px] text-xs font-semibold shadow-xs hover:shadow transition-all rounded-lg border-0 focus:outline-none focus:ring-2 flex items-center justify-center gap-1.5 whitespace-nowrap ${
                   copySuccess
                     ? 'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white focus:ring-emerald-500/40'
                     : 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white focus:ring-indigo-500/40'
@@ -1002,8 +1010,8 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               <EnhancedButton
                 onClick={handleExportPDF}
                 variant="secondary"
-                size="md"
-                className="px-4 py-2.5 h-[44px] min-h-[44px] text-sm font-bold bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white shadow-md hover:shadow-lg transition-all rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-rose-500/40 flex items-center justify-center gap-2 whitespace-nowrap"
+                size="sm"
+                className="px-3.5 py-1.5 h-[36px] min-h-[36px] text-xs font-semibold bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white shadow-xs hover:shadow transition-all rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-rose-500/40 flex items-center justify-center gap-1.5 whitespace-nowrap"
                 ariaLabel="Export report as PDF"
                 disabled={isExportingPDF}
               >
@@ -1015,25 +1023,31 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         </div>
       </div>
 
-      <div className="bg-[#F7F7F7] p-8 rounded-xl min-h-[60vh] flex items-center justify-center border border-slate-200">
+      {/* Report Container */}
+      <div className="bg-slate-50 dark:bg-slate-900/60 p-3 sm:p-4 rounded-xl min-h-[60vh] flex items-center justify-center border border-slate-200 dark:border-slate-800 overflow-x-auto shadow-inner">
         {reportConfig.length === 0 && (
-          <div className="text-center text-slate-500">
-            <h3 className="text-2xl font-bold text-[#111827] mb-4">{t.no_report_parameters}</h3>
-            <p className="text-lg">
+          <div className="text-center text-slate-500 dark:text-slate-400 p-8">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1.5">
+              {t.no_report_parameters}
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Please configure parameters in Plant Operations - Master Data.
             </p>
           </div>
         )}
         {isLoading && (
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary-600 mx-auto mb-6"></div>
-            <p className="text-xl font-bold text-primary-600 animate-pulse uppercase tracking-widest">
+          <div className="text-center p-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-3 border-primary-600 mx-auto mb-4"></div>
+            <p className="text-sm font-bold text-primary-600 dark:text-primary-400 animate-pulse uppercase tracking-wider">
               {t.generating_report_message || 'GENERATING REPORT...'}
             </p>
           </div>
         )}
         {reportData && !isLoading && (
-          <div ref={reportRef} className="w-full max-w-full bg-white shadow-xl">
+          <div
+            ref={reportRef}
+            className="w-full max-w-full bg-white dark:bg-slate-900 shadow-sm rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800"
+          >
             <InteractiveReport
               groupedHeaders={reportData.groupedHeaders}
               rows={reportData.rows}
@@ -1050,29 +1064,31 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </div>
         )}
         {!isLoading && !reportData && reportConfig.length > 0 && (
-          <div className="text-center max-w-lg">
-            <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 mx-auto shadow-sm border border-slate-200">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-12 w-12 text-slate-300"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
+          <div className="text-center max-w-md p-8">
+            <div className="w-14 h-14 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center mb-4 mx-auto shadow-xs border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500">
+              <FileSpreadsheet className="h-7 w-7" />
             </div>
-            <h3 className="text-xl font-bold text-[#333333] mb-2">No Report Generated</h3>
-            <p className="text-slate-500">
-              Select your filters above and click{' '}
-              <span className="font-bold text-primary-600">GENERATE REPORT</span> to view
-              operational data.
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 mb-1">
+              No Report Generated
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+              Select your plant category, unit, and date above, then click{' '}
+              <span className="font-bold text-primary-600 dark:text-primary-400">
+                GENERATE LOG SHEET
+              </span>{' '}
+              to view operational data.
             </p>
+            <EnhancedButton
+              onClick={handleGenerateReport}
+              disabled={isLoading || reportConfig.length === 0}
+              variant="primary"
+              size="sm"
+              className="px-3.5 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-lg mx-auto inline-flex items-center gap-1.5 shadow-xs"
+              ariaLabel="Generate Log Sheet"
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              GENERATE LOG SHEET
+            </EnhancedButton>
           </div>
         )}
       </div>
@@ -1080,11 +1096,15 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       {/* Floating Loading Overlay for Copy Image */}
       {isCopying && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="bg-white rounded-xl shadow-2xl p-8 flex flex-col items-center gap-4 min-w-[300px] border-t-4 border-primary-600">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-6 sm:p-8 flex flex-col items-center gap-4 min-w-[300px] border border-slate-200 dark:border-slate-800 border-t-4 border-t-primary-600">
             <LoadingSpinner size="lg" className="border-primary-600" />
             <div className="text-center">
-              <h3 className="text-lg font-bold text-[#333333] mb-1">Copying Report Image</h3>
-              <p className="text-slate-500 text-sm">Please wait while we prepare your image...</p>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">
+                Copying Report Image
+              </h3>
+              <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">
+                Please wait while we prepare your image...
+              </p>
             </div>
           </div>
         </div>

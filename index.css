@@ -268,3 +268,35 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* CCR High-Density Table Input Styling - Sesuai Acuan COP Analysis & 20 Aturan Wajib UI/UX */
+.ccr-table input[type='text'],
+.ccr-table select {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  border-width: 1px !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace !important;
+  font-size: 0.75rem !important;
+  text-align: center !important;
+  padding: 0.25rem 0.125rem !important;
+  height: 1.875rem !important;
+}
+
+.ccr-table input[type='text']:focus,
+.ccr-table select:focus {
+  background-color: #ffffff !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  border-radius: 6px !important;
+  color: #0f172a !important;
+}
+
+.dark .ccr-table input[type='text']:focus,
+.dark .ccr-table select:focus {
+  background-color: #1e293b !important;
+  border-color: #3b82f6 !important;
+  color: #f8fafc !important;
+}
+

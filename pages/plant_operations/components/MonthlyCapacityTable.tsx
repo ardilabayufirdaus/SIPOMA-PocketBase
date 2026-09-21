@@ -79,117 +79,142 @@ const MonthlyCapacityTable: React.FC<MonthlyCapacityTableProps> = ({ filters, pl
   }, [filters.date, plantUnit, filters.plantCategory, getMonthlyCapacity]);
 
   return (
-    <div className="w-full mb-8">
-      <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
-        <div className="px-8 py-6 border-b border-slate-200/50 bg-gradient-to-r from-slate-900 to-secondary-900">
-          <h3 className="text-xl font-bold text-white font-display">
-            Monthly Capacity Report - {plantUnit}
-          </h3>
-          <p className="text-sm text-slate-300 mt-2">
-            Periode:{' '}
-            {new Date(filters.date).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
-          </p>
+    <div className="w-full">
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-800/60 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 flex items-center justify-center border border-primary-100 dark:border-primary-900/50 shadow-2xs">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 font-display">
+                Monthly Capacity Report - {plantUnit}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Periode:{' '}
+                {new Date(filters.date).toLocaleDateString('id-ID', {
+                  month: 'long',
+                  year: 'numeric',
+                })}
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="p-8">
+        <div className="p-4 sm:p-5 space-y-4">
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-primary-600/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-              <p className="text-sm font-medium text-slate-500 mb-1 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+            <div className="bg-slate-50/50 dark:bg-slate-800/40 rounded-lg p-3 sm:p-3.5 border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-16 h-16 bg-primary-600/10 rounded-bl-full -mr-3 -mt-3 transition-transform group-hover:scale-110"></div>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-0.5 relative z-10">
                 Total Wet Production
               </p>
-              <p className="text-2xl font-bold text-primary-600 relative z-10">
+              <p className="text-xl font-bold font-mono text-primary-600 dark:text-primary-400 relative z-10">
                 {loading ? '...' : formatNumber(totalWet)}{' '}
-                <span className="text-sm font-medium text-slate-400">Ton</span>
+                <span className="text-xs font-normal text-slate-400">Ton</span>
               </p>
             </div>
-            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-secondary-900/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-              <p className="text-sm font-medium text-slate-500 mb-1 relative z-10">
+            <div className="bg-slate-50/50 dark:bg-slate-800/40 rounded-lg p-3 sm:p-3.5 border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-16 h-16 bg-secondary-900/10 rounded-bl-full -mr-3 -mt-3 transition-transform group-hover:scale-110"></div>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-0.5 relative z-10">
                 Total Dry Production
               </p>
-              <p className="text-2xl font-bold text-secondary-900 relative z-10">
+              <p className="text-xl font-bold font-mono text-secondary-900 dark:text-slate-100 relative z-10">
                 {loading ? '...' : formatNumber(totalDry)}{' '}
-                <span className="text-sm font-medium text-slate-400">Ton</span>
+                <span className="text-xs font-normal text-slate-400">Ton</span>
               </p>
             </div>
-            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-              <p className="text-sm font-medium text-slate-500 mb-1 relative z-10">Avg Moisture</p>
-              <p className="text-2xl font-bold text-slate-700 relative z-10">
+            <div className="bg-slate-50/50 dark:bg-slate-800/40 rounded-lg p-3 sm:p-3.5 border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/10 rounded-bl-full -mr-3 -mt-3 transition-transform group-hover:scale-110"></div>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-0.5 relative z-10">
+                Avg Moisture
+              </p>
+              <p className="text-xl font-bold font-mono text-slate-700 dark:text-slate-200 relative z-10">
                 {loading ? '...' : avgMoisture.toFixed(2)} %
               </p>
             </div>
           </div>
 
-          <div className="overflow-hidden bg-white rounded-xl border border-slate-200 shadow-sm">
+          <div className="overflow-hidden bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-2xs">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200">
-                <thead className="bg-slate-600 dark:bg-slate-700">
+              <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                <thead className="bg-slate-700 dark:bg-slate-800">
                   <tr>
                     <th
                       scope="col"
-                      className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider"
+                      className="px-3 py-2.5 text-left text-[11px] font-bold text-white uppercase tracking-wider"
                     >
                       Date
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-wider"
+                      className="px-3 py-2.5 text-right text-[11px] font-bold text-white uppercase tracking-wider"
                     >
                       Moisture (%)
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-wider"
+                      className="px-3 py-2.5 text-right text-[11px] font-bold text-white uppercase tracking-wider"
                     >
                       Wet (Ton)
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-wider"
+                      className="px-3 py-2.5 text-right text-[11px] font-bold text-white uppercase tracking-wider"
                     >
                       Dry (Ton)
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                   {loading ? (
                     <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
+                      <td colSpan={4} className="px-4 py-8 text-center text-xs text-slate-500">
                         Loading data...
                       </td>
                     </tr>
                   ) : error ? (
                     <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-red-500 font-medium">
+                      <td
+                        colSpan={4}
+                        className="px-4 py-8 text-center text-xs text-rose-500 font-medium"
+                      >
                         {error}
                       </td>
                     </tr>
                   ) : data.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
+                      <td colSpan={4} className="px-4 py-8 text-center text-xs text-slate-500">
                         No data available for this month.
                       </td>
                     </tr>
                   ) : (
                     data.map((row) => (
-                      <tr key={row.id} className="bg-white hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                      <tr
+                        key={row.id}
+                        className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors"
+                      >
+                        <td className="px-3 py-2 whitespace-nowrap text-xs font-mono font-medium text-slate-800 dark:text-slate-200">
                           {new Date(row.date).toLocaleDateString('id-ID', {
                             day: '2-digit',
                             month: 'short',
                             year: 'numeric',
                           })}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 text-right">
+                        <td className="px-3 py-2 whitespace-nowrap text-xs font-mono text-slate-700 dark:text-slate-300 text-right">
                           {row.moisture?.toFixed(2)}%
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-primary-600 text-right">
+                        <td className="px-3 py-2 whitespace-nowrap text-xs font-mono font-bold text-primary-600 dark:text-primary-400 text-right">
                           {formatNumber(row.wet)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-secondary-900 text-right">
+                        <td className="px-3 py-2 whitespace-nowrap text-xs font-mono font-bold text-secondary-900 dark:text-slate-100 text-right">
                           {formatNumber(row.dry)}
                         </td>
                       </tr>

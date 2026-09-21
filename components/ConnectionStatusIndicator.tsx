@@ -121,8 +121,8 @@ const ConnectionStatusIndicator: React.FC<ConnectionStatusIndicatorProps> = ({
   // Base container classes
   const containerClasses =
     variant === 'fixed'
-      ? 'fixed bottom-2.5 right-2.5 px-3 py-2 bg-slate-900/75 text-white rounded text-xs flex items-center gap-1.5 z-[1000] shadow-sm backdrop-blur-sm'
-      : `flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide bg-white/10 text-slate-200 border border-white/10 shadow-sm backdrop-blur-md ${className}`;
+      ? 'fixed bottom-2.5 right-2.5 px-3 py-2 bg-slate-900/85 text-white rounded-lg text-xs flex items-center gap-1.5 z-[1000] shadow-sm backdrop-blur-sm border border-slate-800'
+      : `flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold tracking-wide bg-white/5 text-slate-200 border border-white/10 shadow-xs backdrop-blur-md ${className}`;
 
   return (
     <div className={containerClasses}>

@@ -87,11 +87,12 @@ export const NavigationItem = React.forwardRef<HTMLButtonElement, IconButtonProp
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           className={`
-            relative flex items-center transition-colors duration-150
-            ${isSidebarExpanded ? 'w-full px-4 justify-start gap-4' : 'w-12 h-12 justify-center rounded-[12px] mx-auto'}
-            min-h-[52px]
-            ${isActive ? 'text-white bg-primary-600/20 border border-primary-500/30' : 'text-white/60 hover:text-white hover:bg-white/10'}
-            ${isSidebarExpanded ? 'rounded-[12px] py-3' : ''}
+            relative flex items-center transition-all duration-150 active:scale-[0.98]
+            ${isSidebarExpanded ? 'w-full px-4 justify-start gap-4' : 'w-11 h-11 justify-center rounded-lg mx-auto'}
+            min-h-[44px]
+            ${isActive ? 'text-white bg-primary-600/20 border border-primary-500/40 shadow-xs' : 'text-white/60 hover:text-white hover:bg-white/10'}
+            ${isSidebarExpanded ? 'rounded-lg py-2.5' : ''}
+            focus:outline-none focus:ring-2 focus:ring-primary-500/40
           `}
           aria-label={label}
           aria-expanded={hasDropdown ? isExpanded : undefined}
@@ -100,7 +101,7 @@ export const NavigationItem = React.forwardRef<HTMLButtonElement, IconButtonProp
         >
           {/* Left indicator bar */}
           {isActive && (
-            <div className="absolute left-[-4px] top-1/2 -translate-y-1/2 w-1.5 h-6 bg-primary-600 rounded-r-full shadow-[0_0_8px_rgba(5,150,105,0.8)]" />
+            <div className="absolute left-[-4px] top-1/2 -translate-y-1/2 w-1.5 h-6 bg-primary-500 rounded-r-full shadow-[0_0_10px_rgba(16,185,129,0.9)]" />
           )}
 
           <div
@@ -147,7 +148,7 @@ export const NavigationItem = React.forwardRef<HTMLButtonElement, IconButtonProp
           {/* Custom Floating Tooltip for Collapsed Sidebar */}
           {!isSidebarExpanded && showTooltip && (
             <div
-              className="fixed z-[100] px-3 py-1.5 text-white text-[12px] font-bold rounded-md shadow-2xl border border-white/10 pointer-events-none whitespace-nowrap bg-slate-900 font-sans"
+              className="fixed z-[100] px-3 py-1.5 text-white text-[12px] font-bold rounded-lg shadow-2xl border border-white/10 pointer-events-none whitespace-nowrap bg-slate-900 font-sans"
               style={{
                 top: `${getTooltipPosition().top}px`,
                 left: `${getTooltipPosition().left}px`,
@@ -231,7 +232,7 @@ export const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
     <AnimatePresence mode="wait">
       <motion.div
         ref={dropdownRef}
-        className="fixed z-[110] bg-slate-900 border border-slate-800 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] py-2 min-w-[240px] font-sans overflow-hidden"
+        className="fixed z-[110] bg-slate-900 border border-slate-800 rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.5)] py-2 min-w-[240px] font-sans overflow-hidden"
         style={{
           top: `${position.top}px`,
           left: `${position.left}px`,
@@ -251,61 +252,67 @@ export const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
           </span>
         </div>
 
-        {items.map((item, _index) => {
-          const isItemActive = item.key === activeSubKey;
-          const isItemFocused = _index === focusedIndex;
+        <div className="px-1.5 space-y-0.5">
+          {items.map((item, _index) => {
+            const isItemActive = item.key === activeSubKey;
+            const isItemFocused = _index === focusedIndex;
 
-          return (
-            <button
-              key={item.key}
-              onClick={() => {
-                onSelect(item as any);
-                onClose();
-              }}
-              className={`w-full px-4 py-3 text-left flex items-center gap-3 transition-all duration-200 group relative z-10 ${
-                isItemActive
-                  ? 'bg-primary-600/20 text-white font-bold'
-                  : isItemFocused
-                  ? 'bg-white/10 text-white'
-                  : 'hover:bg-white/5 text-white/70'
-              }`}
-              role="menuitem"
-              tabIndex={isItemFocused ? 0 : -1}
-            >
-              {isItemActive && (
-                <div className="absolute inset-y-2 left-1.5 w-1 bg-primary-500 rounded-full shadow-[0_0_8px_rgba(5,150,105,0.8)]" />
-              )}
-              {!isItemActive && isItemFocused && (
-                <motion.div
-                  layoutId="dropdownHoverIndicator"
-                  className="absolute inset-y-2 left-1.5 w-1 bg-white/40 rounded-full"
-                />
-              )}
-
-              <div
-                className={`flex-shrink-0 w-4.5 h-4.5 transition-colors duration-200 ${
+            return (
+              <button
+                key={item.key}
+                onClick={() => {
+                  onSelect(item as any);
+                  onClose();
+                }}
+                className={`w-full px-3 py-2.5 rounded-lg text-left flex items-center gap-3 transition-all duration-150 group relative z-10 focus:outline-none focus:ring-2 focus:ring-primary-500/40 ${
                   isItemActive
-                    ? 'text-primary-400 font-bold'
+                    ? 'bg-primary-600/20 text-white font-bold'
                     : isItemFocused
-                    ? 'text-white'
-                    : 'text-white/50 group-hover:text-primary-400'
+                      ? 'bg-white/10 text-white'
+                      : 'hover:bg-white/5 text-white/70'
                 }`}
+                role="menuitem"
+                tabIndex={isItemFocused ? 0 : -1}
               >
-                {item.icon}
-              </div>
-              <span
-                className={`text-sm tracking-tight transition-colors duration-200 ${
-                  isItemActive ? 'text-white font-bold' : isItemFocused ? 'text-white' : 'text-white/70 group-hover:text-white'
-                }`}
-              >
-                {item.label}
-              </span>
-              {isItemActive && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary-400 shadow-[0_0_6px_rgba(52,211,153,0.9)]" />
-              )}
-            </button>
-          );
-        })}
+                {isItemActive && (
+                  <div className="absolute inset-y-2 left-1 w-1 bg-primary-500 rounded-full shadow-[0_0_8px_rgba(5,150,105,0.8)]" />
+                )}
+                {!isItemActive && isItemFocused && (
+                  <motion.div
+                    layoutId="dropdownHoverIndicator"
+                    className="absolute inset-y-2 left-1 w-1 bg-white/40 rounded-full"
+                  />
+                )}
+
+                <div
+                  className={`flex-shrink-0 w-4.5 h-4.5 transition-colors duration-200 ${
+                    isItemActive
+                      ? 'text-primary-400 font-bold'
+                      : isItemFocused
+                        ? 'text-white'
+                        : 'text-white/50 group-hover:text-primary-400'
+                  }`}
+                >
+                  {item.icon}
+                </div>
+                <span
+                  className={`text-sm tracking-tight transition-colors duration-200 ${
+                    isItemActive
+                      ? 'text-white font-bold'
+                      : isItemFocused
+                        ? 'text-white'
+                        : 'text-white/70 group-hover:text-white'
+                  }`}
+                >
+                  {item.label}
+                </span>
+                {isItemActive && (
+                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary-400 shadow-[0_0_6px_rgba(52,211,153,0.9)]" />
+                )}
+              </button>
+            );
+          })}
+        </div>
       </motion.div>
     </AnimatePresence>
   );

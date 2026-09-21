@@ -265,7 +265,7 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
   icon,
   iconPosition = 'left',
   fullWidth = false,
-  rounded = 'md',
+  rounded = 'lg',
   elevation = 'none',
   haptic = false,
   ariaLabel,
@@ -531,7 +531,11 @@ export const EnhancedCard: React.FC<EnhancedCardProps> = ({
   const variantClasses = {
     default: cn('bg-white dark:bg-slate-900', 'border border-neutral-200 dark:border-slate-800'),
     glass: cn('bg-white dark:bg-slate-900', 'border border-neutral-200 dark:border-slate-800'),
-    elevated: cn('bg-white dark:bg-slate-900', 'border border-neutral-200 dark:border-slate-800', 'shadow-md'),
+    elevated: cn(
+      'bg-white dark:bg-slate-900',
+      'border border-neutral-200 dark:border-slate-800',
+      'shadow-md'
+    ),
     outlined: cn('bg-transparent', 'border-2 border-neutral-300 dark:border-slate-700'),
     gradient: cn(
       'bg-gradient-to-br from-primary-500 to-secondary-600',

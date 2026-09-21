@@ -10,12 +10,14 @@ interface RcaAnalysisButtonProps {
   currentDowntime: Partial<DowntimeLog>; // Partial because user might be typing
   onAnalysisComplete?: (analysis: string) => void;
   disabled?: boolean;
+  className?: string;
 }
 
 export const RcaAnalysisButton: React.FC<RcaAnalysisButtonProps> = ({
   currentDowntime,
   onAnalysisComplete,
   disabled,
+  className,
 }) => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -70,9 +72,9 @@ export const RcaAnalysisButton: React.FC<RcaAnalysisButtonProps> = ({
         onClick={handleAnalyze}
         disabled={disabled || loading}
         aria-label="AI Root Cause Analysis"
-        className="min-h-[44px] px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap shrink-0"
+        className={`min-h-[34px] h-[34px] px-3 py-1.5 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white rounded-lg text-xs font-semibold shadow-xs hover:shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/40 disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 ${className || ''}`}
       >
-        <Sparkles className="w-4 h-4 text-emerald-200" />
+        <Sparkles className="w-3.5 h-3.5 text-primary-200" />
         <span>{loading ? 'Menganalisa...' : 'AI RCA'}</span>
       </button>
 

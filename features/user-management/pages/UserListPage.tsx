@@ -14,6 +14,7 @@ import PencilIcon from '../../../components/icons/PencilIcon';
 import TrashIcon from '../../../components/icons/TrashIcon';
 import UserGroupIcon from '../../../components/icons/UserGroupIcon';
 import ShieldCheckIcon from '../../../components/icons/ShieldCheckIcon';
+import RealtimeIndicator from '../../../components/ui/RealtimeIndicator';
 
 const UserListPage: React.FC = () => {
   const [filter, setFilter] = useState<UserFilter>({
@@ -72,163 +73,180 @@ const UserListPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            User Management
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">
-            Manage system users, roles, and administrative access controls.
-          </p>
-        </div>
-        <EnhancedButton
-          variant="primary"
-          size="lg"
-          icon={<PlusIcon className="w-5 h-5" />}
-          onClick={handleCreate}
-          className="shadow-indigo-500/25"
-        >
-          Add New User
-        </EnhancedButton>
-      </div>
-
-      {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <EnhancedCard variant="glass" className="border-l-4 border-l-indigo-500 py-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-indigo-100 dark:bg-indigo-900/40 rounded-2xl">
-              <UserGroupIcon className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+    <div className="w-full space-y-4 sm:space-y-5 font-sans">
+      {/* Hero Header Section - 20 Aturan Wajib */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-secondary-900 via-slate-900 to-secondary-950 rounded-xl shadow-md border border-slate-800 p-4 sm:p-5 text-white w-full">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2" />
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 sm:gap-3.5">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-emerald-400 shrink-0 shadow-inner">
+              <UserGroupIcon className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Users</p>
-              <p className="text-3xl font-bold text-slate-900 dark:text-white">{stats.total}</p>
-            </div>
-          </div>
-        </EnhancedCard>
-        <EnhancedCard variant="glass" className="border-l-4 border-l-emerald-500 py-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-emerald-100 dark:bg-emerald-900/40 rounded-2xl">
-              <div className="w-8 h-8 flex items-center justify-center">
-                <div className="w-3 h-3 bg-emerald-500 rounded-full animate-ping" />
-                <div className="w-3 h-3 bg-emerald-500 rounded-full absolute" />
+              <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full">
+                  Access Control
+                </span>
+                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700 rounded-full">
+                  User Management
+                </span>
+                <RealtimeIndicator isConnected={true} lastUpdate={new Date()} />
               </div>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Active Now</p>
-              <p className="text-3xl font-bold text-slate-900 dark:text-white">{stats.total}</p>
-            </div>
-          </div>
-        </EnhancedCard>
-        <EnhancedCard variant="glass" className="border-l-4 border-l-amber-500 py-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-amber-100 dark:bg-amber-900/40 rounded-2xl">
-              <ShieldCheckIcon className="w-8 h-8 text-amber-600 dark:text-amber-400" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Admin Role</p>
-              <p className="text-3xl font-bold text-slate-900 dark:text-white">
-                {data?.items.filter((u) => u.role.includes('Admin')).length || 0}
+              <h1 className="text-lg sm:text-xl font-black tracking-tight text-white font-display">
+                User Management
+              </h1>
+              <p className="text-xs text-slate-300 font-normal mt-0.5">
+                Kelola kredensial pengguna, peran otentikasi sistem, departemen, dan kebijakan hak
+                akses.
               </p>
             </div>
           </div>
-        </EnhancedCard>
+
+          <button
+            onClick={handleCreate}
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 rounded-lg shadow-xs transition-all min-h-[36px] shrink-0"
+          >
+            <PlusIcon className="w-4 h-4" />
+            <span>Add New User</span>
+          </button>
+        </div>
       </div>
 
-      {/* Control Bar (Search & Filter) */}
-      <EnhancedCard variant="glass" padding="md" className="backdrop-blur-xl">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <EnhancedInput
-              placeholder="Search by name, email, or username..."
-              value={filter.search || ''}
-              onChange={(v) => setFilter({ ...filter, search: v, page: 1 })}
-              autoComplete="off"
-              className="bg-white/50 dark:bg-slate-800/50"
-              icon={
-                <svg
-                  className="w-5 h-5 text-slate-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              }
-            />
+      {/* Stats Section - Compact & Precision */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="bg-white dark:bg-slate-900 rounded-xl p-3 sm:p-3.5 border border-slate-200 dark:border-slate-800 shadow-xs flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+            <UserGroupIcon className="w-4 h-4" />
           </div>
-          <div className="flex flex-wrap gap-4">
-            <div className="w-full sm:w-48">
-              <select
-                className="w-full h-[48px] px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 transition-all outline-none appearance-none cursor-pointer"
-                value={filter.role}
-                onChange={(e) => setFilter({ ...filter, role: e.target.value, page: 1 })}
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                  backgroundPosition: `right 1rem center`,
-                  backgroundRepeat: `no-repeat`,
-                  backgroundSize: `1.5em 1.5em`,
-                }}
-              >
-                <option value="all">All Roles</option>
-                <option value="Super Admin">Super Admin</option>
-                <option value="Admin">Admin</option>
-                <option value="Manager">Manager</option>
-                <option value="Supervisor">Supervisor</option>
-                <option value="Operator">Operator</option>
-                <option value="Outsourcing">Outsourcing</option>
-                <option value="Autonomous">Autonomous</option>
-                <option value="Guest">Guest</option>
-              </select>
+          <div>
+            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              Total Users
+            </p>
+            <p className="text-lg sm:text-xl font-black font-mono text-slate-900 dark:text-white">
+              {stats.total}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 rounded-xl p-3 sm:p-3.5 border border-slate-200 dark:border-slate-800 shadow-xs flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+            <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse" />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              Active Now
+            </p>
+            <p className="text-lg sm:text-xl font-black font-mono text-emerald-600 dark:text-emerald-400">
+              {stats.active}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 rounded-xl p-3 sm:p-3.5 border border-slate-200 dark:border-slate-800 shadow-xs flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/80 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+            <ShieldCheckIcon className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              Admin Role
+            </p>
+            <p className="text-lg sm:text-xl font-black font-mono text-amber-600 dark:text-amber-400">
+              {data?.items.filter((u) => u.role.includes('Admin')).length || 0}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Control Bar (Search & Filter) - Compact & Precision */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-3 sm:p-3.5 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+        <div className="relative flex-1">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+          <input
+            type="text"
+            placeholder="Search by name, email, or username..."
+            value={filter.search || ''}
+            onChange={(e) => setFilter({ ...filter, search: e.target.value, page: 1 })}
+            className="w-full pl-8.5 pr-3 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <select
+            className="px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            value={filter.role}
+            onChange={(e) => setFilter({ ...filter, role: e.target.value, page: 1 })}
+          >
+            <option value="all">All Roles</option>
+            <option value="Super Admin">Super Admin</option>
+            <option value="Admin">Admin</option>
+            <option value="Manager">Manager</option>
+            <option value="Supervisor">Supervisor</option>
+            <option value="Operator">Operator</option>
+            <option value="Outsourcing">Outsourcing</option>
+            <option value="Autonomous">Autonomous</option>
+            <option value="Guest">Guest</option>
+          </select>
+
+          <select
+            className="px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            value={filter.status}
+            onChange={(e) =>
+              setFilter({ ...filter, status: e.target.value as UserFilter['status'], page: 1 })
+            }
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Main Table Section - COP Analysis Presisi Standard */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+        {/* Table Header Bar */}
+        <div className="px-3.5 py-2.5 bg-slate-50/80 dark:bg-slate-850/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 flex items-center justify-center border border-primary-100 dark:border-primary-900/50 shrink-0">
+              <UserGroupIcon className="w-4 h-4" />
             </div>
-            <div className="w-full sm:w-48">
-              <select
-                className="w-full h-[48px] px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 transition-all outline-none appearance-none cursor-pointer"
-                value={filter.status}
-                onChange={(e) =>
-                  setFilter({ ...filter, status: e.target.value as UserFilter['status'], page: 1 })
-                }
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                  backgroundPosition: `right 1rem center`,
-                  backgroundRepeat: `no-repeat`,
-                  backgroundSize: `1.5em 1.5em`,
-                }}
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
+            <div>
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                Daftar Akun Pengguna
+              </h3>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                Menampilkan {data?.items.length || 0} dari {data?.totalItems || 0} total pengguna
+                terdaftar
+              </p>
             </div>
           </div>
         </div>
-      </EnhancedCard>
 
-      {/* Main Table Section */}
-      <EnhancedCard variant="glass" padding="none" className="overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-secondary-800 dark:bg-secondary-900 border-b border-secondary-700">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-slate-700 dark:bg-slate-800 text-white">
               <tr>
-                <th className="px-6 py-5 text-sm font-bold text-white uppercase tracking-widest">
+                <th className="py-2.5 px-3 text-[11px] font-bold uppercase tracking-wider text-white">
                   User Details
                 </th>
-                <th className="px-6 py-5 text-sm font-bold text-white uppercase tracking-widest">
+                <th className="py-2.5 px-3 text-[11px] font-bold uppercase tracking-wider text-white">
                   System Role
                 </th>
-                <th className="px-6 py-5 text-sm font-bold text-white uppercase tracking-widest">
+                <th className="py-2.5 px-3 text-[11px] font-bold uppercase tracking-wider text-white">
                   Account Status
                 </th>
-                <th className="px-6 py-5 text-sm font-bold text-white uppercase tracking-widest">
+                <th className="py-2.5 px-3 text-[11px] font-bold uppercase tracking-wider text-white">
                   Permissions
                 </th>
-                <th className="px-6 py-5 text-sm font-bold text-white uppercase tracking-widest text-right">
+                <th className="py-2.5 px-3 text-[11px] font-bold uppercase tracking-wider text-white text-right">
                   Actions
                 </th>
               </tr>
@@ -236,56 +254,54 @@ const UserListPage: React.FC = () => {
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="p-20 text-center">
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                      <p className="text-slate-500 font-medium">Loading user database...</p>
+                  <td colSpan={5} className="py-12 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                      <p className="text-xs text-slate-500 font-medium">Memuat data pengguna...</p>
                     </div>
                   </td>
                 </tr>
               ) : data?.items.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-20 text-center text-slate-500">
-                    No users found matching your criteria.
+                  <td colSpan={5} className="py-12 text-center text-xs text-slate-500">
+                    Tidak ada pengguna yang cocok dengan kriteria pencarian.
                   </td>
                 </tr>
               ) : (
                 data?.items.map((user) => (
                   <tr
                     key={user.id}
-                    className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all duration-300"
+                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
                   >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <div className="relative">
-                          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 p-[2px] flex items-center justify-center overflow-hidden shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform">
+                    <td className="py-2 px-3 text-xs font-mono font-medium">
+                      <div className="flex items-center gap-2.5">
+                        <div className="relative shrink-0">
+                          <div className="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center font-bold text-xs overflow-hidden">
                             {user.avatar ? (
                               <img
                                 src={user.avatar}
                                 alt={user.name}
-                                className="w-full h-full rounded-[14px] object-cover bg-white"
+                                className="w-full h-full object-cover"
                               />
                             ) : (
-                              <div className="w-full h-full rounded-[14px] bg-white flex items-center justify-center text-indigo-600 font-black text-xl">
-                                {user.name.charAt(0).toUpperCase()}
-                              </div>
+                              <span>{user.name.charAt(0).toUpperCase()}</span>
                             )}
                           </div>
                           {user.is_active && (
-                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full" />
+                            <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 border border-white dark:border-slate-900 rounded-full" />
                           )}
                         </div>
-                        <div>
-                          <div className="font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        <div className="min-w-0">
+                          <div className="font-sans font-bold text-xs text-slate-900 dark:text-white truncate">
                             {user.name}
                           </div>
-                          <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                          <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
                             @{user.username} • {user.email}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="py-2 px-3 text-xs font-mono">
                       <EnhancedBadge
                         variant={
                           getRoleColor(user.role) as
@@ -296,30 +312,26 @@ const UserListPage: React.FC = () => {
                             | 'error'
                             | 'neutral'
                         }
-                        className="px-3 py-1 text-[10px] font-black uppercase tracking-widest shadow-sm"
+                        className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md"
                       >
                         {user.role}
                       </EnhancedBadge>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="py-2 px-3 text-xs font-mono">
                       {user.is_active ? (
-                        <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                          <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                            Active
-                          </span>
-                        </div>
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          Active
+                        </span>
                       ) : (
-                        <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600" />
-                          <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
-                            Inactive
-                          </span>
-                        </div>
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-400 dark:text-slate-500">
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                          Inactive
+                        </span>
                       )}
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
+                    <td className="py-2 px-3 text-xs font-mono">
+                      <div className="flex gap-1 flex-wrap">
                         {Object.entries(user.permissions || {}).map(([key, level]) => {
                           if (level === 'NONE') return null;
                           return (
@@ -328,47 +340,43 @@ const UserListPage: React.FC = () => {
                               content={`${key.replace(/_/g, ' ')}: ${level}`}
                             >
                               <div
-                                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                                className={`w-5 h-5 rounded text-[8px] font-bold flex items-center justify-center border ${
                                   level === 'WRITE'
-                                    ? 'bg-indigo-100 text-indigo-600'
-                                    : 'bg-slate-100 text-slate-600'
+                                    ? 'bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800'
+                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
                                 }`}
                               >
-                                <span className="text-[10px] font-black">
-                                  {key
-                                    .split('_')
-                                    .map((word) => word[0])
-                                    .join('')
-                                    .toUpperCase()}
-                                </span>
+                                {key
+                                  .split('_')
+                                  .map((word) => word[0])
+                                  .join('')
+                                  .toUpperCase()}
                               </div>
                             </EnhancedTooltip>
                           );
                         })}
                         {(!user.permissions ||
                           Object.values(user.permissions).every((v) => v === 'NONE')) && (
-                          <span className="text-xs text-slate-400 italic">No access</span>
+                          <span className="text-[10px] text-slate-400 italic">No access</span>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                        <EnhancedButton
-                          variant="ghost"
-                          size="xs"
+                    <td className="py-2 px-3 text-xs font-mono text-right">
+                      <div className="flex justify-end gap-1">
+                        <button
                           onClick={() => handleEdit(user)}
-                          className="p-2 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/40"
+                          className="p-1 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 rounded-md transition-colors"
+                          title="Edit User"
                         >
-                          <PencilIcon className="w-4 h-4" />
-                        </EnhancedButton>
-                        <EnhancedButton
-                          variant="ghost"
-                          size="xs"
+                          <PencilIcon className="w-3.5 h-3.5" />
+                        </button>
+                        <button
                           onClick={() => handleDelete(user.id)}
-                          className="p-2 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/40"
+                          className="p-1 text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-md transition-colors"
+                          title="Delete User"
                         >
-                          <TrashIcon className="w-4 h-4" />
-                        </EnhancedButton>
+                          <TrashIcon className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -378,10 +386,10 @@ const UserListPage: React.FC = () => {
           </table>
         </div>
 
-        {/* Improved Pagination Section */}
+        {/* Compact Pagination Section */}
         {data && data.totalItems > 0 && (
-          <div className="px-6 py-5 bg-slate-50/50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
+          <div className="px-3.5 py-2.5 bg-slate-50/80 dark:bg-slate-850/60 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+            <div className="text-xs text-slate-500 dark:text-slate-400 font-mono">
               Showing{' '}
               <span className="text-slate-900 dark:text-white font-bold">
                 {(data.page - 1) * data.perPage + 1}
@@ -391,36 +399,32 @@ const UserListPage: React.FC = () => {
                 {Math.min(data.page * data.perPage, data.totalItems)}
               </span>{' '}
               of <span className="text-slate-900 dark:text-white font-bold">{data.totalItems}</span>{' '}
-              total users
+              users
             </div>
-            <div className="flex gap-3">
-              <EnhancedButton
-                variant="outline"
-                size="sm"
+            <div className="flex gap-2 items-center">
+              <button
                 onClick={() => setFilter({ ...filter, page: filter.page - 1 })}
                 disabled={data.page === 1}
-                className="bg-white dark:bg-slate-900"
+                className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
               >
                 Previous
-              </EnhancedButton>
-              <div className="flex items-center gap-1.5 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold">
-                <span className="text-indigo-600">{data.page}</span>
+              </button>
+              <div className="flex items-center gap-1 px-2.5 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-mono font-bold">
+                <span className="text-indigo-600 dark:text-indigo-400">{data.page}</span>
                 <span className="text-slate-400">/</span>
                 <span className="text-slate-600 dark:text-slate-300">{data.totalPages}</span>
               </div>
-              <EnhancedButton
-                variant="outline"
-                size="sm"
+              <button
                 onClick={() => setFilter({ ...filter, page: filter.page + 1 })}
                 disabled={data.page === data.totalPages}
-                className="bg-white dark:bg-slate-900"
+                className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
               >
                 Next
-              </EnhancedButton>
+              </button>
             </div>
           </div>
         )}
-      </EnhancedCard>
+      </div>
 
       <UserForm isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} user={selectedUser} />
     </div>

@@ -18,12 +18,19 @@ import { exportOeeDashboard } from '../../utils/exportOeeDashboard';
 import DowntimeHeatmap from './DowntimeHeatmap';
 import OeeTrendChart from './OeeTrendChart';
 
+export type OeeTabType = 'oee' | 'downtime' | 'trends' | 'all';
+
 interface OeeDashboardSectionProps {
   date: string;
   selectedUnit: string;
+  activeTab?: OeeTabType;
 }
 
-const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selectedUnit }) => {
+const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({
+  date,
+  selectedUnit,
+  activeTab = 'all',
+}) => {
   const { records: plantUnits, loading: unitsLoading } = usePlantUnits();
   const { records: parameterSettings, loading: settingsLoading } = useParameterSettings();
 
@@ -406,147 +413,170 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
 
   if (loading || unitsLoading || settingsLoading) {
     return (
-      <div className="flex items-center justify-center p-12 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
-        <Loader2 className="w-8 h-8 text-red-500 animate-spin mr-3" />
-        <span className="text-slate-600 font-medium">Calculating Plant-wide OEE Metrics...</span>
+      <div className="flex items-center justify-center p-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <Loader2 className="w-8 h-8 text-primary-600 animate-spin mr-3" />
+        <span className="text-slate-600 dark:text-slate-300 font-medium">
+          Calculating Plant-wide OEE Metrics...
+        </span>
       </div>
     );
   }
 
-  return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-emerald-500" />
-          OEE Performance Leaderboard
-        </h3>
-        <button
-          onClick={() => exportOeeDashboard(date, unitMetrics, allData)}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-600/20 transition-all active:scale-95"
-        >
-          <FileSpreadsheet className="w-4 h-4" />
-          Export Report
-        </button>
-      </div>
+  const showOee = activeTab === 'oee' || activeTab === 'all';
+  const showDowntime = activeTab === 'downtime' || activeTab === 'all';
+  const showTrends = activeTab === 'trends' || activeTab === 'all';
 
-      <div className="relative group">
-        <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-purple-600 to-indigo-600 rounded-[3rem] blur-2xl opacity-10 group-hover:opacity-20 transition-opacity duration-700" />
-        <div className="relative bg-white/40 backdrop-blur-3xl p-1 rounded-[3rem] border border-white/60 shadow-2xl shadow-slate-200/50">
-          <div className="bg-gradient-to-br from-white/80 to-white/40 p-6 md:p-10 rounded-[2.8rem] flex flex-col md:flex-row items-center justify-between gap-6 md:gap-10">
-            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 text-center md:text-left">
-              <div className="w-16 h-16 md:w-24 md:h-24 rounded-[1.5rem] md:rounded-[2rem] bg-gradient-to-br from-red-600 to-red-400 flex items-center justify-center shadow-2xl shadow-red-200 relative overflow-hidden flex-shrink-0">
-                <div className="absolute inset-0 bg-white/20 animate-pulse" />
-                <TrendingUp className="w-8 h-8 md:w-12 md:h-12 text-white relative z-10" />
-              </div>
-              <div>
-                <span className="text-[9px] md:text-[11px] font-black text-red-600 uppercase tracking-[0.4em] mb-1 md:mb-2 block">
-                  Enterprise Intelligence
-                </span>
-                <h2 className="text-sm md:text-xl font-bold text-slate-500 uppercase tracking-widest leading-none mb-1">
-                  Plant Performance
-                </h2>
-                <div className="flex items-end justify-center md:justify-start gap-1 md:gap-3">
-                  <h2 className="text-4xl md:text-7xl font-black text-slate-900 tabular-nums tracking-tighter leading-none">
-                    {plantOverallOee.toFixed(2)}
-                  </h2>
-                  <span className="text-xl md:text-3xl font-black text-red-600 mb-0.5 md:mb-1">
-                    %
-                  </span>
+  return (
+    <div className="space-y-6 md:space-y-8">
+      {/* OEE PERFORMANCE SECTION */}
+      {showOee && (
+        <div className="space-y-6">
+          {/* Overall OEE Hero Card */}
+          <div className="relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-rose-500/10 via-primary-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-rose-600 via-rose-500 to-amber-500 flex items-center justify-center shadow-lg shadow-rose-500/20 flex-shrink-0">
+                  <TrendingUp className="w-8 h-8 md:w-10 md:h-10 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50">
+                      Enterprise Analytics
+                    </span>
+                    <span className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-semibold">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      Live Aggregated
+                    </span>
+                  </div>
+                  <h3 className="text-sm md:text-base font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    Plant Overall Equipment Effectiveness
+                  </h3>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight font-mono">
+                      {plantOverallOee.toFixed(2)}
+                    </span>
+                    <span className="text-2xl md:text-3xl font-extrabold text-rose-600 dark:text-rose-400">
+                      %
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="flex flex-col items-center md:items-end gap-3 md:gap-4 text-center md:text-right">
-              <div className="flex items-center gap-2 md:gap-3 bg-white/60 px-3 md:px-4 py-1.5 md:py-2 rounded-2xl border border-white/80 shadow-sm">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[9px] md:text-[10px] font-black text-slate-700 uppercase tracking-widest">
-                  Real-time Active
-                </span>
+              <div className="flex flex-col md:items-end gap-3 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 pt-4 md:pt-0 md:pl-8">
+                <div className="text-xs text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed text-left md:text-right">
+                  Kalkulasi agregat OEE terverifikasi berdasarkan kapasitas desain operasional
+                  aktual, ketersediaan mesin, dan stabilitas kualitas.
+                </div>
+                <button
+                  onClick={() => exportOeeDashboard(date, unitMetrics, allData)}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50 min-h-[36px]"
+                  title="Export OEE Data to Spreadsheet"
+                  aria-label="Export OEE Data to Spreadsheet"
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
+                  <span>Export Spreadsheet</span>
+                </button>
               </div>
-              <p className="max-w-[300px] text-[10px] md:text-xs text-slate-400 font-medium leading-relaxed italic opacity-80 hidden md:block">
-                Aggregated equipment effectiveness metrics verified against real-time operational
-                design capacity and availability data.
-              </p>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="relative">
-        <div className="bg-white/40 backdrop-blur-2xl p-8 rounded-[2.5rem] border border-white/60 shadow-2xl shadow-slate-200/40">
-          <div className="flex items-center gap-3 mb-8 px-2">
-            <div className="w-1.5 h-6 bg-red-600 rounded-full" />
-            <h3 className="text-xl font-black text-slate-800 tracking-tight">
-              OEE Unit Leaderboard
-            </h3>
+          {/* OEE Unit Leaderboard */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-1.5 h-5 bg-rose-600 rounded-full" />
+              <h3 className="text-base md:text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                OEE Unit Performance Leaderboard
+              </h3>
+            </div>
+            <OeeLeaderboard
+              unitMetrics={unitMetrics.map((m) => ({
+                unit: m.unit,
+                oee: m.daily.oee,
+                availability: m.daily.availability,
+                performance: m.daily.performance,
+                quality: m.daily.quality,
+              }))}
+            />
           </div>
-          <OeeLeaderboard
-            unitMetrics={unitMetrics.map((m) => ({
-              unit: m.unit,
-              oee: m.daily.oee,
-              availability: m.daily.availability,
-              performance: m.daily.performance,
-              quality: m.daily.quality,
-            }))}
-          />
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
-        {unitMetrics.map((m) => (
-          <OeeMetricCard
-            key={m.unit}
-            label="Daily Performance Overview"
-            unitName={m.unit}
-            value={m.daily.oee}
-            subMetrics={m.daily}
-            comparisons={m.comparisons}
-          />
-        ))}
-      </div>
-
-      <div className="bg-white/40 backdrop-blur-2xl p-8 rounded-[2.5rem] border border-white/60 shadow-2xl shadow-slate-200/40">
-        <div className="flex items-center justify-between mb-8 px-2">
-          <div className="flex items-center gap-3">
-            <div className="w-1.5 h-6 bg-orange-600 rounded-full" />
-            <h3 className="text-xl font-black text-slate-800 tracking-tight">
-              Downtime Distribution (Heatmap 24H)
-            </h3>
+          {/* Unit Metric Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {unitMetrics.map((m) => (
+              <OeeMetricCard
+                key={m.unit}
+                label="Daily Performance Overview"
+                unitName={m.unit}
+                value={m.daily.oee}
+                subMetrics={m.daily}
+                comparisons={m.comparisons}
+              />
+            ))}
           </div>
         </div>
-        <DowntimeHeatmap units={plantUnits} downtimeData={allData.downtime} />
-      </div>
+      )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {unitMetrics.map((m) => (
-          <div
-            key={`trend-${m.unit}`}
-            className="bg-white/40 backdrop-blur-2xl p-8 rounded-[2.5rem] border border-white/60 shadow-2xl shadow-slate-200/40"
-          >
-            <div className="flex items-center justify-between mb-8 px-2">
+      {/* DOWNTIME & RELIABILITY SECTION */}
+      {showDowntime && (
+        <div className="space-y-6">
+          {/* Downtime Heatmap 24H */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-1.5 h-6 bg-primary-600 rounded-full" />
-                <h3 className="text-xl font-black text-slate-800 tracking-tight">
-                  {m.unit} — OEE Trend (30D)
+                <div className="w-1.5 h-5 bg-amber-500 rounded-full" />
+                <h3 className="text-base md:text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                  Distribusi Downtime Unit (Heatmap 24 Jam)
                 </h3>
               </div>
             </div>
-            <OeeTrendChart summaries={allData.summaries} unitId={m.unit} />
+            <DowntimeHeatmap units={plantUnits} downtimeData={allData.downtime} />
           </div>
-        ))}
-      </div>
 
-      <div className="bg-white/40 backdrop-blur-2xl p-8 rounded-[2.5rem] border border-white/60 shadow-2xl shadow-slate-200/40">
-        <div className="flex items-center gap-3 mb-10 px-2">
-          <div className="w-1.5 h-6 bg-purple-600 rounded-full" />
-          <h3 className="text-xl font-black text-slate-800 tracking-tight">
-            Operational Status Timeline (24H)
-          </h3>
+          {/* Operational Status Timeline */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-1.5 h-5 bg-purple-600 rounded-full" />
+              <h3 className="text-base md:text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                Timeline Status Operasional (24 Jam)
+              </h3>
+            </div>
+            <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+              <StatusTimeline units={plantUnits} downtimeData={allData.downtime} />
+            </div>
+          </div>
         </div>
-        <div className="p-4 bg-white/40 rounded-[2rem] border border-white/60">
-          <StatusTimeline units={plantUnits} downtimeData={allData.downtime} />
+      )}
+
+      {/* TRENDS & QUALITY STABILITY SECTION */}
+      {showTrends && (
+        <div className="space-y-6">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-1.5 h-5 bg-primary-600 rounded-full" />
+            <h3 className="text-base md:text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+              Tren Historis OEE Unit (30 Hari Terakhir)
+            </h3>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {unitMetrics.map((m) => (
+              <div
+                key={`trend-${m.unit}`}
+                className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-2 h-2 rounded-full bg-primary-600" />
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                      {m.unit} — OEE Trend (30D)
+                    </h4>
+                  </div>
+                </div>
+                <OeeTrendChart summaries={allData.summaries} unitId={m.unit} />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

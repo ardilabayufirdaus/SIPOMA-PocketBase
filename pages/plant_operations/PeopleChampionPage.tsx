@@ -20,6 +20,7 @@ import { pb } from '../../utils/pocketbase-simple';
 import Modal from '../../components/Modal';
 import { Card } from '../../components/ui/Card';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import RealtimeIndicator from '../../components/ui/RealtimeIndicator';
 import RankCard, { OperatorRanking } from '../../components/plant-operations/RankCard';
 import {
   Chart as ChartJS,
@@ -964,492 +965,478 @@ const PeopleChampionPage: React.FC = () => {
   ]);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 font-sans">
-      <div className="max-w-full mx-auto space-y-6">
-        {/* Header Title Section */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-secondary-900 rounded-xl shadow-lg border border-white/10 p-6">
-          <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.05)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.05)_50%,rgba(255,255,255,0.05)_75%,transparent_75%,transparent)] bg-[length:24px_24px] opacity-20"></div>
-
-          <div className="relative flex items-center gap-4">
-            <div className="w-14 h-14 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20 shadow-inner">
-              <TrendingUp className="w-7 h-7 text-primary-400" />
+    <div className="w-full space-y-4 sm:space-y-5 font-sans">
+      {/* TOP HERO HEADER BANNER - Sesuai 20 Aturan Wajib UI/UX */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-secondary-900 via-slate-900 to-secondary-950 rounded-xl shadow-md border border-slate-800 p-4 sm:p-5 text-white w-full">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-primary-600/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2" />
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 sm:gap-3.5">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-primary-400 shrink-0 shadow-inner">
+              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white tracking-tight">People Champion</h2>
-              <p className="text-sm text-white/80 font-medium mt-0.5">
-                Operator Performance & Achievements Overview
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-primary-500/20 text-primary-300 border border-primary-500/30 rounded-full">
+                  CM Plant Operations
+                </span>
+                <RealtimeIndicator
+                  isConnected={true}
+                  lastUpdate={new Date()}
+                  className="text-xs text-slate-300 font-medium"
+                />
+              </div>
+              <h1 className="text-lg sm:text-xl font-black tracking-tight text-white font-display">
+                People Champion
+              </h1>
+              <p className="text-xs text-slate-300 font-medium">
+                Evaluasi pencapaian performa, indeks kepatuhan, dan peringkat operator CCR
               </p>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Filter Section */}
-        <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-md border border-slate-200/60 p-4">
-          <div className="flex flex-wrap items-end gap-4">
-            {/* Plant Category */}
-            <div className="flex-1 min-w-[180px]">
-              <label
-                htmlFor="cop-filter-category"
-                className="flex items-center gap-1.5 text-xs font-semibold text-white uppercase tracking-wider mb-1.5"
+      {/* Filter Section - Compact & Precision */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 p-3 sm:p-3.5 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 items-end">
+          {/* Plant Category */}
+          <div className="space-y-1">
+            <label
+              htmlFor="cop-filter-category"
+              className="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider"
+            >
+              <Layers className="w-3 h-3 text-slate-400" />
+              Plant Category
+            </label>
+            <div className="relative">
+              <select
+                id="cop-filter-category"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full appearance-none pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 text-xs font-semibold transition-colors cursor-pointer min-h-[36px]"
               >
-                <Layers className="w-3.5 h-3.5" />
-                Plant Category
-              </label>
-              <div className="relative">
-                <select
-                  id="cop-filter-category"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full appearance-none px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669]/40 focus:border-[#059669] text-sm font-medium transition-all duration-200 hover:border-[#059669]/50 cursor-pointer"
-                >
-                  {plantCategories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              </div>
+                {plantCategories.map((cat) => (
+                  <option key={cat} value={cat} className="dark:bg-slate-900">
+                    {cat}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
             </div>
+          </div>
 
-            {/* Unit Name */}
-            <div className="flex-1 min-w-[180px]">
-              <label
-                htmlFor="cop-filter-unit"
-                className="flex items-center gap-1.5 text-xs font-semibold text-white uppercase tracking-wider mb-1.5"
+          {/* Unit Name */}
+          <div className="space-y-1">
+            <label
+              htmlFor="cop-filter-unit"
+              className="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider"
+            >
+              <Building2 className="w-3 h-3 text-slate-400" />
+              Unit
+            </label>
+            <div className="relative">
+              <select
+                id="cop-filter-unit"
+                value={selectedUnit}
+                onChange={(e) => setSelectedUnit(e.target.value)}
+                disabled={unitsForCategory.length === 0}
+                className="w-full appearance-none pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold transition-colors cursor-pointer min-h-[36px]"
               >
-                <Building2 className="w-3.5 h-3.5" />
-                Unit
-              </label>
-              <div className="relative">
-                <select
-                  id="cop-filter-unit"
-                  value={selectedUnit}
-                  onChange={(e) => setSelectedUnit(e.target.value)}
-                  disabled={unitsForCategory.length === 0}
-                  className="w-full appearance-none px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669]/40 focus:border-[#059669] disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-sm font-medium transition-all duration-200 hover:border-[#059669]/50 cursor-pointer"
-                >
-                  {unitsForCategory.map((unit) => (
-                    <option key={unit} value={unit}>
-                      {unit}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              </div>
+                {unitsForCategory.map((unit) => (
+                  <option key={unit} value={unit} className="dark:bg-slate-900">
+                    {unit}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
             </div>
+          </div>
 
-            {/* Cement Type */}
-            <div className="flex-1 min-w-[160px]">
-              <label
-                htmlFor="cop-filter-cement-type"
-                className="flex items-center gap-1.5 text-xs font-semibold text-white uppercase tracking-wider mb-1.5"
+          {/* Cement Type */}
+          <div className="space-y-1">
+            <label
+              htmlFor="cop-filter-cement-type"
+              className="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider"
+            >
+              <Beaker className="w-3 h-3 text-slate-400" />
+              Cement Type
+            </label>
+            <div className="relative">
+              <select
+                id="cop-filter-cement-type"
+                value={selectedCementType}
+                onChange={(e) => setSelectedCementType(e.target.value)}
+                className="w-full appearance-none pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 text-xs font-semibold transition-colors cursor-pointer min-h-[36px]"
               >
-                <Beaker className="w-3.5 h-3.5" />
-                Cement Type
-              </label>
-              <div className="relative">
-                <select
-                  id="cop-filter-cement-type"
-                  value={selectedCementType}
-                  onChange={(e) => setSelectedCementType(e.target.value)}
-                  className="w-full appearance-none px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669]/40 focus:border-[#059669] text-sm font-medium transition-all duration-200 hover:border-[#059669]/50 cursor-pointer"
-                >
-                  <option value="">Pilih Cement Type</option>
-                  <option value="OPC">OPC</option>
-                  <option value="PCC">PCC</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              </div>
+                <option value="" className="dark:bg-slate-900">
+                  Pilih Cement Type
+                </option>
+                <option value="OPC" className="dark:bg-slate-900">
+                  OPC
+                </option>
+                <option value="PCC" className="dark:bg-slate-900">
+                  PCC
+                </option>
+              </select>
+              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
             </div>
+          </div>
 
-            {/* Month */}
-            <div className="flex-1 min-w-[140px]">
-              <label
-                htmlFor="cop-filter-month"
-                className="flex items-center gap-1.5 text-xs font-semibold text-white uppercase tracking-wider mb-1.5"
+          {/* Month */}
+          <div className="space-y-1">
+            <label
+              htmlFor="cop-filter-month"
+              className="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider"
+            >
+              <Calendar className="w-3 h-3 text-slate-400" />
+              Month
+            </label>
+            <div className="relative">
+              <select
+                id="cop-filter-month"
+                value={filterMonth}
+                onChange={(e) => setFilterMonth(parseInt(e.target.value))}
+                className="w-full appearance-none pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 text-xs font-semibold transition-colors cursor-pointer min-h-[36px]"
               >
-                <Calendar className="w-3.5 h-3.5" />
-                Month
-              </label>
-              <div className="relative">
-                <select
-                  id="cop-filter-month"
-                  value={filterMonth}
-                  onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="w-full appearance-none px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669]/40 focus:border-[#059669] text-sm font-medium transition-all duration-200 hover:border-[#059669]/50 cursor-pointer"
-                >
-                  {monthOptions.map((m) => (
-                    <option key={m.value} value={m.value}>
-                      {m.label}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              </div>
+                {monthOptions.map((m) => (
+                  <option key={m.value} value={m.value} className="dark:bg-slate-900">
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
             </div>
+          </div>
 
-            {/* Year */}
-            <div className="flex-1 min-w-[120px]">
-              <label
-                htmlFor="cop-filter-year"
-                className="flex items-center gap-1.5 text-xs font-semibold text-white uppercase tracking-wider mb-1.5"
+          {/* Year */}
+          <div className="space-y-1">
+            <label
+              htmlFor="cop-filter-year"
+              className="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider"
+            >
+              <CalendarDays className="w-3 h-3 text-slate-400" />
+              Year
+            </label>
+            <div className="relative">
+              <select
+                id="cop-filter-year"
+                value={filterYear}
+                onChange={(e) => setFilterYear(parseInt(e.target.value))}
+                className="w-full appearance-none pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 text-xs font-semibold transition-colors cursor-pointer min-h-[36px]"
               >
-                <CalendarDays className="w-3.5 h-3.5" />
-                Year
-              </label>
-              <div className="relative">
-                <select
-                  id="cop-filter-year"
-                  value={filterYear}
-                  onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="w-full appearance-none px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669]/40 focus:border-[#059669] text-sm font-medium transition-all duration-200 hover:border-[#059669]/50 cursor-pointer"
-                >
-                  {yearOptions.map((y) => (
-                    <option key={y} value={y}>
-                      {y}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              </div>
+                {yearOptions.map((y) => (
+                  <option key={y} value={y} className="dark:bg-slate-900">
+                    {y}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Peringkat Tertinggi Operator per Kategori (Moved Logic) */}
-        {(isLoadingRanking || globalOperatorRanking.length > 0) && (
-          <Card
-            variant="floating"
-            padding="lg"
-            className="mt-6 bg-white shadow-lg border border-slate-200"
-          >
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
+      {/* Peringkat Tertinggi Operator per Kategori */}
+      {(isLoadingRanking || globalOperatorRanking.length > 0) && (
+        <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 p-4 sm:p-5">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 flex items-center justify-center border border-primary-100 dark:border-primary-900/50 shrink-0">
+                <TrendingUp className="w-4 h-4" />
+              </div>
               <div>
-                <h2 className="text-3xl font-bold text-[#059669] mb-3">
-                  🏅 Peringkat Tertinggi Operator
+                <h2 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                  Peringkat Tertinggi Operator
                 </h2>
-                <p className="text-slate-600 font-medium">
+                <p className="text-[10px] text-slate-500 dark:text-slate-400">
                   Operator terbaik dari masing-masing Plant Category dengan standar OPC & PCC
                 </p>
               </div>
-              {!isLoadingRanking && (
-                <div className="flex items-center gap-3 bg-white/60 rounded-xl px-4 py-3 border border-amber-200">
-                  <div className="text-2xl">📊</div>
-                  <div>
-                    <div className="text-sm font-semibold text-slate-800">
-                      {globalOperatorRanking.length} Kategori
+            </div>
+            {!isLoadingRanking && (
+              <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-1.5 border border-slate-200 dark:border-slate-700">
+                <span className="text-sm">📊</span>
+                <span className="text-xs font-bold font-mono text-slate-800 dark:text-slate-200">
+                  {globalOperatorRanking.length} Kategori Bulan Ini
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Top Operators by Category */}
+          {isLoadingRanking ? (
+            <div className="flex justify-center items-center h-36">
+              <LoadingSpinner size="md" className="border-primary-600" />
+            </div>
+          ) : (
+            <>
+              {(() => {
+                const grouped = globalOperatorRanking.reduce(
+                  (acc, curr) => {
+                    if (!acc[curr.category]) acc[curr.category] = [];
+                    acc[curr.category].push(curr);
+                    return acc;
+                  },
+                  {} as Record<string, OperatorRanking[]>
+                );
+
+                return (
+                  <div className="space-y-4">
+                    {Object.entries(grouped).map(([category, operators]) => (
+                      <div key={category} className="last:mb-0">
+                        <div className="flex items-center gap-2 mb-2.5">
+                          <span className="w-1.5 h-4 bg-primary-600 rounded-full"></span>
+                          <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                            {category} League
+                          </h3>
+                          <div className="h-px flex-1 bg-gradient-to-r from-slate-200 to-transparent dark:from-slate-700"></div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+                          {operators.map((operator) => (
+                            <RankCard
+                              key={operator.operatorId}
+                              operator={operator}
+                              onClick={() => {
+                                setOperatorBreakdownModal({
+                                  isOpen: true,
+                                  operatorName: operator.operatorName,
+                                  operatorId: operator.operatorId,
+                                  breakdownData: operator.breakdownData,
+                                });
+                                setBreakdownPage(1);
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Kategori Pencapaian COP Operator */}
+      {(isLoadingAchievement || operatorAchievementData.length > 0) && (
+        <div className="bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-xs border border-slate-200 dark:border-slate-800">
+          {/* Card Header with Integrated Filter */}
+          <div className="px-3.5 py-2.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-850/60">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 flex items-center justify-center border border-primary-100 dark:border-primary-900/50 shrink-0">
+                  <TrendingUp className="w-4 h-4" />
+                </div>
+                <div>
+                  <h2 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                    Kategori Pencapaian COP
+                  </h2>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                    Analisis pencapaian target per operator
+                  </p>
+                </div>
+              </div>
+
+              {!isLoadingAchievement && (
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <select
+                      id="operator-filter"
+                      value={selectedOperator}
+                      onChange={(e) => setSelectedOperator(e.target.value)}
+                      className="pl-3 pr-8 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer appearance-none min-w-[160px]"
+                    >
+                      <option value="">Semua Operator</option>
+                      {relevantOperators.map((operator) => (
+                        <option key={operator.id} value={operator.id}>
+                          {operator.name || 'Unknown Operator'}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                      <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                     </div>
-                    <div className="text-xs text-slate-600">Peringkat bulan ini</div>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Top Operators by Category */}
-            {isLoadingRanking ? (
-              <div className="flex justify-center items-center h-48">
-                <LoadingSpinner size="lg" className="border-[#059669]" />
+            {/* Quick Stats Summary Row (Only show if data exists) */}
+            {!isLoadingAchievement && operatorAchievementData.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mt-3">
+                <div className="bg-white dark:bg-slate-900 rounded-lg p-2.5 border border-slate-200 dark:border-slate-800 flex flex-col shadow-2xs">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    Rata-rata
+                  </span>
+                  <span className="text-base sm:text-lg font-black font-mono text-slate-900 dark:text-white mt-0.5">
+                    {(
+                      operatorAchievementData.reduce(
+                        (acc, curr) => acc + curr.achievementPercentage,
+                        0
+                      ) / operatorAchievementData.length
+                    ).toFixed(1)}
+                    %
+                  </span>
+                </div>
+                <div className="bg-white dark:bg-slate-900 rounded-lg p-2.5 border border-slate-200 dark:border-slate-800 flex flex-col shadow-2xs">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    Tertinggi
+                  </span>
+                  <span className="text-base sm:text-lg font-black font-mono text-emerald-600 mt-0.5">
+                    {Math.max(
+                      ...operatorAchievementData.map((d) => d.achievementPercentage)
+                    ).toFixed(1)}
+                    %
+                  </span>
+                </div>
+                <div className="bg-white dark:bg-slate-900 rounded-lg p-2.5 border border-slate-200 dark:border-slate-800 flex flex-col shadow-2xs">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    Terendah
+                  </span>
+                  <span className="text-base sm:text-lg font-black font-mono text-rose-500 mt-0.5">
+                    {Math.min(
+                      ...operatorAchievementData.map((d) => d.achievementPercentage)
+                    ).toFixed(1)}
+                    %
+                  </span>
+                </div>
+                <div className="bg-white dark:bg-slate-900 rounded-lg p-2.5 border border-slate-200 dark:border-slate-800 flex flex-col shadow-2xs">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    Total Operator
+                  </span>
+                  <span className="text-base sm:text-lg font-black font-mono text-slate-900 dark:text-white mt-0.5">
+                    {operatorAchievementData.length} Org
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Content Area */}
+          <div className="p-3.5 sm:p-4">
+            {isLoadingAchievement ? (
+              <div className="flex flex-col justify-center items-center h-48 gap-2 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                <LoadingSpinner size="md" className="border-primary-600" />
+                <span className="text-slate-500 text-xs font-medium animate-pulse">
+                  Memuat data performa...
+                </span>
               </div>
             ) : (
               <>
-                {/* Group Operators by Category */}
-                {(() => {
-                  const grouped = globalOperatorRanking.reduce(
-                    (acc, curr) => {
-                      if (!acc[curr.category]) acc[curr.category] = [];
-                      acc[curr.category].push(curr);
-                      return acc;
-                    },
-                    {} as Record<string, OperatorRanking[]>
-                  );
-
-                  return (
-                    <>
-                      {Object.entries(grouped).map(([category, operators]) => (
-                        <div key={category} className="mb-8 last:mb-0">
-                          <div className="flex items-center gap-2 mb-4">
-                            <h3 className="text-lg font-bold text-[#333333] flex items-center gap-2">
-                              <span className="w-1.5 h-6 bg-[#059669] rounded-full"></span>
-                              {category} League
-                            </h3>
-                            <div className="h-px flex-1 bg-gradient-to-r from-slate-200 to-transparent"></div>
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
-                            {operators.map((operator) => (
-                              <RankCard
-                                key={operator.operatorId}
-                                operator={operator}
-                                onClick={() => {
-                                  setOperatorBreakdownModal({
-                                    isOpen: true,
-                                    operatorName: operator.operatorName,
-                                    operatorId: operator.operatorId,
-                                    breakdownData: operator.breakdownData,
-                                  });
-                                  setBreakdownPage(1);
-                                }}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </>
-                  );
-                })()}
-              </>
-            )}
-          </Card>
-        )}
-
-        {/* Kategori Pencapaian COP Operator */}
-        {(isLoadingAchievement || operatorAchievementData.length > 0) && (
-          <Card
-            variant="floating"
-            padding="none" // Custom padding control
-            className="mt-6 bg-white overflow-hidden shadow-md border-0 ring-1 ring-slate-900/5 group"
-          >
-            {/* Card Header with Integrated Filter */}
-            <div className="relative px-6 py-6 border-b border-slate-200 bg-[#F9F9F9]">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white rounded-lg shadow-sm border border-slate-200 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                    <div className="bg-[#059669] p-2 rounded-lg">
-                      <TrendingUp className="w-5 h-5 text-white" />
-                    </div>
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-800 tracking-tight">
-                      Kategori Pencapaian COP
-                    </h2>
-                    <p className="text-sm text-slate-500 font-medium">
-                      Analisis pencapaian target per operator
+                {operatorAchievementData.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-48 text-center p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                    <Beaker className="w-6 h-6 text-slate-300 mb-2" />
+                    <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Tidak ada data tersedia
+                    </h3>
+                    <p className="text-slate-500 text-[11px] mt-0.5 max-w-xs">
+                      Belum ada data pencapaian COP untuk periode atau filter yang dipilih.
                     </p>
                   </div>
-                </div>
-
-                {!isLoadingAchievement && (
-                  <div className="flex items-center gap-3">
-                    <div className="relative group/filter">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-slate-400">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                            className="w-4 h-4"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.629V2.34a.75.75 0 01.628-.74z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </span>
+                ) : (
+                  <div className="relative">
+                    <div className="overflow-hidden">
+                      <OperatorAchievementChart data={operatorAchievementData} />
+                    </div>
+                    <div className="mt-3 flex items-center justify-center gap-4 text-[11px] text-slate-500 font-medium flex-wrap">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span>Baik Sekali ({'>'}90%)</span>
                       </div>
-                      <select
-                        id="operator-filter"
-                        value={selectedOperator}
-                        onChange={(e) => setSelectedOperator(e.target.value)}
-                        className="pl-9 pr-8 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-[#333333] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/50 hover:border-[#059669]/50 transition-colors cursor-pointer appearance-none min-w-[180px]"
-                      >
-                        <option value="">Semua Operator</option>
-                        {relevantOperators.map((operator) => (
-                          <option key={operator.id} value={operator.id}>
-                            {operator.name || 'Unknown Operator'}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
-                        <ChevronDown className="w-4 h-4 text-slate-400" />
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                        <span>Baik ({'>'}80%)</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                        <span>Cukup ({'>'}70%)</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                        <span>Kurang ({'<'}70%)</span>
                       </div>
                     </div>
                   </div>
                 )}
-              </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
-              {/* Quick Stats Summary Row (Only show if data exists) */}
-              {!isLoadingAchievement && operatorAchievementData.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                  <div className="bg-white/60 rounded-lg p-3 border border-emerald-100/60 shadow-sm flex flex-col">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                      Rata-rata
-                    </span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-xl font-bold text-slate-800">
-                        {(
-                          operatorAchievementData.reduce(
-                            (acc, curr) => acc + curr.achievementPercentage,
-                            0
-                          ) / operatorAchievementData.length
-                        ).toFixed(1)}
-                        %
-                      </span>
-                    </div>
-                  </div>
-                  <div className="bg-white/60 rounded-lg p-3 border border-emerald-100/60 shadow-sm flex flex-col">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                      Tertinggi
-                    </span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-xl font-bold text-emerald-600">
-                        {Math.max(
-                          ...operatorAchievementData.map((d) => d.achievementPercentage)
-                        ).toFixed(1)}
-                        %
-                      </span>
-                    </div>
-                  </div>
-                  <div className="bg-white/60 rounded-lg p-3 border border-emerald-100/60 shadow-sm flex flex-col">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                      Terendah
-                    </span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-xl font-bold text-red-500">
-                        {Math.min(
-                          ...operatorAchievementData.map((d) => d.achievementPercentage)
-                        ).toFixed(1)}
-                        %
-                      </span>
-                    </div>
-                  </div>
-                  <div className="bg-white/60 rounded-lg p-3 border border-emerald-100/60 shadow-sm flex flex-col">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                      Total Operator
-                    </span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-xl font-bold text-slate-800">
-                        {operatorAchievementData.length}
-                      </span>
-                      <span className="text-xs text-slate-500">Orang</span>
-                    </div>
-                  </div>
-                </div>
-              )}
+      {/* Statistik Ringkasan Performa */}
+      {operatorAchievementData.length > 0 && (
+        <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 p-4 sm:p-5">
+          <div className="flex items-center gap-2.5 mb-3.5">
+            <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 flex items-center justify-center border border-primary-100 dark:border-primary-900/50 shrink-0">
+              <TrendingUp className="w-4 h-4" />
             </div>
-
-            {/* Content Area */}
-            <div className="p-6">
-              {isLoadingAchievement ? (
-                <div className="flex flex-col justify-center items-center h-64 gap-3 bg-slate-50/50 rounded-xl border border-dashed border-slate-300">
-                  <LoadingSpinner size="lg" className="border-[#059669]" />
-                  <span className="text-slate-500 text-sm font-medium animate-pulse">
-                    Memuat data performa...
-                  </span>
-                </div>
-              ) : (
-                <>
-                  {operatorAchievementData.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-64 text-center p-6 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                      <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                        <Beaker className="w-8 h-8 text-slate-300" />
-                      </div>
-                      <h3 className="text-lg font-medium text-slate-700">
-                        Tidak ada data tersedia
-                      </h3>
-                      <p className="text-slate-500 text-sm mt-1 max-w-xs">
-                        Belum ada data pencapaian COP untuk periode atau filter yang dipilih.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="relative">
-                      <div className="overflow-hidden">
-                        <OperatorAchievementChart data={operatorAchievementData} />
-                      </div>
-                      <div className="mt-4 flex items-center justify-center gap-6 text-xs text-slate-500 font-medium">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                          <span>Baik Sekali ({'>'}90%)</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                          <span>Baik ({'>'}80%)</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                          <span>Cukup ({'>'}70%)</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span>
-                          <span>Kurang ({'<'}70%)</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </Card>
-        )}
-
-        {/* Statistik Ringkasan Performa */}
-        {operatorAchievementData.length > 0 && (
-          <Card variant="floating" padding="lg" className="mt-6 bg-white shadow-lg border-0">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-[#333333] mb-2">
-                📊 Statistik Ringkasan Performa
+            <div>
+              <h2 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                Statistik Ringkasan Performa
               </h2>
-              <p className="text-slate-600 font-medium">
+              <p className="text-[10px] text-slate-500 dark:text-slate-400">
                 Ringkasan performa operator berdasarkan data COP bulan ini
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm group hover:border-green-400 transition-all">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                    <span className="text-green-600 font-bold text-lg">🏆</span>
-                  </div>
-                  <h4 className="text-lg font-bold text-[#333333]">Rata-rata Pencapaian</h4>
-                </div>
-                <p className="text-3xl font-bold text-green-600 mb-2">
-                  {operatorAchievementData.length > 0
-                    ? (
-                        operatorAchievementData.reduce(
-                          (sum, item) => sum + item.achievementPercentage,
-                          0
-                        ) / operatorAchievementData.length
-                      ).toFixed(1)
-                    : 0}
-                  %
-                </p>
-                <p className="text-sm text-slate-600 font-medium">
-                  Rata-rata persentase pencapaian target parameter
-                </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="bg-slate-50 dark:bg-slate-850 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm">🏆</span>
+                <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Rata-rata Pencapaian
+                </h4>
               </div>
-
-              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm group hover:border-[#059669] transition-all">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-[#059669]/10 rounded-full flex items-center justify-center">
-                    <span className="text-[#059669] font-bold text-lg">👑</span>
-                  </div>
-                  <h4 className="text-lg font-bold text-[#333333]">Operator Terbaik</h4>
-                </div>
-                <p className="text-xl font-bold text-[#059669] truncate mb-2">
-                  {operatorAchievementData[0]?.operatorName || '-'}
-                </p>
-                <p className="text-sm text-slate-600 font-medium">
-                  {operatorAchievementData[0]?.achievementPercentage || 0}% pencapaian
-                </p>
-              </div>
-
-              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm group hover:border-[#111827] transition-all">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-[#111827]/10 rounded-full flex items-center justify-center">
-                    <span className="text-[#111827] font-bold text-lg">📊</span>
-                  </div>
-                  <h4 className="text-lg font-bold text-[#333333]">Total Operator</h4>
-                </div>
-                <p className="text-3xl font-bold text-[#111827] mb-2">
-                  {operatorAchievementData.length}
-                </p>
-                <p className="text-sm text-slate-600 font-medium">
-                  Operator dengan data COP di bulan ini
-                </p>
-              </div>
+              <p className="text-2xl font-black font-mono text-emerald-600 mb-1">
+                {operatorAchievementData.length > 0
+                  ? (
+                      operatorAchievementData.reduce(
+                        (sum, item) => sum + item.achievementPercentage,
+                        0
+                      ) / operatorAchievementData.length
+                    ).toFixed(1)
+                  : 0}
+                %
+              </p>
+              <p className="text-[10px] text-slate-500 font-medium">
+                Rata-rata persentase pencapaian target parameter
+              </p>
             </div>
-          </Card>
-        )}
-      </div>
+
+            <div className="bg-slate-50 dark:bg-slate-850 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm">👑</span>
+                <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Operator Terbaik
+                </h4>
+              </div>
+              <p className="text-lg font-black text-primary-600 truncate mb-1">
+                {operatorAchievementData[0]?.operatorName || '-'}
+              </p>
+              <p className="text-[10px] font-mono text-slate-500 font-medium">
+                {operatorAchievementData[0]?.achievementPercentage || 0}% pencapaian
+              </p>
+            </div>
+
+            <div className="bg-slate-50 dark:bg-slate-850 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm">📊</span>
+                <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Total Operator
+                </h4>
+              </div>
+              <p className="text-2xl font-black font-mono text-slate-900 dark:text-white mb-1">
+                {operatorAchievementData.length}
+              </p>
+              <p className="text-[10px] text-slate-500 font-medium">
+                Operator dengan data COP di bulan ini
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Operator Breakdown Modal */}
       <Modal
@@ -1465,57 +1452,62 @@ const PeopleChampionPage: React.FC = () => {
         title={`Detail Pencapaian: ${operatorBreakdownModal.operatorName}`}
         maxWidth="2xl"
       >
-        <div className="space-y-4">
-          <p className="text-sm text-slate-600">Breakdown pencapaian target per parameter.</p>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200 border border-slate-200 rounded-lg">
-              <thead className="bg-slate-600 dark:bg-slate-700">
+        <div className="space-y-3">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Breakdown pencapaian target per parameter operasional.
+          </p>
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+            <table className="w-full text-left border-collapse">
+              <thead className="bg-slate-700 dark:bg-slate-800 text-white">
                 <tr>
-                  <th className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
+                  <th className="py-2.5 px-3 text-[11px] font-bold uppercase tracking-wider text-white">
                     Parameter
                   </th>
-                  <th className="px-3 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">
+                  <th className="py-2.5 px-3 text-[11px] font-bold uppercase tracking-wider text-white text-center">
                     Total Cek
                   </th>
-                  <th className="px-3 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">
+                  <th className="py-2.5 px-3 text-[11px] font-bold uppercase tracking-wider text-white text-center">
                     Dalam Range
                   </th>
-                  <th className="px-3 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">
+                  <th className="py-2.5 px-3 text-[11px] font-bold uppercase tracking-wider text-white text-center">
                     Achievement
                   </th>
-                  <th className="px-3 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">
+                  <th className="py-2.5 px-3 text-[11px] font-bold uppercase tracking-wider text-white text-center">
                     Target
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-slate-200">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                 {operatorBreakdownModal.breakdownData
                   .slice((breakdownPage - 1) * ITEMS_PER_PAGE, breakdownPage * ITEMS_PER_PAGE)
                   .map((item, index) => (
-                    <tr key={index} className="hover:bg-slate-50">
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-slate-800 font-medium">
+                    <tr
+                      key={index}
+                      className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
+                    >
+                      <td className="py-2 px-3 text-xs font-mono font-medium text-slate-900 dark:text-slate-100">
                         {item.parameterName}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-slate-600 text-center">
+                      <td className="py-2 px-3 text-xs font-mono text-slate-600 dark:text-slate-300 text-center">
                         {item.totalChecks}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-slate-600 text-center">
+                      <td className="py-2 px-3 text-xs font-mono text-slate-600 dark:text-slate-300 text-center">
                         {item.inRangeCount}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-center">
+                      <td className="py-2 px-3 text-xs font-mono text-center">
                         <span
                           className={`font-bold ${
                             item.achievementPercentage >= 90
-                              ? 'text-green-600'
+                              ? 'text-emerald-600 dark:text-emerald-400'
                               : item.achievementPercentage >= 80
-                                ? 'text-blue-600'
-                                : 'text-red-600'
+                                ? 'text-blue-600 dark:text-blue-400'
+                                : 'text-rose-600 dark:text-rose-400'
                           }`}
                         >
                           {item.achievementPercentage}%
                         </span>
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-slate-500 text-center font-mono">
+                      <td className="py-2 px-3 text-[11px] text-slate-500 text-center font-mono">
                         {formatNumberIndonesian(item.min, 1)} -{' '}
                         {formatNumberIndonesian(item.max, 1)}
                       </td>

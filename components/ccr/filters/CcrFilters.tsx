@@ -36,56 +36,64 @@ const CcrFilters: React.FC<CcrFiltersProps> = memo(
     }, [selectedDate]);
 
     return (
-      <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-slate-900 dark:bg-slate-800 flex items-center justify-center">
-            <svg
-              className="w-6 h-6 text-emerald-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+      <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs p-3.5 sm:p-4">
+        <div className="flex items-center gap-3 mb-3.5">
+          <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 border border-primary-100 dark:border-primary-900/50 flex items-center justify-center shrink-0 shadow-xs">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2.5}
+                strokeWidth={2}
                 d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
               />
             </svg>
           </div>
-          <div>
-            <h3 className="text-2xl font-black tracking-tight text-slate-800 dark:text-slate-100">{t.filters}</h3>
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{t.filter_appearance_desc}</p>
+          <div className="min-w-0">
+            <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 truncate">
+              {t.filters}
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+              {t.filter_appearance_desc}
+            </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {/* Category Filter */}
-          <div className="space-y-2.5">
-            <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 ml-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-slate-900 dark:bg-emerald-400"></div>
+          <div>
+            <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary-600 dark:bg-primary-400"></div>
               {t.select_category || 'Kategori'}
             </label>
             <div className="relative">
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full pl-4 pr-10 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500/50 focus:border-slate-500 text-slate-800 dark:text-slate-100 font-bold appearance-none cursor-pointer"
+                className="w-full pl-3 pr-8 py-1.5 h-[36px] min-h-[36px] bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-slate-800 dark:text-slate-100 text-xs font-medium appearance-none cursor-pointer"
                 aria-label={t.select_category}
               >
-                <option value="" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">{t.select_category || 'Pilih Kategori'}</option>
+                <option
+                  value=""
+                  className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+                >
+                  {t.select_category || 'Pilih Kategori'}
+                </option>
                 {plantCategories.map((category) => (
-                  <option key={category} value={category} className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">
+                  <option
+                    key={category}
+                    value={category}
+                    className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+                  >
                     {category}
                   </option>
                 ))}
               </select>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2.5}
+                    strokeWidth={2}
                     d="M19 9l-7 7-7-7"
                   />
                 </svg>
@@ -94,9 +102,9 @@ const CcrFilters: React.FC<CcrFiltersProps> = memo(
           </div>
 
           {/* Unit Filter */}
-          <div className="space-y-2.5">
-            <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 ml-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary-600"></div>
+          <div>
+            <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary-600 dark:bg-primary-400"></div>
               {t.select_unit || 'Unit Kerja'}
             </label>
             <div className="relative">
@@ -104,22 +112,31 @@ const CcrFilters: React.FC<CcrFiltersProps> = memo(
                 value={selectedUnit}
                 onChange={(e) => setSelectedUnit(e.target.value)}
                 disabled={!selectedCategory}
-                className="w-full pl-4 pr-10 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 text-slate-800 dark:text-slate-100 font-bold appearance-none disabled:opacity-40 disabled:grayscale disabled:cursor-not-allowed cursor-pointer"
+                className="w-full pl-3 pr-8 py-1.5 h-[36px] min-h-[36px] bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-slate-800 dark:text-slate-100 text-xs font-medium appearance-none disabled:opacity-40 disabled:grayscale disabled:cursor-not-allowed cursor-pointer"
                 aria-label={t.select_unit}
               >
-                <option value="" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">{t.select_unit || 'Pilih Unit'}</option>
+                <option
+                  value=""
+                  className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+                >
+                  {t.select_unit || 'Pilih Unit'}
+                </option>
                 {unitsForCategory.map((unit) => (
-                  <option key={unit} value={unit} className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">
+                  <option
+                    key={unit}
+                    value={unit}
+                    className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+                  >
                     {unit}
                   </option>
                 ))}
               </select>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2.5}
+                    strokeWidth={2}
                     d="M19 9l-7 7-7-7"
                   />
                 </svg>
@@ -128,15 +145,20 @@ const CcrFilters: React.FC<CcrFiltersProps> = memo(
           </div>
 
           {/* Date Filter */}
-          <div className="space-y-2.5">
-            <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 ml-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-slate-600 dark:bg-slate-400"></div>
+          <div>
+            <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-500 dark:bg-slate-400"></div>
               {t.select_date || 'Tanggal Operasional'}
             </label>
             <div className="relative group/input">
-              <div className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 font-bold flex items-center justify-between pointer-events-none group-hover/input:border-slate-400 dark:group-hover/input:border-slate-600">
+              <div className="w-full px-3 py-1.5 h-[36px] min-h-[36px] bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 text-xs font-medium flex items-center justify-between pointer-events-none group-hover/input:border-slate-300 dark:group-hover/input:border-slate-600">
                 <span>{formattedDateDisplay || '--/--/----'}</span>
-                <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-4 h-4 text-slate-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"

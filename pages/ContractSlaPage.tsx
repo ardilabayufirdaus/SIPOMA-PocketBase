@@ -14,6 +14,10 @@ import { useCurrentUser } from '../hooks/useCurrentUser';
 import { usePermissions } from '../utils/permissions';
 import { useTranslation } from '../hooks/useTranslation';
 import { exportContractsToExcel } from '../utils/exportContractExcel';
+import DocumentTextIcon from '../components/icons/DocumentTextIcon';
+import PlusIcon from '../components/icons/PlusIcon';
+import ArrowPathRoundedSquareIcon from '../components/icons/ArrowPathRoundedSquareIcon';
+import RealtimeIndicator from '../components/ui/RealtimeIndicator';
 
 const CATEGORIES = [
   'Raw Material',
@@ -183,43 +187,56 @@ export const ContractSlaPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 font-sans">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
-              {t.contract_sla_title || 'Contract & SLA Management'}
-            </h1>
+    <div className="w-full space-y-4 sm:space-y-5 font-sans">
+      {/* Hero Header Section - 20 Aturan Wajib */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-secondary-900 via-slate-900 to-secondary-950 rounded-xl shadow-md border border-slate-800 p-4 sm:p-5 text-white w-full">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2" />
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 sm:gap-3.5">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-emerald-400 shrink-0 shadow-inner">
+              <DocumentTextIcon className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full">
+                  Procurement & Legal
+                </span>
+                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700 rounded-full">
+                  Contract & SLA
+                </span>
+                <RealtimeIndicator isConnected={true} lastUpdate={new Date()} />
+              </div>
+              <h1 className="text-lg sm:text-xl font-black tracking-tight text-white font-display">
+                {t.contract_sla_title || 'Contract & SLA Management'}
+              </h1>
+              <p className="text-xs text-slate-300 font-normal mt-0.5">
+                {t.contract_sla_sub ||
+                  'Monitoring purchase order SAP, masa berlaku H-90, anggaran & serapan volume, dan arsip dokumen.'}
+              </p>
+            </div>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            {t.contract_sla_sub ||
-              'Monitoring purchase order SAP, masa berlaku H-90, anggaran & serapan volume, dan arsip dokumen.'}
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => refetch()}
-            className="p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
-            title="Refresh"
-          >
-            <svg
-              className={`w-4 h-4 text-slate-500 ${loading ? 'animate-spin' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => refetch()}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-lg text-xs font-semibold shadow-xs transition-all min-h-[36px]"
+              title="Refresh Data Kontrak"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              <ArrowPathRoundedSquareIcon
+                className={`w-3.5 h-3.5 text-emerald-400 ${loading ? 'animate-spin' : ''}`}
               />
-            </svg>
-            <span className="hidden sm:inline">Refresh</span>
-          </button>
+              <span>Refresh</span>
+            </button>
+            {canWrite && (
+              <button
+                onClick={handleOpenAddModal}
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 rounded-lg shadow-xs transition-all min-h-[36px]"
+              >
+                <PlusIcon className="w-4 h-4" />
+                <span>Tambah Kontrak</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

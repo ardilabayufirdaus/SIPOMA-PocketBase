@@ -74,27 +74,57 @@ export const ContractTableView: React.FC<ContractTableViewProps> = ({
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              <th className="py-3.5 px-4">
+    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      {/* Table Header Bar - COP Analysis Precision Framing */}
+      <div className="p-3 sm:p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-850/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-900/50">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100">
+              {t.contract_table_title || 'Tabel Registrasi Kontrak & SLA'}
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Daftar seluruh kontrak rekanan aktif, serapan anggaran, volume, dan kepatuhan masa
+              berlaku
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="px-2 py-0.5 text-[11px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-md border border-slate-200 dark:border-slate-700">
+            {contracts.length} Kontrak
+          </span>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto scroll-smooth">
+        <table className="min-w-full text-xs border-collapse text-left" role="table">
+          <thead className="bg-slate-700 dark:bg-slate-800 text-white uppercase text-[11px] font-bold tracking-wider sticky top-0 z-20 border-b border-slate-600 dark:border-slate-700">
+            <tr>
+              <th className="py-2.5 px-3">
                 {t.po_number || 'PO'} & {t.vendor_name || 'Rekanan'}
               </th>
-              <th className="py-3.5 px-4">
+              <th className="py-2.5 px-3">
                 {t.contract_title || 'Judul Kontrak'} & {t.category || 'Kategori'}
               </th>
-              <th className="py-3.5 px-4">{t.contract_period || 'Masa Berlaku'} & Status</th>
-              <th className="py-3.5 px-4">
+              <th className="py-2.5 px-3">{t.contract_period || 'Masa Berlaku'} & Status</th>
+              <th className="py-2.5 px-3">
                 {t.contract_budget || 'Anggaran'} & {t.absorbed || 'Serapan'}
               </th>
-              <th className="py-3.5 px-4">{t.remaining_volume || 'Sisa Volume'}</th>
-              <th className="py-3.5 px-4 text-center">{t.attachments || 'Dokumen'}</th>
-              <th className="py-3.5 px-4 text-right">Aksi</th>
+              <th className="py-2.5 px-3">{t.remaining_volume || 'Sisa Volume'}</th>
+              <th className="py-2.5 px-3 text-center">{t.attachments || 'Dokumen'}</th>
+              <th className="py-2.5 px-3 text-right">Aksi</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs font-medium">
+          <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-200 dark:divide-slate-800">
             {contracts.map((c) => {
               const pdfUrl = c.contract_pdf ? getFileUrl(c, c.contract_pdf) : '';
               const sapUrl = c.sap_po_screenshot ? getFileUrl(c, c.sap_po_screenshot) : '';
@@ -103,11 +133,11 @@ export const ContractTableView: React.FC<ContractTableViewProps> = ({
               return (
                 <tr
                   key={c.id}
-                  className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors group"
+                  className="hover:bg-slate-50/60 dark:hover:bg-slate-850/40 transition-colors group"
                 >
                   {/* 1. PO & Vendor */}
-                  <td className="py-3.5 px-4 align-top">
-                    <div className="flex items-center gap-1.5 mb-1">
+                  <td className="py-2 px-3 align-top whitespace-nowrap">
+                    <div className="flex items-center gap-1.5 mb-0.5">
                       <span className="font-mono text-xs font-black text-slate-900 dark:text-white">
                         {c.po_number}
                       </span>
@@ -135,45 +165,45 @@ export const ContractTableView: React.FC<ContractTableViewProps> = ({
                         )}
                       </button>
                     </div>
-                    <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate max-w-[160px]">
+                    <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate max-w-[150px]">
                       {c.vendor_name}
                     </div>
                   </td>
 
                   {/* 2. Judul Kontrak & Kategori */}
-                  <td className="py-3.5 px-4 align-top max-w-xs">
+                  <td className="py-2 px-3 align-top max-w-xs">
                     <div
                       onClick={() => onViewDetail(c)}
-                      className="font-bold text-slate-900 dark:text-slate-100 hover:text-primary-600 dark:hover:text-primary-400 cursor-pointer line-clamp-2 mb-1"
+                      className="font-bold text-xs text-slate-900 dark:text-slate-100 hover:text-primary-600 dark:hover:text-primary-400 cursor-pointer line-clamp-2 mb-0.5"
                     >
                       {c.contract_title}
                     </div>
-                    <span className="inline-block px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-semibold rounded-md">
+                    <span className="inline-block px-1.5 py-0.2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-semibold rounded">
                       {c.category}
                     </span>
                   </td>
 
                   {/* 3. Masa Berlaku & Status H-90 */}
-                  <td className="py-3.5 px-4 align-top">
-                    <div className="text-[11px] text-slate-700 dark:text-slate-300 font-semibold mb-1">
+                  <td className="py-2 px-3 align-top whitespace-nowrap">
+                    <div className="text-[11px] font-mono text-slate-700 dark:text-slate-300 font-semibold mb-0.5">
                       {formatDate(c.start_date)} - {formatDate(c.end_date)}
                     </div>
                     <div>
                       {c.expiryStatus === 'expired' ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300">
+                        <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300">
                           {t.expired_badge || 'Kedaluwarsa'}
                         </span>
                       ) : c.isH30 ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black bg-rose-500 text-white animate-pulse">
+                        <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-500 text-white animate-pulse">
                           {t.h30_critical_badge || 'Kritis H-'}
                           {c.daysRemaining}
                         </span>
                       ) : c.isH90 ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                        <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
                           H-{c.daysRemaining} {t.days_left || 'Hari'}
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                           {t.active_badge || 'Aktif'} ({c.daysRemaining}d)
                         </span>
                       )}
@@ -181,63 +211,56 @@ export const ContractTableView: React.FC<ContractTableViewProps> = ({
                   </td>
 
                   {/* 4. Anggaran & Serapan */}
-                  <td className="py-3.5 px-4 align-top">
-                    <div className="flex justify-between items-center text-[11px] font-bold mb-1">
-                      <span className="text-slate-900 dark:text-white font-mono">
+                  <td className="py-2 px-3 align-top whitespace-nowrap">
+                    <div className="flex justify-between items-center text-[11px] font-bold mb-0.5 font-mono">
+                      <span className="text-slate-900 dark:text-white">
                         {formatAmount(c.budget_absorbed, c.currency)}
                       </span>
-                      <span className="text-slate-500 dark:text-slate-400">
+                      <span className="text-slate-500 dark:text-slate-400 ml-2">
                         {c.budgetAbsorptionPct.toFixed(0)}%
                       </span>
                     </div>
-                    <div className="w-28 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-1">
+                    <div className="w-24 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-0.5">
                       <div
                         className="h-full bg-emerald-500 rounded-full"
                         style={{ width: `${Math.min(100, c.budgetAbsorptionPct)}%` }}
                       />
                     </div>
                     <div className="text-[10px] text-slate-400 flex items-center justify-between font-mono">
-                      <span>
-                        {t.contract_budget || 'Pagu'}: {formatAmount(c.contract_budget, c.currency)}
-                      </span>
-                      {c.currency && c.currency !== 'IDR' && (
-                        <span className="px-1 bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 font-bold rounded">
-                          {c.currency}
-                        </span>
-                      )}
+                      <span>Pagu: {formatAmount(c.contract_budget, c.currency)}</span>
                     </div>
                   </td>
 
                   {/* 5. Sisa Volume */}
-                  <td className="py-3.5 px-4 align-top">
+                  <td className="py-2 px-3 align-top whitespace-nowrap">
                     {c.initial_volume > 0 ? (
                       <div>
-                        <div className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 mb-0.5">
+                        <div className="text-[11px] font-mono font-bold text-indigo-600 dark:text-indigo-400 mb-0.5">
                           {c.volumeRemaining.toLocaleString(language === 'en' ? 'en-US' : 'id-ID')}{' '}
                           {c.volume_unit}
                         </div>
-                        <div className="text-[10px] text-slate-400">
+                        <div className="text-[10px] font-mono text-slate-400">
                           {t.remaining || 'Sisa'} /{' '}
-                          {c.initial_volume.toLocaleString(language === 'en' ? 'en-US' : 'id-ID')}{' '}
-                          {c.volume_unit} ({c.volumeAbsorptionPct.toFixed(0)}%)
+                          {c.initial_volume.toLocaleString(language === 'en' ? 'en-US' : 'id-ID')} (
+                          {c.volumeAbsorptionPct.toFixed(0)}%)
                         </div>
                       </div>
                     ) : (
-                      <span className="text-slate-400 text-[11px]">-</span>
+                      <span className="text-slate-400 text-xs">-</span>
                     )}
                   </td>
 
                   {/* 6. Dokumen (PDF, SAP, Attachments) */}
-                  <td className="py-3.5 px-4 align-top text-center">
-                    <div className="flex items-center justify-center gap-1.5">
+                  <td className="py-2 px-3 align-top text-center whitespace-nowrap">
+                    <div className="flex items-center justify-center gap-1">
                       {pdfUrl && (
                         <button
                           onClick={() => onViewPdf(pdfUrl, c.contract_title)}
-                          className="p-1.5 bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 rounded-lg border border-rose-200 dark:border-rose-800 transition-all"
+                          className="p-1 bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 rounded border border-rose-200 dark:border-rose-800 transition-all"
                           title={t.preview_pdf || 'Lihat PDF Kontrak'}
                         >
                           <svg
-                            className="w-4 h-4"
+                            className="w-3.5 h-3.5"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -255,11 +278,11 @@ export const ContractTableView: React.FC<ContractTableViewProps> = ({
                       {sapUrl && (
                         <button
                           onClick={() => onViewSapScreenshot(sapUrl, c.po_number, c.contract_title)}
-                          className="p-1.5 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 rounded-lg border border-blue-200 dark:border-blue-800 transition-all"
+                          className="p-1 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 rounded border border-blue-200 dark:border-blue-800 transition-all"
                           title={t.preview_sap || 'Lihat Screenshot SAP'}
                         >
                           <svg
-                            className="w-4 h-4"
+                            className="w-3.5 h-3.5"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -277,7 +300,7 @@ export const ContractTableView: React.FC<ContractTableViewProps> = ({
                       {attachmentCount > 0 && (
                         <span
                           onClick={() => onViewDetail(c)}
-                          className="px-1.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 text-[10px] font-bold rounded-lg cursor-pointer"
+                          className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 text-[10px] font-bold rounded cursor-pointer"
                           title={`${attachmentCount} ${t.attachments || 'Lampiran'}`}
                         >
                           +{attachmentCount}
@@ -287,11 +310,11 @@ export const ContractTableView: React.FC<ContractTableViewProps> = ({
                   </td>
 
                   {/* 7. Action buttons */}
-                  <td className="py-3.5 px-4 align-top text-right">
+                  <td className="py-2 px-3 align-top text-right whitespace-nowrap">
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => onViewDetail(c)}
-                        className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-bold transition-all"
+                        className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-semibold transition-all shadow-xs"
                       >
                         {t.contract_detail || 'Detail'}
                       </button>
@@ -300,11 +323,11 @@ export const ContractTableView: React.FC<ContractTableViewProps> = ({
                         <>
                           <button
                             onClick={() => onEdit(c)}
-                            className="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 rounded-lg transition-all"
+                            className="p-1 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 rounded transition-all"
                             title={t.edit_contract || 'Edit'}
                           >
                             <svg
-                              className="w-4 h-4"
+                              className="w-3.5 h-3.5"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -319,11 +342,11 @@ export const ContractTableView: React.FC<ContractTableViewProps> = ({
                           </button>
                           <button
                             onClick={() => onDelete(c)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded-lg transition-all"
+                            className="p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded transition-all"
                             title={t.delete_contract || 'Hapus'}
                           >
                             <svg
-                              className="w-4 h-4"
+                              className="w-3.5 h-3.5"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"

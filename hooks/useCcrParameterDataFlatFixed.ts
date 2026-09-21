@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from 'react';
-import { CcrParameterData } from '../types';
+import { CcrParameterData, ParameterSetting } from '../types';
 import { useParameterSettings } from './useParameterSettings';
 import { pb } from '../utils/pocketbase-simple';
 import { safeApiCall } from '../utils/connectionCheck';

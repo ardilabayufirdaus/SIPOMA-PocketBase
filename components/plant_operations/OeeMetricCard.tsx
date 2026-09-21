@@ -59,67 +59,78 @@ const OeeMetricCard: React.FC<OeeMetricCardProps> = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -8, transition: { duration: 0.2 } }}
-      className={`relative overflow-hidden rounded-[2.5rem] border border-white/60 bg-white/40 backdrop-blur-2xl p-8 shadow-2xl shadow-slate-200/40 transition-shadow hover:shadow-red-500/10 ${isMain ? 'col-span-1' : ''}`}
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      className={`relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm hover:shadow-md transition-all ${isMain ? 'col-span-1' : ''}`}
     >
-      {/* Decorative Glow */}
+      {/* Decorative Subtle Glow */}
       <div
-        className={`absolute -top-24 -right-24 w-48 h-48 bg-gradient-to-br ${st.gradient} opacity-[0.08] blur-[60px] rounded-full pointer-events-none`}
+        className={`absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br ${st.gradient} opacity-[0.07] blur-[50px] rounded-full pointer-events-none`}
       />
 
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
+      {/* Card Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
           <div
-            className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${st.gradient} flex items-center justify-center shadow-lg ${st.glow}`}
+            className={`w-10 h-10 rounded-xl bg-gradient-to-br ${st.gradient} flex items-center justify-center shadow-md ${st.glow}`}
           >
-            <Activity className="w-6 h-6 text-white" />
+            <Activity className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="text-xl font-black text-slate-800 tracking-tight">{unitName}</h3>
-            <p className="text-slate-400 text-[10px] uppercase font-bold tracking-widest">
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight font-display">
+              {unitName}
+            </h3>
+            <p className="text-slate-400 dark:text-slate-500 text-[10px] uppercase font-bold tracking-wider">
               {label}
             </p>
           </div>
         </div>
-        <motion.div
-          whileHover={{ rotate: 15 }}
-          className="p-3 rounded-2xl bg-white/60 border border-white/80 shadow-sm cursor-help transition-all hover:bg-white"
+        <div
+          className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 text-slate-400 dark:text-slate-500"
+          title="Equipment Effectiveness Index"
         >
-          <Info className="w-4 h-4 text-slate-400" />
-        </motion.div>
+          <Info className="w-3.5 h-3.5" />
+        </div>
       </div>
 
-      <div className="flex flex-col items-center gap-10">
-        {/* Main OEE Gauge - Refined */}
-        <div className="relative w-48 h-48 group">
+      <div className="flex flex-col items-center gap-6">
+        {/* Main OEE Gauge - Refined Precision Ring */}
+        <div className="relative w-40 h-40 group">
           <svg className="w-full h-full transform -rotate-90">
             {/* Track */}
-            <circle cx="96" cy="96" r="82" fill="transparent" stroke="#f1f5f9" strokeWidth="16" />
+            <circle
+              cx="80"
+              cy="80"
+              r="68"
+              fill="transparent"
+              stroke="currentColor"
+              className="text-slate-100 dark:text-slate-800"
+              strokeWidth="12"
+            />
             {/* Progress */}
             <motion.circle
-              cx="96"
-              cy="96"
-              r="82"
+              cx="80"
+              cy="80"
+              r="68"
               fill="transparent"
               stroke={`url(#grad-${unitName})`}
-              strokeWidth="16"
-              strokeDasharray={515}
-              initial={{ strokeDashoffset: 515 }}
-              animate={{ strokeDashoffset: 515 - (515 * value) / 100 }}
-              transition={{ duration: 1.5, ease: 'circOut' }}
+              strokeWidth="12"
+              strokeDasharray={427}
+              initial={{ strokeDashoffset: 427 }}
+              animate={{ strokeDashoffset: 427 - (427 * value) / 100 }}
+              transition={{ duration: 1.2, ease: 'circOut' }}
               strokeLinecap="round"
             />
             <defs>
               <linearGradient id={`grad-${unitName}`} x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop
                   offset="0%"
-                  stopColor={value >= 85 ? '#10b981' : value >= 65 ? '#fbbf24' : '#e11d48'}
+                  stopColor={value >= 85 ? '#10b981' : value >= 65 ? '#f59e0b' : '#ef4444'}
                 />
                 <stop
                   offset="100%"
-                  stopColor={value >= 85 ? '#2dd4bf' : value >= 65 ? '#f59e0b' : '#fb7185'}
+                  stopColor={value >= 85 ? '#059669' : value >= 65 ? '#d97706' : '#dc2626'}
                 />
               </linearGradient>
             </defs>
@@ -127,37 +138,37 @@ const OeeMetricCard: React.FC<OeeMetricCardProps> = ({
 
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <motion.span
-              initial={{ scale: 0.5, opacity: 0 }}
+              initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className={`text-5xl font-black tabular-nums tracking-tighter ${st.text} dropshadow-sm`}
+              transition={{ delay: 0.3, duration: 0.4 }}
+              className={`text-3xl sm:text-4xl font-black tabular-nums tracking-tight font-mono ${st.text}`}
             >
               {formatOeeValue(value)}
             </motion.span>
-            <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black mt-1">
-              Efficiency
+            <span className="text-[9px] uppercase tracking-widest text-slate-400 dark:text-slate-500 font-bold mt-0.5">
+              Efficiency %
             </span>
           </div>
         </div>
 
-        {/* Sub-metrics Breakdown - Horizontal style for premium feel */}
-        <div className="w-full grid grid-cols-1 gap-6 bg-white/40 p-5 rounded-[2rem] border border-white/60">
+        {/* Sub-metrics Breakdown */}
+        <div className="w-full space-y-3 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
           <SubMetricRow
             label="Availability"
             value={subMetrics.availability}
-            icon={<Zap className="w-4 h-4 text-blue-500" />}
+            icon={<Zap className="w-3.5 h-3.5 text-blue-500" />}
             color="bg-blue-500"
           />
           <SubMetricRow
             label="Performance"
             value={subMetrics.performance}
-            icon={<BarChart3 className="w-4 h-4 text-orange-500" />}
-            color="bg-orange-500"
+            icon={<BarChart3 className="w-3.5 h-3.5 text-amber-500" />}
+            color="bg-amber-500"
           />
           <SubMetricRow
             label="Quality"
             value={subMetrics.quality}
-            icon={<CheckCircle className="w-4 h-4 text-emerald-500" />}
+            icon={<CheckCircle className="w-3.5 h-3.5 text-emerald-500" />}
             color="bg-emerald-500"
           />
         </div>
@@ -165,11 +176,11 @@ const OeeMetricCard: React.FC<OeeMetricCardProps> = ({
 
       {/* Comparisons Section - Polished Chips */}
       {comparisons && (
-        <div className="mt-8 pt-6 border-t border-slate-200/40 flex items-center justify-between px-2">
+        <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between px-1">
           <ComparisonChip label="Monthly" value={comparisons.monthly} />
-          <div className="w-px h-8 bg-slate-200/40" />
+          <div className="w-px h-6 bg-slate-200 dark:bg-slate-800" />
           <ComparisonChip label="MTD" value={comparisons.mtd} />
-          <div className="w-px h-8 bg-slate-200/40" />
+          <div className="w-px h-6 bg-slate-200 dark:bg-slate-800" />
           <ComparisonChip label="YTD" value={comparisons.ytd} />
         </div>
       )}
@@ -179,21 +190,20 @@ const OeeMetricCard: React.FC<OeeMetricCardProps> = ({
 
 const ComparisonChip: React.FC<{ label: string; value: number }> = ({ label, value }) => (
   <div className="flex flex-col items-center">
-    <span className="text-[9px] uppercase tracking-widest text-slate-400 font-black mb-1.5">
+    <span className="text-[8px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-bold mb-1">
       {label}
     </span>
-    <motion.div
-      whileHover={{ scale: 1.1 }}
-      className={`px-3 py-1 rounded-full text-[11px] font-black border tabular-nums shadow-sm ${
+    <div
+      className={`px-2 py-0.5 rounded-full text-[10px] font-bold border tabular-nums ${
         value >= 85
-          ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+          ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50'
           : value >= 65
-            ? 'bg-amber-50 text-amber-600 border-amber-100'
-            : 'bg-rose-50 text-rose-600 border-rose-100'
+            ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/50'
+            : 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800/50'
       }`}
     >
       {formatOeeValue(value)}
-    </motion.div>
+    </div>
   </div>
 );
 
@@ -203,20 +213,22 @@ const SubMetricRow: React.FC<{
   icon: React.ReactNode;
   color: string;
 }> = ({ label, value, icon, color }) => (
-  <div className="space-y-2">
-    <div className="flex items-center justify-between text-xs px-1">
-      <div className="flex items-center gap-2.5 text-slate-600 font-extrabold uppercase tracking-tight">
-        <div className="p-1.5 rounded-lg bg-white shadow-sm border border-slate-100">{icon}</div>
+  <div className="space-y-1.5">
+    <div className="flex items-center justify-between text-xs px-0.5">
+      <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 font-semibold text-[11px]">
+        {icon}
         {label}
       </div>
-      <span className="text-slate-900 font-black tabular-nums">{formatOeeValue(value)}</span>
+      <span className="text-slate-900 dark:text-slate-100 font-bold tabular-nums font-mono text-xs">
+        {formatOeeValue(value)}
+      </span>
     </div>
-    <div className="h-2 w-full bg-white/60 rounded-full overflow-hidden border border-white/80 p-[1px]">
+    <div className="h-1.5 w-full bg-slate-200/60 dark:bg-slate-700/60 rounded-full overflow-hidden">
       <motion.div
         initial={{ width: 0 }}
-        animate={{ width: `${value}%` }}
-        transition={{ duration: 1.2, delay: 0.8, ease: 'easeOut' }}
-        className={`h-full rounded-full ${color} shadow-[0_0_12px_rgba(0,0,0,0.1)]`}
+        animate={{ width: `${Math.min(value, 100)}%` }}
+        transition={{ duration: 1, delay: 0.4, ease: 'easeOut' }}
+        className={`h-full rounded-full ${color}`}
       />
     </div>
   </div>

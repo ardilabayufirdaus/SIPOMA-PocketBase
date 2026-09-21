@@ -13,6 +13,8 @@ import EditIcon from '../../components/icons/EditIcon';
 import TrashIcon from '../../components/icons/TrashIcon';
 import LinkIcon from '../../components/icons/LinkIcon';
 import ExclamationTriangleIcon from '../../components/icons/ExclamationTriangleIcon';
+import MagnifyingGlassIcon from '../../components/icons/MagnifyingGlassIcon';
+import RealtimeIndicator from '../../components/ui/RealtimeIndicator';
 
 const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
   const { instructions, loading, error, addInstruction, updateInstruction, deleteInstruction } =
@@ -156,344 +158,411 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F0F0F0]">
-      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header Section */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="relative overflow-hidden bg-gradient-to-r from-[#111827] to-[#0f172a] rounded-xl shadow-lg border border-[#94a3b8]/20 p-6 mb-6"
-        >
-          {/* Background Pattern */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent"></div>
-          <div className="absolute top-0 right-0 w-40 h-40 bg-[#059669]/10 rounded-full -translate-y-20 translate-x-20"></div>
-
-          <div className="relative flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
-                <LinkIcon className="w-6 h-6 text-[#059669]" />
+    <div className="w-full space-y-4 sm:space-y-5 font-sans">
+      {/* Hero Header Section - 20 Aturan Wajib */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-secondary-900 via-slate-900 to-secondary-950 rounded-xl shadow-md border border-slate-800 p-4 sm:p-5 text-white w-full">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-primary-600/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2" />
+        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-emerald-400 shrink-0 shadow-inner">
+              <LinkIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full">
+                  Plant Operations
+                </span>
+                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700 rounded-full">
+                  WI Library
+                </span>
+                <RealtimeIndicator isConnected={true} lastUpdate={new Date()} />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white tracking-tight">
-                  {t.op_work_instruction_library}
-                </h1>
-                <p className="text-sm text-white/80 font-medium mt-0.5">
-                  Manage work instructions and documentation
-                </p>
-              </div>
-            </div>
-            {canWrite && (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleOpenAddModal}
-                className="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-[#059669] rounded-lg shadow-md hover:bg-[#d94612] transition-all duration-200 min-h-[44px]"
-              >
-                <PlusIcon className="w-5 h-5" />
-                {t.add_data_button}
-              </motion.button>
-            )}
-          </div>
-        </motion.div>
-
-        {/* Search and Filter Controls */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="bg-white rounded-xl shadow-md border border-[#94a3b8]/30 p-5 mb-6"
-        >
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <label htmlFor="search" className="sr-only">
-                Search work instructions
-              </label>
-              <div className="relative">
-                <input
-                  id="search"
-                  type="text"
-                  placeholder={t.search_placeholder || 'Search by title, description, code...'}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-4 pr-4 py-2.5 border border-[#94a3b8] rounded-lg focus:ring-2 focus:ring-[#059669] focus:border-[#059669] bg-white text-[#333333] placeholder-[#94a3b8] transition-all duration-200"
-                />
-              </div>
-            </div>
-            <div className="sm:w-60">
-              <label htmlFor="activity-filter" className="sr-only">
-                Filter by activity
-              </label>
-              <select
-                id="activity-filter"
-                value={filterActivity}
-                onChange={(e) => setFilterActivity(e.target.value)}
-                className="w-full px-4 py-2.5 border border-[#94a3b8] rounded-lg focus:ring-2 focus:ring-[#059669] focus:border-[#059669] bg-white text-[#333333] transition-all duration-200"
-              >
-                <option value="">{t.all_activities || 'All Activities'}</option>
-                {Array.from(new Set(instructions.map((i) => i.activity)))
-                  .sort()
-                  .map((activity) => (
-                    <option key={activity} value={activity}>
-                      {activity}
-                    </option>
-                  ))}
-              </select>
-            </div>
-            <div className="sm:w-60">
-              <label htmlFor="plant-category-filter" className="sr-only">
-                Filter by plant category
-              </label>
-              <select
-                id="plant-category-filter"
-                value={filterPlantCategory}
-                onChange={(e) => {
-                  setFilterPlantCategory(e.target.value);
-                  setFilterPlantUnit(''); // Reset unit filter when category changes
-                }}
-                className="w-full px-4 py-2.5 border border-[#94a3b8] rounded-lg focus:ring-2 focus:ring-[#059669] focus:border-[#059669] bg-white text-[#333333] transition-all duration-200"
-              >
-                <option value="">All Plant Categories</option>
-                {Array.from(new Set(plantUnits.map((unit) => unit.category)))
-                  .sort()
-                  .map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-              </select>
-            </div>
-            <div className="sm:w-60">
-              <label htmlFor="plant-unit-filter" className="sr-only">
-                Filter by plant unit
-              </label>
-              <select
-                id="plant-unit-filter"
-                value={filterPlantUnit}
-                onChange={(e) => setFilterPlantUnit(e.target.value)}
-                disabled={!filterPlantCategory}
-                className="w-full px-4 py-2.5 border border-[#94a3b8] rounded-lg focus:ring-2 focus:ring-[#059669] focus:border-[#059669] bg-white text-[#333333] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-              >
-                <option value="">All Plant Units</option>
-                {plantUnits
-                  .filter((unit) => !filterPlantCategory || unit.category === filterPlantCategory)
-                  .map((unit) => (
-                    <option key={unit.id} value={unit.unit}>
-                      {unit.unit}
-                    </option>
-                  ))}
-              </select>
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white font-display">
+                {t.op_work_instruction_library || 'Work Instruction Library'}
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-300 font-normal mt-0.5">
+                Standard Operating Procedures (SOP), work instructions, and technical documentation
+              </p>
             </div>
           </div>
-        </motion.div>
+          {canWrite && (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleOpenAddModal}
+              className="inline-flex items-center justify-center gap-2 px-3.5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 rounded-lg shadow-xs hover:shadow-sm transition-all min-h-[36px]"
+            >
+              <PlusIcon className="w-4 h-4" />
+              <span>{t.add_data_button || 'Tambah Data'}</span>
+            </motion.button>
+          )}
+        </div>
+      </div>
 
-        {/* Table Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-white rounded-xl shadow-lg border border-[#94a3b8]/30 overflow-hidden"
-        >
-          <div className="overflow-x-auto">
-            {loading ? (
-              <div className="flex justify-center items-center py-10">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#059669]"></div>
-                <span className="ml-2 text-[#111827]">Loading work instructions...</span>
+      {/* Search and Filter Controls */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 p-3 sm:p-3.5 transition-colors">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+          {/* Search Bar */}
+          <div className="sm:col-span-2 lg:col-span-1">
+            <label
+              htmlFor="search"
+              className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1"
+            >
+              {t.search || 'Cari Dokumen'}
+            </label>
+            <div className="relative">
+              <input
+                id="search"
+                type="text"
+                placeholder={t.search_placeholder || 'Cari judul, deskripsi, kode...'}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 text-xs font-medium transition-all min-h-[36px]"
+              />
+              <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                <MagnifyingGlassIcon className="w-3.5 h-3.5" />
               </div>
-            ) : error ? (
-              <div className="text-center py-10">
-                <div className="text-[#c7162b] mb-2">
-                  <ExclamationTriangleIcon className="w-8 h-8 mx-auto" />
-                </div>
-                <p className="text-[#333333]">{error}</p>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="mt-4 px-4 py-2.5 bg-[#059669] text-white rounded-lg hover:bg-[#d94612] min-h-[44px] transition-colors"
-                >
-                  Retry
-                </button>
+            </div>
+          </div>
+
+          {/* Activity Filter */}
+          <div>
+            <label
+              htmlFor="activity-filter"
+              className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1"
+            >
+              {t.activity || 'Aktivitas'}
+            </label>
+            <select
+              id="activity-filter"
+              value={filterActivity}
+              onChange={(e) => setFilterActivity(e.target.value)}
+              className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 text-xs font-medium transition-all cursor-pointer min-h-[36px]"
+            >
+              <option value="">{t.all_activities || 'Semua Aktivitas'}</option>
+              {Array.from(new Set(instructions.map((i) => i.activity)))
+                .sort()
+                .map((activity) => (
+                  <option key={activity} value={activity}>
+                    {activity}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          {/* Plant Category Filter */}
+          <div>
+            <label
+              htmlFor="plant-category-filter"
+              className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1"
+            >
+              Kategori Plant
+            </label>
+            <select
+              id="plant-category-filter"
+              value={filterPlantCategory}
+              onChange={(e) => {
+                setFilterPlantCategory(e.target.value);
+                setFilterPlantUnit('');
+              }}
+              className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 text-xs font-medium transition-all cursor-pointer min-h-[36px]"
+            >
+              <option value="">Semua Kategori</option>
+              {Array.from(new Set(plantUnits.map((unit) => unit.category)))
+                .sort()
+                .map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          {/* Plant Unit Filter */}
+          <div>
+            <label
+              htmlFor="plant-unit-filter"
+              className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1"
+            >
+              Unit Plant
+            </label>
+            <select
+              id="plant-unit-filter"
+              value={filterPlantUnit}
+              onChange={(e) => setFilterPlantUnit(e.target.value)}
+              disabled={!filterPlantCategory}
+              className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 text-xs font-medium transition-all cursor-pointer min-h-[36px]"
+            >
+              <option value="">Semua Unit</option>
+              {plantUnits
+                .filter((unit) => !filterPlantCategory || unit.category === filterPlantCategory)
+                .map((unit) => (
+                  <option key={unit.id} value={unit.unit}>
+                    {unit.unit}
+                  </option>
+                ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Table Card */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-800/60 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/50 flex items-center justify-center shadow-2xs">
+              <LinkIcon className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 font-display">
+                {t.op_work_instruction_library || 'Daftar Instruksi Kerja (SOP)'}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Total {instructions.length} dokumen tersimpan
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          {loading ? (
+            <div className="flex flex-col justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mb-2.5"></div>
+              <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                Memuat dokumen instruksi kerja...
+              </span>
+            </div>
+          ) : error ? (
+            <div className="text-center py-10 px-4">
+              <div className="text-rose-600 mb-2">
+                <ExclamationTriangleIcon className="w-7 h-7 mx-auto" />
               </div>
-            ) : (
-              <table
-                className="min-w-full divide-y divide-[#94a3b8]/20"
-                role="table"
-                aria-label="Work Instructions Library"
+              <p className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-3">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-3.5 py-1.5 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 min-h-[36px] transition-colors text-xs shadow-xs"
               >
-                <thead className="bg-slate-600 dark:bg-slate-700">
-                  <tr>
-                    {tableHeaders.map((header) => (
-                      <th
-                        key={header}
-                        scope="col"
-                        className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider"
-                      >
-                        {header !== 'actions' && header !== 'link' ? (
-                          <button
-                            onClick={() => handleSort(header)}
-                            className="flex items-center gap-1 hover:text-[#059669] transition-colors"
-                            aria-sort={
-                              sortColumn === header
-                                ? sortDirection === 'asc'
-                                  ? 'ascending'
-                                  : 'descending'
-                                : 'none'
-                            }
-                            aria-label={`Sort by ${t[header]} ${sortColumn === header ? (sortDirection === 'asc' ? 'ascending' : 'descending') : ''}`}
-                          >
-                            {t[header]}
-                            {sortColumn === header && (
-                              <span className="text-[#059669]" aria-hidden="true">
-                                {sortDirection === 'asc' ? '↑' : '↓'}
-                              </span>
-                            )}
-                          </button>
-                        ) : (
-                          t[header]
-                        )}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-[#94a3b8]/10">
-                  {groupedInstructions.map(([activity, instructionList], groupIndex) => (
-                    <React.Fragment key={activity}>
-                      <tr>
-                        <td
-                          colSpan={tableHeaders.length}
-                          className="px-6 py-3 bg-[#F9F9F9] border-l-4 border-[#111827]"
+                Coba Lagi
+              </button>
+            </div>
+          ) : (
+            <table
+              className="min-w-full divide-y divide-slate-200 dark:divide-slate-800"
+              role="table"
+              aria-label="Work Instructions Library"
+            >
+              <thead className="bg-slate-700 dark:bg-slate-800 border-b border-slate-700">
+                <tr>
+                  {tableHeaders.map((header) => (
+                    <th
+                      key={header}
+                      scope="col"
+                      className="px-3 py-2.5 text-left text-[11px] font-bold text-white uppercase tracking-wider"
+                    >
+                      {header !== 'actions' && header !== 'link' ? (
+                        <button
+                          onClick={() => handleSort(header)}
+                          className="flex items-center gap-1 hover:text-emerald-300 transition-colors uppercase tracking-wider"
+                          aria-sort={
+                            sortColumn === header
+                              ? sortDirection === 'asc'
+                                ? 'ascending'
+                                : 'descending'
+                              : 'none'
+                          }
+                          aria-label={`Sort by ${t[header] || header} ${sortColumn === header ? (sortDirection === 'asc' ? 'ascending' : 'descending') : ''}`}
                         >
-                          <h3 className="text-sm font-bold text-[#111827]">{activity}</h3>
-                        </td>
-                      </tr>
-                      {instructionList.map((instruction, index) => (
-                        <tr
-                          key={instruction.id}
-                          className="hover:bg-[#059669]/5 transition-colors duration-150"
-                        >
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-[#333333] font-mono">
-                            {instruction.doc_code}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-[#333333]">
-                            {instruction.doc_title}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-[#555555]">
-                            {instruction.plant_category}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-[#555555]">
-                            {instruction.plant_unit}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-[#555555] max-w-sm">
-                            {instruction.description}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <a
-                              href={instruction.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 text-[#059669] hover:text-[#c74d1c] hover:underline transition-colors font-medium"
-                            >
-                              <LinkIcon className="w-4 h-4" />
-                              <span>Open</span>
-                            </a>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex items-center justify-end space-x-2">
-                              <motion.button
-                                onClick={() => handleOpenEditModal(instruction)}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter' || e.key === ' ') {
-                                    e.preventDefault();
-                                    handleOpenEditModal(instruction);
-                                  }
-                                }}
-                                className="p-2 text-[#94a3b8] hover:text-[#111827] rounded-full hover:bg-[#111827]/10 focus:outline-none focus:ring-2 focus:ring-[#111827] transition-colors"
-                                aria-label={`Edit ${instruction.doc_title}`}
-                                tabIndex={0}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
-                                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                              >
-                                <EditIcon />
-                              </motion.button>
-                              {canWrite && (
-                                <motion.button
-                                  onClick={() => handleOpenDeleteModal(instruction.id)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                      e.preventDefault();
-                                      handleOpenDeleteModal(instruction.id);
-                                    }
-                                  }}
-                                  className="p-2 text-[#94a3b8] hover:text-[#c7162b] rounded-full hover:bg-[#c7162b]/10 focus:outline-none focus:ring-2 focus:ring-[#c7162b]"
-                                  aria-label={`Delete ${instruction.doc_title}`}
-                                  tabIndex={0}
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                                >
-                                  <TrashIcon />
-                                </motion.button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </React.Fragment>
+                          {t[header] || header}
+                          {sortColumn === header && (
+                            <span className="text-emerald-300 font-bold" aria-hidden="true">
+                              {sortDirection === 'asc' ? '↑' : '↓'}
+                            </span>
+                          )}
+                        </button>
+                      ) : (
+                        t[header] || header
+                      )}
+                    </th>
                   ))}
-                  {groupedInstructions.length === 0 && (
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800/60">
+                {groupedInstructions.map(([activity, instructionList]) => (
+                  <React.Fragment key={activity}>
                     <tr>
                       <td
                         colSpan={tableHeaders.length}
-                        className="text-center py-10 text-[#94a3b8]"
+                        className="px-3 py-1.5 bg-slate-100/90 dark:bg-slate-800/80 border-l-4 border-emerald-500"
                       >
-                        No work instructions found.
+                        <h3 className="text-[11px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                          {activity}
+                        </h3>
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </motion.div>
-
-        <Modal
-          isOpen={isFormModalOpen}
-          onClose={handleCloseModals}
-          title={editingInstruction ? t.edit_instruction_title : t.add_instruction_title}
-        >
-          <WorkInstructionForm
-            instructionToEdit={editingInstruction}
-            onSave={handleSave}
-            onCancel={handleCloseModals}
-            t={t}
-            readOnly={!canWrite}
-          />
-        </Modal>
-
-        <Modal
-          isOpen={isDeleteModalOpen}
-          onClose={handleCloseModals}
-          title={t.delete_confirmation_title}
-        >
-          <div className="p-6">
-            <p className="text-sm text-slate-800">{t.delete_confirmation_message}</p>
-          </div>
-          <div className="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-slate-400/20">
-            <button
-              onClick={handleDeleteConfirm}
-              className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2.5 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 sm:ml-3 sm:w-auto sm:text-sm min-h-[44px]"
-            >
-              {t.confirm_delete_button}
-            </button>
-            <button
-              onClick={handleCloseModals}
-              className="mt-3 w-full inline-flex justify-center rounded-lg border border-slate-400 shadow-sm px-4 py-2.5 bg-white text-base font-medium text-slate-800 hover:bg-slate-100 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm min-h-[44px]"
-            >
-              {t.cancel_button}
-            </button>
-          </div>
-        </Modal>
+                    {instructionList.map((instruction) => (
+                      <tr
+                        key={instruction.id}
+                        className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150"
+                      >
+                        <td className="px-3 py-2 whitespace-nowrap text-xs font-mono">
+                          <span className="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                            {instruction.doc_code}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-xs font-semibold text-slate-900 dark:text-slate-100">
+                          {instruction.doc_title}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-xs font-mono">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                            {instruction.plant_category}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-xs font-mono">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                            {instruction.plant_unit}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-xs text-slate-600 dark:text-slate-400 max-w-sm line-clamp-2">
+                          {instruction.description}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                          <a
+                            href={instruction.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200/60 dark:border-emerald-800/60 font-semibold text-xs transition-colors"
+                          >
+                            <LinkIcon className="w-3 h-3" />
+                            <span>Buka</span>
+                          </a>
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-right text-xs font-medium">
+                          <div className="flex items-center justify-end space-x-1">
+                            <motion.button
+                              onClick={() => handleOpenEditModal(instruction)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  handleOpenEditModal(instruction);
+                                }
+                              }}
+                              className="p-1 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors min-h-[30px] min-w-[30px] inline-flex items-center justify-center"
+                              aria-label={`Edit ${instruction.doc_title}`}
+                              tabIndex={0}
+                              whileHover={{ scale: 1.08 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <EditIcon className="w-3.5 h-3.5" />
+                            </motion.button>
+                            {canWrite && (
+                              <motion.button
+                                onClick={() => handleOpenDeleteModal(instruction.id)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleOpenDeleteModal(instruction.id);
+                                  }
+                                }}
+                                className="p-1 text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/30 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-colors min-h-[30px] min-w-[30px] inline-flex items-center justify-center"
+                                aria-label={`Delete ${instruction.doc_title}`}
+                                tabIndex={0}
+                                whileHover={{ scale: 1.08 }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                <TrashIcon className="w-3.5 h-3.5" />
+                              </motion.button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </React.Fragment>
+                ))}
+                {groupedInstructions.length === 0 && (
+                  <tr>
+                    <td colSpan={tableHeaders.length} className="text-center py-12 px-4">
+                      <div className="max-w-sm mx-auto flex flex-col items-center">
+                        <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 mb-3">
+                          <LinkIcon className="w-6 h-6" />
+                        </div>
+                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1">
+                          Tidak ada instruksi kerja ditemukan
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                          Coba ubah kata kunci pencarian atau reset filter yang dipilih
+                        </p>
+                        {(searchTerm ||
+                          filterActivity ||
+                          filterPlantCategory ||
+                          filterPlantUnit) && (
+                          <button
+                            onClick={() => {
+                              setSearchTerm('');
+                              setFilterActivity('');
+                              setFilterPlantCategory('');
+                              setFilterPlantUnit('');
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors"
+                          >
+                            Reset Filter
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
+
+      {/* Form Modal */}
+      <Modal
+        isOpen={isFormModalOpen}
+        onClose={handleCloseModals}
+        title={
+          editingInstruction
+            ? t.edit_instruction_title || 'Edit Instruksi Kerja'
+            : t.add_instruction_title || 'Tambah Instruksi Kerja'
+        }
+      >
+        <WorkInstructionForm
+          instructionToEdit={editingInstruction}
+          onSave={handleSave}
+          onCancel={handleCloseModals}
+          t={t}
+          readOnly={!canWrite}
+        />
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCloseModals}
+        title={t.delete_confirmation_title || 'Konfirmasi Hapus'}
+      >
+        <div className="p-6">
+          <p className="text-sm text-slate-700 dark:text-slate-300">
+            {t.delete_confirmation_message ||
+              'Apakah Anda yakin ingin menghapus instruksi kerja ini? Tindakan ini tidak dapat dibatalkan.'}
+          </p>
+        </div>
+        <div className="bg-slate-50 dark:bg-slate-800/60 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-slate-200 dark:border-slate-700/60 gap-3">
+          <button
+            onClick={handleDeleteConfirm}
+            className="w-full inline-flex justify-center items-center rounded-xl border border-transparent shadow-sm px-4 py-2.5 bg-rose-600 text-sm font-semibold text-white hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 sm:w-auto min-h-[44px] transition-colors"
+          >
+            {t.confirm_delete_button || 'Hapus'}
+          </button>
+          <button
+            onClick={handleCloseModals}
+            className="mt-2 sm:mt-0 w-full inline-flex justify-center items-center rounded-xl border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2.5 bg-white dark:bg-slate-700 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-400 sm:w-auto min-h-[44px] transition-colors"
+          >
+            {t.cancel_button || 'Batal'}
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };

@@ -22,7 +22,7 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ isMobile, onClose,
         {/* Logo Container */}
         <div className="relative group cursor-pointer">
           <motion.div
-            className="w-9 h-9 flex items-center justify-center p-1.5 bg-gradient-to-br from-primary-600 to-emerald-600 rounded-[10px] shadow-lg transition-all group-hover:shadow-emerald-500/30"
+            className="w-9 h-9 flex items-center justify-center p-1.5 bg-gradient-to-br from-primary-600 to-emerald-600 rounded-lg shadow-lg transition-all group-hover:shadow-emerald-500/30"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -59,7 +59,7 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ isMobile, onClose,
       {isMobile && onClose && (
         <button
           onClick={onClose}
-          className="p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+          className="p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/10 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-primary-500/40"
           aria-label="Close sidebar"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

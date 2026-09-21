@@ -51,12 +51,11 @@ export const OptimizationAdvisorButton: React.FC<OptimizationAdvisorButtonProps>
       <button
         onClick={handleOptimize}
         aria-label="AI Optimization Advisor"
-        className={`min-h-[44px] group relative inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${className}`}
+        className={`min-h-[34px] h-[34px] inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-xs hover:shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 disabled:opacity-40 disabled:cursor-not-allowed ${className || ''}`}
         title="AI Optimization Advisor"
       >
-        <LightBulbIcon className="w-5 h-5 group-hover:text-amber-300 transition-colors" />
-        <span className="font-bold">AI Optimize</span>
-        <div className="absolute inset-0 bg-white/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
+        <LightBulbIcon className="w-3.5 h-3.5 text-amber-200" />
+        <span>AI Optimize</span>
       </button>
 
       <OptimizationResultModal

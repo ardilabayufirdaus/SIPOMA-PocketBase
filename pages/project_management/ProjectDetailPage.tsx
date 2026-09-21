@@ -18,6 +18,7 @@ import { useProjectManagementAccess } from '../../hooks/useProjectManagementAcce
 
 // Enhanced UI Components
 import { EnhancedButton, useAccessibility } from '../../components/ui/EnhancedComponents';
+import RealtimeIndicator from '../../components/ui/RealtimeIndicator';
 
 // Icons
 import PlusIcon from '../../components/icons/PlusIcon';
@@ -1199,7 +1200,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
       {/* Executive Command Header */}
       {/* ───────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-30 bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-800 shadow-lg px-4 py-4 sm:px-6 lg:px-8">
-        <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex-1 min-w-0">
             {/* Breadcrumb Navigation */}
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-1.5">
@@ -1256,6 +1257,11 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
                   Kesehatan: {performanceMetrics.healthScore}% ({performanceMetrics.healthGrade})
                 </span>
               </span>
+
+              {/* Realtime Status Indicator */}
+              <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-800/80 text-slate-300 border border-slate-700/80 shadow-sm">
+                <RealtimeIndicator isConnected={true} lastUpdate={new Date()} />
+              </div>
             </div>
           </div>
 
@@ -1331,7 +1337,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
 
       {/* Feedback Toast Banner */}
       {feedbackMessage && (
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mt-4 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="w-full px-4 sm:px-6 lg:px-8 mt-4 animate-in fade-in slide-in-from-top-2 duration-200">
           <div
             className={`px-4 py-3 rounded-2xl flex items-center justify-between shadow-lg border text-sm font-semibold ${
               feedbackMessage.type === 'success'
@@ -1357,8 +1363,8 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
         </div>
       )}
 
-      {/* Main Content Body */}
-      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
+      {/* Main Content Body - Sesuai COP Analysis Spacing */}
+      <main className="w-full space-y-4 sm:space-y-5 font-sans">
         {loading ? (
           <LoadingSpinner />
         ) : (
@@ -1366,7 +1372,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
             {/* ───────────────────────────────────────────────────────────── */}
             {/* 1. Executive Hero KPI & Earned Value Section */}
             {/* ───────────────────────────────────────────────────────────── */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white shadow-2xl border border-indigo-500/20 p-6 sm:p-8">
+            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white shadow-lg border border-indigo-500/20 p-4 sm:p-5">
               {/* Background ambient lighting */}
               <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none transform translate-x-1/3 -translate-y-1/3" />
               <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none transform -translate-x-1/3 translate-y-1/3" />
@@ -1813,35 +1819,21 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
                 </div>
               </div>
 
-              {/* Table Render */}
+              {/* Table Render - COP Analysis Compact Style */}
               {filteredTasks.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
-                    <thead className="bg-slate-800 dark:bg-slate-950 text-white">
+                <div className="overflow-x-auto scroll-smooth">
+                  <table className="min-w-full text-xs border-collapse text-left" role="table">
+                    <thead className="bg-slate-700 dark:bg-slate-800 text-white uppercase text-[11px] font-bold tracking-wider sticky top-0 z-20 border-b border-slate-600 dark:border-slate-700">
                       <tr>
-                        <th className="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-wider">
-                          Aktivitas / Deliverables
-                        </th>
-                        <th className="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-wider">
-                          Rencana Mulai
-                        </th>
-                        <th className="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-wider">
-                          Rencana Selesai
-                        </th>
-                        <th className="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-wider">
-                          Progress Pengerjaan
-                        </th>
-                        <th className="px-6 py-4 text-left text-xs font-extrabold uppercase tracking-wider">
-                          Status
-                        </th>
-                        {canWrite && (
-                          <th className="px-6 py-4 text-right text-xs font-extrabold uppercase tracking-wider">
-                            Aksi
-                          </th>
-                        )}
+                        <th className="py-2.5 px-3 text-left">Aktivitas / Deliverables</th>
+                        <th className="py-2.5 px-3 text-left">Rencana Mulai</th>
+                        <th className="py-2.5 px-3 text-left">Rencana Selesai</th>
+                        <th className="py-2.5 px-3 text-left">Progress Pengerjaan</th>
+                        <th className="py-2.5 px-3 text-left">Status</th>
+                        {canWrite && <th className="py-2.5 px-3 text-right">Aksi</th>}
                       </tr>
                     </thead>
-                    <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800/80 text-sm">
+                    <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-200 dark:divide-slate-800">
                       {filteredTasks.map((task) => {
                         const pct = task.percent_complete || 0;
                         const isDone = pct >= 100;
@@ -1853,25 +1845,25 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
                         return (
                           <tr
                             key={task.id}
-                            className="hover:bg-indigo-50/40 dark:hover:bg-slate-800/60 transition-colors"
+                            className="hover:bg-slate-50/60 dark:hover:bg-slate-850/40 transition-colors"
                           >
-                            <td className="px-6 py-4">
+                            <td className="py-2 px-3">
                               <span
-                                className="font-bold text-slate-900 dark:text-white block max-w-sm truncate"
+                                className="font-bold text-xs text-slate-900 dark:text-white block max-w-sm truncate"
                                 title={task.activity}
                               >
                                 {task.activity}
                               </span>
                             </td>
-                            <td className="px-6 py-4 text-slate-600 dark:text-slate-400 font-medium">
+                            <td className="py-2 px-3 text-slate-600 dark:text-slate-400 font-mono text-xs font-medium">
                               {formatDate(task.planned_start)}
                             </td>
-                            <td className="px-6 py-4 text-slate-600 dark:text-slate-400 font-medium">
+                            <td className="py-2 px-3 text-slate-600 dark:text-slate-400 font-mono text-xs font-medium">
                               {formatDate(task.planned_end)}
                             </td>
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-3">
-                                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 max-w-[120px] overflow-hidden shadow-inner">
+                            <td className="py-2 px-3">
+                              <div className="flex items-center gap-2">
+                                <div className="w-24 bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden shadow-inner">
                                   <div
                                     className={`h-full rounded-full transition-all duration-500 ${
                                       isDone
@@ -1883,14 +1875,14 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
                                     style={{ width: `${pct}%` }}
                                   />
                                 </div>
-                                <span className="font-black text-xs text-slate-800 dark:text-slate-200">
+                                <span className="font-mono font-bold text-xs text-slate-800 dark:text-slate-200">
                                   {pct}%
                                 </span>
                               </div>
                             </td>
-                            <td className="px-6 py-4">
+                            <td className="py-2 px-3">
                               <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase ${
+                                className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                                   isDone
                                     ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                                     : isOverdue
@@ -1910,26 +1902,26 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
                               </span>
                             </td>
                             {canWrite && (
-                              <td className="px-6 py-4 text-right">
+                              <td className="py-2 px-3 text-right">
                                 <div className="flex justify-end gap-1">
                                   <button
                                     onClick={() => {
                                       setEditingTask(task);
                                       setFormModalOpen(true);
                                     }}
-                                    className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                                    className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
                                     title="Edit Tugas"
                                     aria-label={`Edit ${task.activity}`}
                                   >
-                                    <EditIcon className="w-4 h-4" />
+                                    <EditIcon className="w-3.5 h-3.5" />
                                   </button>
                                   <button
                                     onClick={() => handleOpenDeleteModal(task.id)}
-                                    className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                                    className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
                                     title="Hapus Tugas"
                                     aria-label={`Hapus ${task.activity}`}
                                   >
-                                    <TrashIcon className="w-4 h-4" />
+                                    <TrashIcon className="w-3.5 h-3.5" />
                                   </button>
                                 </div>
                               </td>

@@ -14,6 +14,24 @@ import { syncOperationalDataForDate } from '../../utils/operationalSyncUtils';
 import { CcrDowntimeData, CcrParameterDataWithName } from '../../types';
 import { Card } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
+import RealtimeIndicator from '../../components/ui/RealtimeIndicator';
+import {
+  MessageSquare,
+  Calendar,
+  Building2,
+  Layers,
+  Sun,
+  Sunset,
+  Moon,
+  FileText,
+  Copy,
+  Check,
+  Share2,
+  RefreshCw,
+  ChevronDown,
+  Clock,
+  Send,
+} from 'lucide-react';
 
 // Helper function to format numbers in Indonesian format (comma for decimal, dot for thousands)
 const formatIndonesianNumber = (num: number, decimals: number = 1): string => {
@@ -1874,7 +1892,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
           const parts = text.split('*');
           return parts.map((part, partIndex) =>
             partIndex % 2 === 1 ? (
-              <strong key={partIndex} className="font-bold text-slate-900">
+              <strong key={partIndex} className="font-bold text-slate-900 dark:text-white">
                 {part}
               </strong>
             ) : (
@@ -1886,17 +1904,27 @@ const WhatsAppGroupReportPage: React.FC = () => {
       };
 
       // Handle section separators
-      if (line.includes('===') || line.includes('━━━')) {
-        return <div key={index} className="h-px bg-slate-200 my-3 opacity-50" />;
+      if (line.includes('===') || line.includes('━━━') || line.includes('━━━━━━━━━━━━━━━━━━━━━')) {
+        return (
+          <div key={index} className="h-px bg-slate-200 dark:bg-slate-700 my-2.5 opacity-60" />
+        );
       }
 
       // Handle emoji/headers
-      const isHeader = /^[A-Z\s]+$/.test(line.replace(/[^A-Z\s]/g, '').trim()) && line.length > 3;
+      const isHeader =
+        line.startsWith('📋') ||
+        line.startsWith('📊') ||
+        line.startsWith('🏭') ||
+        line.startsWith('🧪') ||
+        line.startsWith('⚠️') ||
+        line.startsWith('🏗️') ||
+        line.startsWith('📅') ||
+        (/^[A-Z\s]+$/.test(line.replace(/[^A-Z\s]/g, '').trim()) && line.length > 3);
 
       return (
         <div
           key={index}
-          className={`mb-1 ${isHeader ? 'text-slate-900 font-bold mt-4 mb-2' : 'text-slate-700'}`}
+          className={`mb-1 ${isHeader ? 'text-slate-900 dark:text-slate-100 font-bold mt-3 mb-1.5 text-xs sm:text-sm' : 'text-slate-700 dark:text-slate-300 text-xs sm:text-sm'}`}
         >
           {renderLine(line)}
         </div>
@@ -1905,371 +1933,313 @@ const WhatsAppGroupReportPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] selection:bg-indigo-100">
-      <div className="mx-auto py-8 md:py-12 px-4 sm:px-8 lg:px-12 xl:px-16 w-full">
-        {/* Modern Header Section */}
-        <div className="text-center mb-10 md:mb-12">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight sm:text-5xl">
-            WhatsApp Group{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">
-              Report
-            </span>
-          </h1>
-          <p className="mt-4 text-base md:text-lg text-slate-500 max-w-2xl mx-auto font-medium px-4">
-            Generate and streamline your plant production reports with a single click.
-          </p>
-          <div className="mt-4 flex justify-center items-center gap-2">
-            <div className="h-1 w-12 bg-indigo-600 rounded-full"></div>
-            <div className="h-1 w-2 bg-slate-200 rounded-full"></div>
-            <div className="h-1 w-2 bg-slate-200 rounded-full"></div>
-          </div>
-        </div>
+    <div className="w-full space-y-5 sm:space-y-6 font-sans">
+      {/* TOP HERO HEADER BANNER - Sesuai 20 Aturan Wajib UI/UX */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-secondary-900 via-slate-900 to-secondary-950 rounded-2xl shadow-lg border border-slate-800 p-5 sm:p-6 text-white w-full">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-primary-600/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2" />
 
-        {/* Controls Section - Clean White Style */}
-        <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 md:p-8 mb-8 md:mb-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
-            {/* Date Selection */}
-            <div className="space-y-4">
-              <label
-                htmlFor="date-select"
-                className="block text-sm font-bold text-slate-800 uppercase tracking-wider"
-              >
-                Report Date
-              </label>
-              <div className="relative group">
-                <input
-                  id="date-select"
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full pl-4 pr-10 py-4 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all duration-300 bg-slate-50/30 font-medium text-slate-900"
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-primary-400 shrink-0 shadow-inner">
+              <MessageSquare className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-primary-500/20 text-primary-300 border border-primary-500/30 rounded-full">
+                  CM Plant Operations
+                </span>
+                <RealtimeIndicator
+                  isConnected={true}
+                  lastUpdate={new Date()}
+                  className="text-xs text-slate-300 font-medium"
                 />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-500 transition-colors">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                </div>
               </div>
-            </div>
-
-            {/* Plant Category */}
-            <div className="space-y-4">
-              <label
-                htmlFor="category-select"
-                className="block text-sm font-bold text-slate-800 uppercase tracking-wider"
-              >
-                Plant Category
-              </label>
-              <div className="relative">
-                <select
-                  id="category-select"
-                  value={selectedPlantCategory}
-                  onChange={(e) => setSelectedPlantCategory(e.target.value)}
-                  className="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all duration-300 bg-slate-50/30 font-medium appearance-none text-slate-900"
-                >
-                  {plantCategories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Plant Units */}
-            <div className="space-y-4">
-              <label className="block text-sm font-bold text-slate-800 uppercase tracking-wider">
-                Plant Units ({selectedPlantUnits.length})
-              </label>
-              <div className="relative unit-dropdown-container">
-                <div
-                  className="w-full px-5 py-4 border border-slate-200 rounded-2xl bg-slate-50/30 cursor-pointer hover:border-indigo-300 transition-all duration-300"
-                  onClick={() => setIsUnitDropdownOpen(!isUnitDropdownOpen)}
-                >
-                  <div className="flex items-center justify-between">
-                    <span
-                      className={`font-medium ${selectedPlantUnits.length ? 'text-slate-900' : 'text-slate-400'}`}
-                    >
-                      {selectedPlantUnits.length === 0
-                        ? 'Select units...'
-                        : `${selectedPlantUnits.length} Units Selected`}
-                    </span>
-                    <svg
-                      className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${isUnitDropdownOpen ? 'rotate-180' : ''}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
-                </div>
-
-                {isUnitDropdownOpen && (
-                  <div className="absolute z-20 w-full mt-3 bg-white border border-slate-100 rounded-2xl shadow-2xl p-3 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="flex items-center justify-between px-3 py-2 mb-2 bg-slate-50 rounded-xl">
-                      <button
-                        onClick={() => setSelectedPlantUnits(filteredUnits.map((u) => u.unit))}
-                        className="text-xs font-bold text-indigo-600 hover:text-indigo-700"
-                      >
-                        SELECT ALL
-                      </button>
-                      <button
-                        onClick={() => setSelectedPlantUnits([])}
-                        className="text-xs font-bold text-slate-400 hover:text-slate-600"
-                      >
-                        CLEAR ALL
-                      </button>
-                    </div>
-                    <div className="max-h-64 overflow-y-auto custom-scrollbar">
-                      {filteredUnits.map((unit) => (
-                        <label
-                          key={unit.id}
-                          className="flex items-center p-3 hover:bg-indigo-50/50 rounded-xl cursor-pointer transition-colors group"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedPlantUnits.includes(unit.unit)}
-                            onChange={(e) => {
-                              if (e.target.checked)
-                                setSelectedPlantUnits((prev) => [...prev, unit.unit]);
-                              else
-                                setSelectedPlantUnits((prev) =>
-                                  prev.filter((u) => u !== unit.unit)
-                                );
-                            }}
-                            className="w-5 h-5 rounded-md border-slate-300 text-indigo-600 focus:ring-indigo-500 transition-all"
-                          />
-                          <span className="ml-3 text-sm font-medium text-slate-700 group-hover:text-indigo-900">
-                            Unit {unit.unit}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white font-display">
+                WhatsApp Group Report — Cement Mill
+              </h1>
+              <p className="text-xs text-slate-300 font-medium mt-0.5">
+                Kompilasi ringkasan operasional harian, feed rate, downtime, dan status silo untuk
+                publikasi WhatsApp Group
+              </p>
             </div>
           </div>
-
-          {/* Action Buttons Area */}
-          <div className="mt-12 pt-10 border-t border-slate-100 flex flex-wrap justify-center gap-4">
-            <button
-              onClick={handleGenerateReport}
-              disabled={isGenerating}
-              className={`group relative overflow-hidden px-8 py-4 rounded-2xl font-bold transition-all duration-500 ${
-                isGenerating
-                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                  : 'bg-slate-900 text-white shadow-xl shadow-slate-200 hover:shadow-indigo-100 hover:-translate-y-1'
-              }`}
-            >
-              <div className="relative flex items-center gap-3">
-                {isGenerating ? (
-                  <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <svg
-                    className="w-5 h-5 text-indigo-400 group-hover:rotate-12 transition-transform"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                )}
-                <span>DAILY REPORT</span>
-              </div>
-            </button>
-
-            <button
-              onClick={handleGenerateShift1Report}
-              disabled={isGenerating}
-              className={`group relative overflow-hidden px-8 py-4 rounded-2xl font-bold transition-all duration-500 ${
-                isGenerating
-                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                  : 'bg-white text-slate-700 border border-slate-200 hover:border-emerald-500 hover:text-emerald-600 hover:shadow-lg hover:shadow-emerald-50 hover:-translate-y-1'
-              }`}
-            >
-              <div className="relative flex items-center gap-3">
-                <svg
-                  className="w-5 h-5 text-emerald-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                  />
-                </svg>
-                <span>SHIFT 1</span>
-              </div>
-            </button>
-
-            <button
-              onClick={handleGenerateShift2Report}
-              disabled={isGenerating}
-              className={`group relative overflow-hidden px-8 py-4 rounded-2xl font-bold transition-all duration-500 ${
-                isGenerating
-                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                  : 'bg-white text-slate-700 border border-slate-200 hover:border-orange-500 hover:text-orange-600 hover:shadow-lg hover:shadow-orange-50 hover:-translate-y-1'
-              }`}
-            >
-              <div className="relative flex items-center gap-3">
-                <svg
-                  className="w-5 h-5 text-orange-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                  />
-                </svg>
-                <span>SHIFT 2</span>
-              </div>
-            </button>
-
-            <button
-              onClick={handleGenerateShift3Report}
-              disabled={isGenerating}
-              className={`group relative overflow-hidden px-8 py-4 rounded-2xl font-bold transition-all duration-500 ${
-                isGenerating
-                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                  : 'bg-white text-slate-700 border border-slate-200 hover:border-indigo-500 hover:text-indigo-600 hover:shadow-lg hover:shadow-indigo-50 hover:-translate-y-1'
-              }`}
-            >
-              <div className="relative flex items-center gap-3">
-                <svg
-                  className="w-5 h-5 text-indigo-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                  />
-                </svg>
-                <span>SHIFT 3</span>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        {/* Report Output Section - WhatsApp Aesthetic */}
-        {generatedReport && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-slate-900">Preview Report</h3>
-              <div className="flex gap-3">
-                <button
-                  onClick={handleCopyToClipboard}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all duration-300 ${
-                    copySuccess
-                      ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200'
-                      : 'bg-white text-slate-700 border border-slate-200 shadow-sm hover:shadow-md hover:bg-slate-50'
-                  }`}
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                    />
-                  </svg>
-                  {copySuccess ? 'COPIED!' : 'COPY TEXT'}
-                </button>
-                <button
-                  onClick={() =>
-                    window.open(
-                      `https://wa.me/?text=${encodeURIComponent(generatedReport)}`,
-                      '_blank'
-                    )
-                  }
-                  className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#25D366] text-white font-bold shadow-lg shadow-green-200 hover:bg-[#20ba59] transition-all duration-300"
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
-                  </svg>
-                  WHATSAPP
-                </button>
-              </div>
-            </div>
-
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-100 to-indigo-100 rounded-[2rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-              <div className="relative bg-white border border-slate-100 shadow-2xl rounded-[2rem] overflow-hidden">
-                <div className="bg-[#E7FCE3] border-b border-[#D7ECCB] px-8 py-5 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center text-white">
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
-                    </svg>
-                  </div>
-                  <div>
-                    <span className="block font-bold text-[#075E54]">SIPOMA Reporting Tool</span>
-                    <span className="block text-[10px] text-[#075E54]/70 uppercase tracking-widest font-bold">
-                      Encrypted Production Report
-                    </span>
-                  </div>
-                </div>
-                <div className="p-4 md:p-8 lg:p-10 bg-[#FFFFFF] bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')] bg-repeat">
-                  <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 md:p-8 leading-relaxed font-mono text-xs sm:text-sm md:text-base relative">
-                    <div className="absolute top-0 right-0 w-6 md:w-8 h-6 md:h-8 bg-white rotate-45 translate-x-3 md:translate-x-4 -translate-y-3 md:-translate-y-4 border-l border-b border-slate-100"></div>
-                    {renderFormattedReport(generatedReport)}
-                    <div className="mt-6 flex justify-end">
-                      <span className="text-[10px] text-slate-400 font-mono">
-                        {new Date().toLocaleTimeString('id-ID', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}{' '}
-                        ✓✓
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Footer */}
-        <div className="text-center text-slate-500 text-sm mt-8">
-          <p>SIPOMA - Production Monitoring System</p>
         </div>
       </div>
+
+      {/* CONTROLS & GENERATOR CARD */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 sm:p-6 space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* Date Selection */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor="date-select"
+              className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider"
+            >
+              Tanggal Laporan
+            </label>
+            <div className="relative flex items-center">
+              <Calendar className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 pointer-events-none" />
+              <input
+                id="date-select"
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[38px] [color-scheme:light] dark:[color-scheme:dark]"
+              />
+            </div>
+          </div>
+
+          {/* Plant Category */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor="category-select"
+              className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider"
+            >
+              Kategori Pabrik
+            </label>
+            <div className="relative flex items-center">
+              <Building2 className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 pointer-events-none" />
+              <select
+                id="category-select"
+                value={selectedPlantCategory}
+                onChange={(e) => setSelectedPlantCategory(e.target.value)}
+                className="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[38px] appearance-none cursor-pointer"
+              >
+                {plantCategories.map((category) => (
+                  <option key={category} value={category} className="dark:bg-slate-900">
+                    {category}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Plant Units Multi-Select Dropdown */}
+          <div className="space-y-1.5 relative unit-dropdown-container">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              Pilihan Unit ({selectedPlantUnits.length} Terpilih)
+            </label>
+            <button
+              type="button"
+              onClick={() => setIsUnitDropdownOpen(!isUnitDropdownOpen)}
+              className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 flex items-center justify-between hover:border-primary-500 min-h-[38px] transition-colors"
+              aria-expanded={isUnitDropdownOpen}
+            >
+              <span className="flex items-center gap-2 truncate">
+                <Layers className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
+                <span className="truncate">
+                  {selectedPlantUnits.length === 0
+                    ? 'Pilih unit operasional...'
+                    : `${selectedPlantUnits.length} Unit Terpilih: ${selectedPlantUnits.join(', ')}`}
+                </span>
+              </span>
+              <ChevronDown
+                className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isUnitDropdownOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+
+            {isUnitDropdownOpen && (
+              <div className="absolute z-30 w-full mt-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-3 space-y-2 animate-in fade-in zoom-in-95 duration-150">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPlantUnits(filteredUnits.map((u) => u.unit))}
+                    className="text-[11px] font-bold text-primary-600 dark:text-primary-400 hover:underline"
+                  >
+                    PILIH SEMUA
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPlantUnits([])}
+                    className="text-[11px] font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  >
+                    BERSIHKAN
+                  </button>
+                </div>
+                <div className="max-h-52 overflow-y-auto space-y-1">
+                  {filteredUnits.map((unit) => (
+                    <label
+                      key={unit.id}
+                      className="flex items-center gap-2.5 px-2.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg cursor-pointer text-xs font-medium text-slate-800 dark:text-slate-200 transition-colors"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedPlantUnits.includes(unit.unit)}
+                        onChange={(e) => {
+                          if (e.target.checked)
+                            setSelectedPlantUnits((prev) => [...prev, unit.unit]);
+                          else setSelectedPlantUnits((prev) => prev.filter((u) => u !== unit.unit));
+                        }}
+                        className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                      />
+                      <span>Unit {unit.unit}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Generator Action Buttons (Aturan 1: Hierarki Warna Semantik & Touch Target 36px) */}
+        <div className="pt-5 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full">
+          <button
+            type="button"
+            onClick={handleGenerateReport}
+            disabled={isGenerating || selectedPlantUnits.length === 0}
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+          >
+            {isGenerating ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <FileText className="w-4 h-4" />
+            )}
+            <span>DAILY REPORT</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleGenerateShift1Report}
+            disabled={isGenerating || selectedPlantUnits.length === 0}
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+          >
+            <Sun className="w-4 h-4" />
+            <span>SHIFT 1 (07-15)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleGenerateShift2Report}
+            disabled={isGenerating || selectedPlantUnits.length === 0}
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+          >
+            <Sunset className="w-4 h-4" />
+            <span>SHIFT 2 (15-23)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleGenerateShift3Report}
+            disabled={isGenerating || selectedPlantUnits.length === 0}
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+          >
+            <Moon className="w-4 h-4" />
+            <span>SHIFT 3 (23-07)</span>
+          </button>
+        </div>
+      </div>
+
+      {/* REPORT PREVIEW SECTION */}
+      {generatedReport ? (
+        <div className="space-y-3 animate-in fade-in slide-in-from-bottom-3 duration-300">
+          {/* Header bar preview */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                Preview Laporan WhatsApp Chat
+              </h3>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleCopyToClipboard}
+                className={`inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all min-h-[36px] shadow-sm ${
+                  copySuccess
+                    ? 'bg-emerald-600 text-white shadow-emerald-500/20'
+                    : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60'
+                }`}
+                title="Salin isi laporan ke clipboard"
+              >
+                {copySuccess ? (
+                  <Check className="w-3.5 h-3.5" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5 text-primary-500" />
+                )}
+                <span>{copySuccess ? 'TERSALIN!' : 'SALIN TEKS'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  window.open(
+                    `https://wa.me/?text=${encodeURIComponent(generatedReport)}`,
+                    '_blank'
+                  )
+                }
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 rounded-xl transition-all min-h-[36px] shadow-sm shadow-emerald-600/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                title="Buka WhatsApp Web dan bagikan laporan"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>KIRIM WHATSAPP</span>
+              </button>
+            </div>
+          </div>
+
+          {/* WhatsApp Chat Container */}
+          <div className="w-full bg-slate-100 dark:bg-slate-900/90 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 shadow-inner relative overflow-hidden">
+            <div className="w-full bg-white dark:bg-slate-800/95 rounded-2xl border border-emerald-500/20 dark:border-emerald-500/30 p-5 sm:p-7 shadow-md relative">
+              {/* Header WhatsApp Channel info */}
+              <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100 dark:border-slate-700/60 text-xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold shadow-sm">
+                    <MessageSquare className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-slate-800 dark:text-slate-200 block">
+                      SIPOMA Production Monitoring
+                    </span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                      Official WhatsApp Report
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-800">
+                  {selectedDate}
+                </span>
+              </div>
+
+              {/* Formatted Report Body */}
+              <div className="leading-relaxed font-mono text-xs sm:text-sm text-slate-800 dark:text-slate-200 overflow-x-auto whitespace-pre-wrap selection:bg-emerald-500/20">
+                {renderFormattedReport(generatedReport)}
+              </div>
+
+              {/* Chat read timestamp ticks */}
+              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/40 flex justify-end items-center gap-1.5 text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                <span>
+                  {new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+                <span className="text-emerald-500 font-bold">✓✓</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Empty State (Aturan 11: System States) */
+        <div className="w-full bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-10 sm:p-14 text-center shadow-sm">
+          <div className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-950/50 border border-primary-100 dark:border-primary-900/50 flex items-center justify-center text-primary-600 dark:text-primary-400 mx-auto mb-4 shadow-inner">
+            <MessageSquare className="w-7 h-7" />
+          </div>
+          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">
+            Laporan Belum Dibuat
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xl mx-auto mb-6 leading-relaxed">
+            Pilih tanggal observasi dan unit operasional di atas, kemudian klik salah satu tombol
+            generator (Daily Report atau Shift 1-3) untuk mengompilasi data ke dalam format pesan
+            WhatsApp.
+          </p>
+          <button
+            type="button"
+            onClick={handleGenerateReport}
+            disabled={isGenerating || selectedPlantUnits.length === 0}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-600 hover:bg-primary-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-sm hover:shadow transition-all disabled:opacity-50 min-h-[38px]"
+          >
+            <FileText className="w-4 h-4" />
+            <span>Generate Daily Report Sekarang</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 };

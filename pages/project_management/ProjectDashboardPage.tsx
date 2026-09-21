@@ -24,6 +24,7 @@ import { ResourceAllocationChart } from '../../components/charts/ResourceAllocat
 import { BudgetComparisonChart } from '../../components/charts/BudgetComparisonChart';
 import { addMonths, format, isBefore, startOfMonth, startOfDay } from 'date-fns';
 import { exportDashboardToPDF } from '../../utils/pdfExportUtils';
+import RealtimeIndicator from '../../components/ui/RealtimeIndicator';
 
 const LoadingSpinner: React.FC = () => (
   <div className="flex items-center justify-center min-h-[300px]">
@@ -339,418 +340,449 @@ const ProjectDashboardPage: React.FC<{
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
-      <div className="w-full p-4 lg:p-6 space-y-6 max-w-[1400px] mx-auto">
-        {/* Banner Hero */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 rounded-2xl shadow-xl border border-white/10">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-600/20 via-transparent to-transparent"></div>
-          <div className="relative p-6 lg:p-8">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
-                    <PresentationChartLineIcon
-                      className="w-7 h-7 text-primary-400"
-                      aria-hidden="true"
-                    />
+    <div className="w-full space-y-4 sm:space-y-5 font-sans">
+      {/* Hero Header Section - 20 Aturan Wajib */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-secondary-900 via-slate-900 to-secondary-950 rounded-2xl shadow-lg border border-slate-800 p-5 sm:p-6 text-white w-full">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2" />
+        <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+          <div className="flex-1">
+            <div className="flex items-center gap-3.5 mb-2.5">
+              <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-emerald-400 shrink-0 shadow-inner">
+                <PresentationChartLineIcon
+                  className="w-6 h-6 text-emerald-400"
+                  aria-hidden="true"
+                />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                  <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full">
+                    Project Management
+                  </span>
+                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700 rounded-full">
+                    Executive Dashboard
+                  </span>
+                  <RealtimeIndicator isConnected={true} lastUpdate={new Date()} />
+                </div>
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white font-display">
+                  {t.project_dashboard_title || 'Project Management Dashboard'}
+                </h1>
+                <p className="text-xs text-slate-300 font-medium">
+                  {t.executive_insights ||
+                    'Monitoring kepatuhan target fisik, utilisasi anggaran, dan analitik timeline pelaksanaan proyek'}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2.5 mt-4">
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2.5 sm:p-3 border border-white/15">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 bg-emerald-500/20 rounded-lg shrink-0">
+                    <CheckBadgeIcon className="w-4 h-4 text-emerald-300" aria-hidden="true" />
                   </div>
                   <div>
-                    <h1 className="text-2xl lg:text-3xl font-bold text-white mb-1">
-                      {t.project_dashboard_title || 'Project Management Dashboard'}
-                    </h1>
-                    <p className="text-sm text-white/80 font-medium mt-0.5">
-                      {t.executive_insights || 'Comprehensive project overview and analytics'}
+                    <p className="text-white/70 text-[10px] font-bold uppercase tracking-wider">
+                      {t.completed || 'Completed'}
+                    </p>
+                    <p className="text-white text-base sm:text-lg font-black font-mono">
+                      {overallMetrics.completedProjects}
                     </p>
                   </div>
                 </div>
-
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-emerald-500/20 rounded-lg">
-                        <CheckBadgeIcon className="w-5 h-5 text-emerald-300" aria-hidden="true" />
-                      </div>
-                      <div>
-                        <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
-                          {t.completed || 'Completed'}
-                        </p>
-                        <p className="text-white text-xl font-bold">
-                          {overallMetrics.completedProjects}
-                        </p>
-                      </div>
-                    </div>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2.5 sm:p-3 border border-white/15">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 bg-amber-500/20 rounded-lg shrink-0">
+                    <ClockIcon className="w-4 h-4 text-amber-300" aria-hidden="true" />
                   </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-amber-500/20 rounded-lg">
-                        <ClockIcon className="w-5 h-5 text-amber-300" aria-hidden="true" />
-                      </div>
-                      <div>
-                        <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
-                          {t.in_progress || 'In Progress'}
-                        </p>
-                        <p className="text-white text-xl font-bold">{overallMetrics.activeTasks}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-rose-500/20 rounded-lg">
-                        <ExclamationTriangleIcon
-                          className="w-5 h-5 text-rose-300"
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <div>
-                        <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
-                          {t.at_risk || 'At Risk'}
-                        </p>
-                        <p className="text-white text-xl font-bold">
-                          {overallMetrics.delayedProjects}
-                        </p>
-                      </div>
-                    </div>
+                  <div>
+                    <p className="text-white/70 text-[10px] font-bold uppercase tracking-wider">
+                      {t.in_progress || 'In Progress'}
+                    </p>
+                    <p className="text-white text-base sm:text-lg font-black font-mono">
+                      {overallMetrics.activeTasks}
+                    </p>
                   </div>
                 </div>
               </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 lg:flex-shrink-0">
-                <div className="flex gap-2">
-                  <EnhancedButton
-                    variant="glass"
-                    size="sm"
-                    onClick={handleRefresh}
-                    disabled={refreshing}
-                    loading={refreshing}
-                    className="bg-white/10 hover:bg-white/20 text-white border-white/30 backdrop-blur-sm rounded-xl"
-                    aria-label={t.refresh || 'Refresh dashboard'}
-                  >
-                    <ArrowPathRoundedSquareIcon className="w-4 h-4 mr-2" aria-hidden="true" />
-                    {refreshing ? t.refreshing || 'Refreshing...' : t.refresh || 'Refresh'}
-                  </EnhancedButton>
-                  <EnhancedButton
-                    variant="primary"
-                    size="sm"
-                    onClick={handleExport}
-                    className="bg-primary-600 hover:bg-primary-500 text-white border-transparent rounded-xl font-bold shadow-md"
-                    aria-label={t.export_pdf || 'Export PDF report'}
-                  >
-                    <DocumentArrowDownIcon className="w-4 h-4 mr-2" aria-hidden="true" />
-                    {t.export_pdf || 'Export PDF'}
-                  </EnhancedButton>
-                </div>
-                <div className="flex items-center justify-center lg:justify-end">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/20">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheckIcon className="w-5 h-5 text-emerald-300" aria-hidden="true" />
-                      <div>
-                        <p className="text-white/70 text-xs font-medium">
-                          {t.health_score || 'Health Score'}
-                        </p>
-                        <p className="text-white text-lg font-bold">
-                          {overallMetrics.projectHealthScore}%
-                        </p>
-                      </div>
-                    </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2.5 sm:p-3 border border-white/15">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 bg-rose-500/20 rounded-lg shrink-0">
+                    <ExclamationTriangleIcon className="w-4 h-4 text-rose-300" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <p className="text-white/70 text-[10px] font-bold uppercase tracking-wider">
+                      {t.at_risk || 'At Risk'}
+                    </p>
+                    <p className="text-white text-base sm:text-lg font-black font-mono">
+                      {overallMetrics.delayedProjects}
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Filter Controls & KPIs */}
-        <div className="grid grid-cols-12 gap-4 lg:gap-6">
-          <div className="col-span-12 bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row gap-4 justify-between items-center">
-            <div className="relative w-full sm:max-w-md">
-              <input
-                type="text"
-                placeholder={t.search_projects || 'Search projects...'}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
-              />
-              <div className="pointer-events-none absolute left-3 top-2.5 text-slate-400 dark:text-slate-500">
-                <MagnifyingGlassIcon className="w-5 h-5" aria-hidden="true" />
-              </div>
-            </div>
-            <div className="flex w-full sm:w-auto gap-3">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full sm:w-auto px-4 py-2.5 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none cursor-pointer font-medium"
+          <div className="flex flex-col sm:flex-row lg:flex-col items-stretch sm:items-center lg:items-end gap-2.5 shrink-0">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 active:bg-white/30 border border-white/20 rounded-lg shadow-sm transition-all min-h-[36px]"
+                aria-label={t.refresh || 'Refresh dashboard'}
               >
-                <option value="all">{t.all_statuses || 'All Status'}</option>
-                <option value="on_track">{t.proj_status_on_track || 'On Track'}</option>
-                <option value="delayed">{t.proj_status_delayed || 'Delayed'}</option>
-                <option value="completed">{t.proj_status_completed || 'Completed'}</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="col-span-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {[
-              {
-                title: t.total_projects || 'Total Projects',
-                value: overallMetrics.totalProjects,
-                icon: (
-                  <ClipboardDocumentListIcon
-                    className="w-5 h-5 text-slate-700 dark:text-slate-300"
-                    aria-hidden="true"
-                  />
-                ),
-                color: 'bg-slate-100 dark:bg-slate-800',
-              },
-              {
-                title: t.overall_progress_all || 'Overall Progress',
-                value: overallMetrics.avgProgress,
-                icon: (
-                  <PresentationChartLineIcon
-                    className="w-5 h-5 text-primary-600 dark:text-primary-400"
-                    aria-hidden="true"
-                  />
-                ),
-                color: 'bg-primary-50 dark:bg-primary-950/60',
-              },
-              {
-                title: t.projects_completed_count || 'Completed',
-                value: overallMetrics.completedProjects,
-                icon: (
-                  <CheckBadgeIcon
-                    className="w-5 h-5 text-emerald-600 dark:text-emerald-400"
-                    aria-hidden="true"
-                  />
-                ),
-                color: 'bg-emerald-50 dark:bg-emerald-950/60',
-              },
-              {
-                title: t.projects_delayed || 'Delayed',
-                value: overallMetrics.delayedProjects,
-                icon: (
-                  <ExclamationTriangleIcon
-                    className="w-5 h-5 text-rose-600 dark:text-rose-400"
-                    aria-hidden="true"
-                  />
-                ),
-                color: 'bg-rose-50 dark:bg-rose-950/60',
-              },
-              {
-                title: t.active_tasks || 'Active Tasks',
-                value: overallMetrics.activeTasks,
-                icon: (
-                  <ClockIcon
-                    className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
-                    aria-hidden="true"
-                  />
-                ),
-                color: 'bg-indigo-50 dark:bg-indigo-950/60',
-              },
-              {
-                title: t.overdue_tasks || 'Overdue Tasks',
-                value: overallMetrics.overdueTasks,
-                icon: (
-                  <FireIcon
-                    className="w-5 h-5 text-amber-600 dark:text-amber-400"
-                    aria-hidden="true"
-                  />
-                ),
-                color: 'bg-amber-50 dark:bg-amber-950/60',
-              },
-            ].map((metric, idx) => (
-              <div
-                key={idx}
-                className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col items-start justify-between hover:shadow-md transition-all h-28 group"
-              >
-                <div
-                  className={`p-2 rounded-xl ${metric.color} mb-2 group-hover:scale-110 transition-transform`}
-                >
-                  {metric.icon}
-                </div>
-                <div className="w-full">
-                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-0.5 truncate">
-                    {metric.title}
-                  </p>
-                  <p className="text-xl font-bold text-slate-800 dark:text-white">{metric.value}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Charts & Analytics Section */}
-        <div className="grid grid-cols-12 gap-6">
-          <div className="col-span-12 lg:col-span-8 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                {t.tasks_forecast || 'Tasks Forecast'}
-              </h2>
-              <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">
-                6 Months Horizon
-              </span>
-            </div>
-            <div className="h-56 w-full min-h-[220px]">
-              <ResourceAllocationChart ref={resourceChartInstRef} data={tasksForecastData} t={t} />
-            </div>
-          </div>
-
-          <div className="col-span-12 lg:col-span-4 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-6">
-              {t.projects_by_status || 'Projects by Status'}
-            </h2>
-            <div className="flex-1 flex flex-col items-center justify-center min-h-[280px]">
-              <div className="scale-110 mb-6">
-                <DonutChart ref={donutChartInstRef} data={statusCounts} t={t} />
-              </div>
-              <div className="w-full space-y-2 mt-auto">
-                {statusCounts.map((item) => (
-                  <div
-                    key={item.label}
-                    className="flex items-center justify-between text-sm p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: item.color }}
-                      ></span>
-                      <span className="text-slate-700 dark:text-slate-300 font-medium text-xs">
-                        {item.label}
-                      </span>
-                    </div>
-                    <span className="font-bold text-slate-800 dark:text-white text-sm">
-                      {item.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="col-span-12 lg:col-span-6 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-              <CurrencyDollarIcon
-                className="w-6 h-6 text-primary-600 dark:text-primary-400"
-                aria-hidden="true"
-              />
-              {t.financial_overview || 'Financial Overview'}
-            </h2>
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="p-4 rounded-xl bg-primary-50 dark:bg-primary-950/40 border border-primary-100 dark:border-primary-900/50">
-                <p className="text-xs font-semibold text-primary-700 dark:text-primary-300 mb-1 uppercase tracking-wider">
-                  {t.total_budget || 'Total Budget'}
-                </p>
-                <p className="text-lg font-bold text-slate-900 dark:text-white truncate">
-                  {overallMetrics.totalBudget ? formatRupiah(overallMetrics.totalBudget) : 'Rp 0'}
-                </p>
-              </div>
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wider">
-                  {t.budget_utilization || 'Utilization'}
-                </p>
-                <p className="text-lg font-bold text-slate-900 dark:text-white">
-                  {(
-                    (overallMetrics.completedProjects / Math.max(overallMetrics.totalProjects, 1)) *
-                    100
-                  ).toFixed(1)}
-                  %
-                </p>
-              </div>
-            </div>
-            <div className="flex-1 h-64 min-h-[250px]">
-              <BudgetComparisonChart ref={budgetChartInstRef} data={budgetComparisonData} t={t} />
-            </div>
-          </div>
-
-          <div className="col-span-12 lg:col-span-6 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden flex flex-col">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-              <ExclamationTriangleIcon className="w-6 h-6 text-rose-500" aria-hidden="true" />
-              {t.critical_issues || 'Attention Needed'}
-            </h2>
-            <div className="space-y-3 flex-1 overflow-y-auto max-h-[300px]">
-              {criticalIssues.length > 0 ? (
-                criticalIssues.map((issue, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700/50"
-                  >
-                    <div
-                      className={`mt-1.5 w-2.5 h-2.5 rounded-full shrink-0 ${issue.severity === 'high' ? 'bg-rose-500' : 'bg-amber-500'}`}
-                    ></div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                        {issue.title}
-                      </p>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                        {issue.description}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="flex flex-col items-center justify-center h-48 text-center bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 p-4">
-                  <ShieldCheckIcon className="w-12 h-12 text-emerald-500 mb-2" aria-hidden="true" />
-                  <p className="text-slate-700 dark:text-slate-200 font-bold text-sm">
-                    {t.all_systems_operational || 'All systems operational'}
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                    No critical timeline or overdue issues detected
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Performance Table Card */}
-          <div className="col-span-12 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <ClipboardDocumentListIcon
-                  className="w-6 h-6 text-primary-600 dark:text-primary-400"
+                <ArrowPathRoundedSquareIcon
+                  className={`w-3.5 h-3.5 text-emerald-400 ${refreshing ? 'animate-spin' : ''}`}
                   aria-hidden="true"
                 />
-                {t.project_performance_list || 'Project Performance List'}
+                <span>{refreshing ? t.refreshing || 'Refreshing...' : t.refresh || 'Refresh'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleExport}
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 rounded-lg shadow-sm hover:shadow transition-all min-h-[36px]"
+                aria-label={t.export_pdf || 'Export PDF report'}
+              >
+                <DocumentArrowDownIcon className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>{t.export_pdf || 'Export PDF'}</span>
+              </button>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-3 py-1.5 border border-white/15 flex items-center gap-2 self-stretch sm:self-auto justify-center">
+              <ShieldCheckIcon className="w-4 h-4 text-emerald-300" aria-hidden="true" />
+              <span className="text-white/70 text-[10px] font-bold uppercase tracking-wider">
+                Health Score:
+              </span>
+              <span className="text-white font-mono text-xs font-black">
+                {overallMetrics.projectHealthScore}%
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Toolbar - Compact */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row gap-3 justify-between items-center">
+          <div className="relative w-full sm:max-w-md">
+            <input
+              type="text"
+              placeholder={t.search_projects || 'Cari proyek...'}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 text-xs font-medium border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/40 transition-all"
+            />
+            <div className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
+              <MagnifyingGlassIcon className="w-4 h-4" aria-hidden="true" />
+            </div>
+          </div>
+          <div className="flex w-full sm:w-auto gap-2">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full sm:w-auto px-3 py-2 text-xs font-medium border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-primary-500/40 cursor-pointer"
+            >
+              <option value="all">{t.all_statuses || 'Semua Status'}</option>
+              <option value="on_track">{t.proj_status_on_track || 'On Track'}</option>
+              <option value="delayed">{t.proj_status_delayed || 'Delayed'}</option>
+              <option value="completed">{t.proj_status_completed || 'Completed'}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* 6 KPI Metric Cards - Grid Kompak Presisi */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {[
+          {
+            title: t.total_projects || 'Total Projects',
+            value: overallMetrics.totalProjects,
+            icon: (
+              <ClipboardDocumentListIcon
+                className="w-4 h-4 text-slate-700 dark:text-slate-300"
+                aria-hidden="true"
+              />
+            ),
+            color: 'bg-slate-100 dark:bg-slate-800',
+          },
+          {
+            title: t.overall_progress_all || 'Overall Progress',
+            value: overallMetrics.avgProgress,
+            icon: (
+              <PresentationChartLineIcon
+                className="w-4 h-4 text-primary-600 dark:text-primary-400"
+                aria-hidden="true"
+              />
+            ),
+            color: 'bg-primary-50 dark:bg-primary-950/60',
+          },
+          {
+            title: t.projects_completed_count || 'Completed',
+            value: overallMetrics.completedProjects,
+            icon: (
+              <CheckBadgeIcon
+                className="w-4 h-4 text-emerald-600 dark:text-emerald-400"
+                aria-hidden="true"
+              />
+            ),
+            color: 'bg-emerald-50 dark:bg-emerald-950/60',
+          },
+          {
+            title: t.projects_delayed || 'Delayed',
+            value: overallMetrics.delayedProjects,
+            icon: (
+              <ExclamationTriangleIcon
+                className="w-4 h-4 text-rose-600 dark:text-rose-400"
+                aria-hidden="true"
+              />
+            ),
+            color: 'bg-rose-50 dark:bg-rose-950/60',
+          },
+          {
+            title: t.active_tasks || 'Active Tasks',
+            value: overallMetrics.activeTasks,
+            icon: (
+              <ClockIcon
+                className="w-4 h-4 text-indigo-600 dark:text-indigo-400"
+                aria-hidden="true"
+              />
+            ),
+            color: 'bg-indigo-50 dark:bg-indigo-950/60',
+          },
+          {
+            title: t.overdue_tasks || 'Overdue Tasks',
+            value: overallMetrics.overdueTasks,
+            icon: (
+              <FireIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+            ),
+            color: 'bg-amber-50 dark:bg-amber-950/60',
+          },
+        ].map((metric, idx) => (
+          <div
+            key={idx}
+            className="bg-white dark:bg-slate-900 p-3 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col justify-between hover:shadow transition-all"
+          >
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate">
+                {metric.title}
+              </span>
+              <div className={`p-1.5 rounded-lg ${metric.color} shrink-0`}>{metric.icon}</div>
+            </div>
+            <p className="text-lg font-bold font-mono text-slate-800 dark:text-white">
+              {metric.value}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts & Analytics Section */}
+      <div className="grid grid-cols-12 gap-3 sm:gap-4">
+        {/* Forecast Chart */}
+        <div className="col-span-12 lg:col-span-8 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200 dark:border-slate-800">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 flex items-center justify-center border border-primary-100 dark:border-primary-900/50">
+                <PresentationChartLineIcon className="w-4 h-4" />
+              </div>
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                {t.tasks_forecast || 'Tasks Forecast Timeline'}
               </h2>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-800 dark:bg-slate-950 border-b border-slate-700 dark:border-slate-800 text-xs font-bold text-white uppercase">
-                    <th className="px-6 py-4">{t.project_name || 'Project Name'}</th>
-                    <th className="px-6 py-4">{t.project_status || 'Status'}</th>
-                    <th className="px-6 py-4">{t.overall_progress || 'Progress'}</th>
-                    <th className="px-6 py-4">{t.proj_budget || 'Budget'}</th>
-                    <th className="px-6 py-4 text-right">{t.actions || 'Actions'}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredProjectsSummary.slice(0, 10).map((project) => (
-                    <tr
-                      key={project.id}
-                      className="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
-                      onClick={() => onNavigateToDetail(project.id)}
-                    >
-                      <td className="px-6 py-4">
-                        <p
-                          className="text-sm font-bold text-slate-900 dark:text-white max-w-xs truncate"
-                          title={project.title}
-                        >
-                          {project.title}
-                        </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-xs mt-0.5">
-                          {project.description || 'No description'}
-                        </p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-bold ${
-                            statusBadgeMap[project.statusKey] ||
-                            'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
-                          }`}
-                        >
-                          {project.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="w-full max-w-[120px] bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden shadow-inner">
+            <span className="text-[10px] font-mono font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+              6 Months Horizon
+            </span>
+          </div>
+          <div className="h-56 w-full min-h-[220px]">
+            <ResourceAllocationChart ref={resourceChartInstRef} data={tasksForecastData} t={t} />
+          </div>
+        </div>
+
+        {/* Donut Chart Status */}
+        <div className="col-span-12 lg:col-span-4 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col">
+          <div className="flex items-center gap-2.5 pb-3 mb-3 border-b border-slate-200 dark:border-slate-800">
+            <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-900/50">
+              <CheckBadgeIcon className="w-4 h-4" />
+            </div>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+              {t.projects_by_status || 'Distribusi Status Proyek'}
+            </h2>
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center min-h-[220px]">
+            <div className="scale-95 mb-4">
+              <DonutChart ref={donutChartInstRef} data={statusCounts} t={t} />
+            </div>
+            <div className="w-full space-y-1.5 mt-auto">
+              {statusCounts.map((item) => (
+                <div
+                  key={item.label}
+                  className="flex items-center justify-between text-xs py-1 px-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 font-mono"
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full"
+                      style={{ backgroundColor: item.color }}
+                    ></span>
+                    <span className="text-slate-700 dark:text-slate-300 font-medium text-xs">
+                      {item.label}
+                    </span>
+                  </div>
+                  <span className="font-bold text-slate-800 dark:text-white text-xs">
+                    {item.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Budget Comparison */}
+        <div className="col-span-12 lg:col-span-6 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col">
+          <div className="flex items-center gap-2.5 pb-3 mb-3 border-b border-slate-200 dark:border-slate-800">
+            <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-100 dark:border-indigo-900/50">
+              <CurrencyDollarIcon className="w-4 h-4" />
+            </div>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+              {t.financial_overview || 'Finansial & Realisasi Anggaran'}
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+              <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
+                {t.total_budget || 'Total Budget'}
+              </p>
+              <p className="text-sm font-bold font-mono text-slate-900 dark:text-white truncate">
+                {overallMetrics.totalBudget ? formatRupiah(overallMetrics.totalBudget) : 'Rp 0'}
+              </p>
+            </div>
+            <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+              <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">
+                {t.budget_utilization || 'Utilization'}
+              </p>
+              <p className="text-sm font-bold font-mono text-emerald-600 dark:text-emerald-400">
+                {(
+                  (overallMetrics.completedProjects / Math.max(overallMetrics.totalProjects, 1)) *
+                  100
+                ).toFixed(1)}
+                %
+              </p>
+            </div>
+          </div>
+          <div className="flex-1 h-56 min-h-[220px]">
+            <BudgetComparisonChart ref={budgetChartInstRef} data={budgetComparisonData} t={t} />
+          </div>
+        </div>
+
+        {/* Critical Issues */}
+        <div className="col-span-12 lg:col-span-6 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col">
+          <div className="flex items-center gap-2.5 pb-3 mb-3 border-b border-slate-200 dark:border-slate-800">
+            <div className="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center border border-rose-100 dark:border-rose-900/50">
+              <ExclamationTriangleIcon className="w-4 h-4" />
+            </div>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+              {t.critical_issues || 'Isu Kritis & Tenggat Waktu'}
+            </h2>
+          </div>
+          <div className="space-y-2 flex-1 overflow-y-auto max-h-[280px]">
+            {criticalIssues.length > 0 ? (
+              criticalIssues.map((issue, index) => (
+                <div
+                  key={index}
+                  className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-100 dark:border-slate-700/50"
+                >
+                  <div
+                    className={`mt-1 w-2 h-2 rounded-full shrink-0 ${issue.severity === 'high' ? 'bg-rose-500' : 'bg-amber-500'}`}
+                  ></div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                      {issue.title}
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      {issue.description}
+                    </p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="flex flex-col items-center justify-center h-44 text-center bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-dashed border-slate-200 dark:border-slate-700 p-3">
+                <ShieldCheckIcon className="w-8 h-8 text-emerald-500 mb-1.5" aria-hidden="true" />
+                <p className="text-slate-700 dark:text-slate-200 font-bold text-xs">
+                  {t.all_systems_operational || 'Semua jadwal proyek berjalan normal'}
+                </p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                  Tidak terdeteksi deviasi timeline atau keterlambatan kritis
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Performance Table Card - Sesuai COP Analysis */}
+        <div className="col-span-12 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <div className="p-3 sm:p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-850/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 flex items-center justify-center border border-primary-100 dark:border-primary-900/50">
+                <ClipboardDocumentListIcon className="w-4 h-4" />
+              </div>
+              <div>
+                <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100">
+                  {t.project_performance_list || 'Daftar Performa Pelaksanaan Proyek'}
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Ringkasan 10 proyek aktif teratas berdasarkan tingkat penyelesaian dan status
+                  timeline
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => onNavigateToDetail(filteredProjectsSummary[0]?.id || '')}
+              disabled={filteredProjectsSummary.length === 0}
+              className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all self-start sm:self-auto"
+            >
+              Lihat Detail Lengkap &rarr;
+            </button>
+          </div>
+          <div className="overflow-x-auto scroll-smooth">
+            <table className="min-w-full text-xs border-collapse text-left" role="table">
+              <thead className="bg-slate-700 dark:bg-slate-800 text-white uppercase text-[11px] font-bold tracking-wider sticky top-0 z-20 border-b border-slate-600 dark:border-slate-700">
+                <tr>
+                  <th className="py-2.5 px-3">{t.project_name || 'Project Name'}</th>
+                  <th className="py-2.5 px-3">{t.project_status || 'Status'}</th>
+                  <th className="py-2.5 px-3">{t.overall_progress || 'Progress'}</th>
+                  <th className="py-2.5 px-3">{t.proj_budget || 'Budget'}</th>
+                  <th className="py-2.5 px-3 text-right">{t.actions || 'Actions'}</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-200 dark:divide-slate-800">
+                {filteredProjectsSummary.slice(0, 10).map((project) => (
+                  <tr
+                    key={project.id}
+                    className="hover:bg-slate-50/60 dark:hover:bg-slate-850/40 transition-colors cursor-pointer"
+                    onClick={() => onNavigateToDetail(project.id)}
+                  >
+                    <td className="py-2 px-3">
+                      <p
+                        className="text-xs font-bold text-slate-900 dark:text-white max-w-xs truncate"
+                        title={project.title}
+                      >
+                        {project.title}
+                      </p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-xs mt-0.5">
+                        {project.description || 'No description'}
+                      </p>
+                    </td>
+                    <td className="py-2 px-3">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                          statusBadgeMap[project.statusKey] ||
+                          'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
+                        }`}
+                      >
+                        {project.status}
+                      </span>
+                    </td>
+                    <td className="py-2 px-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-20 bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden shadow-inner">
                           <div
                             className={`h-full transition-all ${
                               project.statusKey === 'delayed'
@@ -762,37 +794,30 @@ const ProjectDashboardPage: React.FC<{
                             style={{ width: `${project.progress}%` }}
                           ></div>
                         </div>
-                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 mt-1 block">
-                          {project.progress.toFixed(1)}%
+                        <span className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300">
+                          {project.progress.toFixed(0)}%
                         </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm font-semibold text-slate-700 dark:text-slate-200">
-                        {project.budget ? formatRupiah(project.budget) : '-'}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <EnhancedButton
-                          variant="custom"
-                          size="sm"
-                          className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-semibold rounded-xl px-3.5 py-1.5 text-xs shadow-sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onNavigateToDetail(project.id);
-                          }}
-                          aria-label={`${t.view_details_button || 'View Details'} for ${project.title}`}
-                        >
-                          {t.view_details_button || 'View Details'}
-                        </EnhancedButton>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {filteredProjectsSummary.length === 0 && (
-                <div className="p-12 text-center text-slate-500 dark:text-slate-400 text-sm">
-                  {t.no_results_found || 'No projects match the current filter.'}
-                </div>
-              )}
-            </div>
+                      </div>
+                    </td>
+                    <td className="py-2 px-3 font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      {project.budget ? formatRupiah(project.budget) : 'Rp 0'}
+                    </td>
+                    <td className="py-2 px-3 text-right">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onNavigateToDetail(project.id);
+                        }}
+                        className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-semibold rounded-lg px-2.5 py-1 text-xs transition-all shadow-xs"
+                      >
+                        {t.view_details_button || 'Detail'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
