@@ -74,6 +74,176 @@ const calculateTextMode = (
   return mode;
 };
 
+// Helper function to normalize strings for flexible parameter matching
+const normalizeParamName = (str: string): string => {
+  return (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+};
+
+// Parameter definitions with aliases
+const MATERIAL_FEEDS = [
+  {
+    key: 'clinker',
+    name: 'Clinker',
+    aliases: ['counter feeder clinker', 'feeder clinker', 'clinker feeder', 'klinker'],
+    alwaysShow: true,
+  },
+  {
+    key: 'gypsum',
+    name: 'Gypsum',
+    aliases: ['counter feeder gypsum', 'feeder gypsum', 'gypsum feeder', 'gips'],
+    alwaysShow: true,
+  },
+  {
+    key: 'limestone',
+    name: 'Batu Kapur',
+    aliases: [
+      'counter feeder limestone',
+      'counter feeder batu kapur',
+      'feeder limestone',
+      'feeder batu kapur',
+      'limestone',
+      'batu kapur',
+    ],
+    alwaysShow: true,
+  },
+  {
+    key: 'trass',
+    name: 'Trass',
+    aliases: ['counter feeder trass', 'feeder trass', 'trass feeder'],
+    alwaysShow: true,
+  },
+  {
+    key: 'fine_trass',
+    name: 'FineTrass',
+    aliases: [
+      'counter feeder fine trass',
+      'counter feeder finetrass',
+      'feeder fine trass',
+      'fine trass',
+      'finetrass',
+    ],
+    alwaysShow: false,
+  },
+  {
+    key: 'fly_ash',
+    name: 'Fly Ash',
+    aliases: [
+      'counter feeder flyash',
+      'counter feeder fly ash',
+      'feeder flyash',
+      'feeder fly ash',
+      'fly ash',
+      'flyash',
+    ],
+    alwaysShow: false,
+  },
+  {
+    key: 'ckd',
+    name: 'CKD',
+    aliases: ['counter feeder ckd', 'feeder ckd', 'ckd feeder', 'ckd'],
+    alwaysShow: false,
+  },
+];
+
+const SETTING_FEEDERS = [
+  {
+    key: 'clinker',
+    name: 'Clinker',
+    aliases: ['set feeder clinker', 'setting feeder clinker', 'set. feeder clinker'],
+    alwaysShow: true,
+  },
+  {
+    key: 'gypsum',
+    name: 'Gypsum',
+    aliases: ['set feeder gypsum', 'setting feeder gypsum', 'set. feeder gypsum'],
+    alwaysShow: true,
+  },
+  {
+    key: 'limestone',
+    name: 'Batu Kapur',
+    aliases: [
+      'set feeder limestone',
+      'setting feeder limestone',
+      'set feeder batu kapur',
+      'setting feeder batu kapur',
+      'set. feeder limestone',
+      'set. feeder batu kapur',
+    ],
+    alwaysShow: true,
+  },
+  {
+    key: 'trass',
+    name: 'Trass',
+    aliases: ['set feeder trass', 'setting feeder trass', 'set. feeder trass'],
+    alwaysShow: true,
+  },
+  {
+    key: 'fine_trass',
+    name: 'FineTrass',
+    aliases: [
+      'set feeder fine trass',
+      'setting feeder fine trass',
+      'set feeder finetrass',
+      'setting feeder finetrass',
+      'set. feeder fine trass',
+    ],
+    alwaysShow: false,
+  },
+  {
+    key: 'fly_ash',
+    name: 'Fly Ash',
+    aliases: [
+      'set feeder fly ash',
+      'setting feeder fly ash',
+      'set feeder flyash',
+      'setting feeder flyash',
+      'set. feeder fly ash',
+    ],
+    alwaysShow: false,
+  },
+  {
+    key: 'ckd',
+    name: 'CKD',
+    aliases: ['set feeder ckd', 'setting feeder ckd', 'set. feeder ckd'],
+    alwaysShow: false,
+  },
+];
+
+const QUALITY_PARAMS = [
+  { name: 'Blaine', aliases: ['blaine'], unit: 'm²/kg' },
+  { name: 'R45', aliases: ['r45', 'r-45', 'residu 45', 'r 45'], unit: '%' },
+  {
+    name: 'Indeks Klinker',
+    aliases: ['indeks klinker', 'clinker index', 'clinker factor', 'faktor klinker'],
+    unit: '%',
+  },
+];
+
+// Helper function to safely read numeric value from footer records
+const getFooterNum = (record: Record<string, unknown> | undefined, key: string): number => {
+  if (!record) return 0;
+  const v = record[key];
+  if (typeof v === 'number') return isNaN(v) ? 0 : v;
+  if (typeof v === 'string') {
+    const parsed = parseFloat(v.replace(',', '.'));
+    return isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+};
+
+// Helper function to calculate downtime duration in hours (handling cross-midnight)
+const calcDowntimeDurationHours = (startTimeStr: string, endTimeStr: string): number => {
+  if (!startTimeStr || !endTimeStr) return 0;
+  const startParts = startTimeStr.split(':').map(Number);
+  const endParts = endTimeStr.split(':').map(Number);
+  const startMin = (startParts[0] || 0) * 60 + (startParts[1] || 0);
+  let endMin = (endParts[0] || 0) * 60 + (endParts[1] || 0);
+  if (endMin < startMin) {
+    endMin += 24 * 60; // Crosses midnight into next day
+  }
+  return (endMin - startMin) / 60;
+};
+
 const WhatsAppGroupReportPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedPlantCategory, setSelectedPlantCategory] = useState<string>('Tonasa 2/3');
@@ -83,8 +253,6 @@ const WhatsAppGroupReportPage: React.FC = () => {
   const [copySuccess, setCopySuccess] = useState(false);
   const [reportGenerated, setReportGenerated] = useState(false);
   const [isUnitDropdownOpen, setIsUnitDropdownOpen] = useState(false);
-
-  // reportCache dihapus karena tidak digunakan
 
   const { user } = useAuth();
   const { t } = useTranslation();
@@ -122,13 +290,10 @@ const WhatsAppGroupReportPage: React.FC = () => {
   // Update selected plant units when category changes
   useEffect(() => {
     const availableUnits = filteredUnits.map((unit) => unit.unit);
-    // Keep only units that are still available in the new category
     const validSelectedUnits = selectedPlantUnits.filter((unit) => availableUnits.includes(unit));
-    // If no valid units selected, select all available units
     if (validSelectedUnits.length === 0 && availableUnits.length > 0) {
       setSelectedPlantUnits(availableUnits);
     } else if (validSelectedUnits.length !== selectedPlantUnits.length) {
-      // Only update if the filtered list is different from current selection
       setSelectedPlantUnits(validSelectedUnits);
     }
   }, [selectedPlantCategory, filteredUnits]);
@@ -145,93 +310,217 @@ const WhatsAppGroupReportPage: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isUnitDropdownOpen]);
 
-  // Helper function to calculate total production from feeder counters
-  const calculateTotalProductionFromFeeders = useCallback(
-    (
-      unitFooterData: unknown[],
-      mode: 'daily' | 'shift1' | 'shift2' | 'shift3_today' | 'shift3_cont',
-      unit: string,
-      selectedPlantCategory: string,
-      nextDayFooterData?: unknown[]
-    ): number => {
-      const feederParameters = [
-        'Counter Feeder Clinker (ton)',
-        'Counter Feeder Flyash (ton)',
-        'Counter Feeder Gypsum (ton)',
-        'Counter Feeder Limestone (ton)',
-        'Counter Feeder Trass (ton)',
-        'Counter Feeder CKD (ton)',
-        'Counter Feeder Fine Trass (ton)',
-      ];
-
-      let total = 0;
-
-      for (const paramName of feederParameters) {
-        const paramSetting = parameterSettings.find(
-          (s) =>
-            s.parameter === paramName && s.category === selectedPlantCategory && s.unit === unit
-        );
-
-        if (paramSetting) {
-          let footerData = unitFooterData;
-          if (mode === 'shift3_cont' && nextDayFooterData) {
-            footerData = nextDayFooterData;
-          }
-
-          const footer = footerData.find(
-            (f: unknown) => (f as { parameter_id: string }).parameter_id === paramSetting.id
-          );
-          if (footer) {
-            let value = 0;
-            const f = footer as Record<string, unknown>;
-            // Helper to safely get number value from unknown
-            const getNum = (obj: Record<string, unknown>, key: string) => {
-              const v = obj[key];
-              return typeof v === 'number' ? v : typeof v === 'string' ? Number(v) : 0;
-            };
-            if (mode === 'daily') {
-              value = getNum(f, 'difference') || getNum(f, 'maximum') || getNum(f, 'total') || 0;
-            } else if (mode === 'shift1') {
-              value = getNum(f, 'shift1_counter') || 0;
-            } else if (mode === 'shift2') {
-              value = getNum(f, 'shift2_counter') || 0;
-            } else if (mode === 'shift3_today') {
-              value = getNum(f, 'shift3_counter') || 0;
-            } else if (mode === 'shift3_cont') {
-              value = getNum(f, 'shift3_cont_counter') || 0;
-            }
-            total += value;
-          }
-        }
-      }
-
-      return total;
+  // Helper function to find a parameter setting
+  const findParam = useCallback(
+    (category: string, unit: string, aliases: string[]) => {
+      return parameterSettings.find((s) => {
+        if (s.category !== category || s.unit !== unit) return false;
+        const norm = normalizeParamName(s.parameter);
+        return aliases.some((a) => norm.includes(normalizeParamName(a)));
+      });
     },
     [parameterSettings]
   );
 
-  // Helper function to get operator name from CCR Parameter data
-  const getOperatorName = useCallback(
-    (parameterData: CcrParameterDataWithName[]): string => {
-      try {
-        // Find any record with a name field
-        const recordWithName = parameterData.find(
-          (record) => record.name && record.name.trim() !== ''
+  // Helper function to calculate material usage accurately per mode
+  const getMaterialUsage = useCallback(
+    (
+      footer: Record<string, unknown> | undefined,
+      mode: 'daily' | 'shift1' | 'shift2' | 'shift3',
+      nextDayFooter?: Record<string, unknown> | undefined
+    ): number => {
+      if (!footer && !nextDayFooter) return 0;
+      if (mode === 'daily') {
+        return (
+          getFooterNum(footer, 'shift3_cont_counter') +
+          getFooterNum(footer, 'shift1_counter') +
+          getFooterNum(footer, 'shift2_counter') +
+          getFooterNum(footer, 'shift3_counter')
         );
-        if (recordWithName) {
-          return recordWithName.name!;
+      } else if (mode === 'shift1') {
+        return getFooterNum(footer, 'shift1_counter');
+      } else if (mode === 'shift2') {
+        return getFooterNum(footer, 'shift2_counter');
+      } else if (mode === 'shift3') {
+        return (
+          getFooterNum(footer, 'shift3_counter') +
+          getFooterNum(nextDayFooter, 'shift3_cont_counter')
+        );
+      }
+      return 0;
+    },
+    []
+  );
+
+  // Helper function to calculate total production from feeder counters
+  const calculateTotalProductionFromFeeders = useCallback(
+    (
+      unitFooterMap: Map<string, Record<string, unknown>>,
+      mode: 'daily' | 'shift1' | 'shift2' | 'shift3',
+      unit: string,
+      selectedPlantCategory: string,
+      nextDayUnitFooterMap?: Map<string, Record<string, unknown>>
+    ): number => {
+      let total = 0;
+      for (const mat of MATERIAL_FEEDS) {
+        const paramSetting = findParam(selectedPlantCategory, unit, mat.aliases);
+        if (paramSetting) {
+          const footer = unitFooterMap.get(paramSetting.id);
+          const nextDayFooter = nextDayUnitFooterMap?.get(paramSetting.id);
+          const val = getMaterialUsage(footer, mode, nextDayFooter);
+          total += val;
+        }
+      }
+      return total;
+    },
+    [findParam, getMaterialUsage]
+  );
+
+  // Helper to resolve running hours footer data
+  const getUnitRunningHoursData = useCallback(
+    (unitFooterMap: Map<string, Record<string, unknown>>, category: string, unit: string) => {
+      const paramSetting = findParam(category, unit, [
+        'running hour',
+        'running hours',
+        'jam operasi',
+        'operation hour',
+        'operating hour',
+        'operation hours',
+        'operating hours',
+      ]);
+      if (paramSetting) {
+        return unitFooterMap.get(paramSetting.id);
+      }
+      return undefined;
+    },
+    [findParam]
+  );
+
+  // Helper to resolve feed (tph) footer data
+  const getUnitFeedData = useCallback(
+    (unitFooterMap: Map<string, Record<string, unknown>>, category: string, unit: string) => {
+      const paramSetting = findParam(category, unit, [
+        'feed (tph)',
+        'feed mill',
+        'feed rate',
+        'total feed',
+      ]);
+      if (paramSetting) {
+        return unitFooterMap.get(paramSetting.id);
+      }
+      return undefined;
+    },
+    [findParam]
+  );
+
+  // Helper to resolve operator name from shift hourly records
+  const resolveOperatorName = useCallback(
+    (
+      parameterData: CcrParameterDataWithName[],
+      shiftHours?: number[],
+      nextDayParameterData?: CcrParameterDataWithName[],
+      nextDayHours?: number[]
+    ): string => {
+      try {
+        if (shiftHours && shiftHours.length > 0) {
+          for (const p of parameterData) {
+            if (p.hourly_values) {
+              for (const h of shiftHours) {
+                const hVal = p.hourly_values[h] as any;
+                if (
+                  hVal &&
+                  typeof hVal === 'object' &&
+                  hVal.user_name &&
+                  hVal.user_name !== 'Unknown User' &&
+                  String(hVal.user_name).trim() !== ''
+                ) {
+                  return String(hVal.user_name).trim();
+                }
+              }
+            }
+          }
         }
 
-        // Fallback to current user
-        return user?.full_name || 'Operator Tidak Diketahui';
+        if (nextDayParameterData && nextDayHours && nextDayHours.length > 0) {
+          for (const p of nextDayParameterData) {
+            if (p.hourly_values) {
+              for (const h of nextDayHours) {
+                const hVal = p.hourly_values[h] as any;
+                if (
+                  hVal &&
+                  typeof hVal === 'object' &&
+                  hVal.user_name &&
+                  hVal.user_name !== 'Unknown User' &&
+                  String(hVal.user_name).trim() !== ''
+                ) {
+                  return String(hVal.user_name).trim();
+                }
+              }
+            }
+          }
+        }
+
+        const recordWithName = parameterData.find((r) => r.name && r.name.trim() !== '');
+        if (recordWithName) {
+          return recordWithName.name!.trim();
+        }
+
+        return user?.full_name || 'Operator CCR';
       } catch {
-        return 'Operator Tidak Diketahui';
+        return user?.full_name || 'Operator CCR';
       }
     },
     [user]
   );
 
-  // Helper function to calculate total downtime duration for shift
+  // Helper to resolve product type
+  const resolveProductType = useCallback(
+    (
+      parameterData: CcrParameterDataWithName[],
+      category: string,
+      unit: string,
+      hours: number[],
+      nextDayParameterData?: CcrParameterDataWithName[],
+      nextDayHours?: number[]
+    ): string => {
+      const ptSetting = findParam(category, unit, [
+        'tipe produk',
+        'tipe_produk',
+        'product type',
+        'tipe product',
+      ]);
+      if (!ptSetting) return 'N/A';
+
+      const values: any[] = [];
+      const ptParam = parameterData.find((p) => p.parameter_id === ptSetting.id);
+      if (ptParam && ptParam.hourly_values) {
+        hours.forEach((h) => {
+          if (ptParam.hourly_values[h] !== undefined && ptParam.hourly_values[h] !== null) {
+            values.push(ptParam.hourly_values[h]);
+          }
+        });
+      }
+
+      if (nextDayParameterData && nextDayHours && nextDayHours.length > 0) {
+        const nextPtParam = nextDayParameterData.find((p) => p.parameter_id === ptSetting.id);
+        if (nextPtParam && nextPtParam.hourly_values) {
+          nextDayHours.forEach((h) => {
+            if (
+              nextPtParam.hourly_values[h] !== undefined &&
+              nextPtParam.hourly_values[h] !== null
+            ) {
+              values.push(nextPtParam.hourly_values[h]);
+            }
+          });
+        }
+      }
+
+      return calculateTextMode(values);
+    },
+    [findParam]
+  );
+
+  // Helper function to calculate total downtime duration for category
   const calculateTotalDowntime = useCallback(
     (downtimeData: CcrDowntimeData[]): number => {
       let totalDuration = 0;
@@ -243,12 +532,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
             (unit) => unit.unit === dt.unit && unit.category === selectedPlantCategory
           )
         ) {
-          // Calculate duration in hours
-          const startTime = new Date(`2000-01-01T${dt.start_time}`);
-          const endTime = new Date(`2000-01-01T${dt.end_time}`);
-          const durationMs = endTime.getTime() - startTime.getTime();
-          const durationHours = durationMs / (1000 * 60 * 60);
-          totalDuration += durationHours;
+          totalDuration += calcDowntimeDurationHours(dt.start_time, dt.end_time);
         }
       });
 
@@ -257,11 +541,11 @@ const WhatsAppGroupReportPage: React.FC = () => {
     [plantUnits, selectedPlantCategory]
   );
 
-  // Generate Daily Report sesuai format yang diminta
+  // 1. GENERATE DAILY REPORT (Kompilasi 24 Jam Akurat)
   const generateDailyReport = useCallback(async () => {
     setIsGenerating(true);
     try {
-      const { date } = { date: selectedDate };
+      const date = selectedDate;
 
       // Sync data before generating report
       await syncOperationalDataForDate(date);
@@ -277,14 +561,21 @@ const WhatsAppGroupReportPage: React.FC = () => {
         unitDataArray.map(({ unit, parameterData }) => [unit, { parameterData }])
       );
 
-      // Fetch footer data for the category (footer data is stored per category, not per unit)
-      const categoryFooterData = await getFooterDataForDate(date, selectedPlantCategory);
+      // Fetch ALL footer data for the date to avoid missing records by unit naming mismatch
+      const allFooterData = await getFooterDataForDate(date);
+      const footerMap = new Map<string, Record<string, unknown>>();
+      allFooterData.forEach((f: any) => {
+        if (f && f.parameter_id) {
+          footerMap.set(f.parameter_id, f as Record<string, unknown>);
+        }
+      });
 
-      // Fetch silo data (shared across units)
+      // Fetch silo data
       const siloData = await getSiloData(date);
 
       // Format date
-      const reportDate = new Date(date);
+      const dateParts = date.split('-').map(Number);
+      const reportDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
       const formattedDate = reportDate.toLocaleDateString('id-ID', {
         weekday: 'long',
         day: '2-digit',
@@ -297,55 +588,33 @@ const WhatsAppGroupReportPage: React.FC = () => {
       report += translateWithVars('wag_date', { date: formattedDate }) + '\n';
       report += t.wag_separator + '\n\n';
 
-      // Plant Units - use selected units
       const plantUnitsFiltered = selectedPlantUnits;
 
-      // Summary Section
+      // Summary Calculations
       let totalProductionAll = 0;
       let totalHoursAll = 0;
       let unitCount = 0;
-      let totalDowntimeHours = 0;
 
-      // Calculate summary data
       for (const unit of plantUnitsFiltered) {
-        const unitData = unitDataMap.get(unit);
-        if (!unitData) continue;
-
-        const unitParameterIds = parameterSettings
-          .filter((param) => param.category === selectedPlantCategory && param.unit === unit)
-          .map((param) => param.id);
-        const unitFooterData = categoryFooterData.filter((f) =>
-          unitParameterIds.includes(f.parameter_id)
-        );
-
-        const runningHoursData = unitFooterData.find((f) => {
-          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-          return (
-            paramSetting &&
-            (paramSetting.parameter.toLowerCase().includes('running hours') ||
-              paramSetting.parameter.toLowerCase().includes('jam operasi') ||
-              paramSetting.parameter.toLowerCase().includes('operation hours'))
-          );
-        });
-
-        const runningHoursAvg = runningHoursData?.total || 0;
+        const runningHoursData = getUnitRunningHoursData(footerMap, selectedPlantCategory, unit);
+        const runningHours = getFooterNum(runningHoursData, 'total');
         const totalProduction = calculateTotalProductionFromFeeders(
-          unitFooterData,
+          footerMap,
           'daily',
           unit,
           selectedPlantCategory
         );
 
         totalProductionAll += totalProduction;
-        totalHoursAll += runningHoursAvg;
-        if (totalProduction > 0) {
+        totalHoursAll += runningHours;
+        if (totalProduction > 0 || runningHours > 0) {
           unitCount++;
         }
       }
 
       // Calculate total downtime
       const allDowntimeNotes = await getDowntimeForDate(date);
-      totalDowntimeHours = calculateTotalDowntime(allDowntimeNotes);
+      const totalDowntimeHours = calculateTotalDowntime(allDowntimeNotes);
 
       // Summary Header
       report += t.wag_daily_summary + '\n';
@@ -372,79 +641,45 @@ const WhatsAppGroupReportPage: React.FC = () => {
         }) + '\n';
       report += t.wag_separator + '\n\n';
 
+      // Per Unit Mill Section
       for (const unit of plantUnitsFiltered) {
         const unitData = unitDataMap.get(unit);
-        if (!unitData) {
-          continue;
-        }
+        if (!unitData) continue;
 
         const { parameterData: allParameterData } = unitData;
 
         report += translateWithVars('wag_unit_mill', { unit }) + '\n';
         report += t.wag_separator + '\n';
 
-        // Get values from footer data (footer data is stored per category)
-        // Filter footer data for parameters that belong to this unit
-        const unitParameterIds = parameterSettings
-          .filter((param) => param.category === selectedPlantCategory && param.unit === unit)
-          .map((param) => param.id);
+        const feedData = getUnitFeedData(footerMap, selectedPlantCategory, unit);
+        const runningHoursData = getUnitRunningHoursData(footerMap, selectedPlantCategory, unit);
 
-        const unitFooterData = categoryFooterData.filter((f) =>
-          unitParameterIds.includes(f.parameter_id)
-        );
-
-        // Cari data berdasarkan parameter_id di footer data
-        const feedData = unitFooterData.find((f) => {
-          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-          return paramSetting && paramSetting.parameter === 'Feed (tph)';
-        });
-        const runningHoursData = unitFooterData.find((f) => {
-          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-          return (
-            paramSetting &&
-            (paramSetting.parameter.toLowerCase().includes('running hours') ||
-              paramSetting.parameter.toLowerCase().includes('jam operasi') ||
-              paramSetting.parameter.toLowerCase().includes('operation hours'))
-          );
-        });
-
-        // Calculate values from footer data
-        const feedAvg = feedData?.average || feedData?.total || 0;
-        const runningHoursAvg = runningHoursData?.total || 0;
+        const feedAvg = getFooterNum(feedData, 'average');
+        const runningHours = getFooterNum(runningHoursData, 'total');
         const totalProduction = calculateTotalProductionFromFeeders(
-          unitFooterData,
+          footerMap,
           'daily',
           unit,
           selectedPlantCategory
         );
 
-        // Tipe Produk - cari dari parameter data atau default N/A
-        const productTypeParam = allParameterData.find((p) => {
-          const paramSetting = parameterSettings.find((s) => s.id === p.parameter_id);
-          return (
-            paramSetting &&
-            (paramSetting.parameter === 'Tipe Produk' ||
-              paramSetting.parameter.toLowerCase().includes('tipe produk')) && // More flexible parameter matching
-            (paramSetting.unit === unit ||
-              paramSetting.unit.includes(unit) ||
-              unit.includes(paramSetting.unit)) && // More flexible unit matching
-            paramSetting.data_type === 'Text' // Pastikan data_type Text
-          );
-        });
+        const allHours = Array.from({ length: 24 }, (_, i) => i + 1);
+        const productType = resolveProductType(
+          allParameterData,
+          selectedPlantCategory,
+          unit,
+          allHours
+        );
 
-        let productType = 'N/A'; // Default jika tidak ada data
-        if (productTypeParam && productTypeParam.hourly_values) {
-          // Ambil semua nilai dari hourly_values (jam 1-24) dan hitung mode
-          const allHours = Array.from({ length: 24 }, (_, i) => i + 1);
-          const productTypeValues = allHours.map((hour) => productTypeParam.hourly_values[hour]);
-          productType = calculateTextMode(productTypeValues);
-        }
-
-        // Production Overview dengan status
+        const calculatedFeedRate = runningHours > 0 ? totalProduction / runningHours : 0;
         const efficiency =
-          runningHoursAvg > 0 ? (totalProduction / (feedAvg * runningHoursAvg)) * 100 : 0;
-        const statusEmoji = efficiency >= 95 ? '🟢' : efficiency >= 85 ? '🟡' : '🔴';
-        const calculatedFeedRate = runningHoursAvg > 0 ? totalProduction / runningHoursAvg : 0;
+          runningHours > 0 && feedAvg > 0
+            ? (totalProduction / (feedAvg * runningHours)) * 100
+            : calculatedFeedRate > 0
+              ? 100
+              : 0;
+        const statusEmoji =
+          runningHours === 0 ? '⚪' : efficiency >= 95 ? '🟢' : efficiency >= 85 ? '🟡' : '🔴';
 
         report += translateWithVars('wag_daily_production', { status: statusEmoji }) + '\n';
         report += translateWithVars('wag_product_type', { type: productType }) + '\n';
@@ -454,118 +689,62 @@ const WhatsAppGroupReportPage: React.FC = () => {
           }) + '\n';
         report +=
           translateWithVars('wag_operating_hours', {
-            value: formatIndonesianNumber(runningHoursAvg, 2),
+            value: formatIndonesianNumber(runningHours, 2),
           }) + '\n';
         report +=
           translateWithVars('wag_total_production_unit', {
             value: formatIndonesianNumber(totalProduction, 2),
           }) + '\n\n';
 
+        // Kualitas
         report += t.wag_quality + '\n';
-        const qualityParams = [
-          { name: 'Blaine', param: 'blaine', unit: 'm²/kg' },
-          { name: 'R45', param: 'r45', unit: '%' },
-          { name: 'Indeks Klinker', param: 'indeks klinker', unit: '%' },
-        ];
-
-        qualityParams.forEach(({ name, param, unit }) => {
-          const qualityData = unitFooterData.find((f) => {
-            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-            return (
-              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
-            );
-          });
-          const qualityAvg = qualityData ? Number(qualityData.average || 0) : 0;
-          if (qualityAvg > 0) {
-            report += `├─ ${name}: ${formatIndonesianNumber(qualityAvg, 1)} ${unit}\n`;
+        QUALITY_PARAMS.forEach(({ name, aliases, unit: qUnit }) => {
+          const qSetting = findParam(selectedPlantCategory, unit, aliases);
+          if (qSetting) {
+            const qFooter = footerMap.get(qSetting.id);
+            const qualityAvg = getFooterNum(qFooter, 'average');
+            if (qualityAvg > 0) {
+              report += `├─ ${name}: ${formatIndonesianNumber(qualityAvg, 1)} ${qUnit}\n`;
+            }
           }
         });
         report += `\n`;
 
-        // Pemakaian Bahan
+        // Pemakaian Bahan (Dihitung dari akumulasi 4 shift secara akurat)
         report += t.wag_material_usage + '\n';
-        const bahanParams = [
-          { name: 'Clinker', param: 'counter feeder clinker' },
-          { name: 'Gypsum', param: 'counter feeder gypsum' },
-          { name: 'Batu Kapur', param: 'counter feeder limestone' },
-          { name: 'Trass', param: 'counter feeder trass' },
-          { name: 'FineTrass', param: 'counter feeder fine trass' },
-          { name: 'Fly Ash', param: 'counter feeder flyash' },
-          { name: 'CKD', param: 'counter feeder ckd' },
-        ];
-
-        bahanParams.forEach(({ name, param }) => {
-          const bahanData = unitFooterData.find((f) => {
-            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-            return (
-              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
-            );
-          });
-          // Untuk bahan utama, tetap render walaupun 0 jika jam operasi > 0
-          const bahanUtama = ['Clinker', 'Gypsum', 'Batu Kapur', 'Trass'];
-          if (bahanUtama.includes(name)) {
-            if (runningHoursAvg > 0) {
-              const value =
-                bahanData &&
-                typeof bahanData.maximum === 'number' &&
-                Object.prototype.hasOwnProperty.call(bahanData, 'maximum')
-                  ? bahanData.maximum
-                  : 0;
-              report += `├─ ${name}: ${formatIndonesianNumber(value, 2)} ton\n`;
-            }
-          } else {
-            if (
-              bahanData &&
-              typeof bahanData.maximum === 'number' &&
-              bahanData.maximum > 0 &&
-              Object.prototype.hasOwnProperty.call(bahanData, 'maximum')
-            ) {
-              report += `├─ ${name}: ${formatIndonesianNumber(bahanData.maximum, 2)} ton\n`;
-            }
+        MATERIAL_FEEDS.forEach(({ name, aliases, alwaysShow }) => {
+          const mSetting = findParam(selectedPlantCategory, unit, aliases);
+          const mFooter = mSetting ? footerMap.get(mSetting.id) : undefined;
+          const usage = getMaterialUsage(mFooter, 'daily');
+          if (alwaysShow || usage > 0) {
+            report += `├─ ${name}: ${formatIndonesianNumber(usage, 2)} ton\n`;
           }
         });
         report += `\n`;
 
+        // Setting Feeder
         report += `*SETTING FEEDER*\n`;
-        const feederParams = [
-          { name: 'Clinker', param: 'set. feeder clinker' },
-          { name: 'Gypsum', param: 'set. feeder gypsum' },
-          { name: 'Batu Kapur', param: 'set. feeder limestone' },
-          { name: 'Trass', param: 'set. feeder trass' },
-          { name: 'FineTrass', param: 'set. feeder fine trass' },
-          { name: 'Fly Ash', param: 'set. feeder fly ash' },
-          { name: 'CKD', param: 'set. feeder ckd' },
-        ];
-
-        feederParams.forEach(({ name, param }) => {
-          const feederData = unitFooterData.find((f) => {
-            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-            return (
-              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
-            );
-          });
-          const feederAvg = feederData ? Number(feederData.average || 0) : 0;
-          // Always display Clinker, Gypsum, Trass, and Batu Kapur, even if value is 0
-          const alwaysDisplay = ['Clinker', 'Gypsum', 'Trass', 'Batu Kapur'].includes(name);
-          if (alwaysDisplay || feederAvg > 0) {
+        SETTING_FEEDERS.forEach(({ name, aliases, alwaysShow }) => {
+          const sSetting = findParam(selectedPlantCategory, unit, aliases);
+          const sFooter = sSetting ? footerMap.get(sSetting.id) : undefined;
+          const feederAvg = getFooterNum(sFooter, 'average');
+          if (alwaysShow || feederAvg > 0) {
             report += `├─ ${name}: ${formatIndonesianNumber(feederAvg, 2)} %\n`;
           }
         });
         report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-        // Catatan Tambahan - downtime data dan informasi CCR
-        const downtimeNotes = await getDowntimeForDate(date);
-        const unitDowntime = downtimeNotes.filter((d) => d.unit.includes(unit));
+        // Catatan Tambahan (Downtime & Informasi)
+        const unitDowntime = allDowntimeNotes.filter(
+          (d) => d.unit && (d.unit === unit || d.unit.includes(unit))
+        );
         const unitInformation = getInformationForDate(date, unit);
-
-        // Check if information should be shown (hide for Operator role)
         const showInformation =
           unitInformation && unitInformation.information && user?.role !== 'Operator';
 
         if (unitDowntime.length > 0 || showInformation) {
           report += `⚠️ *CATATAN TAMBAHAN*\n`;
 
-          // Tambahkan informasi dari CCR Data Entry jika ada
           if (showInformation) {
             report += `├─ *Informasi:*\n${unitInformation!.information
               .split('\n')
@@ -576,15 +755,12 @@ const WhatsAppGroupReportPage: React.FC = () => {
             }
           }
 
-          // Tambahkan downtime notes jika ada
           if (unitDowntime.length > 0) {
             const notes = unitDowntime
               .sort((a, b) => a.start_time.localeCompare(b.start_time))
               .map((d) => {
-                const start = new Date(`${d.date} ${d.start_time}`);
-                const end = new Date(`${d.date} ${d.end_time}`);
-                const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
-                return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 1)}j): ${d.problem}\n└─ PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
+                const duration = calcDowntimeDurationHours(d.start_time, d.end_time);
+                return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 1)}j): ${d.problem}\n└─ 👤 PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
               })
               .join('\n');
             report += `${notes}\n`;
@@ -594,7 +770,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
         }
       }
 
-      // Silo Data - status akhir hari (shift 3)
+      // Silo Data (Shift 3 - End of Day)
       report += t.wag_silo_status + '\n';
       report += t.wag_separator + '\n';
       const filteredSiloData = siloData.filter((silo) => {
@@ -605,17 +781,11 @@ const WhatsAppGroupReportPage: React.FC = () => {
         const siloInfo = silos.find((s) => s.id === silo.silo_id);
         const siloName = siloInfo?.silo_name || silo.silo_id;
         const shift3Data = silo.shift3;
-        if (shift3Data) {
-          const percentage =
-            siloInfo && shift3Data.content
-              ? formatIndonesianNumber((shift3Data.content / siloInfo.capacity) * 100, 1)
-              : 'N/A';
-          const statusEmoji =
-            percentage !== 'N/A' && parseFloat(percentage) > 80
-              ? '🟢'
-              : percentage !== 'N/A' && parseFloat(percentage) > 50
-                ? '🟡'
-                : '🔴';
+        if (shift3Data && siloInfo) {
+          const cap = siloInfo.capacity || 1;
+          const percentageNum = ((shift3Data.content || 0) / cap) * 100;
+          const percentage = formatIndonesianNumber(percentageNum, 1);
+          const statusEmoji = percentageNum > 80 ? '🟢' : percentageNum > 50 ? '🟡' : '🔴';
           report += `├─ ${siloName}\n`;
           report += `└─ 📏 ${t.wag_silo_empty}: ${shift3Data.emptySpace || 'N/A'} m | 📦 ${t.wag_silo_content}: ${shift3Data.content || 'N/A'} ton | ${t.wag_silo_fill}: ${percentage}% ${statusEmoji}\n`;
         }
@@ -639,21 +809,25 @@ const WhatsAppGroupReportPage: React.FC = () => {
     getFooterDataForDate,
     getSiloData,
     getDowntimeForDate,
-    parameterSettings,
     translateWithVars,
     calculateTotalDowntime,
     calculateTotalProductionFromFeeders,
+    getUnitRunningHoursData,
+    getUnitFeedData,
+    resolveProductType,
+    getMaterialUsage,
+    findParam,
     getInformationForDate,
     silos,
     user?.role,
     t,
   ]);
 
-  // Generate Shift 1 Report sesuai format yang diminta (jam 07-15)
+  // 2. GENERATE SHIFT 1 REPORT (07:00 - 15:00)
   const generateShift1Report = useCallback(async () => {
     setIsGenerating(true);
     try {
-      const { date } = { date: selectedDate };
+      const date = selectedDate;
 
       // Sync data before generating report
       await syncOperationalDataForDate(date);
@@ -669,14 +843,21 @@ const WhatsAppGroupReportPage: React.FC = () => {
         unitDataArray.map(({ unit, parameterData }) => [unit, { parameterData }])
       );
 
-      // Fetch footer data for the category (footer data is stored per category, not per unit)
-      const categoryFooterData = await getFooterDataForDate(date, selectedPlantCategory);
+      // Fetch ALL footer data for the date
+      const allFooterData = await getFooterDataForDate(date);
+      const footerMap = new Map<string, Record<string, unknown>>();
+      allFooterData.forEach((f: any) => {
+        if (f && f.parameter_id) {
+          footerMap.set(f.parameter_id, f as Record<string, unknown>);
+        }
+      });
 
-      // Fetch silo data (shared across units)
+      // Fetch silo data
       const siloData = await getSiloData(date);
 
       // Format date
-      const reportDate = new Date(date);
+      const dateParts = date.split('-').map(Number);
+      const reportDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
       const formattedDate = reportDate.toLocaleDateString('id-ID', {
         weekday: 'long',
         day: '2-digit',
@@ -684,9 +865,10 @@ const WhatsAppGroupReportPage: React.FC = () => {
         year: 'numeric',
       });
 
-      // Get operator name from all parameter data
+      // Get operator name for Shift 1 (Hours 8..15)
       const allParameterData = unitDataArray.flatMap(({ parameterData }) => parameterData);
-      const operatorName = getOperatorName(allParameterData);
+      const shift1Hours = [8, 9, 10, 11, 12, 13, 14, 15];
+      const operatorName = resolveOperatorName(allParameterData, shift1Hours);
 
       let report = t.wag_shift1_report_title + '\n';
       report += translateWithVars('wag_plant_category', { category: selectedPlantCategory }) + '\n';
@@ -694,7 +876,6 @@ const WhatsAppGroupReportPage: React.FC = () => {
       report += '⏰ Shift: 07:00 - 15:00\n';
       report += t.wag_separator + '\n\n';
 
-      // Plant Units - use selected units
       const plantUnitsFiltered = selectedPlantUnits;
 
       // Summary Section
@@ -702,39 +883,19 @@ const WhatsAppGroupReportPage: React.FC = () => {
       let totalHoursAll = 0;
       let unitCount = 0;
 
-      // Calculate summary data
       for (const unit of plantUnitsFiltered) {
-        const unitData = unitDataMap.get(unit);
-        if (!unitData) continue;
-
-        const unitParameterIds = parameterSettings
-          .filter((param) => param.category === selectedPlantCategory && param.unit === unit)
-          .map((param) => param.id);
-        const unitFooterData = categoryFooterData.filter((f) =>
-          unitParameterIds.includes(f.parameter_id)
-        );
-
-        const runningHoursData = unitFooterData.find((f) => {
-          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-          return (
-            paramSetting &&
-            (paramSetting.parameter.toLowerCase().includes('running hours') ||
-              paramSetting.parameter.toLowerCase().includes('jam operasi') ||
-              paramSetting.parameter.toLowerCase().includes('operation hours'))
-          );
-        });
-
-        const runningHoursAvg = runningHoursData?.shift1_total || 0;
+        const runningHoursData = getUnitRunningHoursData(footerMap, selectedPlantCategory, unit);
+        const runningHours = getFooterNum(runningHoursData, 'shift1_total');
         const totalProduction = calculateTotalProductionFromFeeders(
-          unitFooterData,
+          footerMap,
           'shift1',
           unit,
           selectedPlantCategory
         );
 
         totalProductionAll += totalProduction;
-        totalHoursAll += runningHoursAvg;
-        if (totalProduction > 0) {
+        totalHoursAll += runningHours;
+        if (totalProduction > 0 || runningHours > 0) {
           unitCount++;
         }
       }
@@ -751,177 +912,103 @@ const WhatsAppGroupReportPage: React.FC = () => {
       report += `└─ Total Jam Operasi: ${formatIndonesianNumber(totalHoursAll, 1)} jam\n`;
       report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
+      // Per Unit Mill Section
       for (const unit of plantUnitsFiltered) {
         const unitData = unitDataMap.get(unit);
-        if (!unitData) {
-          continue;
-        }
+        if (!unitData) continue;
 
         const { parameterData: allParameterData } = unitData;
 
         report += `🏭 *UNIT MILL ${unit}*\n`;
         report += `━━━━━━━━━━━━━━━━━━━━\n`;
 
-        // Get values from footer data (footer data is stored per category)
-        // Filter footer data for parameters that belong to this unit
-        const unitParameterIds = parameterSettings
-          .filter((param) => param.category === selectedPlantCategory && param.unit === unit)
-          .map((param) => param.id);
+        const feedData = getUnitFeedData(footerMap, selectedPlantCategory, unit);
+        const runningHoursData = getUnitRunningHoursData(footerMap, selectedPlantCategory, unit);
 
-        const unitFooterData = categoryFooterData.filter((f) =>
-          unitParameterIds.includes(f.parameter_id)
-        );
-
-        // Cari data berdasarkan parameter_id di footer data
-        const feedData = unitFooterData.find((f) => {
-          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-          return paramSetting && paramSetting.parameter === 'Feed (tph)';
-        });
-        const runningHoursData = unitFooterData.find((f) => {
-          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-          return (
-            paramSetting &&
-            (paramSetting.parameter.toLowerCase().includes('running hours') ||
-              paramSetting.parameter.toLowerCase().includes('jam operasi') ||
-              paramSetting.parameter.toLowerCase().includes('operation hours'))
-          );
-        });
-        // Calculate values from footer data - menggunakan shift1_average untuk feed
-        const feedAvg = feedData?.shift1_average || 0;
-        const runningHoursAvg = runningHoursData?.shift1_total || 0;
+        const feedAvg = getFooterNum(feedData, 'shift1_average');
+        const runningHours = getFooterNum(runningHoursData, 'shift1_total');
         const totalProduction = calculateTotalProductionFromFeeders(
-          unitFooterData,
+          footerMap,
           'shift1',
           unit,
           selectedPlantCategory
         );
 
-        // Tipe Produk - cari dari parameter data atau default N/A
-        const productTypeParam = allParameterData.find((p) => {
-          const paramSetting = parameterSettings.find((s) => s.id === p.parameter_id);
-          return (
-            paramSetting &&
-            (paramSetting.parameter === 'Tipe Produk' ||
-              paramSetting.parameter.toLowerCase().includes('tipe produk')) && // More flexible parameter matching
-            (paramSetting.unit === unit ||
-              paramSetting.unit.includes(unit) ||
-              unit.includes(paramSetting.unit)) && // More flexible unit matching
-            paramSetting.data_type === 'Text' // Pastikan data_type Text
-          );
-        });
+        const productType = resolveProductType(
+          allParameterData,
+          selectedPlantCategory,
+          unit,
+          shift1Hours
+        );
 
-        let productType = 'N/A'; // Default jika tidak ada data
-        if (productTypeParam && productTypeParam.hourly_values) {
-          // Ambil nilai dari hourly_values jam 8-15 dan hitung mode
-          const shift1Hours = [8, 9, 10, 11, 12, 13, 14, 15];
-          const productTypeValues = shift1Hours.map((hour) => productTypeParam.hourly_values[hour]);
-          productType = calculateTextMode(productTypeValues);
-        }
-
-        // Production Overview dengan status
+        const calculatedFeedRate = runningHours > 0 ? totalProduction / runningHours : 0;
         const efficiency =
-          runningHoursAvg > 0 ? (totalProduction / (feedAvg * runningHoursAvg)) * 100 : 0;
-        const statusEmoji = efficiency >= 95 ? '🟢' : efficiency >= 85 ? '🟡' : '🔴';
-        const calculatedFeedRate = runningHoursAvg > 0 ? totalProduction / runningHoursAvg : 0;
+          runningHours > 0 && feedAvg > 0
+            ? (totalProduction / (feedAvg * runningHours)) * 100
+            : calculatedFeedRate > 0
+              ? 100
+              : 0;
+        const statusEmoji =
+          runningHours === 0 ? '⚪' : efficiency >= 95 ? '🟢' : efficiency >= 85 ? '🟡' : '🔴';
 
         report += `📈 *PRODUKSI OVERVIEW* ${statusEmoji}\n`;
         report += `├─ Tipe Produk: ${productType}\n`;
         report += `├─ Feed Rate: ${formatIndonesianNumber(calculatedFeedRate, 2)} tph\n`;
-        report += `├─ Jam Operasi: ${formatIndonesianNumber(runningHoursAvg, 2)} jam\n`;
+        report += `├─ Jam Operasi: ${formatIndonesianNumber(runningHours, 2)} jam\n`;
         report += `└─ Total Produksi: ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
 
+        // Kualitas
         report += `*KUALITAS*\n`;
-        const qualityParamsShift1 = [
-          { name: 'Blaine', param: 'blaine', unit: 'm²/kg' },
-          { name: 'R45', param: 'r45', unit: '%' },
-          { name: 'Indeks Klinker', param: 'indeks klinker', unit: '%' },
-        ];
-
-        qualityParamsShift1.forEach(({ name, param, unit }) => {
-          const qualityData = unitFooterData.find((f) => {
-            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-            return (
-              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
-            );
-          });
-          const qualityAvg = qualityData ? Number(qualityData.shift1_average || 0) : 0;
-          if (qualityAvg > 0) {
-            report += `├─ ${name}: ${formatIndonesianNumber(qualityAvg, 1)} ${unit}\n`;
+        QUALITY_PARAMS.forEach(({ name, aliases, unit: qUnit }) => {
+          const qSetting = findParam(selectedPlantCategory, unit, aliases);
+          if (qSetting) {
+            const qFooter = footerMap.get(qSetting.id);
+            const qualityAvg = getFooterNum(qFooter, 'shift1_average');
+            if (qualityAvg > 0) {
+              report += `├─ ${name}: ${formatIndonesianNumber(qualityAvg, 1)} ${qUnit}\n`;
+            }
           }
         });
         report += `\n`;
 
-        // Pemakaian Bahan - menggunakan shift1_total
+        // Pemakaian Bahan
         report += `*PEMAKAIAN BAHAN*\n`;
-        const bahanParams = [
-          { name: 'Clinker', param: 'counter feeder clinker' },
-          { name: 'Gypsum', param: 'counter feeder gypsum' },
-          { name: 'Batu Kapur', param: 'counter feeder limestone' },
-          { name: 'Trass', param: 'counter feeder trass' },
-          { name: 'FineTrass', param: 'counter feeder fine trass' },
-          { name: 'Fly Ash', param: 'counter feeder flyash' },
-          { name: 'CKD', param: 'counter feeder ckd' },
-        ];
-
-        bahanParams.forEach(({ name, param }) => {
-          const bahanData = unitFooterData.find((f) => {
-            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-            return (
-              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
-            );
-          });
-          const bahanTotal = bahanData ? Number(bahanData.shift1_counter || 0) : 0;
-          // Always display Clinker, Gypsum, Trass, and Batu Kapur, even if value is 0
-          const alwaysDisplay = ['Clinker', 'Gypsum', 'Trass', 'Batu Kapur'].includes(name);
-          if (alwaysDisplay || bahanTotal > 0) {
-            report += `├─ ${name}: ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
+        MATERIAL_FEEDS.forEach(({ name, aliases, alwaysShow }) => {
+          const mSetting = findParam(selectedPlantCategory, unit, aliases);
+          const mFooter = mSetting ? footerMap.get(mSetting.id) : undefined;
+          const usage = getMaterialUsage(mFooter, 'shift1');
+          if (alwaysShow || usage > 0) {
+            report += `├─ ${name}: ${formatIndonesianNumber(usage, 2)} ton\n`;
           }
         });
         report += `\n`;
 
+        // Setting Feeder
         report += `*SETTING FEEDER*\n`;
-        const feederParams = [
-          { name: 'Clinker', param: 'set. feeder clinker' },
-          { name: 'Gypsum', param: 'set. feeder gypsum' },
-          { name: 'Batu Kapur', param: 'set. feeder limestone' },
-          { name: 'Trass', param: 'set. feeder trass' },
-          { name: 'FineTrass', param: 'set. feeder fine trass' },
-          { name: 'Fly Ash', param: 'set. feeder fly ash' },
-          { name: 'CKD', param: 'set. feeder ckd' },
-        ];
-
-        feederParams.forEach(({ name, param }) => {
-          const feederData = unitFooterData.find((f) => {
-            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-            return (
-              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
-            );
-          });
-          const feederAvg = feederData ? Number(feederData.shift1_average || 0) : 0;
-          // Always display Clinker, Gypsum, Trass, and Batu Kapur, even if value is 0
-          const alwaysDisplay = ['Clinker', 'Gypsum', 'Trass', 'Batu Kapur'].includes(name);
-          if (alwaysDisplay || feederAvg > 0) {
+        SETTING_FEEDERS.forEach(({ name, aliases, alwaysShow }) => {
+          const sSetting = findParam(selectedPlantCategory, unit, aliases);
+          const sFooter = sSetting ? footerMap.get(sSetting.id) : undefined;
+          const feederAvg = getFooterNum(sFooter, 'shift1_average');
+          if (alwaysShow || feederAvg > 0) {
             report += `├─ ${name}: ${formatIndonesianNumber(feederAvg, 2)} %\n`;
           }
         });
         report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-        // Catatan Tambahan - downtime data dan informasi CCR untuk shift 1 (jam 07-15)
+        // Catatan Tambahan (Downtime 07:00 - 15:00 & Informasi)
         const downtimeNotes = await getDowntimeForDate(date);
         const unitDowntime = downtimeNotes.filter((d) => {
-          const startHour = parseInt(d.start_time.split(':')[0]);
-          return d.unit.includes(unit) && startHour >= 7 && startHour <= 15;
+          if (!d.unit || (!d.unit.includes(unit) && d.unit !== unit)) return false;
+          const startHour = parseInt((d.start_time || '').split(':')[0], 10);
+          return startHour >= 7 && startHour < 15;
         });
         const unitInformation = getInformationForDate(date, unit);
-
-        // Check if information should be shown (hide for Operator role)
         const showInformation =
           unitInformation && unitInformation.information && user?.role !== 'Operator';
 
         if (unitDowntime.length > 0 || showInformation) {
           report += `⚠️ *CATATAN TAMBAHAN*\n`;
 
-          // Tambahkan informasi dari CCR Data Entry jika ada
           if (showInformation) {
             report += `├─ *Informasi:*\n${unitInformation!.information
               .split('\n')
@@ -932,14 +1019,11 @@ const WhatsAppGroupReportPage: React.FC = () => {
             }
           }
 
-          // Tambahkan downtime notes jika ada
           if (unitDowntime.length > 0) {
             const notes = unitDowntime
               .sort((a, b) => a.start_time.localeCompare(b.start_time))
               .map((d) => {
-                const start = new Date(`${d.date} ${d.start_time}`);
-                const end = new Date(`${d.date} ${d.end_time}`);
-                const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
+                const duration = calcDowntimeDurationHours(d.start_time, d.end_time);
                 return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 2)}j): ${d.problem}\n└─ 👤 PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
               })
               .join('\n');
@@ -950,7 +1034,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
         }
       }
 
-      // Silo Data - hanya shift 1
+      // Silo Data (Shift 1)
       report += `🏪 *STATUS SILO SEMEN*\n`;
       report += `━━━━━━━━━━━━━━━━━━━━━\n`;
       const filteredSiloData = siloData.filter((silo) => {
@@ -961,17 +1045,11 @@ const WhatsAppGroupReportPage: React.FC = () => {
         const siloInfo = silos.find((s) => s.id === silo.silo_id);
         const siloName = siloInfo?.silo_name || silo.silo_id;
         const shift1Data = silo.shift1;
-        if (shift1Data) {
-          const percentage =
-            siloInfo && shift1Data.content
-              ? formatIndonesianNumber((shift1Data.content / siloInfo.capacity) * 100, 1)
-              : 'N/A';
-          const statusEmoji =
-            percentage !== 'N/A' && parseFloat(percentage) > 80
-              ? '🟢'
-              : percentage !== 'N/A' && parseFloat(percentage) > 50
-                ? '🟡'
-                : '🔴';
+        if (shift1Data && siloInfo) {
+          const cap = siloInfo.capacity || 1;
+          const percentageNum = ((shift1Data.content || 0) / cap) * 100;
+          const percentage = formatIndonesianNumber(percentageNum, 1);
+          const statusEmoji = percentageNum > 80 ? '🟢' : percentageNum > 50 ? '🟡' : '🔴';
           report += `├─ ${siloName}\n`;
           report += `└─ 📏 ${t.wag_silo_empty}: ${shift1Data.emptySpace || 'N/A'} m | 📦 ${t.wag_silo_content}: ${shift1Data.content || 'N/A'} ton | ${t.wag_silo_fill}: ${percentage}% ${statusEmoji}\n`;
         }
@@ -1002,16 +1080,21 @@ const WhatsAppGroupReportPage: React.FC = () => {
     translateWithVars,
     t,
     calculateTotalProductionFromFeeders,
-    calculateTotalDowntime,
+    getUnitRunningHoursData,
+    getUnitFeedData,
+    resolveProductType,
+    resolveOperatorName,
+    getMaterialUsage,
+    findParam,
     user?.role,
     getInformationForDate,
   ]);
 
-  // Generate Shift 2 Report sesuai format yang diminta (jam 15-23)
+  // 3. GENERATE SHIFT 2 REPORT (15:00 - 23:00)
   const generateShift2Report = useCallback(async () => {
     setIsGenerating(true);
     try {
-      const { date } = { date: selectedDate };
+      const date = selectedDate;
 
       // Sync data before generating report
       await syncOperationalDataForDate(date);
@@ -1027,14 +1110,21 @@ const WhatsAppGroupReportPage: React.FC = () => {
         unitDataArray.map(({ unit, parameterData }) => [unit, { parameterData }])
       );
 
-      // Fetch footer data for the category (footer data is stored per category, not per unit)
-      const categoryFooterData = await getFooterDataForDate(date, selectedPlantCategory);
+      // Fetch ALL footer data for the date
+      const allFooterData = await getFooterDataForDate(date);
+      const footerMap = new Map<string, Record<string, unknown>>();
+      allFooterData.forEach((f: any) => {
+        if (f && f.parameter_id) {
+          footerMap.set(f.parameter_id, f as Record<string, unknown>);
+        }
+      });
 
-      // Fetch silo data (shared across units)
+      // Fetch silo data
       const siloData = await getSiloData(date);
 
       // Format date
-      const reportDate = new Date(date);
+      const dateParts = date.split('-').map(Number);
+      const reportDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
       const formattedDate = reportDate.toLocaleDateString('id-ID', {
         weekday: 'long',
         day: '2-digit',
@@ -1042,17 +1132,17 @@ const WhatsAppGroupReportPage: React.FC = () => {
         year: 'numeric',
       });
 
-      // Get operator name from all parameter data
+      // Get operator name for Shift 2 (Hours 16..23)
       const allParameterData = unitDataArray.flatMap(({ parameterData }) => parameterData);
-      const operatorName = getOperatorName(allParameterData);
+      const shift2Hours = [16, 17, 18, 19, 20, 21, 22, 23];
+      const operatorName = resolveOperatorName(allParameterData, shift2Hours);
 
       let report = `🌆 *LAPORAN SHIFT 2 PRODUKSI* 🌆\n`;
       report += `🏭 *${selectedPlantCategory}*\n`;
       report += `📅 ${formattedDate}\n`;
-      report += `⏰ Shift: 15:00 - 22:00\n`;
+      report += `⏰ Shift: 15:00 - 23:00\n`;
       report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-      // Plant Units - use selected units
       const plantUnitsFiltered = selectedPlantUnits;
 
       // Summary Section
@@ -1060,39 +1150,19 @@ const WhatsAppGroupReportPage: React.FC = () => {
       let totalHoursAll = 0;
       let unitCount = 0;
 
-      // Calculate summary data
       for (const unit of plantUnitsFiltered) {
-        const unitData = unitDataMap.get(unit);
-        if (!unitData) continue;
-
-        const unitParameterIds = parameterSettings
-          .filter((param) => param.category === selectedPlantCategory && param.unit === unit)
-          .map((param) => param.id);
-        const unitFooterData = categoryFooterData.filter((f) =>
-          unitParameterIds.includes(f.parameter_id)
-        );
-
-        const runningHoursData = unitFooterData.find((f) => {
-          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-          return (
-            paramSetting &&
-            (paramSetting.parameter.toLowerCase().includes('running hours') ||
-              paramSetting.parameter.toLowerCase().includes('jam operasi') ||
-              paramSetting.parameter.toLowerCase().includes('operation hours'))
-          );
-        });
-
-        const runningHoursAvg = runningHoursData?.shift2_total || 0;
+        const runningHoursData = getUnitRunningHoursData(footerMap, selectedPlantCategory, unit);
+        const runningHours = getFooterNum(runningHoursData, 'shift2_total');
         const totalProduction = calculateTotalProductionFromFeeders(
-          unitFooterData,
+          footerMap,
           'shift2',
           unit,
           selectedPlantCategory
         );
 
         totalProductionAll += totalProduction;
-        totalHoursAll += runningHoursAvg;
-        if (totalProduction > 0) {
+        totalHoursAll += runningHours;
+        if (totalProduction > 0 || runningHours > 0) {
           unitCount++;
         }
       }
@@ -1106,177 +1176,103 @@ const WhatsAppGroupReportPage: React.FC = () => {
       report += `└─ Total Jam Operasi: ${formatIndonesianNumber(totalHoursAll, 1)} jam\n`;
       report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
+      // Per Unit Mill Section
       for (const unit of plantUnitsFiltered) {
         const unitData = unitDataMap.get(unit);
-        if (!unitData) {
-          continue;
-        }
+        if (!unitData) continue;
 
         const { parameterData: allParameterData } = unitData;
 
         report += `🏭 *UNIT MILL ${unit}*\n`;
         report += `━━━━━━━━━━━━━━━━━━━━\n`;
 
-        // Get values from footer data (footer data is stored per category)
-        // Filter footer data for parameters that belong to this unit
-        const unitParameterIds = parameterSettings
-          .filter((param) => param.category === selectedPlantCategory && param.unit === unit)
-          .map((param) => param.id);
+        const feedData = getUnitFeedData(footerMap, selectedPlantCategory, unit);
+        const runningHoursData = getUnitRunningHoursData(footerMap, selectedPlantCategory, unit);
 
-        const unitFooterData = categoryFooterData.filter((f) =>
-          unitParameterIds.includes(f.parameter_id)
-        );
-
-        // Cari data berdasarkan parameter_id di footer data
-        const feedData = unitFooterData.find((f) => {
-          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-          return paramSetting && paramSetting.parameter === 'Feed (tph)';
-        });
-        const runningHoursData = unitFooterData.find((f) => {
-          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-          return (
-            paramSetting &&
-            (paramSetting.parameter.toLowerCase().includes('running hours') ||
-              paramSetting.parameter.toLowerCase().includes('jam operasi') ||
-              paramSetting.parameter.toLowerCase().includes('operation hours'))
-          );
-        });
-        // Calculate values from footer data - menggunakan shift2_average untuk feed
-        const feedAvg = feedData?.shift2_average || 0;
-        const runningHoursAvg = runningHoursData?.shift2_total || 0;
+        const feedAvg = getFooterNum(feedData, 'shift2_average');
+        const runningHours = getFooterNum(runningHoursData, 'shift2_total');
         const totalProduction = calculateTotalProductionFromFeeders(
-          unitFooterData,
+          footerMap,
           'shift2',
           unit,
           selectedPlantCategory
         );
 
-        // Tipe Produk - cari dari parameter data atau default N/A
-        const productTypeParam = allParameterData.find((p) => {
-          const paramSetting = parameterSettings.find((s) => s.id === p.parameter_id);
-          return (
-            paramSetting &&
-            (paramSetting.parameter === 'Tipe Produk' ||
-              paramSetting.parameter.toLowerCase().includes('tipe produk')) && // More flexible parameter matching
-            (paramSetting.unit === unit ||
-              paramSetting.unit.includes(unit) ||
-              unit.includes(paramSetting.unit)) && // More flexible unit matching
-            paramSetting.data_type === 'Text' // Pastikan data_type Text
-          );
-        });
+        const productType = resolveProductType(
+          allParameterData,
+          selectedPlantCategory,
+          unit,
+          shift2Hours
+        );
 
-        let productType = 'N/A'; // Default jika tidak ada data
-        if (productTypeParam && productTypeParam.hourly_values) {
-          // Ambil nilai dari hourly_values jam 16-22 dan hitung mode
-          const shift2Hours = [16, 17, 18, 19, 20, 21, 22];
-          const productTypeValues = shift2Hours.map((hour) => productTypeParam.hourly_values[hour]);
-          productType = calculateTextMode(productTypeValues);
-        }
-
-        // Production Overview dengan status
+        const calculatedFeedRate = runningHours > 0 ? totalProduction / runningHours : 0;
         const efficiency =
-          runningHoursAvg > 0 ? (totalProduction / (feedAvg * runningHoursAvg)) * 100 : 0;
-        const statusEmoji = efficiency >= 95 ? '🟢' : efficiency >= 85 ? '🟡' : '🔴';
-        const calculatedFeedRate = runningHoursAvg > 0 ? totalProduction / runningHoursAvg : 0;
+          runningHours > 0 && feedAvg > 0
+            ? (totalProduction / (feedAvg * runningHours)) * 100
+            : calculatedFeedRate > 0
+              ? 100
+              : 0;
+        const statusEmoji =
+          runningHours === 0 ? '⚪' : efficiency >= 95 ? '🟢' : efficiency >= 85 ? '🟡' : '🔴';
 
         report += `📈 *PRODUKSI OVERVIEW* ${statusEmoji}\n`;
         report += `├─ Tipe Produk: ${productType}\n`;
         report += `├─ Feed Rate: ${formatIndonesianNumber(calculatedFeedRate, 2)} tph\n`;
-        report += `├─ Jam Operasi: ${formatIndonesianNumber(runningHoursAvg, 2)} jam\n`;
+        report += `├─ Jam Operasi: ${formatIndonesianNumber(runningHours, 2)} jam\n`;
         report += `└─ Total Produksi: ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
 
+        // Kualitas
         report += `*KUALITAS*\n`;
-        const qualityParamsShift2 = [
-          { name: 'Blaine', param: 'blaine', unit: 'm²/kg' },
-          { name: 'R45', param: 'r45', unit: '%' },
-          { name: 'Indeks Klinker', param: 'indeks klinker', unit: '%' },
-        ];
-
-        qualityParamsShift2.forEach(({ name, param, unit }) => {
-          const qualityData = unitFooterData.find((f) => {
-            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-            return (
-              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
-            );
-          });
-          const qualityAvg = qualityData ? Number(qualityData.shift2_average || 0) : 0;
-          if (qualityAvg > 0) {
-            report += `├─ ${name}: ${formatIndonesianNumber(qualityAvg, 1)} ${unit}\n`;
+        QUALITY_PARAMS.forEach(({ name, aliases, unit: qUnit }) => {
+          const qSetting = findParam(selectedPlantCategory, unit, aliases);
+          if (qSetting) {
+            const qFooter = footerMap.get(qSetting.id);
+            const qualityAvg = getFooterNum(qFooter, 'shift2_average');
+            if (qualityAvg > 0) {
+              report += `├─ ${name}: ${formatIndonesianNumber(qualityAvg, 1)} ${qUnit}\n`;
+            }
           }
         });
         report += `\n`;
 
-        // Pemakaian Bahan - menggunakan shift2_total
+        // Pemakaian Bahan
         report += `*PEMAKAIAN BAHAN*\n`;
-        const bahanParams = [
-          { name: 'Clinker', param: 'counter feeder clinker' },
-          { name: 'Gypsum', param: 'counter feeder gypsum' },
-          { name: 'Batu Kapur', param: 'counter feeder limestone' },
-          { name: 'Trass', param: 'counter feeder trass' },
-          { name: 'FineTrass', param: 'counter feeder fine trass' },
-          { name: 'Fly Ash', param: 'counter feeder flyash' },
-          { name: 'CKD', param: 'counter feeder ckd' },
-        ];
-
-        bahanParams.forEach(({ name, param }) => {
-          const bahanData = unitFooterData.find((f) => {
-            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-            return (
-              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
-            );
-          });
-          const bahanTotal = bahanData ? Number(bahanData.shift2_counter || 0) : 0;
-          // Always display Clinker, Gypsum, Trass, and Batu Kapur, even if value is 0
-          const alwaysDisplay = ['Clinker', 'Gypsum', 'Trass', 'Batu Kapur'].includes(name);
-          if (alwaysDisplay || bahanTotal > 0) {
-            report += `├─ ${name}: ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
+        MATERIAL_FEEDS.forEach(({ name, aliases, alwaysShow }) => {
+          const mSetting = findParam(selectedPlantCategory, unit, aliases);
+          const mFooter = mSetting ? footerMap.get(mSetting.id) : undefined;
+          const usage = getMaterialUsage(mFooter, 'shift2');
+          if (alwaysShow || usage > 0) {
+            report += `├─ ${name}: ${formatIndonesianNumber(usage, 2)} ton\n`;
           }
         });
         report += `\n`;
 
+        // Setting Feeder
         report += `*SETTING FEEDER*\n`;
-        const feederParams = [
-          { name: 'Clinker', param: 'set. feeder clinker' },
-          { name: 'Gypsum', param: 'set. feeder gypsum' },
-          { name: 'Batu Kapur', param: 'set. feeder limestone' },
-          { name: 'Trass', param: 'set. feeder trass' },
-          { name: 'FineTrass', param: 'set. feeder fine trass' },
-          { name: 'Fly Ash', param: 'set. feeder fly ash' },
-          { name: 'CKD', param: 'set. feeder ckd' },
-        ];
-
-        feederParams.forEach(({ name, param }) => {
-          const feederData = unitFooterData.find((f) => {
-            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-            return (
-              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
-            );
-          });
-          const feederAvg = feederData ? Number(feederData.shift2_average || 0) : 0;
-          // Always display Clinker, Gypsum, Trass, and Batu Kapur, even if value is 0
-          const alwaysDisplay = ['Clinker', 'Gypsum', 'Trass', 'Batu Kapur'].includes(name);
-          if (alwaysDisplay || feederAvg > 0) {
+        SETTING_FEEDERS.forEach(({ name, aliases, alwaysShow }) => {
+          const sSetting = findParam(selectedPlantCategory, unit, aliases);
+          const sFooter = sSetting ? footerMap.get(sSetting.id) : undefined;
+          const feederAvg = getFooterNum(sFooter, 'shift2_average');
+          if (alwaysShow || feederAvg > 0) {
             report += `├─ ${name}: ${formatIndonesianNumber(feederAvg, 2)} %\n`;
           }
         });
         report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-        // Catatan Tambahan - downtime data dan informasi CCR untuk shift 2 (jam 15-23)
+        // Catatan Tambahan (Downtime 15:00 - 23:00 & Informasi)
         const downtimeNotes = await getDowntimeForDate(date);
         const unitDowntime = downtimeNotes.filter((d) => {
-          const startHour = parseInt(d.start_time.split(':')[0]);
-          return d.unit.includes(unit) && startHour >= 15 && startHour <= 23;
+          if (!d.unit || (!d.unit.includes(unit) && d.unit !== unit)) return false;
+          const startHour = parseInt((d.start_time || '').split(':')[0], 10);
+          return startHour >= 15 && startHour < 23;
         });
         const unitInformation = getInformationForDate(date, unit);
-
-        // Check if information should be shown (hide for Operator role)
         const showInformation =
           unitInformation && unitInformation.information && user?.role !== 'Operator';
 
         if (unitDowntime.length > 0 || showInformation) {
           report += `⚠️ *CATATAN TAMBAHAN*\n`;
 
-          // Tambahkan informasi dari CCR Data Entry jika ada
           if (showInformation) {
             report += `├─ *Informasi:*\n${unitInformation!.information
               .split('\n')
@@ -1287,14 +1283,11 @@ const WhatsAppGroupReportPage: React.FC = () => {
             }
           }
 
-          // Tambahkan downtime notes jika ada
           if (unitDowntime.length > 0) {
             const notes = unitDowntime
               .sort((a, b) => a.start_time.localeCompare(b.start_time))
               .map((d) => {
-                const start = new Date(`${d.date} ${d.start_time}`);
-                const end = new Date(`${d.date} ${d.end_time}`);
-                const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
+                const duration = calcDowntimeDurationHours(d.start_time, d.end_time);
                 return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 2)}j): ${d.problem}\n└─ 👤 PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
               })
               .join('\n');
@@ -1305,7 +1298,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
         }
       }
 
-      // Silo Data - hanya shift 2
+      // Silo Data (Shift 2)
       report += `🏪 *STATUS SILO SEMEN*\n`;
       report += `━━━━━━━━━━━━━━━━━━━━━\n`;
       const filteredSiloData = siloData.filter((silo) => {
@@ -1316,17 +1309,11 @@ const WhatsAppGroupReportPage: React.FC = () => {
         const siloInfo = silos.find((s) => s.id === silo.silo_id);
         const siloName = siloInfo?.silo_name || silo.silo_id;
         const shift2Data = silo.shift2;
-        if (shift2Data) {
-          const percentage =
-            siloInfo && shift2Data.content
-              ? formatIndonesianNumber((shift2Data.content / siloInfo.capacity) * 100, 1)
-              : 'N/A';
-          const statusEmoji =
-            percentage !== 'N/A' && parseFloat(percentage) > 80
-              ? '🟢'
-              : percentage !== 'N/A' && parseFloat(percentage) > 50
-                ? '🟡'
-                : '🔴';
+        if (shift2Data && siloInfo) {
+          const cap = siloInfo.capacity || 1;
+          const percentageNum = ((shift2Data.content || 0) / cap) * 100;
+          const percentage = formatIndonesianNumber(percentageNum, 1);
+          const statusEmoji = percentageNum > 80 ? '🟢' : percentageNum > 50 ? '🟡' : '🔴';
           report += `├─ ${siloName}\n`;
           report += `└─ 📏 ${t.wag_silo_empty}: ${shift2Data.emptySpace || 'N/A'} m | 📦 ${t.wag_silo_content}: ${shift2Data.content || 'N/A'} ton | ${t.wag_silo_fill}: ${percentage}% ${statusEmoji}\n`;
         }
@@ -1355,69 +1342,99 @@ const WhatsAppGroupReportPage: React.FC = () => {
     parameterSettings,
     silos,
     calculateTotalProductionFromFeeders,
+    getUnitRunningHoursData,
+    getUnitFeedData,
+    resolveProductType,
+    resolveOperatorName,
+    getMaterialUsage,
+    findParam,
     getInformationForDate,
-    getOperatorName,
     t.wag_silo_content,
     t.wag_silo_empty,
     t.wag_silo_fill,
     user?.role,
   ]);
 
-  // Generate Shift 3 Report sesuai format yang diminta (jam 23-07) dengan data shift3_cont hari berikutnya
+  // 4. GENERATE SHIFT 3 REPORT (23:00 - 07:00 Akurat Lintas Hari)
   const generateShift3Report = useCallback(async () => {
     setIsGenerating(true);
     try {
-      const { date } = { date: selectedDate };
+      const date = selectedDate;
 
       // Sync data before generating report
       await syncOperationalDataForDate(date);
 
       // Hitung tanggal berikutnya untuk shift3_cont
-      const currentDate = new Date(date);
+      const dateParts = date.split('-').map(Number);
+      const currentDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
       const nextDate = new Date(currentDate);
       nextDate.setDate(currentDate.getDate() + 1);
-      const nextDateString = nextDate.toISOString().split('T')[0];
+      const nextDateString = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}-${String(nextDate.getDate()).padStart(2, '0')}`;
 
-      // Fetch data for all selected units in parallel untuk hari ini
+      // Fetch data parameter hari berjalan dan hari berikutnya
       const dataPromises = selectedPlantUnits.map(async (unit) => ({
         unit,
         parameterData: await getParameterData(date, unit),
+        nextDayParameterData: await getParameterData(nextDateString, unit),
       }));
 
       const unitDataArray = await Promise.all(dataPromises);
       const unitDataMap = new Map(
-        unitDataArray.map(({ unit, parameterData }) => [unit, { parameterData }])
+        unitDataArray.map(({ unit, parameterData, nextDayParameterData }) => [
+          unit,
+          { parameterData, nextDayParameterData },
+        ])
       );
 
-      // Fetch footer data untuk hari ini
-      const categoryFooterData = await getFooterDataForDate(date, selectedPlantCategory);
+      // Fetch footer data hari ini dan hari berikutnya
+      const allFooterData = await getFooterDataForDate(date);
+      const nextDayFooterData = await getFooterDataForDate(nextDateString);
 
-      // Fetch footer data untuk hari berikutnya (untuk shift3_cont)
-      const nextDayFooterData = await getFooterDataForDate(nextDateString, selectedPlantCategory);
+      const footerMap = new Map<string, Record<string, unknown>>();
+      allFooterData.forEach((f: any) => {
+        if (f && f.parameter_id) {
+          footerMap.set(f.parameter_id, f as Record<string, unknown>);
+        }
+      });
 
-      // Fetch silo data untuk hari ini
+      const nextDayFooterMap = new Map<string, Record<string, unknown>>();
+      nextDayFooterData.forEach((f: any) => {
+        if (f && f.parameter_id) {
+          nextDayFooterMap.set(f.parameter_id, f as Record<string, unknown>);
+        }
+      });
+
+      // Fetch silo data
       const siloData = await getSiloData(date);
 
       // Format date
-      const reportDate = new Date(date);
-      const formattedDate = reportDate.toLocaleDateString('id-ID', {
+      const formattedDate = currentDate.toLocaleDateString('id-ID', {
         weekday: 'long',
         day: '2-digit',
         month: 'short',
         year: 'numeric',
       });
 
-      // Get operator name from all parameter data
+      // Get operator name for Shift 3 (Hours 23..24 today + Hours 1..7 next day)
       const allParameterData = unitDataArray.flatMap(({ parameterData }) => parameterData);
-      const operatorName = getOperatorName(allParameterData);
+      const allNextDayParameterData = unitDataArray.flatMap(
+        ({ nextDayParameterData }) => nextDayParameterData
+      );
+      const shift3TodayHours = [23, 24];
+      const shift3ContHours = [1, 2, 3, 4, 5, 6, 7];
+      const operatorName = resolveOperatorName(
+        allParameterData,
+        shift3TodayHours,
+        allNextDayParameterData,
+        shift3ContHours
+      );
 
       let report = `🌙 *LAPORAN SHIFT 3 PRODUKSI* 🌙\n`;
       report += `🏭 *${selectedPlantCategory}*\n`;
       report += `📅 ${formattedDate}\n`;
-      report += `⏰ Shift: 22:00 - 07:00\n`;
+      report += `⏰ Shift: 23:00 - 07:00\n`;
       report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-      // Plant Units - use selected units
       const plantUnitsFiltered = selectedPlantUnits;
 
       // Summary Section
@@ -1425,54 +1442,29 @@ const WhatsAppGroupReportPage: React.FC = () => {
       let totalHoursAll = 0;
       let unitCount = 0;
 
-      // Calculate summary data
       for (const unit of plantUnitsFiltered) {
-        const unitData = unitDataMap.get(unit);
-        if (!unitData) continue;
-
-        const unitParameterIds = parameterSettings
-          .filter((param) => param.category === selectedPlantCategory && param.unit === unit)
-          .map((param) => param.id);
-        const unitFooterData = categoryFooterData.filter((f) =>
-          unitParameterIds.includes(f.parameter_id)
-        );
-        const nextDayUnitFooterData = nextDayFooterData.filter((f) =>
-          unitParameterIds.includes(f.parameter_id)
+        const runningHoursData = getUnitRunningHoursData(footerMap, selectedPlantCategory, unit);
+        const nextDayRunningHoursData = getUnitRunningHoursData(
+          nextDayFooterMap,
+          selectedPlantCategory,
+          unit
         );
 
-        const runningHoursData = unitFooterData.find((f) => {
-          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-          return (
-            paramSetting &&
-            (paramSetting.parameter.toLowerCase().includes('running hours') ||
-              paramSetting.parameter.toLowerCase().includes('jam operasi') ||
-              paramSetting.parameter.toLowerCase().includes('operation hours'))
-          );
-        });
-
-        const runningHoursTotal = runningHoursData?.shift3_total || 0;
-        const runningHoursContTotal =
-          nextDayUnitFooterData.find((f) => f.parameter_id === runningHoursData?.parameter_id)
-            ?.shift3_cont_total || 0;
+        const runningHoursTotal = getFooterNum(runningHoursData, 'shift3_total');
+        const runningHoursContTotal = getFooterNum(nextDayRunningHoursData, 'shift3_cont_total');
         const combinedRunningHours = runningHoursTotal + runningHoursContTotal;
 
-        const totalProduction =
-          calculateTotalProductionFromFeeders(
-            unitFooterData,
-            'shift3_today',
-            unit,
-            selectedPlantCategory
-          ) +
-          calculateTotalProductionFromFeeders(
-            nextDayUnitFooterData,
-            'shift3_cont',
-            unit,
-            selectedPlantCategory
-          );
+        const totalProduction = calculateTotalProductionFromFeeders(
+          footerMap,
+          'shift3',
+          unit,
+          selectedPlantCategory,
+          nextDayFooterMap
+        );
 
         totalProductionAll += totalProduction;
         totalHoursAll += combinedRunningHours;
-        if (totalProduction > 0) {
+        if (totalProduction > 0 || combinedRunningHours > 0) {
           unitCount++;
         }
       }
@@ -1486,105 +1478,69 @@ const WhatsAppGroupReportPage: React.FC = () => {
       report += `└─ Total Jam Operasi: ${formatIndonesianNumber(totalHoursAll, 1)} jam\n`;
       report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
+      // Per Unit Mill Section
       for (const unit of plantUnitsFiltered) {
         const unitData = unitDataMap.get(unit);
-        if (!unitData) {
-          continue;
-        }
+        if (!unitData) continue;
 
-        const { parameterData: allParameterData } = unitData;
+        const { parameterData: allParameterData, nextDayParameterData } = unitData;
 
         report += `🏭 *UNIT MILL ${unit}*\n`;
         report += `━━━━━━━━━━━━━━━━━━━━\n`;
 
-        // Get values from footer data (footer data is stored per category)
-        // Filter footer data for parameters that belong to this unit
-        const unitParameterIds = parameterSettings
-          .filter((param) => param.category === selectedPlantCategory && param.unit === unit)
-          .map((param) => param.id);
+        const feedData = getUnitFeedData(footerMap, selectedPlantCategory, unit);
+        const nextDayFeedData = getUnitFeedData(nextDayFooterMap, selectedPlantCategory, unit);
 
-        const unitFooterData = categoryFooterData.filter((f) =>
-          unitParameterIds.includes(f.parameter_id)
+        const runningHoursData = getUnitRunningHoursData(footerMap, selectedPlantCategory, unit);
+        const nextDayRunningHoursData = getUnitRunningHoursData(
+          nextDayFooterMap,
+          selectedPlantCategory,
+          unit
         );
 
-        const nextDayUnitFooterData = nextDayFooterData.filter((f) =>
-          unitParameterIds.includes(f.parameter_id)
-        );
-
-        // Cari data berdasarkan parameter_id di footer data
-        const feedData = unitFooterData.find((f) => {
-          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-          return paramSetting && paramSetting.parameter === 'Feed (tph)';
-        });
-        const runningHoursData = unitFooterData.find((f) => {
-          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-          return (
-            paramSetting &&
-            (paramSetting.parameter.toLowerCase().includes('running hours') ||
-              paramSetting.parameter.toLowerCase().includes('jam operasi') ||
-              paramSetting.parameter.toLowerCase().includes('operation hours'))
-          );
-        });
-
-        // Calculate values from footer data - menggunakan shift3_average dan shift3_cont_average
-        const feedAvg = feedData?.shift3_average || 0;
-        const feedContAvg =
-          nextDayUnitFooterData.find((f) => f.parameter_id === feedData?.parameter_id)
-            ?.shift3_cont_average || 0;
+        const feedAvg = getFooterNum(feedData, 'shift3_average');
+        const feedContAvg = getFooterNum(nextDayFeedData, 'shift3_cont_average');
+        const validFeeds = [feedAvg, feedContAvg].filter((f) => f > 0);
         const combinedFeedAvg =
-          feedAvg && feedContAvg ? (feedAvg + feedContAvg) / 2 : feedAvg || feedContAvg;
+          validFeeds.length > 0 ? validFeeds.reduce((sum, f) => sum + f, 0) / validFeeds.length : 0;
 
-        const runningHoursTotal = runningHoursData?.shift3_total || 0;
-        const runningHoursContTotal =
-          nextDayUnitFooterData.find((f) => f.parameter_id === runningHoursData?.parameter_id)
-            ?.shift3_cont_total || 0;
+        const runningHoursTotal = getFooterNum(runningHoursData, 'shift3_total');
+        const runningHoursContTotal = getFooterNum(nextDayRunningHoursData, 'shift3_cont_total');
         const combinedRunningHours = runningHoursTotal + runningHoursContTotal;
 
-        // Jika tidak ada production total, hitung dari feed dan running hours
-        const totalProduction =
-          calculateTotalProductionFromFeeders(
-            unitFooterData,
-            'shift3_today',
-            unit,
-            selectedPlantCategory
-          ) +
-          calculateTotalProductionFromFeeders(
-            nextDayUnitFooterData,
-            'shift3_cont',
-            unit,
-            selectedPlantCategory
-          );
+        const totalProduction = calculateTotalProductionFromFeeders(
+          footerMap,
+          'shift3',
+          unit,
+          selectedPlantCategory,
+          nextDayFooterMap
+        );
 
-        // Tipe Produk - cari dari parameter data atau default N/A
-        const productTypeParam = allParameterData.find((p) => {
-          const paramSetting = parameterSettings.find((s) => s.id === p.parameter_id);
-          return (
-            paramSetting &&
-            (paramSetting.parameter === 'Tipe Produk' ||
-              paramSetting.parameter.toLowerCase().includes('tipe produk')) && // More flexible parameter matching
-            (paramSetting.unit === unit ||
-              paramSetting.unit.includes(unit) ||
-              unit.includes(paramSetting.unit)) && // More flexible unit matching
-            paramSetting.data_type === 'Text' // Pastikan data_type Text
-          );
-        });
+        const productType = resolveProductType(
+          allParameterData,
+          selectedPlantCategory,
+          unit,
+          shift3TodayHours,
+          nextDayParameterData,
+          shift3ContHours
+        );
 
-        let productType = 'N/A'; // Default jika tidak ada data
-        if (productTypeParam && productTypeParam.hourly_values) {
-          // Ambil nilai dari hourly_values jam 1-7 dan 23-24 dan hitung mode
-          const shift3Hours = [1, 2, 3, 4, 5, 6, 7, 23, 24];
-          const productTypeValues = shift3Hours.map((hour) => productTypeParam.hourly_values[hour]);
-          productType = calculateTextMode(productTypeValues);
-        }
-
-        // Production Overview dengan status
-        const efficiency =
-          combinedRunningHours > 0
-            ? (totalProduction / (combinedFeedAvg * combinedRunningHours)) * 100
-            : 0;
-        const statusEmoji = efficiency >= 95 ? '🟢' : efficiency >= 85 ? '🟡' : '🔴';
         const calculatedFeedRate =
           combinedRunningHours > 0 ? totalProduction / combinedRunningHours : 0;
+        const efficiency =
+          combinedRunningHours > 0 && combinedFeedAvg > 0
+            ? (totalProduction / (combinedFeedAvg * combinedRunningHours)) * 100
+            : calculatedFeedRate > 0
+              ? 100
+              : 0;
+        const statusEmoji =
+          combinedRunningHours === 0
+            ? '⚪'
+            : efficiency >= 95
+              ? '🟢'
+              : efficiency >= 85
+                ? '🟡'
+                : '🔴';
 
         report += `📈 *PRODUKSI OVERVIEW* ${statusEmoji}\n`;
         report += `├─ Tipe Produk: ${productType}\n`;
@@ -1592,116 +1548,81 @@ const WhatsAppGroupReportPage: React.FC = () => {
         report += `├─ Jam Operasi: ${formatIndonesianNumber(combinedRunningHours, 2)} jam\n`;
         report += `└─ Total Produksi: ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
 
+        // Kualitas (Rata-rata valid non-zero antara shift 3 hari T & shift 3 lanjutan hari T+1)
         report += `*KUALITAS*\n`;
-        const qualityParamsShift3 = [
-          { name: 'Blaine', param: 'blaine', unit: 'm²/kg' },
-          { name: 'R45', param: 'r45', unit: '%' },
-          { name: 'Indeks Klinker', param: 'indeks klinker', unit: '%' },
-        ];
+        QUALITY_PARAMS.forEach(({ name, aliases, unit: qUnit }) => {
+          const qSetting = findParam(selectedPlantCategory, unit, aliases);
+          if (qSetting) {
+            const qFooter = footerMap.get(qSetting.id);
+            const nextQFooter = nextDayFooterMap.get(qSetting.id);
+            const q1 = getFooterNum(qFooter, 'shift3_average');
+            const q2 = getFooterNum(nextQFooter, 'shift3_cont_average');
+            const validQ = [q1, q2].filter((q) => q > 0);
+            const combinedQuality =
+              validQ.length > 0 ? validQ.reduce((sum, q) => sum + q, 0) / validQ.length : 0;
 
-        qualityParamsShift3.forEach(({ name, param, unit }) => {
-          const qualityData = unitFooterData.find((f) => {
-            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-            return (
-              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
-            );
-          });
-          const qualityAvg = qualityData ? Number(qualityData.shift3_average || 0) : 0;
-          const qualityContAvg =
-            nextDayUnitFooterData.find((f) => f.parameter_id === qualityData?.parameter_id)
-              ?.shift3_cont_average || 0;
-          const combinedQualityAvg = (qualityAvg + Number(qualityContAvg)) / 2;
-          if (combinedQualityAvg > 0) {
-            report += `├─ ${name}: ${formatIndonesianNumber(combinedQualityAvg, 1)} ${unit}\n`;
+            if (combinedQuality > 0) {
+              report += `├─ ${name}: ${formatIndonesianNumber(combinedQuality, 1)} ${qUnit}\n`;
+            }
           }
         });
         report += `\n`;
 
-        // Pemakaian Bahan - menggunakan shift3_total + shift3_cont_total
+        // Pemakaian Bahan (shift3_counter + shift3_cont_counter)
         report += `*PEMAKAIAN BAHAN*\n`;
-        const bahanParams = [
-          { name: 'Clinker', param: 'counter feeder clinker' },
-          { name: 'Gypsum', param: 'counter feeder gypsum' },
-          { name: 'Batu Kapur', param: 'counter feeder limestone' },
-          { name: 'Trass', param: 'counter feeder trass' },
-          { name: 'FineTrass', param: 'counter feeder fine trass' },
-          { name: 'Fly Ash', param: 'counter feeder flyash' },
-          { name: 'CKD', param: 'counter feeder ckd' },
-        ];
-
-        bahanParams.forEach(({ name, param }) => {
-          const bahanData = unitFooterData.find((f) => {
-            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-            return (
-              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
-            );
-          });
-          const bahanTotal = bahanData ? Number(bahanData.shift3_counter || 0) : 0;
-          const bahanContTotal =
-            nextDayUnitFooterData.find((f) => f.parameter_id === bahanData?.parameter_id)
-              ?.shift3_cont_counter || 0;
-          const combinedBahanTotal = bahanTotal + Number(bahanContTotal);
-          // Always display Clinker, Gypsum, Trass, and Batu Kapur, even if value is 0
-          const alwaysDisplay = ['Clinker', 'Gypsum', 'Trass', 'Batu Kapur'].includes(name);
-          if (alwaysDisplay || combinedBahanTotal > 0) {
-            report += `├─ ${name}: ${formatIndonesianNumber(combinedBahanTotal, 2)} ton\n`;
+        MATERIAL_FEEDS.forEach(({ name, aliases, alwaysShow }) => {
+          const mSetting = findParam(selectedPlantCategory, unit, aliases);
+          const mFooter = mSetting ? footerMap.get(mSetting.id) : undefined;
+          const nextMFooter = mSetting ? nextDayFooterMap.get(mSetting.id) : undefined;
+          const usage = getMaterialUsage(mFooter, 'shift3', nextMFooter);
+          if (alwaysShow || usage > 0) {
+            report += `├─ ${name}: ${formatIndonesianNumber(usage, 2)} ton\n`;
           }
         });
         report += `\n`;
 
+        // Setting Feeder
         report += `*SETTING FEEDER*\n`;
-        const feederParams = [
-          { name: 'Clinker', param: 'set. feeder clinker' },
-          { name: 'Gypsum', param: 'set. feeder gypsum' },
-          { name: 'Batu Kapur', param: 'set. feeder limestone' },
-          { name: 'Trass', param: 'set. feeder trass' },
-          { name: 'FineTrass', param: 'set. feeder fine trass' },
-          { name: 'Fly Ash', param: 'set. feeder fly ash' },
-          { name: 'CKD', param: 'set. feeder ckd' },
-        ];
+        SETTING_FEEDERS.forEach(({ name, aliases, alwaysShow }) => {
+          const sSetting = findParam(selectedPlantCategory, unit, aliases);
+          const sFooter = sSetting ? footerMap.get(sSetting.id) : undefined;
+          const nextSFooter = sSetting ? nextDayFooterMap.get(sSetting.id) : undefined;
+          const s1 = getFooterNum(sFooter, 'shift3_average');
+          const s2 = getFooterNum(nextSFooter, 'shift3_cont_average');
+          const validS = [s1, s2].filter((s) => s > 0);
+          const combinedFeederAvg =
+            validS.length > 0 ? validS.reduce((sum, s) => sum + s, 0) / validS.length : 0;
 
-        feederParams.forEach(({ name, param }) => {
-          const feederData = unitFooterData.find((f) => {
-            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-            return (
-              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
-            );
-          });
-          const feederAvg = feederData ? Number(feederData.shift3_average || 0) : 0;
-          const feederContAvg =
-            nextDayUnitFooterData.find((f) => f.parameter_id === feederData?.parameter_id)
-              ?.shift3_cont_average || 0;
-          const combinedFeederAvg = (feederAvg + Number(feederContAvg)) / 2;
-          // Always display Clinker, Gypsum, Trass, and Batu Kapur, even if value is 0
-          const alwaysDisplay = ['Clinker', 'Gypsum', 'Trass', 'Batu Kapur'].includes(name);
-          if (alwaysDisplay || combinedFeederAvg > 0) {
+          if (alwaysShow || combinedFeederAvg > 0) {
             report += `├─ ${name}: ${formatIndonesianNumber(combinedFeederAvg, 2)} %\n`;
           }
         });
         report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-        // Catatan Tambahan - downtime data dan informasi CCR untuk shift 3 (jam 23 hari ini + 00-07 hari berikutnya)
+        // Catatan Tambahan (Downtime 23:00 - 07:00 lintas hari & Informasi)
         const downtimeNotes = await getDowntimeForDate(date);
         const nextDayDowntimeNotes = await getDowntimeForDate(nextDateString);
-        const unitDowntime = downtimeNotes.filter((d) => {
-          const startHour = parseInt(d.start_time.split(':')[0]);
-          return d.unit.includes(unit) && startHour >= 23;
-        });
-        const nextDayUnitDowntime = nextDayDowntimeNotes.filter((d) => {
-          const startHour = parseInt(d.start_time.split(':')[0]);
-          return d.unit.includes(unit) && startHour >= 0 && startHour <= 7;
-        });
-        const allDowntime = [...unitDowntime, ...nextDayUnitDowntime];
-        const unitInformation = getInformationForDate(date, unit);
 
-        // Check if information should be shown (hide for Operator role)
+        const unitDowntimeToday = downtimeNotes.filter((d) => {
+          if (!d.unit || (!d.unit.includes(unit) && d.unit !== unit)) return false;
+          const startHour = parseInt((d.start_time || '').split(':')[0], 10);
+          return startHour >= 23;
+        });
+
+        const unitDowntimeNextDay = nextDayDowntimeNotes.filter((d) => {
+          if (!d.unit || (!d.unit.includes(unit) && d.unit !== unit)) return false;
+          const startHour = parseInt((d.start_time || '').split(':')[0], 10);
+          return startHour >= 0 && startHour < 7;
+        });
+
+        const allDowntime = [...unitDowntimeToday, ...unitDowntimeNextDay];
+        const unitInformation = getInformationForDate(date, unit);
         const showInformation =
           unitInformation && unitInformation.information && user?.role !== 'Operator';
 
         if (allDowntime.length > 0 || showInformation) {
           report += `⚠️ *CATATAN TAMBAHAN*\n`;
 
-          // Tambahkan informasi dari CCR Data Entry jika ada
           if (showInformation) {
             report += `├─ *Informasi:*\n${unitInformation!.information
               .split('\n')
@@ -1712,14 +1633,11 @@ const WhatsAppGroupReportPage: React.FC = () => {
             }
           }
 
-          // Tambahkan downtime notes jika ada
           if (allDowntime.length > 0) {
             const notes = allDowntime
               .sort((a, b) => a.start_time.localeCompare(b.start_time))
               .map((d) => {
-                const start = new Date(`${d.date} ${d.start_time}`);
-                const end = new Date(`${d.date} ${d.end_time}`);
-                const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
+                const duration = calcDowntimeDurationHours(d.start_time, d.end_time);
                 return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 2)}j): ${d.problem}\n└─ 👤 PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
               })
               .join('\n');
@@ -1730,7 +1648,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
         }
       }
 
-      // Silo Data - shift 3
+      // Silo Data (Shift 3)
       report += `🏪 *STATUS SILO SEMEN*\n`;
       report += `━━━━━━━━━━━━━━━━━━━━━\n`;
       const filteredSiloData = siloData.filter((silo) => {
@@ -1741,17 +1659,11 @@ const WhatsAppGroupReportPage: React.FC = () => {
         const siloInfo = silos.find((s) => s.id === silo.silo_id);
         const siloName = siloInfo?.silo_name || silo.silo_id;
         const shift3Data = silo.shift3;
-        if (shift3Data) {
-          const percentage =
-            siloInfo && shift3Data.content
-              ? formatIndonesianNumber((shift3Data.content / siloInfo.capacity) * 100, 1)
-              : 'N/A';
-          const statusEmoji =
-            percentage !== 'N/A' && parseFloat(percentage) > 80
-              ? '🟢'
-              : percentage !== 'N/A' && parseFloat(percentage) > 50
-                ? '🟡'
-                : '🔴';
+        if (shift3Data && siloInfo) {
+          const cap = siloInfo.capacity || 1;
+          const percentageNum = ((shift3Data.content || 0) / cap) * 100;
+          const percentage = formatIndonesianNumber(percentageNum, 1);
+          const statusEmoji = percentageNum > 80 ? '🟢' : percentageNum > 50 ? '🟡' : '🔴';
           report += `├─ ${siloName}\n`;
           report += `└─ 📏 ${t.wag_silo_empty}: ${shift3Data.emptySpace || 'N/A'} m | 📦 ${t.wag_silo_content}: ${shift3Data.content || 'N/A'} ton | ${t.wag_silo_fill}: ${percentage}% ${statusEmoji}\n`;
         }
@@ -1780,8 +1692,13 @@ const WhatsAppGroupReportPage: React.FC = () => {
     parameterSettings,
     silos,
     calculateTotalProductionFromFeeders,
+    getUnitRunningHoursData,
+    getUnitFeedData,
+    resolveProductType,
+    resolveOperatorName,
+    getMaterialUsage,
+    findParam,
     getInformationForDate,
-    getOperatorName,
     t.wag_silo_content,
     t.wag_silo_empty,
     t.wag_silo_fill,

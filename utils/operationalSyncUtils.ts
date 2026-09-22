@@ -344,10 +344,21 @@ export const syncOperationalDataForMonth = async (
  * Digunakan sebelum generate report untuk memastikan data aktual.
  */
 export const syncOperationalDataForDate = async (dateStr: string) => {
-  const date = new Date(dateStr);
-  const day = date.getDate();
-  const month = date.getMonth() + 1;
-  const year = date.getFullYear();
+  let year: number;
+  let month: number;
+  let day: number;
+
+  if (dateStr.includes('-')) {
+    const parts = dateStr.split('-').map(Number);
+    year = parts[0];
+    month = parts[1];
+    day = parts[2];
+  } else {
+    const date = new Date(dateStr);
+    year = date.getFullYear();
+    month = date.getMonth() + 1;
+    day = date.getDate();
+  }
 
   logger.info(`Starting single day operational data sync for ${dateStr}`);
 

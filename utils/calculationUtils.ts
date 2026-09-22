@@ -128,17 +128,17 @@ export const calculateShiftCounter = (
     case 'shift1': {
       const max = getMaxFromHours([8, 9, 10, 11, 12, 13, 14, 15]);
       const prev = getHourValue(7);
-      return max - (isNaN(prev) ? 0 : prev);
+      return Math.max(0, max - (isNaN(prev) ? 0 : prev));
     }
     case 'shift2': {
       const max = getMaxFromHours([16, 17, 18, 19, 20, 21, 22]);
       const prev = getHourValue(15);
-      return max - (isNaN(prev) ? 0 : prev);
+      return Math.max(0, max - (isNaN(prev) ? 0 : prev));
     }
     case 'shift3': {
       const max = getMaxFromHours([23, 24]);
       const prev = getHourValue(22);
-      return max - (isNaN(prev) ? 0 : prev);
+      return Math.max(0, max - (isNaN(prev) ? 0 : prev));
     }
     default:
       return 0;
