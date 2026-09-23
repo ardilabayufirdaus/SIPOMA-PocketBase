@@ -252,6 +252,8 @@ export interface ProjectTask {
   actual_start?: string | null; // YYYY-MM-DD
   actual_end?: string | null; // YYYY-MM-DD
   percent_complete: number; // 0-100
+  photos?: string[]; // Array of photo filenames in PocketBase
+  rawRecord?: any; // PocketBase raw record for pb.files.getUrl
 }
 
 export enum ProjectStatus {

@@ -29,16 +29,26 @@ export const useProjects = () => {
       }));
       setProjects(mappedProjects);
 
-      const mappedTasks = tasksData.map((task: Record<string, unknown>) => ({
-        id: String(task.id),
-        project_id: String(task.project_id),
-        activity: String(task.activity),
-        planned_start: task.planned_start ? String(task.planned_start) : undefined,
-        planned_end: task.planned_end ? String(task.planned_end) : undefined,
-        actual_start: task.actual_start ? String(task.actual_start) : null,
-        actual_end: task.actual_end ? String(task.actual_end) : null,
-        percent_complete: task.percent_complete ? Number(task.percent_complete) : 0,
-      }));
+      const mappedTasks = tasksData.map((task: Record<string, unknown>) => {
+        let photosArray: string[] = [];
+        if (Array.isArray(task.photos)) {
+          photosArray = task.photos.map(String);
+        } else if (typeof task.photos === 'string' && task.photos) {
+          photosArray = [task.photos];
+        }
+        return {
+          id: String(task.id),
+          project_id: String(task.project_id),
+          activity: String(task.activity),
+          planned_start: task.planned_start ? String(task.planned_start) : undefined,
+          planned_end: task.planned_end ? String(task.planned_end) : undefined,
+          actual_start: task.actual_start ? String(task.actual_start) : null,
+          actual_end: task.actual_end ? String(task.actual_end) : null,
+          percent_complete: task.percent_complete ? Number(task.percent_complete) : 0,
+          photos: photosArray,
+          rawRecord: task,
+        };
+      });
       setTasks(mappedTasks);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
@@ -70,37 +80,68 @@ export const useProjects = () => {
     [tasks]
   );
 
+  const getTaskFileUrl = useCallback(
+    (taskOrRecord: ProjectTask | Record<string, any>, filename?: string) => {
+      if (!filename) return '';
+      const record = (taskOrRecord as any)?.rawRecord || taskOrRecord;
+      return pb.files.getUrl(record, filename);
+    },
+    []
+  );
+
   const addTask = useCallback(
-    async (projectId: string, taskData: Omit<ProjectTask, 'id' | 'project_id'>) => {
-      const payload = {
-        activity: taskData.activity,
-        planned_start: taskData.planned_start,
-        planned_end: taskData.planned_end,
-        actual_start: taskData.actual_start,
-        actual_end: taskData.actual_end,
-        percent_complete: taskData.percent_complete,
-        project_id: projectId,
-      };
-      await pb.collection('project_tasks').create(payload);
-      fetchProjectsAndTasks();
+    async (projectId: string, taskData: FormData | Omit<ProjectTask, 'id' | 'project_id'>) => {
+      if (taskData instanceof FormData) {
+        if (!taskData.has('project_id')) {
+          taskData.append('project_id', projectId);
+        }
+        await pb.collection('project_tasks').create(taskData);
+      } else {
+        const payload = {
+          activity: taskData.activity,
+          planned_start: taskData.planned_start,
+          planned_end: taskData.planned_end,
+          actual_start: taskData.actual_start,
+          actual_end: taskData.actual_end,
+          percent_complete: taskData.percent_complete,
+          project_id: projectId,
+        };
+        await pb.collection('project_tasks').create(payload);
+      }
+      await fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]
   );
 
   const updateTask = useCallback(
-    async (updatedTask: ProjectTask) => {
-      const { id, ...rest } = updatedTask;
-      const updateData = {
-        activity: rest.activity,
-        planned_start: rest.planned_start,
-        planned_end: rest.planned_end,
-        actual_start: rest.actual_start,
-        actual_end: rest.actual_end,
-        percent_complete: rest.percent_complete,
-        project_id: rest.project_id,
-      };
-      await pb.collection('project_tasks').update(id, updateData);
-      fetchProjectsAndTasks();
+    async (
+      updatedTaskOrId: ProjectTask | string,
+      formDataOrData?: FormData | Partial<ProjectTask>
+    ) => {
+      let id: string;
+      let updatePayload: any;
+
+      if (typeof updatedTaskOrId === 'string') {
+        id = updatedTaskOrId;
+        updatePayload = formDataOrData;
+      } else if (formDataOrData instanceof FormData) {
+        id = updatedTaskOrId.id;
+        updatePayload = formDataOrData;
+      } else {
+        id = updatedTaskOrId.id;
+        const { id: _, rawRecord: __, ...rest } = updatedTaskOrId;
+        updatePayload = {
+          activity: rest.activity,
+          planned_start: rest.planned_start,
+          planned_end: rest.planned_end,
+          actual_start: rest.actual_start,
+          actual_end: rest.actual_end,
+          percent_complete: rest.percent_complete,
+          project_id: rest.project_id,
+        };
+      }
+      await pb.collection('project_tasks').update(id, updatePayload);
+      await fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]
   );
@@ -108,7 +149,7 @@ export const useProjects = () => {
   const deleteTask = useCallback(
     async (taskId: string) => {
       await pb.collection('project_tasks').delete(taskId);
-      fetchProjectsAndTasks();
+      await fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]
   );
@@ -209,6 +250,7 @@ export const useProjects = () => {
     loading,
     error,
     getTasksByProjectId,
+    getTaskFileUrl,
     addTask,
     updateTask,
     deleteTask,

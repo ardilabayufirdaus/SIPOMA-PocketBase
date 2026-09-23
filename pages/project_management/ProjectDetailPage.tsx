@@ -16,7 +16,14 @@ import Modal from '../../components/Modal';
 import ProjectTaskForm from '../../components/ProjectTaskForm';
 import { useProjectManagementAccess } from '../../hooks/useProjectManagementAccess';
 
-// Enhanced UI Components
+import {
+  Camera,
+  Eye,
+  Image as LucideImage,
+  ChevronRight,
+  ChevronLeft,
+  Download,
+} from 'lucide-react';
 import { EnhancedButton, useAccessibility } from '../../components/ui/EnhancedComponents';
 import RealtimeIndicator from '../../components/ui/RealtimeIndicator';
 
@@ -454,6 +461,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
     projects,
     loading,
     getTasksByProjectId,
+    getTaskFileUrl,
     addTask,
     updateTask,
     deleteTask,
@@ -469,6 +477,8 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
   const [isImporting, setIsImporting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [galleryModalTask, setGalleryModalTask] = useState<ProjectTask | null>(null);
+  const [selectedGalleryPhotoIndex, setSelectedGalleryPhotoIndex] = useState<number>(0);
   const [feedbackMessage, setFeedbackMessage] = useState<{
     type: 'success' | 'error';
     text: string;
@@ -866,13 +876,33 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
 
   // Task Actions
   const handleSaveTask = useCallback(
-    (task: Omit<ProjectTask, 'id' | 'project_id'> | ProjectTask) => {
-      if ('id' in task) {
-        updateTask(task as ProjectTask);
-        setFeedbackMessage({ type: 'success', text: 'Tugas berhasil diperbarui!' });
-      } else {
-        addTask(projectId, task as Omit<ProjectTask, 'id' | 'project_id'>);
-        setFeedbackMessage({ type: 'success', text: 'Tugas baru berhasil ditambahkan!' });
+    async (taskOrFormData: Omit<ProjectTask, 'id' | 'project_id'> | ProjectTask | FormData) => {
+      try {
+        if (taskOrFormData instanceof FormData) {
+          const taskId = (taskOrFormData as any).taskId;
+          if (taskId) {
+            await updateTask(taskId, taskOrFormData);
+            setFeedbackMessage({
+              type: 'success',
+              text: 'Tugas dan evidence foto berhasil diperbarui!',
+            });
+          } else {
+            await addTask(projectId, taskOrFormData);
+            setFeedbackMessage({
+              type: 'success',
+              text: 'Tugas baru dan evidence foto berhasil disimpan!',
+            });
+          }
+        } else if ('id' in taskOrFormData) {
+          await updateTask(taskOrFormData as ProjectTask);
+          setFeedbackMessage({ type: 'success', text: 'Tugas berhasil diperbarui!' });
+        } else {
+          await addTask(projectId, taskOrFormData as Omit<ProjectTask, 'id' | 'project_id'>);
+          setFeedbackMessage({ type: 'success', text: 'Tugas baru berhasil ditambahkan!' });
+        }
+      } catch (err: any) {
+        console.error('Failed to save task:', err);
+        setFeedbackMessage({ type: 'error', text: err?.message || 'Gagal menyimpan tugas.' });
       }
       setFormModalOpen(false);
       setEditingTask(null);
@@ -980,8 +1010,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
 
       const pdfData: ProjectDetailPDFData = {
         projectTitle: activeProject.title,
-        projectDescription: activeProject.description,
-        budget: activeProject.budget || 0,
+        projectDescription: activeProject.description || '',
         projectStatus: performanceMetrics.projectStatus,
         healthScore: performanceMetrics.healthScore,
         healthGrade: performanceMetrics.healthGrade,
@@ -989,11 +1018,12 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
         plannedProgress: performanceMetrics.plannedProgress,
         deviation: performanceMetrics.deviation,
         spi: performanceMetrics.spi,
-        duration: projectOverview.duration || 0,
+        duration: projectOverview.duration,
         daysElapsed: performanceMetrics.daysElapsed,
         daysRemaining: performanceMetrics.daysRemaining,
-        startDateFormatted: projectOverview.startDate ? formatDate(projectOverview.startDate) : '-',
-        endDateFormatted: projectOverview.endDate ? formatDate(projectOverview.endDate) : '-',
+        budget: projectOverview.budget,
+        startDateFormatted: projectOverview.startDate ? formatDate(projectOverview.startDate) : '',
+        endDateFormatted: projectOverview.endDate ? formatDate(projectOverview.endDate) : '',
         predictedCompletionFormatted: performanceMetrics.predictedCompletion
           ? formatDate(performanceMetrics.predictedCompletion)
           : '',
@@ -1019,6 +1049,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
                 : (t_item.percent_complete || 0) > 0
                   ? 'Berjalan'
                   : 'Belum Mulai',
+          photoUrls: (t_item.photos || []).map((photo) => getTaskFileUrl(t_item, photo)),
         })),
       };
 
@@ -1829,6 +1860,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
                         <th className="py-2.5 px-3 text-left">Rencana Mulai</th>
                         <th className="py-2.5 px-3 text-left">Rencana Selesai</th>
                         <th className="py-2.5 px-3 text-left">Progress Pengerjaan</th>
+                        <th className="py-2.5 px-3 text-center">Evidence Foto</th>
                         <th className="py-2.5 px-3 text-left">Status</th>
                         {canWrite && <th className="py-2.5 px-3 text-right">Aksi</th>}
                       </tr>
@@ -1879,6 +1911,24 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
                                   {pct}%
                                 </span>
                               </div>
+                            </td>
+                            <td className="py-2 px-3 text-center">
+                              {task.photos && task.photos.length > 0 ? (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setGalleryModalTask(task);
+                                    setSelectedGalleryPhotoIndex(0);
+                                  }}
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-[11px] font-bold transition-all shadow-sm group"
+                                  title="Lihat foto evidence aktivitas"
+                                >
+                                  <Camera className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform" />
+                                  <span>{task.photos.length} Foto</span>
+                                </button>
+                              ) : (
+                                <span className="text-slate-400 text-xs font-mono">-</span>
+                              )}
                             </td>
                             <td className="py-2 px-3">
                               <span
@@ -2454,6 +2504,137 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
           </div>
         </Modal>
       )}
+      {/* Photo Gallery / Lightbox Modal for Task Evidence */}
+      {galleryModalTask && (
+        <Modal
+          isOpen={!!galleryModalTask}
+          onClose={() => {
+            setGalleryModalTask(null);
+            setSelectedGalleryPhotoIndex(0);
+          }}
+          title={`Dokumentasi Evidence: ${galleryModalTask.activity}`}
+          maxWidth="4xl"
+        >
+          <div className="space-y-4 p-2 text-slate-800 dark:text-slate-100">
+            {/* Header info */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-1 rounded-lg bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 text-xs font-black">
+                  Progress: {galleryModalTask.percent_complete || 0}%
+                </span>
+                <span className="text-xs text-slate-600 dark:text-slate-400">
+                  {galleryModalTask.actual_start
+                    ? `Mulai: ${formatDate(galleryModalTask.actual_start)}`
+                    : `Rencana: ${formatDate(galleryModalTask.planned_start)}`}
+                </span>
+              </div>
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                Foto {selectedGalleryPhotoIndex + 1} dari {galleryModalTask.photos?.length || 0}
+              </span>
+            </div>
+
+            {/* Main Image Display */}
+            {galleryModalTask.photos && galleryModalTask.photos.length > 0 && (
+              <div className="relative rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center min-h-[360px] max-h-[520px] border border-slate-800 shadow-2xl">
+                <img
+                  src={getTaskFileUrl(
+                    galleryModalTask,
+                    galleryModalTask.photos[selectedGalleryPhotoIndex]
+                  )}
+                  alt={`${galleryModalTask.activity} - Foto ${selectedGalleryPhotoIndex + 1}`}
+                  className="max-h-[500px] w-auto max-w-full object-contain rounded-lg"
+                />
+
+                {/* Left navigation button */}
+                {galleryModalTask.photos.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSelectedGalleryPhotoIndex((prev) =>
+                        prev > 0 ? prev - 1 : (galleryModalTask.photos?.length || 1) - 1
+                      )
+                    }
+                    className="absolute left-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-slate-900/80 hover:bg-slate-800 text-white backdrop-blur-md shadow-lg transition-all cursor-pointer"
+                    title="Foto Sebelumnya"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                )}
+
+                {/* Right navigation button */}
+                {galleryModalTask.photos.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSelectedGalleryPhotoIndex((prev) =>
+                        prev < (galleryModalTask.photos?.length || 1) - 1 ? prev + 1 : 0
+                      )
+                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-slate-900/80 hover:bg-slate-800 text-white backdrop-blur-md shadow-lg transition-all cursor-pointer"
+                    title="Foto Berikutnya"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Thumbnails strip */}
+            {galleryModalTask.photos && galleryModalTask.photos.length > 1 && (
+              <div className="flex items-center gap-2 overflow-x-auto p-2 scroll-smooth">
+                {galleryModalTask.photos.map((photoName, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setSelectedGalleryPhotoIndex(idx)}
+                    className={`relative shrink-0 w-20 h-14 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                      selectedGalleryPhotoIndex === idx
+                        ? 'border-indigo-600 ring-2 ring-indigo-500/30 scale-105 shadow-md'
+                        : 'border-slate-200 dark:border-slate-700 opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <img
+                      src={getTaskFileUrl(galleryModalTask, photoName)}
+                      alt={`Thumbnail ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Modal footer */}
+            <div className="flex justify-between items-center pt-3 border-t border-slate-100 dark:border-slate-800">
+              {galleryModalTask.photos && galleryModalTask.photos[selectedGalleryPhotoIndex] && (
+                <a
+                  href={getTaskFileUrl(
+                    galleryModalTask,
+                    galleryModalTask.photos[selectedGalleryPhotoIndex]
+                  )}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                >
+                  <Eye className="w-4 h-4" />
+                  <span>Buka Gambar Asli Resolusi Penuh</span>
+                </a>
+              )}
+              <EnhancedButton
+                onClick={() => {
+                  setGalleryModalTask(null);
+                  setSelectedGalleryPhotoIndex(0);
+                }}
+                variant="secondary"
+                size="md"
+                className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl px-5 py-2 font-semibold"
+              >
+                {t.close || 'Tutup'}
+              </EnhancedButton>
+            </div>
+          </div>
+        </Modal>
+      )}
+
       {/* Print Media Styles */}
       <style>{`
         @media print {

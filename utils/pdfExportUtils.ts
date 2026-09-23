@@ -290,6 +290,7 @@ export interface ProjectDetailPDFData {
     actualEnd: string;
     percentComplete: number;
     status: string;
+    photoUrls?: string[];
   }[];
 }
 
@@ -763,6 +764,250 @@ export const exportProjectDetailReportToPDF = async (
   doc.text('( General Manager / Direksi )', margin + signColWidth * 2.5, signY + 18, {
     align: 'center',
   });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PAGE 3+: EVIDENCE & DOKUMENTASI FOTO AKTIVITAS PROYEK
+  // ═══════════════════════════════════════════════════════════════════════════
+  const convertImageUrlToBase64 = async (
+    url: string
+  ): Promise<{ base64: string; width: number; height: number } | null> => {
+    try {
+      const res = await fetch(url, { mode: 'cors' });
+      if (!res.ok) return null;
+      const blob = await res.blob();
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = reader.result as string;
+          const img = new Image();
+          img.onload = () => {
+            resolve({
+              base64,
+              width: img.naturalWidth || 800,
+              height: img.naturalHeight || 600,
+            });
+          };
+          img.onerror = () => resolve({ base64, width: 800, height: 600 });
+          img.src = base64;
+        };
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(blob);
+      });
+    } catch (err) {
+      console.warn('Failed to load image for PDF:', url, err);
+      return null;
+    }
+  };
+
+  interface EvidenceItem {
+    activity: string;
+    plannedStart: string;
+    plannedEnd: string;
+    actualStart: string;
+    actualEnd: string;
+    percentComplete: number;
+    status: string;
+    photoUrl: string;
+  }
+
+  const rawEvidenceList: EvidenceItem[] = [];
+  data.tasks.forEach((t_task) => {
+    if (t_task.photoUrls && t_task.photoUrls.length > 0) {
+      t_task.photoUrls.forEach((url) => {
+        if (url) {
+          rawEvidenceList.push({
+            activity: t_task.activity,
+            plannedStart: t_task.plannedStart,
+            plannedEnd: t_task.plannedEnd,
+            actualStart: t_task.actualStart,
+            actualEnd: t_task.actualEnd,
+            percentComplete: t_task.percentComplete,
+            status: t_task.status,
+            photoUrl: url,
+          });
+        }
+      });
+    }
+  });
+
+  if (rawEvidenceList.length > 0) {
+    const loadedEvidence = await Promise.all(
+      rawEvidenceList.map(async (item) => {
+        const imgData = await convertImageUrlToBase64(item.photoUrl);
+        return { ...item, imgData };
+      })
+    );
+
+    const validEvidence = loadedEvidence.filter((item) => item.imgData && item.imgData.base64);
+
+    if (validEvidence.length > 0) {
+      const itemsPerPage = 4;
+      const totalEvidencePages = Math.ceil(validEvidence.length / itemsPerPage);
+
+      for (let pageIdx = 0; pageIdx < totalEvidencePages; pageIdx++) {
+        doc.addPage();
+
+        // Page Header
+        doc.setFillColor(colors.primary[0], colors.primary[1], colors.primary[2]);
+        doc.rect(0, 0, pageWidth, 20, 'F');
+        doc.setFillColor(colors.indigo[0], colors.indigo[1], colors.indigo[2]);
+        doc.rect(0, 20, pageWidth, 1.5, 'F');
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.text('PT SEMEN TONASA', margin, 10);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.text(`DOKUMENTASI & EVIDENCE FOTO AKTIVITAS PROYEK — ${data.projectTitle}`, margin, 16);
+
+        doc.setFontSize(7.5);
+        doc.text(`Dicetak: ${dateStr}`, pageWidth - margin, 14, { align: 'right' });
+
+        const evCurrentY = 27;
+
+        // Section Title
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9.5);
+        doc.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
+        doc.text(
+          `LAMPIRAN EVIDENCE VISUAL (HALAMAN ${pageIdx + 1} DARI ${totalEvidencePages})`,
+          margin,
+          evCurrentY
+        );
+
+        const gridStartY = evCurrentY + 5;
+
+        // 2x2 Grid Configuration
+        const cardGapX = 6;
+        const cardGapY = 6;
+        const cardWidth = (pageWidth - margin * 2 - cardGapX) / 2;
+        const cardHeight = 114;
+
+        const pageItems = validEvidence.slice(pageIdx * itemsPerPage, (pageIdx + 1) * itemsPerPage);
+
+        pageItems.forEach((evItem, itemIdx) => {
+          const col = itemIdx % 2;
+          const row = Math.floor(itemIdx / 2);
+          const cardX = margin + col * (cardWidth + cardGapX);
+          const cardY = gridStartY + row * (cardHeight + cardGapY);
+
+          // Card Background & Outer Border
+          doc.setFillColor(248, 250, 252);
+          doc.roundedRect(cardX, cardY, cardWidth, cardHeight, 2, 2, 'F');
+          doc.setDrawColor(226, 232, 240);
+          doc.roundedRect(cardX, cardY, cardWidth, cardHeight, 2, 2, 'S');
+
+          // Photo container area (within card)
+          const photoContainerX = cardX + 3;
+          const photoContainerY = cardY + 3;
+          const photoContainerW = cardWidth - 6;
+          const photoContainerH = 76;
+
+          // Photo container background
+          doc.setFillColor(241, 245, 249);
+          doc.roundedRect(
+            photoContainerX,
+            photoContainerY,
+            photoContainerW,
+            photoContainerH,
+            1.5,
+            1.5,
+            'F'
+          );
+          doc.setDrawColor(203, 213, 225);
+          doc.roundedRect(
+            photoContainerX,
+            photoContainerY,
+            photoContainerW,
+            photoContainerH,
+            1.5,
+            1.5,
+            'S'
+          );
+
+          // Draw Image with Aspect Ratio Preservation
+          if (evItem.imgData) {
+            try {
+              const origW = evItem.imgData.width || 800;
+              const origH = evItem.imgData.height || 600;
+              const aspectRatio = origW / origH;
+
+              let drawW = photoContainerW;
+              let drawH = drawW / aspectRatio;
+
+              if (drawH > photoContainerH) {
+                drawH = photoContainerH;
+                drawW = drawH * aspectRatio;
+              }
+
+              const imgX = photoContainerX + (photoContainerW - drawW) / 2;
+              const imgY = photoContainerY + (photoContainerH - drawH) / 2;
+
+              doc.addImage(
+                evItem.imgData.base64,
+                'JPEG',
+                imgX,
+                imgY,
+                drawW,
+                drawH,
+                undefined,
+                'FAST'
+              );
+            } catch (imgErr) {
+              console.warn('Error inserting image into PDF:', imgErr);
+            }
+          }
+
+          // Metadata Caption Box
+          const metaY = photoContainerY + photoContainerH + 3.5;
+
+          // Activity Title
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(7.5);
+          doc.setTextColor(30, 41, 59);
+          const truncatedTitle =
+            evItem.activity.length > 42
+              ? evItem.activity.substring(0, 40) + '...'
+              : evItem.activity;
+          doc.text(truncatedTitle, cardX + 3.5, metaY + 1.5);
+
+          // Schedule & Date info
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(6.5);
+          doc.setTextColor(100, 116, 139);
+          const dateLabel =
+            evItem.actualStart && evItem.actualStart !== '-'
+              ? `Realisasi: ${evItem.actualStart}${evItem.actualEnd && evItem.actualEnd !== '-' ? ` s/d ${evItem.actualEnd}` : ''}`
+              : `Rencana: ${evItem.plannedStart} s/d ${evItem.plannedEnd}`;
+          doc.text(dateLabel, cardX + 3.5, metaY + 6.5);
+
+          // Progress & Status Pill Badge
+          const isDone = evItem.percentComplete >= 100;
+          const isOverdue = evItem.status === 'Terlambat';
+          const badgeBgColor = isDone ? colors.emerald : isOverdue ? colors.rose : colors.indigo;
+
+          const badgeW = 38;
+          const badgeH = 5.5;
+          const badgeX = cardX + cardWidth - badgeW - 3.5;
+          const badgeY = metaY + 10;
+
+          doc.setFillColor(badgeBgColor[0], badgeBgColor[1], badgeBgColor[2]);
+          doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 1.2, 1.2, 'F');
+
+          doc.setTextColor(255, 255, 255);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(5.5);
+          doc.text(
+            `${evItem.percentComplete}% • ${evItem.status.toUpperCase()}`,
+            badgeX + badgeW / 2,
+            badgeY + 3.8,
+            { align: 'center' }
+          );
+        });
+      }
+    }
+  }
 
   // 9. Page Numbering & Watermark
   const pages = doc.getNumberOfPages();

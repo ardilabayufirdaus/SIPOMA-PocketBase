@@ -397,6 +397,8 @@ export interface ProjectTask {
   actual_end?: string;
   planned_start?: string;
   percent_complete?: number;
+  photos?: string[];
+  rawRecord?: any;
 }
 
 /**
