@@ -452,16 +452,25 @@ const App: React.FC = () => {
       </PermissionGuard>
 
       {/* Project Management */}
-      {currentPage === 'projects' && (
-        <ProjectManagementPage
-          activePage={activeSubPages.projects}
-          t={t}
-          onNavigate={(subpage: string) => handleNavigate('projects', subpage)}
-        />
-      )}
+      <PermissionGuard
+        user={currentUser}
+        feature="project_management"
+        requiredLevel="READ"
+        fallback={null}
+      >
+        {currentPage === 'projects' && (
+          <ProjectManagementPage
+            activePage={activeSubPages.projects}
+            t={t}
+            onNavigate={(subpage: string) => handleNavigate('projects', subpage)}
+          />
+        )}
+      </PermissionGuard>
 
       {/* Database Module */}
-      {currentPage === 'database' && <DatabasePage />}
+      <PermissionGuard user={currentUser} feature="database" requiredLevel="READ" fallback={null}>
+        {currentPage === 'database' && <DatabasePage />}
+      </PermissionGuard>
 
       {/* Server Module - Only for Super Admin */}
       {currentPage === 'server' && currentUser?.role === 'Super Admin' && <ServerPage />}

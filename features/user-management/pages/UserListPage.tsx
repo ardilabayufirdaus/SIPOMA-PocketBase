@@ -331,34 +331,68 @@ const UserListPage: React.FC = () => {
                       )}
                     </td>
                     <td className="py-2 px-3 text-xs font-mono">
-                      <div className="flex gap-1 flex-wrap">
-                        {Object.entries(user.permissions || {}).map(([key, level]) => {
-                          if (level === 'NONE') return null;
-                          return (
-                            <EnhancedTooltip
-                              key={key}
-                              content={`${key.replace(/_/g, ' ')}: ${level}`}
-                            >
-                              <div
-                                className={`w-5 h-5 rounded text-[8px] font-bold flex items-center justify-center border ${
-                                  level === 'WRITE'
-                                    ? 'bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800'
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
-                                }`}
-                              >
-                                {key
-                                  .split('_')
-                                  .map((word) => word[0])
-                                  .join('')
-                                  .toUpperCase()}
-                              </div>
-                            </EnhancedTooltip>
+                      <div className="flex gap-1 flex-wrap items-center">
+                        {(() => {
+                          const moduleCodes: Record<string, { code: string; label: string }> = {
+                            dashboard: { code: 'DSH', label: 'Analytic Dashboard' },
+                            cm_plant_operations: { code: 'CM', label: 'CM Plant Operations' },
+                            rkc_plant_operations: { code: 'RKC', label: 'RKC Operations' },
+                            derivative_plant_operations: {
+                              code: 'DER',
+                              label: 'Derivative Operations',
+                            },
+                            project_management: { code: 'PRJ', label: 'Capital Project Mgmt' },
+                            contract_sla_management: { code: 'SLA', label: 'Contract & SLA' },
+                            database: { code: 'DAT', label: 'Database Hub' },
+                            inspection: { code: 'INS', label: 'Maintenance Inspection' },
+                          };
+
+                          const entries = Object.entries(user.permissions || {}).filter(
+                            ([, level]) => level && level !== 'NONE'
                           );
-                        })}
-                        {(!user.permissions ||
-                          Object.values(user.permissions).every((v) => v === 'NONE')) && (
-                          <span className="text-[10px] text-slate-400 italic">No access</span>
-                        )}
+
+                          if (entries.length === 0) {
+                            return (
+                              <span className="text-[10px] text-slate-400 dark:text-slate-500 italic">
+                                No access
+                              </span>
+                            );
+                          }
+
+                          return entries.map(([key, level]) => {
+                            const mod = moduleCodes[key] || {
+                              code: key.slice(0, 3).toUpperCase(),
+                              label: key.replace(/_/g, ' '),
+                            };
+                            const isWrite = level === 'WRITE';
+
+                            return (
+                              <EnhancedTooltip
+                                key={key}
+                                content={`${mod.label}: ${level} (${isWrite ? 'Full Access' : 'View Only'})`}
+                              >
+                                <div
+                                  className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold font-mono inline-flex items-center gap-0.5 border shadow-xs ${
+                                    isWrite
+                                      ? 'bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                                      : 'bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800'
+                                  }`}
+                                >
+                                  <span>{mod.code}</span>
+                                  <span
+                                    className={`text-[8px] font-black ${
+                                      isWrite
+                                        ? 'text-emerald-800 dark:text-emerald-200'
+                                        : 'text-indigo-800 dark:text-indigo-200'
+                                    }`}
+                                  >
+                                    :{isWrite ? 'W' : 'R'}
+                                  </span>
+                                </div>
+                              </EnhancedTooltip>
+                            );
+                          });
+                        })()}
                       </div>
                     </td>
                     <td className="py-2 px-3 text-xs font-mono text-right">

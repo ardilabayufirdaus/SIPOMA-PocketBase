@@ -17,9 +17,9 @@ export interface UserPermission {
   rkc_plant_operations: PermissionLevel;
   derivative_plant_operations?: PermissionLevel;
   project_management: PermissionLevel;
+  contract_sla_management?: PermissionLevel;
   database: PermissionLevel;
   inspection: PermissionLevel;
-  contract_sla_management?: PermissionLevel;
   plant_operations?: any;
 }
 

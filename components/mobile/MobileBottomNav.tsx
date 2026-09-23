@@ -189,7 +189,11 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       ),
     });
 
-    if (isAdminRole(currentUser?.role) || isSuperAdmin(currentUser?.role)) {
+    if (
+      permissionChecker.hasPermission('database', 'READ') ||
+      isAdminRole(currentUser?.role) ||
+      isSuperAdmin(currentUser?.role)
+    ) {
       items.push({
         key: 'database',
         label: t.database || 'Database',

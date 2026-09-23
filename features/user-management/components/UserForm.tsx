@@ -13,6 +13,8 @@ import UserIcon from '../../../components/icons/UserIcon';
 import CheckIcon from '../../../components/icons/CheckIcon';
 import ShieldCheckIcon from '../../../components/icons/ShieldCheckIcon';
 
+import { DEFAULT_TONASA_PERMISSIONS } from '../../../utils/tonasaPermissions';
+
 interface UserFormProps {
   user: User | null;
   isOpen: boolean;
@@ -38,14 +40,16 @@ export const UserForm: React.FC<UserFormProps> = ({ user, isOpen, onClose }) => 
     username: '',
     name: '',
     email: '',
-    role: 'Guest' as UserRole,
+    role: 'Operator' as UserRole,
     is_active: true,
     employee_id: '',
     password: '',
     passwordConfirm: '',
   });
 
-  const [permissions, setPermissions] = useState<UserPermission>(DEFAULT_PERMISSIONS);
+  const [permissions, setPermissions] = useState<UserPermission>(
+    (DEFAULT_TONASA_PERMISSIONS['Operator'] as UserPermission) || DEFAULT_PERMISSIONS
+  );
   const [activeTab, setActiveTab] = useState<'profile' | 'access'>('profile');
 
   useEffect(() => {
@@ -61,23 +65,46 @@ export const UserForm: React.FC<UserFormProps> = ({ user, isOpen, onClose }) => 
           password: '',
           passwordConfirm: '',
         });
-        setPermissions(user.permissions || DEFAULT_PERMISSIONS);
+        setPermissions(
+          user.permissions ||
+            (DEFAULT_TONASA_PERMISSIONS[user.role] as UserPermission) ||
+            DEFAULT_PERMISSIONS
+        );
       } else {
+        const initialRole: UserRole = 'Operator';
         setFormData({
           username: '',
           name: '',
           email: '',
-          role: 'Operator',
+          role: initialRole,
           is_active: true,
           employee_id: '',
           password: '',
           passwordConfirm: '',
         });
-        setPermissions(DEFAULT_PERMISSIONS);
+        setPermissions(
+          (DEFAULT_TONASA_PERMISSIONS[initialRole] as UserPermission) || DEFAULT_PERMISSIONS
+        );
       }
       setActiveTab('profile');
     }
   }, [isOpen, user]);
+
+  const handleRoleChange = (newRole: UserRole) => {
+    setFormData((prev) => ({ ...prev, role: newRole }));
+    // If adding a new user, auto-sync permissions to match role defaults
+    if (!isEditing) {
+      const roleDefault =
+        (DEFAULT_TONASA_PERMISSIONS[newRole] as UserPermission) || DEFAULT_PERMISSIONS;
+      setPermissions(roleDefault);
+    }
+  };
+
+  const handleResetToRoleDefault = () => {
+    const roleDefault =
+      (DEFAULT_TONASA_PERMISSIONS[formData.role] as UserPermission) || DEFAULT_PERMISSIONS;
+    setPermissions(roleDefault);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -212,9 +239,9 @@ export const UserForm: React.FC<UserFormProps> = ({ user, isOpen, onClose }) => 
                     System Role
                   </label>
                   <select
-                    className="w-full h-[48px] px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 transition-all outline-none appearance-none cursor-pointer"
+                    className="w-full h-[48px] px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 transition-all outline-none appearance-none cursor-pointer font-medium text-sm"
                     value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
+                    onChange={(e) => handleRoleChange(e.target.value as UserRole)}
                     style={{
                       backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
                       backgroundPosition: `right 1rem center`,
@@ -295,43 +322,54 @@ export const UserForm: React.FC<UserFormProps> = ({ user, isOpen, onClose }) => 
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="bg-indigo-600 rounded-3xl p-6 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden">
               <div className="relative z-10">
-                <h4 className="text-lg font-black flex items-center gap-2">
-                  <ShieldCheckIcon className="w-6 h-6" />
-                  Module Access Control
-                </h4>
-                <p className="text-indigo-100 text-sm mt-1 font-medium italic">
-                  Granular control over system modules and data entry permissions.
-                </p>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h4 className="text-lg font-black flex items-center gap-2">
+                      <ShieldCheckIcon className="w-6 h-6" />
+                      Module Access Control
+                    </h4>
+                    <p className="text-indigo-100 text-sm mt-1 font-medium">
+                      Konfigurasi hak akses per modul untuk akun pengguna ({formData.role}).
+                    </p>
+                  </div>
+                  <span className="self-start sm:self-auto px-3 py-1 bg-white/15 border border-white/20 rounded-full text-xs font-bold uppercase tracking-wider">
+                    Role: {formData.role}
+                  </span>
+                </div>
 
-                <div className="flex flex-wrap gap-3 mt-6">
-                  <EnhancedButton
-                    variant="glass"
-                    size="xs"
-                    onClick={() => setAllPermissions('NONE')}
-                    className="bg-white/10 hover:bg-white/20 border-white/20"
+                <div className="flex flex-wrap items-center gap-2.5 mt-6">
+                  <button
+                    type="button"
+                    onClick={handleResetToRoleDefault}
+                    className="px-3 py-1.5 text-xs font-bold bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 border border-amber-300/40 rounded-xl transition-all shadow-xs"
                   >
-                    Clear All
-                  </EnhancedButton>
-                  <EnhancedButton
-                    variant="glass"
-                    size="xs"
+                    Reset to {formData.role} Defaults
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAllPermissions('NONE')}
+                    className="px-3 py-1.5 text-xs font-bold bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-300/30 rounded-xl transition-all"
+                  >
+                    Clear All (NONE)
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setAllPermissions('READ')}
-                    className="bg-white/10 hover:bg-white/20 border-white/20"
+                    className="px-3 py-1.5 text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl transition-all"
                   >
                     Set All READ
-                  </EnhancedButton>
-                  <EnhancedButton
-                    variant="glass"
-                    size="xs"
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setAllPermissions('WRITE')}
-                    className="bg-white/10 hover:bg-white/20 border-white/20"
+                    className="px-3 py-1.5 text-xs font-bold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-300/30 rounded-xl transition-all"
                   >
                     Set All WRITE
-                  </EnhancedButton>
+                  </button>
                 </div>
               </div>
-              <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
-              <div className="absolute -left-4 -top-4 w-24 h-24 bg-indigo-400/20 rounded-full blur-2xl" />
+              <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -left-4 -top-4 w-24 h-24 bg-indigo-400/20 rounded-full blur-2xl pointer-events-none" />
             </div>
 
             <UserAccessController

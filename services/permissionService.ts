@@ -36,7 +36,9 @@ export const fetchUserPermissions = async (userId: string): Promise<PermissionMa
         dashboard: item.dashboard || 'NONE',
         cm_plant_operations: item.cm_plant_operations || 'NONE',
         rkc_plant_operations: item.rkc_plant_operations || 'NONE',
+        derivative_plant_operations: item.derivative_plant_operations || 'NONE',
         project_management: item.project_management || 'NONE',
+        contract_sla_management: item.contract_sla_management || 'NONE',
         database: item.database || 'NONE',
         inspection: item.inspection || 'NONE',
       };
@@ -46,7 +48,9 @@ export const fetchUserPermissions = async (userId: string): Promise<PermissionMa
         dashboard: 'NONE',
         cm_plant_operations: 'NONE',
         rkc_plant_operations: 'NONE',
+        derivative_plant_operations: 'NONE',
         project_management: 'NONE',
+        contract_sla_management: 'NONE',
         database: 'NONE',
         inspection: 'NONE',
       };
@@ -68,7 +72,9 @@ export const fetchUserPermissions = async (userId: string): Promise<PermissionMa
       dashboard: 'NONE',
       cm_plant_operations: 'NONE',
       rkc_plant_operations: 'NONE',
+      derivative_plant_operations: 'NONE',
       project_management: 'NONE',
+      contract_sla_management: 'NONE',
       database: 'NONE',
       inspection: 'NONE',
     };

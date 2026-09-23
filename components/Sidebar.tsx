@@ -520,7 +520,9 @@ const Sidebar: React.FC<SidebarProps> = ({
               </p>
             </div>
 
-            {(isAdminRole(currentUser?.role) || isSuperAdmin(currentUser?.role)) && (
+            {(permissionChecker.hasPermission('database', 'READ') ||
+              isAdminRole(currentUser?.role) ||
+              isSuperAdmin(currentUser?.role)) && (
               <NavigationItem
                 ref={databaseButtonRef}
                 icon={<CircleStackIcon className={iconClass} />}

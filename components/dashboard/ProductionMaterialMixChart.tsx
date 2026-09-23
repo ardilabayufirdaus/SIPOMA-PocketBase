@@ -56,7 +56,7 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
       datasets: [
         {
           type: 'line' as const,
-          label: t.chart_total_production || 'Total Produksi (Ton)',
+          label: t.chart_total_production || 'Total Produksi',
           data: filteredData.map((d) => d.total_production),
           borderColor: '#10B981', // Emerald
           borderWidth: 3,
@@ -65,7 +65,7 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
           pointBackgroundColor: '#10B981',
           pointBorderColor: '#FFFFFF',
           tension: 0.3,
-          yAxisID: 'yProduction',
+          yAxisID: 'y',
           order: 0,
         },
         {
@@ -75,7 +75,7 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
           backgroundColor: '#3B82F6', // Blue
           borderRadius: 4,
           stack: 'materials',
-          yAxisID: 'yMaterials',
+          yAxisID: 'y',
           order: 1,
         },
         {
@@ -85,7 +85,7 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
           backgroundColor: '#F59E0B', // Amber
           borderRadius: 4,
           stack: 'materials',
-          yAxisID: 'yMaterials',
+          yAxisID: 'y',
           order: 2,
         },
         {
@@ -95,7 +95,7 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
           backgroundColor: '#8B5CF6', // Purple
           borderRadius: 4,
           stack: 'materials',
-          yAxisID: 'yMaterials',
+          yAxisID: 'y',
           order: 3,
         },
         {
@@ -105,8 +105,28 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
           backgroundColor: '#EC4899', // Pink
           borderRadius: 4,
           stack: 'materials',
-          yAxisID: 'yMaterials',
+          yAxisID: 'y',
           order: 4,
+        },
+        {
+          type: 'bar' as const,
+          label: 'Fly Ash',
+          data: filteredData.map((d) => d.fly_ash || 0),
+          backgroundColor: '#06B6D4', // Cyan
+          borderRadius: 4,
+          stack: 'materials',
+          yAxisID: 'y',
+          order: 5,
+        },
+        {
+          type: 'bar' as const,
+          label: 'CKD / Lainnya',
+          data: filteredData.map((d) => d.ckd || 0),
+          backgroundColor: '#64748B', // Slate
+          borderRadius: 4,
+          stack: 'materials',
+          yAxisID: 'y',
+          order: 6,
         },
       ],
     };
@@ -128,14 +148,14 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
             boxWidth: 8,
             boxHeight: 8,
             font: {
-              size: 11,
+              size: 10,
               weight: 'bold',
             },
-            padding: 12,
+            padding: 8,
           },
         },
         tooltip: {
-          backgroundColor: 'rgba(15, 23, 42, 0.9)',
+          backgroundColor: 'rgba(15, 23, 42, 0.92)',
           titleFont: { size: 12, weight: 'bold' },
           bodyFont: { size: 11 },
           padding: 12,
@@ -144,7 +164,13 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
             label: (context: any) => {
               const label = context.dataset.label || '';
               const value = context.parsed.y !== null ? context.parsed.y : 0;
-              return ` ${label}: ${value.toLocaleString('id-ID')} Ton`;
+              const dataIndex = context.dataIndex;
+              const totalProd = filteredData[dataIndex]?.total_production || 0;
+              const pct =
+                totalProd > 0 && context.dataset.type === 'bar'
+                  ? ` (${((value / totalProd) * 100).toFixed(1)}%)`
+                  : '';
+              return ` ${label}: ${value.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Ton${pct}`;
             },
           },
         },
@@ -155,34 +181,24 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
           ticks: { font: { size: 10 } },
           stacked: true,
         },
-        yMaterials: {
+        y: {
           type: 'linear',
-          position: 'left',
           stacked: true,
           beginAtZero: true,
           title: {
             display: true,
-            text: 'Material Usage (Ton)',
+            text: 'Volume Produksi & Material (Ton)',
             font: { size: 10, weight: 'bold' },
           },
           grid: { color: 'rgba(148, 163, 184, 0.1)' },
-          ticks: { font: { size: 10 } },
-        },
-        yProduction: {
-          type: 'linear',
-          position: 'right',
-          beginAtZero: true,
-          title: {
-            display: true,
-            text: 'Total Production (Ton)',
-            font: { size: 10, weight: 'bold' },
+          ticks: {
+            font: { size: 10 },
+            callback: (val: any) => `${Number(val).toLocaleString('id-ID')}`,
           },
-          grid: { display: false },
-          ticks: { font: { size: 10 } },
         },
       },
     }),
-    []
+    [filteredData]
   );
 
   return (

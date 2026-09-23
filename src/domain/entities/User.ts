@@ -4,6 +4,8 @@ export type UserRole =
   | 'Super Admin'
   | 'Admin'
   | 'Manager'
+  | 'Supervisor'
+  | 'Associate'
   | 'Operator'
   | 'Outsourcing'
   | 'Autonomous'
@@ -15,9 +17,9 @@ export interface UserPermission {
   dashboard: PermissionLevel;
   cm_plant_operations: PermissionLevel;
   rkc_plant_operations: PermissionLevel;
-  derivative_plant_operations?: PermissionLevel;
+  derivative_plant_operations: PermissionLevel;
   project_management: PermissionLevel;
-  contract_sla_management?: PermissionLevel;
+  contract_sla_management: PermissionLevel;
   database: PermissionLevel;
   inspection: PermissionLevel;
 }

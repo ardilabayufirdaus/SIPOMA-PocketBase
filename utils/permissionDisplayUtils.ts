@@ -33,7 +33,9 @@ export const formatPermissionsForDisplay = (permissions: PermissionMatrix): stri
   // Other modules
   const moduleMap: Record<string, string> = {
     project_management: 'Project Management',
-    database: 'Database',
+    contract_sla_management: 'Contract & SLA Management',
+    database: 'Database Hub',
+    inspection: 'Inspection',
   };
 
   Object.entries(moduleMap).forEach(([key, label]) => {
@@ -69,13 +71,13 @@ export const getPermissionsSummary = (permissions: PermissionMatrix): string => 
 export const getPermissionLevelColor = (level: PermissionLevel): string => {
   switch (level) {
     case 'WRITE':
-      return 'bg-orange-100 text-orange-800';
+      return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300';
     case 'READ':
-      return 'bg-blue-100 text-blue-800';
+      return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/80 dark:text-indigo-300';
     case 'NONE':
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400';
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400';
   }
 };
 
@@ -96,8 +98,8 @@ export const formatPermissionsDetailed = (
   const dashboardLevel = getPermissionLevel(permissions.dashboard);
   if (dashboardLevel !== 'NONE') {
     details.push({
-      module: 'Dashboard',
-      access: 'Full Dashboard',
+      module: 'Analytic Dashboard',
+      access: 'Dashboard Access',
       level: dashboardLevel,
     });
   }
@@ -122,10 +124,24 @@ export const formatPermissionsDetailed = (
     });
   }
 
+  // Derivative Operations
+  if (permissions.derivative_plant_operations) {
+    const derLevel = getPermissionLevel(permissions.derivative_plant_operations);
+    if (derLevel !== 'NONE') {
+      details.push({
+        module: 'Derivative Plant Operations',
+        access: 'Full Access',
+        level: derLevel,
+      });
+    }
+  }
+
   // Other modules
   const modules = [
-    { key: 'project_management', name: 'Project Management' },
-    { key: 'database', name: 'Database' },
+    { key: 'project_management', name: 'Capital Project Management' },
+    { key: 'contract_sla_management', name: 'Contract & SLA Management' },
+    { key: 'database', name: 'System Hub Database' },
+    { key: 'inspection', name: 'Maintenance Inspection' },
   ];
 
   modules.forEach(({ key, name }) => {

@@ -8,6 +8,8 @@ export interface DailyMaterialUsage {
   gypsum: number;
   limestone: number;
   trass: number;
+  fly_ash: number;
+  ckd: number;
   total_production: number;
 }
 
@@ -51,7 +53,7 @@ export const useMainDashboardChartsData = () => {
     setLoading(true);
     setError(null);
 
-    const cacheKey = 'main_dashboard_charts_v2';
+    const cacheKey = 'main_dashboard_charts_v3';
     const cached = cacheManager.get<{
       materialUsage: DailyMaterialUsage[];
       downtimePareto: DowntimeParetoItem[];
@@ -67,14 +69,19 @@ export const useMainDashboardChartsData = () => {
     }
 
     try {
-      // 1. Fetch Material Usage (Recent 14 days)
-      const materialList = await pb.collection('ccr_material_usage').getList(1, 200, {
-        sort: '-date',
+      // 1. Fetch Material Usage (14 days window)
+      const d14 = new Date();
+      d14.setDate(d14.getDate() - 15);
+      const filterDate14 = d14.toISOString().split('T')[0];
+
+      const materialList = await pb.collection('ccr_material_usage').getFullList({
+        filter: `date >= "${filterDate14}"`,
+        sort: 'date',
         requestKey: null,
       });
 
       const aggregatedMap: Record<string, DailyMaterialUsage> = {};
-      materialList.items.forEach((item: any) => {
+      materialList.forEach((item: any) => {
         const d = item.date;
         if (!d) return;
 
@@ -85,28 +92,49 @@ export const useMainDashboardChartsData = () => {
             gypsum: 0,
             limestone: 0,
             trass: 0,
+            fly_ash: 0,
+            ckd: 0,
             total_production: 0,
           };
         }
 
-        aggregatedMap[d].clinker += Number(item.clinker || 0);
-        aggregatedMap[d].gypsum += Number(item.gypsum || 0);
-        aggregatedMap[d].limestone += Number(item.limestone || 0);
-        aggregatedMap[d].trass += Number(item.trass || 0) + Number(item.fine_trass || 0);
-        aggregatedMap[d].total_production += Number(item.total_production || 0);
+        const clinker = Number(item.clinker || 0);
+        const gypsum = Number(item.gypsum || 0);
+        const limestone = Number(item.limestone || 0);
+        const trass = Number(item.trass || 0) + Number(item.fine_trass || 0);
+        const fly_ash = Number(item.fly_ash || 0);
+        const ckd = Number(item.ckd || 0);
+        const sumMaterials = clinker + gypsum + limestone + trass + fly_ash + ckd;
+        const totalProd =
+          Number(item.total_production || 0) > 0
+            ? Number(item.total_production || 0)
+            : sumMaterials;
+
+        aggregatedMap[d].clinker += clinker;
+        aggregatedMap[d].gypsum += gypsum;
+        aggregatedMap[d].limestone += limestone;
+        aggregatedMap[d].trass += trass;
+        aggregatedMap[d].fly_ash += fly_ash;
+        aggregatedMap[d].ckd += ckd;
+        aggregatedMap[d].total_production += totalProd;
       });
 
       const sortedMaterial = Object.values(aggregatedMap)
         .sort((a, b) => a.date.localeCompare(b.date))
         .slice(-14);
 
-      // 2. Fetch Downtimes for Pareto
-      const dtList = await pb.collection('ccr_downtime_data').getList(1, 200, {
+      // 2. Fetch Downtimes for Pareto (Last 30 days window)
+      const d30 = new Date();
+      d30.setDate(d30.getDate() - 30);
+      const filterDate30 = d30.toISOString().split('T')[0];
+
+      const dtList = await pb.collection('ccr_downtime_data').getFullList({
+        filter: `date >= "${filterDate30}"`,
         sort: '-date',
         requestKey: null,
       });
 
-      const paretoRaw: DowntimeParetoItem[] = dtList.items.map((item: any) => {
+      const paretoRaw: DowntimeParetoItem[] = dtList.map((item: any) => {
         let dur = Number(item.duration_minutes || 0);
         if (!dur && item.start_time && item.end_time) {
           try {
