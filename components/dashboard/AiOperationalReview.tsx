@@ -5,7 +5,12 @@ import {
   AlertTriangle,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
+  ChevronUp,
   Calendar,
+  Zap,
+  Clock,
+  Package,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,23 +19,23 @@ import { formatDate } from '../../utils/formatters';
 
 interface AiOperationalReviewProps {
   t: Record<string, string>;
+  language?: 'en' | 'id';
 }
 
-const AiOperationalReview: React.FC<AiOperationalReviewProps> = ({ t }) => {
+const AiOperationalReview: React.FC<AiOperationalReviewProps> = ({ t, language = 'id' }) => {
   const { data: reviews, isLoading } = useAiReviews();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm animate-pulse">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-slate-200 dark:bg-slate-800 rounded-lg"></div>
-          <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded w-48"></div>
-        </div>
-        <div className="space-y-3">
-          <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
-          <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-5/6"></div>
-          <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-4/6"></div>
+      <div className="bg-white dark:bg-slate-900 rounded-xl p-3 border border-slate-200/90 dark:border-slate-800 shadow-2xs animate-pulse">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 bg-slate-200 dark:bg-slate-800 rounded-lg"></div>
+            <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-36"></div>
+          </div>
+          <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded w-24"></div>
         </div>
       </div>
     );
@@ -42,195 +47,195 @@ const AiOperationalReview: React.FC<AiOperationalReviewProps> = ({ t }) => {
 
   const currentReview = reviews[currentIndex];
 
-  const nextReview = () => {
+  const nextReview = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setCurrentIndex((prev) => (prev + 1) % reviews.length);
   };
 
-  const prevReview = () => {
+  const prevReview = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setCurrentIndex((prev) => (prev - 1 + reviews.length) % reviews.length);
   };
 
-  return (
-    <div className="relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-      {/* Decorative Gradient Header */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-slate-900 to-emerald-500"></div>
+  const effScore = currentReview.metrics_summary?.efficiency_score ?? 90;
+  const prodTon = currentReview.metrics_summary?.total_production ?? 0;
+  const dtHours = currentReview.metrics_summary?.downtime_hours ?? 0;
 
-      <div className="p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-500/10 rounded-xl flex items-center justify-center text-primary-600">
-              <Sparkles size={24} />
+  return (
+    <div className="relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs overflow-hidden transition-all duration-300">
+      {/* Subtle Gradient Accent Bar */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-cyan-500 to-emerald-500"></div>
+
+      {/* Main Compact Banner Row */}
+      <div className="p-2.5 sm:p-3 flex flex-col md:flex-row md:items-center justify-between gap-2.5">
+        {/* Left: AI Icon + Title & Unit */}
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-7 h-7 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg flex items-center justify-center border border-emerald-200/60 dark:border-emerald-800/60 flex-shrink-0">
+            <Sparkles className="w-3.5 h-3.5" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider truncate">
+                {t.ai_review_title ||
+                  (language === 'en' ? 'AI Operational Review' : 'Tinjauan Operasional AI')}
+              </h2>
+              <span className="text-[9px] font-black bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 px-1.5 py-0.2 rounded-full uppercase tracking-tight">
+                {t.ai_badge_intelligence || 'INTELLIGENCE'}
+              </span>
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                {t.ai_review_title || 'Operational AI Review'}
-                <span className="text-[10px] font-bold bg-primary-600 text-white px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                  PREMIUM
-                </span>
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
-                <Calendar size={12} />
-                {t.review_for || 'Review for'} {formatDate(currentReview.date)} •{' '}
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 truncate">
+              <Calendar className="w-3 h-3 text-slate-400 flex-shrink-0" />
+              <span>{formatDate(currentReview.date)}</span>
+              <span>•</span>
+              <span className="font-semibold text-slate-700 dark:text-slate-300 truncate">
                 {currentReview.plant_unit}
-              </p>
-            </div>
+              </span>
+            </p>
+          </div>
+        </div>
+
+        {/* Middle/Right: Quick Compact KPI Pills */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Produksi Pill */}
+          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-[10px]">
+            <Package className="w-3 h-3 text-cyan-500 flex-shrink-0" />
+            <span className="text-slate-500 dark:text-slate-400 font-medium">
+              {t.ai_kpi_prod || 'Prod:'}
+            </span>
+            <span className="font-bold text-slate-800 dark:text-slate-200 tabular-nums">
+              {prodTon.toLocaleString(language === 'en' ? 'en-US' : 'id-ID')}{' '}
+              {t.unit_tons_short || 'T'}
+            </span>
           </div>
 
+          {/* Downtime Pill */}
+          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-[10px]">
+            <Clock className="w-3 h-3 text-amber-500 flex-shrink-0" />
+            <span className="text-slate-500 dark:text-slate-400 font-medium">
+              {t.ai_kpi_downtime || 'Downtime:'}
+            </span>
+            <span
+              className={`font-bold tabular-nums ${
+                dtHours > 0
+                  ? 'text-amber-600 dark:text-amber-400'
+                  : 'text-emerald-600 dark:text-emerald-400'
+              }`}
+            >
+              {dtHours} {t.unit_hours || (language === 'en' ? 'Hours' : 'Jam')}
+            </span>
+          </div>
+
+          {/* Efisiensi Score Pill */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-[10px]">
+            <Zap className="w-3 h-3 text-emerald-500 flex-shrink-0" />
+            <span className="text-emerald-700 dark:text-emerald-300 font-medium">
+              {t.ai_kpi_efficiency || (language === 'en' ? 'Efficiency:' : 'Efisiensi:')}
+            </span>
+            <span className="font-black text-emerald-700 dark:text-emerald-300 tabular-nums">
+              {effScore}%
+            </span>
+          </div>
+
+          {/* Unit Switcher Buttons (if multiple reviews) */}
           {reviews.length > 1 && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200/80 dark:border-slate-700/80 flex-shrink-0">
               <button
+                type="button"
                 onClick={prevReview}
-                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:text-slate-500 transition-colors"
-                title="Previous Unit"
+                className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
+                title={t.ai_unit_prev || (language === 'en' ? 'Previous Unit' : 'Unit Sebelumnya')}
+                aria-label={
+                  t.ai_unit_prev || (language === 'en' ? 'Previous Unit' : 'Unit Sebelumnya')
+                }
               >
-                <ChevronLeft size={20} />
+                <ChevronLeft className="w-3.5 h-3.5" />
               </button>
-              <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tabular-nums">
-                {currentIndex + 1} / {reviews.length}
-              </div>
+              <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 px-1.5 tabular-nums">
+                {currentIndex + 1}/{reviews.length}
+              </span>
               <button
+                type="button"
                 onClick={nextReview}
-                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:text-slate-500 transition-colors"
-                title="Next Unit"
+                className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
+                title={t.ai_unit_next || (language === 'en' ? 'Next Unit' : 'Unit Berikutnya')}
+                aria-label={t.ai_unit_next || (language === 'en' ? 'Next Unit' : 'Unit Berikutnya')}
               >
-                <ChevronRight size={20} />
+                <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
           )}
-        </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentReview.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+          {/* Toggle Expand / Collapse Button */}
+          <button
+            type="button"
+            onClick={() => setIsExpanded(!isExpanded)}
+            aria-expanded={isExpanded}
+            className={`
+              inline-flex items-center gap-1.5 min-h-[28px] px-2.5 py-1 rounded-lg text-[10.5px] font-bold transition-all
+              focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-primary-500 focus-visible:outline-none border flex-shrink-0
+              ${
+                isExpanded
+                  ? 'bg-primary-600 text-white border-primary-600 shadow-2xs'
+                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+              }
+            `}
           >
-            {/* Review Content */}
-            <div className="lg:col-span-2 space-y-6">
-              <section>
-                <h4 className="text-[11px] font-bold text-[#808080] dark:text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                  <TrendingUp size={14} className="text-primary-600" />
-                  {t.ai_review_result || 'Hasil Review'}
-                </h4>
-                <div className="prose prose-sm dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50/50 dark:bg-slate-800/30 p-4 rounded-xl border border-slate-100 dark:border-slate-800/50">
+            <span>
+              {isExpanded
+                ? t.ai_close_detail || (language === 'en' ? 'Close Details' : 'Tutup Detail')
+                : t.ai_open_analysis || (language === 'en' ? 'Open Analysis' : 'Buka Analisis')}
+            </span>
+            {isExpanded ? (
+              <ChevronUp className="w-3 h-3 flex-shrink-0" />
+            ) : (
+              <ChevronDown className="w-3 h-3 flex-shrink-0" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Expandable Detailed Analysis Section */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            className="overflow-hidden border-t border-slate-100 dark:border-slate-800"
+          >
+            <div className="p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-2 gap-3 bg-slate-50/40 dark:bg-slate-900/50">
+              {/* Hasil Analisis */}
+              <div className="space-y-1.5">
+                <h3 className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                  <TrendingUp className="w-3 h-3 text-primary-600 dark:text-primary-400" />
+                  {t.ai_review_result ||
+                    (language === 'en'
+                      ? 'Operational Analysis Results'
+                      : 'Hasil Analisis Operasional')}
+                </h3>
+                <div className="prose prose-xs dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 text-xs leading-relaxed bg-white dark:bg-slate-800/60 p-3 rounded-lg border border-slate-200/70 dark:border-slate-800">
                   <ReactMarkdown>{currentReview.review_content}</ReactMarkdown>
                 </div>
-              </section>
+              </div>
 
-              <section>
-                <h4 className="text-[11px] font-bold text-[#808080] dark:text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                  <AlertTriangle size={14} className="text-amber-500" />
-                  {t.ai_recommendations || 'Rekomendasi Strategis'}
-                </h4>
-                <div className="prose prose-sm dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed bg-amber-50/30 dark:bg-amber-500/5 p-4 rounded-xl border border-amber-100/50 dark:border-amber-500/10">
+              {/* Rekomendasi Strategis */}
+              <div className="space-y-1.5">
+                <h3 className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
+                  <AlertTriangle className="w-3 h-3 text-amber-500" />
+                  {t.ai_recommendations ||
+                    (language === 'en'
+                      ? 'Strategic Action Recommendations'
+                      : 'Rekomendasi Tindakan Strategis')}
+                </h3>
+                <div className="prose prose-xs dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 text-xs leading-relaxed bg-amber-50/40 dark:bg-amber-950/20 p-3 rounded-lg border border-amber-200/60 dark:border-amber-900/40">
                   <ReactMarkdown>{currentReview.recommendations}</ReactMarkdown>
                 </div>
-              </section>
-            </div>
-
-            {/* Metrics Sidebar */}
-            <div className="lg:col-span-1 space-y-4">
-              <h4 className="text-[11px] font-bold text-[#808080] dark:text-slate-500 uppercase tracking-widest mb-3 px-1">
-                {t.ai_metrics_title || 'Indikator Utama'}
-              </h4>
-
-              <MetricCard
-                label={t.total_production || 'Produksi Total'}
-                value={`${currentReview.metrics_summary.total_production.toLocaleString('id-ID')} Ton`}
-                icon="package"
-              />
-              <MetricCard
-                label={t.total_downtime || 'Total Downtime'}
-                value={`${currentReview.metrics_summary.downtime_hours} Jam`}
-                icon="clock"
-                status={currentReview.metrics_summary.downtime_hours > 0 ? 'warning' : 'success'}
-              />
-              <MetricCard
-                label={t.efficiency_score || 'Skor Efisiensi'}
-                value={`${currentReview.metrics_summary.efficiency_score}%`}
-                icon="zap"
-                progress={currentReview.metrics_summary.efficiency_score}
-                status={
-                  currentReview.metrics_summary.efficiency_score > 90
-                    ? 'success'
-                    : currentReview.metrics_summary.efficiency_score > 70
-                      ? 'warning'
-                      : 'error'
-                }
-              />
-
-              <div className="mt-8 p-4 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-xl border border-emerald-500/20 text-center">
-                <p className="text-[10px] text-primary-600 dark:text-emerald-400 font-medium italic">
-                  "AI provided insights based on historical patterns and real-time production
-                  metrics."
-                </p>
               </div>
             </div>
           </motion.div>
-        </AnimatePresence>
-      </div>
-    </div>
-  );
-};
-
-const MetricCard: React.FC<{
-  label: string;
-  value: string;
-  icon: string;
-  status?: 'success' | 'warning' | 'error';
-  progress?: number;
-}> = ({ label, value, status, progress }) => {
-  const getStatusColor = () => {
-    switch (status) {
-      case 'success':
-        return 'text-emerald-500';
-      case 'warning':
-        return 'text-amber-500';
-      case 'error':
-        return 'text-rose-500';
-      default:
-        return 'text-slate-400';
-    }
-  };
-
-  const getBgColor = () => {
-    switch (status) {
-      case 'success':
-        return 'bg-emerald-500';
-      case 'warning':
-        return 'bg-amber-500';
-      case 'error':
-        return 'bg-rose-500';
-      default:
-        return 'bg-primary-600';
-    }
-  };
-
-  return (
-    <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-xl p-4 transition-all hover:border-slate-200 dark:hover:border-slate-700 group">
-      <div className="flex justify-between items-start mb-1">
-        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight">
-          {label}
-        </span>
-        <div
-          className={`w-1.5 h-1.5 rounded-full ${getStatusColor().replace('text', 'bg')} group-hover:scale-125 transition-transform`}
-        ></div>
-      </div>
-      <div className="text-lg font-black text-slate-800 dark:text-slate-100 tabular-nums">
-        {value}
-      </div>
-      {progress !== undefined && (
-        <div className="mt-2 w-full bg-slate-200 dark:bg-slate-700 h-1 rounded-full overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            className={`h-full ${getBgColor()}`}
-          />
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 };

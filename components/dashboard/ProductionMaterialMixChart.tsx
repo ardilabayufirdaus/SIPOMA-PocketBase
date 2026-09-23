@@ -29,11 +29,13 @@ ChartJS.register(
 interface ProductionMaterialMixChartProps {
   data: DailyMaterialUsage[];
   t?: Record<string, string>;
+  language?: 'en' | 'id';
 }
 
 export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProps> = ({
   data,
   t = {},
+  language = 'id',
 }) => {
   const [viewRange, setViewRange] = useState<'7d' | '14d'>('14d');
 
@@ -56,7 +58,8 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
       datasets: [
         {
           type: 'line' as const,
-          label: t.chart_total_production || 'Total Produksi',
+          label:
+            t.chart_total_production || (language === 'en' ? 'Total Production' : 'Total Produksi'),
           data: filteredData.map((d) => d.total_production),
           borderColor: '#10B981', // Emerald
           borderWidth: 3,
@@ -70,7 +73,7 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
         },
         {
           type: 'bar' as const,
-          label: 'Clinker',
+          label: t.mat_clinker || (language === 'en' ? 'Clinker' : 'Klinker'),
           data: filteredData.map((d) => d.clinker),
           backgroundColor: '#3B82F6', // Blue
           borderRadius: 4,
@@ -80,7 +83,7 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
         },
         {
           type: 'bar' as const,
-          label: 'Limestone',
+          label: t.mat_limestone || (language === 'en' ? 'Limestone' : 'Batu Kapur'),
           data: filteredData.map((d) => d.limestone),
           backgroundColor: '#F59E0B', // Amber
           borderRadius: 4,
@@ -90,7 +93,7 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
         },
         {
           type: 'bar' as const,
-          label: 'Gypsum',
+          label: t.mat_gypsum || (language === 'en' ? 'Gypsum' : 'Gipsum'),
           data: filteredData.map((d) => d.gypsum),
           backgroundColor: '#8B5CF6', // Purple
           borderRadius: 4,
@@ -100,7 +103,7 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
         },
         {
           type: 'bar' as const,
-          label: 'Trass',
+          label: t.mat_trass || 'Trass',
           data: filteredData.map((d) => d.trass),
           backgroundColor: '#EC4899', // Pink
           borderRadius: 4,
@@ -110,7 +113,7 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
         },
         {
           type: 'bar' as const,
-          label: 'Fly Ash',
+          label: t.mat_fly_ash || 'Fly Ash',
           data: filteredData.map((d) => d.fly_ash || 0),
           backgroundColor: '#06B6D4', // Cyan
           borderRadius: 4,
@@ -120,7 +123,7 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
         },
         {
           type: 'bar' as const,
-          label: 'CKD / Lainnya',
+          label: t.mat_ckd || (language === 'en' ? 'CKD / Others' : 'CKD / Lainnya'),
           data: filteredData.map((d) => d.ckd || 0),
           backgroundColor: '#64748B', // Slate
           borderRadius: 4,
@@ -130,7 +133,7 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
         },
       ],
     };
-  }, [filteredData, t]);
+  }, [filteredData, t, language]);
 
   const options: ChartOptions = useMemo(
     () => ({
@@ -170,7 +173,8 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
                 totalProd > 0 && context.dataset.type === 'bar'
                   ? ` (${((value / totalProd) * 100).toFixed(1)}%)`
                   : '';
-              return ` ${label}: ${value.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Ton${pct}`;
+              const unit = t.unit_tons || (language === 'en' ? 'Tons' : 'Ton');
+              return ` ${label}: ${value.toLocaleString(language === 'en' ? 'en-US' : 'id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ${unit}${pct}`;
             },
           },
         },
@@ -187,65 +191,83 @@ export const ProductionMaterialMixChart: React.FC<ProductionMaterialMixChartProp
           beginAtZero: true,
           title: {
             display: true,
-            text: 'Volume Produksi & Material (Ton)',
+            text:
+              t.chart_y_axis_title ||
+              (language === 'en'
+                ? 'Production Volume & Materials (Tons)'
+                : 'Volume Produksi & Material (Ton)'),
             font: { size: 10, weight: 'bold' },
           },
           grid: { color: 'rgba(148, 163, 184, 0.1)' },
           ticks: {
             font: { size: 10 },
-            callback: (val: any) => `${Number(val).toLocaleString('id-ID')}`,
+            callback: (val: any) =>
+              `${Number(val).toLocaleString(language === 'en' ? 'en-US' : 'id-ID')}`,
           },
         },
       },
     }),
-    [filteredData]
+    [filteredData, t, language]
   );
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 flex flex-col h-full">
+    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-sm p-3.5 sm:p-4 flex flex-col h-full overflow-hidden">
       {/* Header Controls */}
-      <div className="flex justify-between items-center mb-3">
-        <div>
-          <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-            {t.chart_production_title || 'Tren Produksi & Mix Material'}
-          </h3>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400">
-            {t.chart_production_sub || 'Agregasi penggunaan bahan baku dan total produksi semen'}
+      <div className="flex justify-between items-center mb-2.5 flex-shrink-0">
+        <div className="min-w-0 pr-2">
+          <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2 truncate">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0 animate-pulse"></span>
+            {t.chart_production_title ||
+              (language === 'en'
+                ? 'Production Trends & Material Mix'
+                : 'Tren Produksi & Mix Material')}
+          </h2>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+            {t.chart_production_sub ||
+              (language === 'en'
+                ? 'Raw material usage aggregation and total cement production'
+                : 'Agregasi penggunaan bahan baku dan total produksi semen')}
           </p>
         </div>
 
-        <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
+        <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200/80 dark:border-slate-700/80 flex-shrink-0">
           <button
+            type="button"
             onClick={() => setViewRange('7d')}
-            className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${
+            aria-pressed={viewRange === '7d'}
+            className={`min-h-[28px] sm:min-h-[30px] px-2.5 py-1 text-[10px] font-bold rounded-md transition-all focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-emerald-500 focus-visible:outline-none ${
               viewRange === '7d'
                 ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-xs'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
-            7 Hari
+            {t.chart_range_7d || (language === 'en' ? '7 Days' : '7 Hari')}
           </button>
           <button
+            type="button"
             onClick={() => setViewRange('14d')}
-            className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${
+            aria-pressed={viewRange === '14d'}
+            className={`min-h-[28px] sm:min-h-[30px] px-2.5 py-1 text-[10px] font-bold rounded-md transition-all focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-emerald-500 focus-visible:outline-none ${
               viewRange === '14d'
                 ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-xs'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
-            14 Hari
+            {t.chart_range_14d || (language === 'en' ? '14 Days' : '14 Hari')}
           </button>
         </div>
       </div>
 
       {/* Chart Canvas Container */}
-      <div className="flex-1 min-h-[260px] w-full relative">
+      <div className="flex-1 min-h-[250px] w-full relative">
         {filteredData.length > 0 ? (
           <Chart type="bar" data={chartData} options={options} />
         ) : (
           <div className="flex items-center justify-center h-full text-slate-400 text-xs italic">
-            Belum ada data material produksi
+            {t.chart_no_material_data ||
+              (language === 'en'
+                ? 'No production material data available'
+                : 'Belum ada data material produksi')}
           </div>
         )}
       </div>

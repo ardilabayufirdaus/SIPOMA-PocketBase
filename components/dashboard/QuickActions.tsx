@@ -1,119 +1,85 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Wrench, Flame, PlusCircle, Database } from 'lucide-react';
 import { Page } from '../../types';
 
 interface QuickActionsProps {
   onNavigate: (page: Page, subPage?: string) => void;
-  t: Record<string, string>;
+  t?: Record<string, string>;
 }
 
 const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate }) => {
   const actions = [
     {
-      label: 'Log CM Downtime',
-      description: 'Record maintenance events',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-          />
-        </svg>
-      ),
-      color: 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400',
-      borderColor: 'border-amber-100 dark:border-amber-800/30',
+      label: 'Entri Downtime CM',
+      description: 'Pencatatan stop mesin',
+      icon: <Wrench className="w-4 h-4" />,
+      accentColor:
+        'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-200 dark:border-amber-800/60',
+      hoverBorder: 'hover:border-amber-400 dark:hover:border-amber-500/50',
       onClick: () => onNavigate('operations', 'op_ccr_data_entry'),
     },
     {
-      label: 'Log RKC Data',
-      description: 'Daily parameter entry',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-          />
-        </svg>
-      ),
-      color: 'bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400',
-      borderColor: 'border-orange-100 dark:border-orange-800/30',
+      label: 'Entri Data RKC',
+      description: 'Parameter tanur harian',
+      icon: <Flame className="w-4 h-4" />,
+      accentColor:
+        'text-orange-600 dark:text-orange-400 bg-orange-500/10 border-orange-200 dark:border-orange-800/60',
+      hoverBorder: 'hover:border-orange-400 dark:hover:border-orange-500/50',
       onClick: () => onNavigate('rkc_operations', 'op_ccr_data_entry'),
     },
     {
-      label: 'New Project',
-      description: 'Initiate new proposal',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-          />
-        </svg>
-      ),
-      color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400',
-      borderColor: 'border-emerald-100 dark:border-emerald-800/30',
+      label: 'Proyek Baru',
+      description: 'Inisiasi proposal baru',
+      icon: <PlusCircle className="w-4 h-4" />,
+      accentColor:
+        'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-200 dark:border-emerald-800/60',
+      hoverBorder: 'hover:border-emerald-400 dark:hover:border-emerald-500/50',
       onClick: () => onNavigate('projects', 'proj_list'),
     },
     {
-      label: 'Database',
-      description: 'Manage master data',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
-          />
-        </svg>
-      ),
-      color: 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400',
-      borderColor: 'border-blue-100 dark:border-blue-800/30',
+      label: 'Master Database',
+      description: 'Kelola data referensi',
+      icon: <Database className="w-4 h-4" />,
+      accentColor:
+        'text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 border-cyan-200 dark:border-cyan-800/60',
+      hoverBorder: 'hover:border-cyan-400 dark:hover:border-cyan-500/50',
       onClick: () => onNavigate('database'),
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-full content-start">
+    <div className="grid grid-cols-2 gap-2 sm:gap-2.5 h-full content-start">
       {actions.map((action, index) => (
         <motion.button
           key={action.label}
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 + index * 0.05 }}
-          whileHover={{ y: -2 }}
+          transition={{ delay: 0.15 + index * 0.04 }}
+          whileHover={{ y: -1.5 }}
           whileTap={{ scale: 0.98 }}
           onClick={action.onClick}
           className={`
-            relative flex flex-col items-center justify-center gap-3 p-4 rounded-lg 
-            bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800
-            hover:border-primary-600 dark:hover:border-primary-600/50
-            shadow-sm hover:shadow-md transition-all duration-200 text-center group h-auto min-h-[110px] overflow-hidden
+            relative flex items-center gap-2.5 p-2.5 rounded-xl
+            bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800
+            ${action.hoverBorder}
+            shadow-2xs hover:shadow-xs transition-all duration-200 text-left group
+            focus-visible:ring-2 focus-visible:ring-primary-500 outline-hidden select-none
           `}
         >
-          {/* Subtle Indicator */}
-          <div className="absolute top-0 left-0 w-1 h-0 group-hover:h-full bg-primary-600 transition-all duration-200"></div>
-
+          {/* Accent Icon Badge */}
           <div
-            className={`relative z-10 p-2.5 rounded ${action.color.includes('amber') || action.color.includes('orange') ? 'bg-primary-600 text-white' : 'bg-slate-900 text-white'} transition-transform group-hover:scale-110 duration-200`}
+            className={`p-2 rounded-lg border ${action.accentColor} flex-shrink-0 group-hover:scale-105 transition-transform duration-200`}
           >
             {action.icon}
           </div>
-          <div className="relative z-10">
-            <span className="block font-bold text-[#333333] dark:text-slate-200 text-[11px] leading-tight uppercase tracking-wider group-hover:text-primary-600 transition-colors">
+
+          <div className="min-w-0 flex-1">
+            <span className="block font-bold text-slate-800 dark:text-slate-200 text-[11px] leading-snug truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
               {action.label}
+            </span>
+            <span className="block text-[9.5px] text-slate-500 dark:text-slate-400 font-medium leading-tight truncate">
+              {action.description}
             </span>
           </div>
         </motion.button>

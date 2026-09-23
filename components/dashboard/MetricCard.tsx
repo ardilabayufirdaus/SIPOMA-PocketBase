@@ -7,6 +7,7 @@ interface MetricCardProps {
   subtitle?: string;
   status?: 'success' | 'warning' | 'danger' | 'neutral';
   icon?: React.ReactNode;
+  vectorIllustration?: React.ReactNode;
   delay?: number;
   onClick?: () => void;
   trend?: {
@@ -21,6 +22,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
   subtitle,
   status = 'neutral',
   icon,
+  vectorIllustration,
   delay = 0,
   onClick,
   trend,
@@ -34,33 +36,33 @@ const MetricCard: React.FC<MetricCardProps> = ({
       case 'danger':
         return 'text-rose-600 dark:text-rose-400';
       default:
-        return 'text-indigo-600 dark:text-indigo-400';
+        return 'text-cyan-600 dark:text-cyan-400';
     }
   };
 
   const getStatusBg = () => {
     switch (status) {
       case 'success':
-        return 'bg-emerald-100/50 dark:bg-emerald-500/20';
+        return 'bg-emerald-100/50 dark:bg-emerald-500/15';
       case 'warning':
-        return 'bg-amber-100/50 dark:bg-amber-500/20';
+        return 'bg-amber-100/50 dark:bg-amber-500/15';
       case 'danger':
-        return 'bg-rose-100/50 dark:bg-rose-500/20';
+        return 'bg-rose-100/50 dark:bg-rose-500/15';
       default:
-        return 'bg-indigo-100/50 dark:bg-indigo-500/20';
+        return 'bg-cyan-100/50 dark:bg-cyan-500/15';
     }
   };
 
-  const getGradientBorder = () => {
+  const getAccentBarColor = () => {
     switch (status) {
       case 'success':
-        return 'group-hover:border-emerald-200 dark:group-hover:border-emerald-800';
+        return 'bg-emerald-500';
       case 'warning':
-        return 'group-hover:border-amber-200 dark:group-hover:border-amber-800';
+        return 'bg-amber-500';
       case 'danger':
-        return 'group-hover:border-rose-200 dark:group-hover:border-rose-800';
+        return 'bg-rose-500';
       default:
-        return 'group-hover:border-indigo-200 dark:group-hover:border-indigo-800';
+        return 'bg-cyan-500';
     }
   };
 
@@ -72,27 +74,49 @@ const MetricCard: React.FC<MetricCardProps> = ({
       className={`
         relative overflow-hidden rounded-2xl 
         bg-white dark:bg-slate-900 
-        border border-slate-200/80 dark:border-slate-800
-        shadow-sm hover:shadow-md transition-all duration-200
+        border border-slate-200/90 dark:border-slate-800
+        shadow-2xs hover:shadow-md transition-all duration-300
         group
-        ${onClick ? 'cursor-pointer' : ''}
+        ${onClick ? 'cursor-pointer focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none' : ''}
       `}
       onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
     >
-      {/* Electric Cobalt Top Accent on Hover */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-primary-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+      {/* Top Accent on Hover */}
+      <div
+        className={`absolute top-0 left-0 right-0 h-1 ${getAccentBarColor()} transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left`}
+      ></div>
 
-      <div className="p-5 relative z-10">
-        <div className="flex justify-between items-start mb-4">
-          <div
-            className={`p-2.5 rounded-xl ${getStatusBg()} ${getStatusColor()} transition-colors border border-transparent group-hover:border-current`}
-          >
-            {icon}
-          </div>
+      <div className="p-3.5 sm:p-4 relative z-10 flex flex-col justify-between h-full">
+        {/* Top Row: Icon/Illustration + Trend Badge */}
+        <div className="flex justify-between items-start mb-2.5">
+          {vectorIllustration ? (
+            <div className="flex-shrink-0 w-11 h-11 flex items-center justify-center p-0.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 group-hover:scale-105 transition-transform duration-300">
+              {vectorIllustration}
+            </div>
+          ) : icon ? (
+            <div
+              className={`p-2.5 rounded-xl ${getStatusBg()} ${getStatusColor()} transition-colors border border-transparent group-hover:border-current`}
+            >
+              {icon}
+            </div>
+          ) : null}
+
           {trend && (
             <span
               className={`
-              text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider
+              text-[9.5px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider tabular-nums
               ${
                 trend.isPositive
                   ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
@@ -105,20 +129,28 @@ const MetricCard: React.FC<MetricCardProps> = ({
           )}
         </div>
 
+        {/* Title and Value (HTML Heading Semantics + Tabular Nums) */}
         <div>
-          <div className="flex items-baseline gap-1">
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1 tracking-tight">
-              {value}
-            </h3>
-          </div>
-          <p className="text-xs font-bold text-slate-600 dark:text-slate-400 tracking-wider uppercase">
+          <h2
+            className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase mb-0.5 truncate"
+            title={title}
+          >
             {title}
-          </p>
+          </h2>
+          <div className="flex items-baseline gap-1">
+            <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight tabular-nums">
+              {value}
+            </span>
+          </div>
         </div>
 
+        {/* Subtitle */}
         {subtitle && (
-          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80">
-            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium tracking-tight">
+          <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+            <span
+              className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium tracking-tight truncate block"
+              title={subtitle}
+            >
               {subtitle}
             </span>
           </div>

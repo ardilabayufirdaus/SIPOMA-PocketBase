@@ -27,9 +27,16 @@ ChartJS.register(
 interface DowntimeParetoChartProps {
   data: any[];
   type: 'duration' | 'frequency';
+  t?: Record<string, string>;
+  language?: 'en' | 'id';
 }
 
-const DowntimeParetoChart: React.FC<DowntimeParetoChartProps> = ({ data, type }) => {
+const DowntimeParetoChart: React.FC<DowntimeParetoChartProps> = ({
+  data,
+  type,
+  t,
+  language = 'id',
+}) => {
   const chartData = useMemo(() => {
     // 1. Group data by normalized remarks / problems
     const groups: Record<string, { label: string; duration: number; frequency: number }> = {};
@@ -86,13 +93,24 @@ const DowntimeParetoChart: React.FC<DowntimeParetoChartProps> = ({ data, type })
       return totalAll > 0 ? Math.round((runningTotal / totalAll) * 100 * 10) / 10 : 0;
     });
 
+    const barLabel =
+      type === 'duration'
+        ? t?.chart_pareto_bar_duration ||
+          (language === 'en' ? 'Downtime Duration (Minutes)' : 'Durasi Downtime (Menit)')
+        : t?.chart_pareto_bar_frequency ||
+          (language === 'en' ? 'Occurrence Frequency (Times)' : 'Frekuensi Kejadian (Kali)');
+
+    const lineLabel =
+      t?.chart_pareto_line_cum ||
+      (language === 'en' ? 'Cumulative Contribution (%)' : 'Kumulatif Kontribusi (%)');
+
     return {
       labels,
       totalAll,
       datasets: [
         {
           type: 'bar' as const,
-          label: type === 'duration' ? 'Durasi Downtime (Menit)' : 'Frekuensi Kejadian (Kali)',
+          label: barLabel,
           data: values,
           backgroundColor: '#F43F5E', // Rose 500
           borderRadius: 6,
@@ -102,7 +120,7 @@ const DowntimeParetoChart: React.FC<DowntimeParetoChartProps> = ({ data, type })
         },
         {
           type: 'line' as const,
-          label: 'Kumulatif Kontribusi (%)',
+          label: lineLabel,
           data: cumulative,
           borderColor: '#6366F1', // Indigo 500
           borderWidth: 2.5,
@@ -119,7 +137,7 @@ const DowntimeParetoChart: React.FC<DowntimeParetoChartProps> = ({ data, type })
         },
       ],
     };
-  }, [data, type]);
+  }, [data, type, t, language]);
 
   const totalAll = chartData.totalAll;
 
@@ -157,16 +175,21 @@ const DowntimeParetoChart: React.FC<DowntimeParetoChartProps> = ({ data, type })
                 return ` ${datasetLabel}: ${val.toFixed(1)}%`;
               }
 
+              const ofTotalText = t?.of_total || (language === 'en' ? 'of total' : 'dari total');
+
               if (type === 'duration') {
                 const hours = (val / 60).toFixed(1);
                 const pct =
-                  totalAll > 0 ? ` (${((val / totalAll) * 100).toFixed(1)}% dari total)` : '';
-                return ` ${datasetLabel}: ${val.toLocaleString('id-ID')} Menit (${hours} Jam)${pct}`;
+                  totalAll > 0 ? ` (${((val / totalAll) * 100).toFixed(1)}% ${ofTotalText})` : '';
+                const minutesUnit = t?.unit_minutes || (language === 'en' ? 'Minutes' : 'Menit');
+                const hoursUnit = t?.unit_hours || (language === 'en' ? 'Hours' : 'Jam');
+                return ` ${datasetLabel}: ${val.toLocaleString(language === 'en' ? 'en-US' : 'id-ID')} ${minutesUnit} (${hours} ${hoursUnit})${pct}`;
               }
 
+              const timesUnit = t?.unit_times || (language === 'en' ? 'Times' : 'Kali');
               const freqPct =
-                totalAll > 0 ? ` (${((val / totalAll) * 100).toFixed(1)}% dari total)` : '';
-              return ` ${datasetLabel}: ${val} Kali${freqPct}`;
+                totalAll > 0 ? ` (${((val / totalAll) * 100).toFixed(1)}% ${ofTotalText})` : '';
+              return ` ${datasetLabel}: ${val} ${timesUnit}${freqPct}`;
             },
           },
         },
@@ -176,7 +199,12 @@ const DowntimeParetoChart: React.FC<DowntimeParetoChartProps> = ({ data, type })
           beginAtZero: true,
           title: {
             display: true,
-            text: type === 'duration' ? 'Durasi (Menit)' : 'Frekuensi (Kali)',
+            text:
+              type === 'duration'
+                ? t?.chart_pareto_y_duration ||
+                  (language === 'en' ? 'Duration (Minutes)' : 'Durasi (Menit)')
+                : t?.chart_pareto_y_frequency ||
+                  (language === 'en' ? 'Frequency (Times)' : 'Frekuensi (Kali)'),
             font: { size: 10, weight: 'bold' },
           },
           grid: {
@@ -184,7 +212,8 @@ const DowntimeParetoChart: React.FC<DowntimeParetoChartProps> = ({ data, type })
           },
           ticks: {
             font: { size: 10 },
-            callback: (value: any) => `${Number(value).toLocaleString('id-ID')}`,
+            callback: (value: any) =>
+              `${Number(value).toLocaleString(language === 'en' ? 'en-US' : 'id-ID')}`,
           },
         },
         y1: {
@@ -193,7 +222,7 @@ const DowntimeParetoChart: React.FC<DowntimeParetoChartProps> = ({ data, type })
           position: 'right' as const,
           title: {
             display: true,
-            text: 'Kumulatif %',
+            text: t?.chart_pareto_y_cum || (language === 'en' ? 'Cumulative %' : 'Kumulatif %'),
             font: { size: 10, weight: 'bold' },
           },
           grid: {
@@ -220,7 +249,7 @@ const DowntimeParetoChart: React.FC<DowntimeParetoChartProps> = ({ data, type })
         },
       },
     }),
-    [chartData, type, totalAll]
+    [chartData, type, totalAll, t, language]
   );
 
   return (
