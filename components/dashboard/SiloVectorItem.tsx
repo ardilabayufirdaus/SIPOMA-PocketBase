@@ -89,21 +89,21 @@ export const SiloVectorItem: React.FC<SiloVectorItemProps> = ({ silo, t, languag
 
   return (
     <div
-      className="group relative flex flex-col items-center bg-white dark:bg-slate-900/90 rounded-xl border border-slate-200/90 dark:border-slate-800/90 p-2 shadow-2xs hover:shadow-md hover:border-cyan-500/40 dark:hover:border-cyan-500/30 transition-all duration-300 flex-shrink-0 w-[136px] select-none"
+      className="group relative flex flex-col items-center justify-between bg-white dark:bg-slate-900/90 rounded-xl border border-slate-200/90 dark:border-slate-800/90 p-2 shadow-2xs hover:shadow-md hover:border-cyan-500/40 dark:hover:border-cyan-500/30 transition-all duration-300 w-full min-w-0 h-full select-none"
       title={`${silo.silo_name} (${silo.unit}): ${pct}% - ${silo.currentContent.toLocaleString(language === 'en' ? 'en-US' : 'id-ID')} / ${silo.capacity.toLocaleString(language === 'en' ? 'en-US' : 'id-ID')} ${t?.unit_tons || (language === 'en' ? 'Tons' : 'Ton')}`}
     >
       {/* Top Header: Silo Name & Unit */}
-      <div className="w-full flex items-center justify-between mb-1 px-0.5">
-        <span className="text-[10.5px] font-bold text-slate-800 dark:text-slate-200 truncate max-w-[78px]">
+      <div className="w-full flex items-center justify-between mb-1 px-0.5 gap-1">
+        <span className="text-[10px] xl:text-[10.5px] font-bold text-slate-800 dark:text-slate-200 truncate">
           {silo.silo_name}
         </span>
-        <span className="text-[8.5px] px-1.5 py-0.2 rounded-full font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60 truncate max-w-[48px]">
+        <span className="text-[8px] xl:text-[8.5px] px-1 py-0.2 rounded-full font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60 truncate flex-shrink-0">
           {silo.unit}
         </span>
       </div>
 
       {/* Main SVG Silo Vector Illustration */}
-      <div className="relative w-full h-[110px] flex items-center justify-center my-0.5">
+      <div className="relative w-full h-[98px] xl:h-[108px] flex items-center justify-center my-0.5">
         <svg
           viewBox="0 0 110 162"
           className="w-auto h-full overflow-visible drop-shadow-xs"
@@ -403,26 +403,26 @@ export const SiloVectorItem: React.FC<SiloVectorItemProps> = ({ silo, t, languag
       </div>
 
       {/* Percentage Badge */}
-      <div className="w-full flex items-center justify-between mt-1">
+      <div className="w-full flex items-center justify-between mt-1 gap-1">
         <span
-          className={`text-[10px] font-black px-2 py-0.5 rounded-md border tracking-tight tabular-nums ${status.badgeBg}`}
+          className={`text-[9.5px] xl:text-[10px] font-black px-1.5 py-0.5 rounded-md border tracking-tight tabular-nums ${status.badgeBg}`}
         >
           {pct}%
         </span>
-        <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300 tabular-nums">
+        <span className="text-[8.5px] xl:text-[9px] font-bold text-slate-700 dark:text-slate-300 tabular-nums truncate">
           {silo.currentContent.toLocaleString(language === 'en' ? 'en-US' : 'id-ID')}{' '}
           {t?.unit_tons_short || 'T'}
         </span>
       </div>
 
       {/* Subtext: Sisa / Kapasitas */}
-      <div className="w-full flex justify-between items-center text-[8.5px] text-slate-500 dark:text-slate-400 mt-1 pt-1 border-t border-slate-100 dark:border-slate-800/80 tabular-nums">
-        <span>
+      <div className="w-full flex justify-between items-center text-[8px] xl:text-[8.5px] text-slate-500 dark:text-slate-400 mt-1 pt-1 border-t border-slate-100 dark:border-slate-800/80 tabular-nums gap-1">
+        <span className="truncate">
           {t?.silo_remaining || (language === 'en' ? 'Rem.:' : 'Sisa:')}{' '}
           {freeSpace.toLocaleString(language === 'en' ? 'en-US' : 'id-ID')}{' '}
           {t?.unit_tons_short || 'T'}
         </span>
-        <span className="opacity-75">
+        <span className="opacity-75 truncate text-right">
           {t?.silo_max || 'Max:'}{' '}
           {silo.capacity.toLocaleString(language === 'en' ? 'en-US' : 'id-ID')}{' '}
           {t?.unit_tons_short || 'T'}

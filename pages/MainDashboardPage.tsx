@@ -80,28 +80,28 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ language, t, onNa
             </div>
           </div>
 
-          {/* Row 1: Charts (h-[355px]) */}
+          {/* Row 1: Charts (h-[360px]) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-4 lg:gap-5">
-            <div className="lg:col-span-7 h-[355px] bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs p-4 flex flex-col">
+            <div className="lg:col-span-6 h-[360px] bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs p-4 flex flex-col">
               <div className="h-5 w-44 bg-slate-200 dark:bg-slate-800 rounded mb-4"></div>
               <div className="flex-1 bg-slate-50 dark:bg-slate-800/40 rounded-lg"></div>
             </div>
-            <div className="lg:col-span-5 h-[355px] bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs p-4 flex flex-col">
+            <div className="lg:col-span-6 h-[360px] bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs p-4 flex flex-col">
               <div className="h-5 w-40 bg-slate-200 dark:bg-slate-800 rounded mb-4"></div>
               <div className="flex-1 bg-slate-50 dark:bg-slate-800/40 rounded-lg"></div>
             </div>
           </div>
 
-          {/* Row 2: Operations (h-[385px]) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-4 lg:gap-5">
-            <div className="lg:col-span-7 h-[385px] bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs p-4 flex flex-col">
-              <div className="h-5 w-44 bg-slate-200 dark:bg-slate-800 rounded mb-4"></div>
-              <div className="flex-1 bg-slate-50 dark:bg-slate-800/40 rounded-lg"></div>
-            </div>
-            <div className="lg:col-span-5 h-[385px] bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs p-4 flex flex-col">
-              <div className="h-5 w-40 bg-slate-200 dark:bg-slate-800 rounded mb-4"></div>
-              <div className="flex-1 bg-slate-50 dark:bg-slate-800/40 rounded-lg"></div>
-            </div>
+          {/* Row 2: Silo Occupancy (Full Width) */}
+          <div className="w-full min-h-[290px] bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs p-4 flex flex-col">
+            <div className="h-5 w-44 bg-slate-200 dark:bg-slate-800 rounded mb-4"></div>
+            <div className="flex-1 bg-slate-50 dark:bg-slate-800/40 rounded-lg"></div>
+          </div>
+
+          {/* Row 3: Operations Overview (Full Width) */}
+          <div className="w-full min-h-[380px] bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs p-4 flex flex-col">
+            <div className="h-5 w-40 bg-slate-200 dark:bg-slate-800 rounded mb-4"></div>
+            <div className="flex-1 bg-slate-50 dark:bg-slate-800/40 rounded-lg"></div>
           </div>
         </div>
       </div>
@@ -138,33 +138,30 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ language, t, onNa
           <AiOperationalReview t={t} language={language} />
         </div>
 
-        {/* 4. Charts Row: Production Material Mix & Silo Occupancy */}
+        {/* 4. Analytics Row: Production Material Mix & Downtime Pareto Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-4 lg:gap-5">
-          <div className="lg:col-span-7 h-[355px]">
+          <div className="lg:col-span-6 h-[360px]">
             <ProductionMaterialMixChart data={materialUsage} t={t} language={language} />
           </div>
-          <div className="lg:col-span-5 h-[355px]">
-            <SiloOccupancyWidget data={siloData} t={t} language={language} />
+          <div className="lg:col-span-6 h-[360px]">
+            <DowntimeParetoWidget data={downtimePareto} t={t} language={language} />
           </div>
         </div>
 
-        {/* 5. Operations & Downtime Analysis Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-4 lg:gap-5">
-          {/* Left Column: Downtime Pareto Chart */}
-          <div className="lg:col-span-7 h-[385px]">
-            <DowntimeParetoWidget data={downtimePareto} t={t} language={language} />
-          </div>
+        {/* 5. Cement Silo Stock Levels (Full Width Dedicated Row) */}
+        <div className="w-full min-h-[290px]">
+          <SiloOccupancyWidget data={siloData} t={t} language={language} />
+        </div>
 
-          {/* Right Column: Operations Overview */}
-          <div className="lg:col-span-5 h-[385px]">
-            <OperationsOverview
-              unitStatuses={unitStatuses}
-              topDowntimes={topDowntimes}
-              onNavigate={onNavigate}
-              t={t}
-              language={language}
-            />
-          </div>
+        {/* 6. Plant Operations (CM Operations, RKC Operations & Downtime Live Feed) */}
+        <div className="w-full">
+          <OperationsOverview
+            unitStatuses={unitStatuses}
+            topDowntimes={topDowntimes}
+            onNavigate={onNavigate}
+            t={t}
+            language={language}
+          />
         </div>
       </div>
     </div>

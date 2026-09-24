@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '../hooks/useTranslation';
 import { secureStorage } from '../utils/secureStorage';
 import { pb } from '../utils/pocketbase-simple';
+import IndustrialPlantIllustration from '../components/illustrations/IndustrialPlantIllustration';
 
 const LoginPage: React.FC = () => {
   const [identifier, setIdentifier] = useState('');
@@ -111,28 +112,77 @@ const LoginPage: React.FC = () => {
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
-          className="flex-1 text-center lg:text-left hidden md:block"
+          className="flex-1 text-center lg:text-left hidden md:block max-w-2xl"
         >
-          <div className="inline-flex items-center justify-center p-4 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 mb-8 shadow-2xl">
-            <img src="/sipoma-logo.png" alt="SIPOMA Logo" className="w-16 h-16 object-contain" />
+          {/* Corporate Affiliation Badge (Option C) */}
+          <div className="flex items-center gap-3 mb-6 justify-center lg:justify-start">
+            <div className="inline-flex items-center gap-3 px-3.5 py-1.5 bg-white/10 backdrop-blur-xl rounded-xl border border-white/20 shadow-lg">
+              <img
+                src="/sig-logo.png"
+                alt="Semen Indonesia Group (SIG)"
+                className="h-6 w-auto object-contain brightness-105"
+              />
+              <span className="w-px h-4 bg-white/20" />
+              <img
+                src="/tonasa-logo.png"
+                alt="PT Semen Tonasa"
+                className="h-6 w-auto object-contain"
+              />
+              <span className="w-px h-4 bg-white/20" />
+              <span className="text-xs font-semibold text-white/90 tracking-wider">
+                PT SEMEN TONASA
+              </span>
+            </div>
           </div>
-          <h1 className="text-5xl lg:text-7xl font-bold text-white mb-6 tracking-tight">SIPOMA</h1>
-          <p className="text-xl lg:text-2xl text-white/80 leading-relaxed font-light max-w-xl">
+
+          {/* App Brand Header */}
+          <div className="flex items-center gap-4 mb-4 justify-center lg:justify-start">
+            <div className="inline-flex items-center justify-center p-3 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl">
+              <img src="/sipoma-logo.png" alt="SIPOMA Logo" className="w-12 h-12 object-contain" />
+            </div>
+            <div>
+              <h1 className="text-4xl lg:text-5xl font-bold text-white tracking-tight leading-none">
+                SIPOMA
+              </h1>
+              <p className="text-xs lg:text-sm font-medium text-primary-400 mt-1">
+                Modern. Reliable. High Performance.
+              </p>
+            </div>
+          </div>
+
+          <p className="text-base lg:text-lg text-white/80 leading-relaxed font-light max-w-xl mb-4">
             Sistem Informasi Produksi & Operasional Manajemen
-            <span className="block mt-2 font-normal text-primary-400">
-              Modern. Reliable. High Performance.
-            </span>
           </p>
 
-          <div className="mt-12 flex items-center gap-8 justify-center lg:justify-start">
+          {/* Option A: High-Tech Industrial Cement Plant Line-Art & Blueprint Vector */}
+          <div className="relative my-4 p-4 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-md shadow-2xl group">
+            <div className="flex items-center justify-between mb-2 px-1">
+              <span className="text-[10px] uppercase font-mono tracking-widest text-emerald-400/90 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Plant Telemetry & Operational Flow
+              </span>
+              <span className="text-[10px] font-mono text-white/40 tracking-wider">
+                DIGITAL TWIN ARCHITECTURE
+              </span>
+            </div>
+            <IndustrialPlantIllustration className="w-full" />
+          </div>
+
+          {/* Operational Metrics */}
+          <div className="mt-6 flex items-center gap-8 justify-center lg:justify-start">
             <div className="flex flex-col gap-1">
-              <span className="text-3xl font-bold text-white">100%</span>
-              <span className="text-sm text-white/60">Digitalized</span>
+              <span className="text-2xl lg:text-3xl font-bold text-white">100%</span>
+              <span className="text-xs lg:text-sm text-white/60">Digitalized Operations</span>
             </div>
             <div className="w-px h-10 bg-white/20" />
             <div className="flex flex-col gap-1">
-              <span className="text-3xl font-bold text-white">Secure</span>
-              <span className="text-sm text-white/60">Data Flow</span>
+              <span className="text-2xl lg:text-3xl font-bold text-white">Secure</span>
+              <span className="text-xs lg:text-sm text-white/60">Encrypted Data Flow</span>
+            </div>
+            <div className="w-px h-10 bg-white/20" />
+            <div className="flex flex-col gap-1">
+              <span className="text-2xl lg:text-3xl font-bold text-emerald-400">24/7</span>
+              <span className="text-xs lg:text-sm text-white/60">Real-time Telemetry</span>
             </div>
           </div>
         </motion.div>
@@ -146,8 +196,17 @@ const LoginPage: React.FC = () => {
         >
           <div className="glass-card !bg-white/10 !backdrop-blur-2xl !border-white/20 p-8 lg:p-10 rounded-3xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]">
             <div className="mb-10 text-center lg:text-left">
-              <div className="md:hidden flex justify-center mb-6">
-                <img src="/sipoma-logo.png" alt="SIPOMA" className="w-12 h-12" />
+              <div className="md:hidden flex flex-col items-center gap-3 mb-6">
+                <div className="inline-flex items-center gap-2.5 px-3 py-1 bg-white/10 backdrop-blur-xl rounded-xl border border-white/20">
+                  <img src="/sig-logo.png" alt="SIG Logo" className="h-5 w-auto object-contain" />
+                  <span className="w-px h-3 bg-white/20" />
+                  <img
+                    src="/tonasa-logo.png"
+                    alt="Semen Tonasa Logo"
+                    className="h-5 w-auto object-contain"
+                  />
+                </div>
+                <img src="/sipoma-logo.png" alt="SIPOMA" className="w-12 h-12 object-contain" />
               </div>
               <h2 className="text-3xl font-bold text-white mb-2">Welcome</h2>
               <p className="text-white/60 font-medium">Log in to your workspace</p>
