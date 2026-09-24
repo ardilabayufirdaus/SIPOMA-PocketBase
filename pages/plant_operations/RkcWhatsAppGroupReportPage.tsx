@@ -42,39 +42,6 @@ const formatIndonesianNumber = (num: number, decimals: number = 1): string => {
   });
 };
 
-// Helper function to calculate mode (most frequent value) from array of strings
-const calculateTextMode = (
-  values: (string | number | null | undefined | { value: string | number })[]
-): string => {
-  const validValues = values
-    .filter((v) => v !== null && v !== undefined && v !== '')
-    .map((v) => {
-      // Handle both string/number values and complex objects with 'value' property
-      if (typeof v === 'object' && v && 'value' in v) {
-        return String(v.value).trim();
-      }
-      return String(v).trim();
-    })
-    .filter((v) => v !== '');
-  if (validValues.length === 0) return 'N/A';
-
-  const frequency: Record<string, number> = {};
-  validValues.forEach((value) => {
-    frequency[value] = (frequency[value] || 0) + 1;
-  });
-
-  let maxCount = 0;
-  let mode = 'N/A';
-  for (const [value, count] of Object.entries(frequency)) {
-    if (count > maxCount) {
-      maxCount = count;
-      mode = value;
-    }
-  }
-
-  return mode;
-};
-
 // Helper adapter to convert flat RKC data to nested structure expected by report logic
 const adaptRkcParameterData = (flatData: CcrParameterDataFlat[]): CcrParameterDataWithName[] => {
   return flatData.map((item) => {
@@ -446,33 +413,12 @@ const RkcWhatsAppGroupReportPage: React.FC = () => {
           selectedPlantCategory
         );
 
-        const productTypeParam = allParameterData.find((p) => {
-          const paramSetting = parameterSettings.find((s) => s.id === p.parameter_id);
-          return (
-            paramSetting &&
-            (paramSetting.parameter === 'Tipe Produk' ||
-              paramSetting.parameter.toLowerCase().includes('tipe produk')) &&
-            (paramSetting.unit === unit ||
-              paramSetting.unit.includes(unit) ||
-              unit.includes(paramSetting.unit)) &&
-            paramSetting.data_type === 'Text'
-          );
-        });
-
-        let productType = 'N/A';
-        if (productTypeParam && productTypeParam.hourly_values) {
-          const allHours = Array.from({ length: 24 }, (_, i) => i + 1);
-          const productTypeValues = allHours.map((hour) => productTypeParam.hourly_values[hour]);
-          productType = calculateTextMode(productTypeValues);
-        }
-
         const efficiency =
           runningHoursAvg > 0 ? (totalProduction / (feedAvg * runningHoursAvg)) * 100 : 0;
         const statusEmoji = efficiency >= 95 ? '🟢' : efficiency >= 85 ? '🟡' : '🔴';
         const calculatedFeedRate = runningHoursAvg > 0 ? totalProduction / runningHoursAvg : 0;
 
         report += translateWithVars('wag_daily_production', { status: statusEmoji }) + '\n';
-        report += translateWithVars('wag_product_type', { type: productType }) + '\n';
         report +=
           translateWithVars('wag_feed_rate', {
             value: formatIndonesianNumber(calculatedFeedRate, 2),

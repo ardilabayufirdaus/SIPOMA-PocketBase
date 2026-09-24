@@ -196,6 +196,11 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
     setCurrentPage: setCtCurrentPage,
   } = usePagination(cementTypes, 10);
 
+  const activeCementTypes = useMemo(
+    () => cementTypes.filter((c) => c.is_active !== false),
+    [cementTypes]
+  );
+
   // Modal State
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -811,19 +816,40 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
       }
 
       if (parameterSettings.length > 0) {
-        const paramData = parameterSettings.map((param) => ({
-          ID: param.id,
-          Parameter: param.parameter,
-          Data_Type: param.data_type,
-          Unit: param.unit,
-          Category: param.category,
-          Min_Value: param.min_value || '',
-          Max_Value: param.max_value || '',
-          OPC_Min_Value: param.opc_min_value || '',
-          OPC_Max_Value: param.opc_max_value || '',
-          PCC_Min_Value: param.pcc_min_value || '',
-          PCC_Max_Value: param.pcc_max_value || '',
-        }));
+        const paramData = parameterSettings.map((param) => {
+          const row: Record<string, any> = {
+            ID: param.id,
+            Parameter: param.parameter,
+            Data_Type: param.data_type,
+            Unit: param.unit,
+            Category: param.category,
+            Min_Value: param.min_value || '',
+            Max_Value: param.max_value || '',
+            OPC_Min_Value: param.opc_min_value || '',
+            OPC_Max_Value: param.opc_max_value || '',
+            PCC_Min_Value: param.pcc_min_value || '',
+            PCC_Max_Value: param.pcc_max_value || '',
+          };
+          activeCementTypes.forEach((c) => {
+            const lim =
+              param.cement_type_limits?.[c.name] ??
+              param.cement_type_limits?.[c.code] ??
+              param.cement_type_limits?.[c.id];
+            let cMin = lim?.min;
+            let cMax = lim?.max;
+            if (cMin === undefined && (c.code === 'OPC' || c.name === 'OPC'))
+              cMin = param.opc_min_value;
+            if (cMax === undefined && (c.code === 'OPC' || c.name === 'OPC'))
+              cMax = param.opc_max_value;
+            if (cMin === undefined && (c.code === 'PCC' || c.name === 'PCC'))
+              cMin = param.pcc_min_value;
+            if (cMax === undefined && (c.code === 'PCC' || c.name === 'PCC'))
+              cMax = param.pcc_max_value;
+            row[`${c.name}_Min_Value`] = cMin || '';
+            row[`${c.name}_Max_Value`] = cMax || '';
+          });
+          return row;
+        });
         sheets.push({ name: 'Parameter Settings', data: paramData });
       }
 
@@ -921,6 +947,51 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             for (const row of paramData) {
               const dataType = String(row.Data_Type);
               if (dataType !== 'Number' && dataType !== 'Text') continue;
+              const rowLimits: Record<string, { min?: number | null; max?: number | null }> = {};
+              activeCementTypes.forEach((c) => {
+                const keyMin = `${c.name}_Min_Value`;
+                const keyMax = `${c.name}_Max_Value`;
+                const codeMin = `${c.code}_Min_Value`;
+                const codeMax = `${c.code}_Max_Value`;
+                const valMin = row[keyMin] !== undefined ? row[keyMin] : row[codeMin];
+                const valMax = row[keyMax] !== undefined ? row[keyMax] : row[codeMax];
+                if (valMin !== undefined || valMax !== undefined) {
+                  rowLimits[c.code || c.name] = {
+                    min: valMin !== undefined && valMin !== '' ? Number(valMin) : null,
+                    max: valMax !== undefined && valMax !== '' ? Number(valMax) : null,
+                  };
+                }
+              });
+
+              if (row.OPC_Min_Value !== undefined || row.OPC_Max_Value !== undefined) {
+                if (!rowLimits['OPC']) {
+                  rowLimits['OPC'] = {
+                    min:
+                      row.OPC_Min_Value !== undefined && row.OPC_Min_Value !== ''
+                        ? Number(row.OPC_Min_Value)
+                        : null,
+                    max:
+                      row.OPC_Max_Value !== undefined && row.OPC_Max_Value !== ''
+                        ? Number(row.OPC_Max_Value)
+                        : null,
+                  };
+                }
+              }
+
+              if (row.PCC_Min_Value !== undefined || row.PCC_Max_Value !== undefined) {
+                if (!rowLimits['PCC']) {
+                  rowLimits['PCC'] = {
+                    min:
+                      row.PCC_Min_Value !== undefined && row.PCC_Min_Value !== ''
+                        ? Number(row.PCC_Min_Value)
+                        : null,
+                    max:
+                      row.PCC_Max_Value !== undefined && row.PCC_Max_Value !== ''
+                        ? Number(row.PCC_Max_Value)
+                        : null,
+                  };
+                }
+              }
 
               await addParameter({
                 parameter: String(row.Parameter),
@@ -929,10 +1000,19 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                 category: String(row.Category),
                 min_value: row.Min_Value ? Number(row.Min_Value) : null,
                 max_value: row.Max_Value ? Number(row.Max_Value) : null,
-                opc_min_value: row.OPC_Min_Value ? Number(row.OPC_Min_Value) : null,
-                opc_max_value: row.OPC_Max_Value ? Number(row.OPC_Max_Value) : null,
-                pcc_min_value: row.PCC_Min_Value ? Number(row.PCC_Min_Value) : null,
-                pcc_max_value: row.PCC_Max_Value ? Number(row.PCC_Max_Value) : null,
+                opc_min_value: row.OPC_Min_Value
+                  ? Number(row.OPC_Min_Value)
+                  : (rowLimits['OPC']?.min ?? null),
+                opc_max_value: row.OPC_Max_Value
+                  ? Number(row.OPC_Max_Value)
+                  : (rowLimits['OPC']?.max ?? null),
+                pcc_min_value: row.PCC_Min_Value
+                  ? Number(row.PCC_Min_Value)
+                  : (rowLimits['PCC']?.min ?? null),
+                pcc_max_value: row.PCC_Max_Value
+                  ? Number(row.PCC_Max_Value)
+                  : (rowLimits['PCC']?.max ?? null),
+                cement_type_limits: Object.keys(rowLimits).length > 0 ? rowLimits : undefined,
               });
               importCount++;
             }
@@ -1385,10 +1465,12 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                   <th className="px-3.5 py-2.5 whitespace-nowrap">Kategori</th>
                   <th className="px-3.5 py-2.5 whitespace-nowrap">Min</th>
                   <th className="px-3.5 py-2.5 whitespace-nowrap">Max</th>
-                  <th className="px-3.5 py-2.5 whitespace-nowrap">OPC Min</th>
-                  <th className="px-3.5 py-2.5 whitespace-nowrap">OPC Max</th>
-                  <th className="px-3.5 py-2.5 whitespace-nowrap">PCC Min</th>
-                  <th className="px-3.5 py-2.5 whitespace-nowrap">PCC Max</th>
+                  {activeCementTypes.map((c) => (
+                    <React.Fragment key={c.id}>
+                      <th className="px-3.5 py-2.5 whitespace-nowrap">{c.name} Min</th>
+                      <th className="px-3.5 py-2.5 whitespace-nowrap">{c.name} Max</th>
+                    </React.Fragment>
+                  ))}
                   {canWrite && (
                     <th className="px-3.5 py-2.5 text-right whitespace-nowrap w-16">Aksi</th>
                   )}
@@ -1397,7 +1479,10 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
                 {paginatedParams.length === 0 ? (
                   <tr>
-                    <td colSpan={12} className="p-0">
+                    <td
+                      colSpan={7 + activeCementTypes.length * 2 + (canWrite ? 1 : 0)}
+                      className="p-0"
+                    >
                       {renderEmptyState(
                         'Tidak ada parameter yang sesuai dengan filter atau pencarian.',
                         () => handleOpenAddModal('parameterSetting'),
@@ -1447,26 +1532,47 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           ? (param.max_value ?? '-')
                           : '-'}
                       </td>
-                      <td className="px-3.5 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                        {param.data_type === ParameterDataType.NUMBER
-                          ? (param.opc_min_value ?? '-')
-                          : '-'}
-                      </td>
-                      <td className="px-3.5 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                        {param.data_type === ParameterDataType.NUMBER
-                          ? (param.opc_max_value ?? '-')
-                          : '-'}
-                      </td>
-                      <td className="px-3.5 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                        {param.data_type === ParameterDataType.NUMBER
-                          ? (param.pcc_min_value ?? '-')
-                          : '-'}
-                      </td>
-                      <td className="px-3.5 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                        {param.data_type === ParameterDataType.NUMBER
-                          ? (param.pcc_max_value ?? '-')
-                          : '-'}
-                      </td>
+                      {activeCementTypes.map((c) => {
+                        const limit =
+                          param.cement_type_limits?.[c.name] ??
+                          param.cement_type_limits?.[c.code] ??
+                          param.cement_type_limits?.[c.id];
+                        let cMin = limit?.min;
+                        let cMax = limit?.max;
+
+                        // Legacy fallback for OPC / PCC
+                        if (cMin === undefined && (c.code === 'OPC' || c.name === 'OPC')) {
+                          cMin = param.opc_min_value;
+                        }
+                        if (cMax === undefined && (c.code === 'OPC' || c.name === 'OPC')) {
+                          cMax = param.opc_max_value;
+                        }
+                        if (cMin === undefined && (c.code === 'PCC' || c.name === 'PCC')) {
+                          cMin = param.pcc_min_value;
+                        }
+                        if (cMax === undefined && (c.code === 'PCC' || c.name === 'PCC')) {
+                          cMax = param.pcc_max_value;
+                        }
+
+                        return (
+                          <React.Fragment key={c.id}>
+                            <td className="px-3.5 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                              {param.data_type === ParameterDataType.NUMBER
+                                ? cMin !== null && cMin !== undefined
+                                  ? cMin
+                                  : '-'
+                                : '-'}
+                            </td>
+                            <td className="px-3.5 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                              {param.data_type === ParameterDataType.NUMBER
+                                ? cMax !== null && cMax !== undefined
+                                  ? cMax
+                                  : '-'
+                                : '-'}
+                            </td>
+                          </React.Fragment>
+                        );
+                      })}
                       {canWrite && (
                         <td className="px-3.5 py-2 text-right whitespace-nowrap">
                           <div className="flex items-center justify-end gap-1">
@@ -2781,6 +2887,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             t={t}
             plantUnits={plantUnits}
             loading={plantUnitsLoading}
+            cementTypes={activeCementTypes}
           />
         )}
         {activeModal === 'siloCapacity' && (

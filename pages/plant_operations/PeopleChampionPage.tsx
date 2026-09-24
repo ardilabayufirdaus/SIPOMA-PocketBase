@@ -22,6 +22,7 @@ import { useDerivativeParameterSettings } from '../../hooks/useDerivativeParamet
 import { useCopParameters } from '../../hooks/useCopParameters';
 import { useRkcCopParameters } from '../../hooks/useRkcCopParameters';
 import { useDerivativeCopParameters } from '../../hooks/useDerivativeCopParameters';
+import { useCementTypes } from '../../hooks/useCementTypes';
 import { pb } from '../../utils/pocketbase-simple';
 import Modal from '../../components/Modal';
 import { Card } from '../../components/ui/Card';
@@ -63,6 +64,19 @@ const getMinMaxForCementType = (
   parameter: ParameterSetting,
   cementType: string
 ): { min: number | undefined; max: number | undefined } => {
+  if (parameter.cement_type_limits && cementType) {
+    const limit =
+      parameter.cement_type_limits[cementType] ??
+      parameter.cement_type_limits[cementType.toUpperCase()] ??
+      parameter.cement_type_limits[cementType.toLowerCase()];
+    if (limit && (limit.min !== undefined || limit.max !== undefined)) {
+      return {
+        min: limit.min !== null && limit.min !== undefined ? limit.min : parameter.min_value,
+        max: limit.max !== null && limit.max !== undefined ? limit.max : parameter.max_value,
+      };
+    }
+  }
+
   if (cementType === 'OPC') {
     return {
       min: parameter.opc_min_value ?? parameter.min_value,
@@ -394,6 +408,7 @@ const PeopleChampionPage: React.FC<PeopleChampionPageProps> = ({ section = 'CM' 
   }, [section, cmUnits.records, rkcUnits.records, derivativeUnits.records]);
 
   const { users } = useUsers();
+  const { records: cementTypes } = useCementTypes();
 
   const { currentUser: loggedInUser } = useCurrentUser();
   const permissionChecker = usePermissions(loggedInUser);
@@ -671,8 +686,19 @@ const PeopleChampionPage: React.FC<PeopleChampionPageProps> = ({ section = 'CM' 
           // If we want the breakdown to match this "Any Range" logic, the "Target" column is tricky.
           // We will store the general min/max for display purposes.
 
-          const displayMin = paramSetting.min_value ?? paramSetting.opc_min_value ?? 0;
-          const displayMax = paramSetting.max_value ?? paramSetting.opc_max_value ?? 0;
+          let displayMin = paramSetting.min_value;
+          let displayMax = paramSetting.max_value;
+          if (paramSetting.cement_type_limits) {
+            const firstValid = Object.values(paramSetting.cement_type_limits).find(
+              (l) => l && (l.min !== null || l.max !== null)
+            );
+            if (firstValid) {
+              if (displayMin === undefined && firstValid.min !== null) displayMin = firstValid.min;
+              if (displayMax === undefined && firstValid.max !== null) displayMax = firstValid.max;
+            }
+          }
+          if (displayMin === undefined) displayMin = paramSetting.opc_min_value ?? 0;
+          if (displayMax === undefined) displayMax = paramSetting.opc_max_value ?? 0;
 
           if (!opData.parameters.has(record.parameter_id)) {
             opData.parameters.set(record.parameter_id, {
@@ -696,23 +722,51 @@ const PeopleChampionPage: React.FC<PeopleChampionPageProps> = ({ section = 'CM' 
 
               const generalMin = paramSetting.min_value;
               const generalMax = paramSetting.max_value;
-              const opcMin = paramSetting.opc_min_value;
-              const opcMax = paramSetting.opc_max_value;
-              const pccMin = paramSetting.pcc_min_value;
-              const pccMax = paramSetting.pcc_max_value;
-              const inRange =
-                (generalMin !== undefined &&
-                  generalMax !== undefined &&
-                  value >= generalMin &&
-                  value <= generalMax) ||
-                (opcMin !== undefined &&
-                  opcMax !== undefined &&
-                  value >= opcMin &&
-                  value <= opcMax) ||
-                (pccMin !== undefined &&
-                  pccMax !== undefined &&
-                  value >= pccMin &&
-                  value <= pccMax);
+              let inRange = false;
+              if (
+                generalMin !== undefined &&
+                generalMax !== undefined &&
+                generalMin !== null &&
+                generalMax !== null &&
+                value >= generalMin &&
+                value <= generalMax
+              ) {
+                inRange = true;
+              } else if (paramSetting.cement_type_limits) {
+                for (const limit of Object.values(paramSetting.cement_type_limits)) {
+                  if (
+                    limit &&
+                    limit.min !== null &&
+                    limit.min !== undefined &&
+                    limit.max !== null &&
+                    limit.max !== undefined &&
+                    value >= limit.min &&
+                    value <= limit.max
+                  ) {
+                    inRange = true;
+                    break;
+                  }
+                }
+              }
+              if (!inRange) {
+                const opcMin = paramSetting.opc_min_value;
+                const opcMax = paramSetting.opc_max_value;
+                const pccMin = paramSetting.pcc_min_value;
+                const pccMax = paramSetting.pcc_max_value;
+                inRange =
+                  (opcMin !== undefined &&
+                    opcMax !== undefined &&
+                    opcMin !== null &&
+                    opcMax !== null &&
+                    value >= opcMin &&
+                    value <= opcMax) ||
+                  (pccMin !== undefined &&
+                    pccMax !== undefined &&
+                    pccMin !== null &&
+                    pccMax !== null &&
+                    value >= pccMin &&
+                    value <= pccMax);
+              }
               if (inRange) {
                 opData.totalInRange++;
                 paramStat.inRangeCount++;
@@ -1129,12 +1183,17 @@ const PeopleChampionPage: React.FC<PeopleChampionPageProps> = ({ section = 'CM' 
                   <option value="" className="dark:bg-slate-900">
                     Pilih Cement Type
                   </option>
-                  <option value="OPC" className="dark:bg-slate-900">
-                    OPC
-                  </option>
-                  <option value="PCC" className="dark:bg-slate-900">
-                    PCC
-                  </option>
+                  {cementTypes
+                    .filter((c) => c.is_active !== false)
+                    .map((type) => (
+                      <option
+                        key={type.id || type.name}
+                        value={type.name}
+                        className="dark:bg-slate-900"
+                      >
+                        {type.name}
+                      </option>
+                    ))}
                 </select>
                 <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
               </div>

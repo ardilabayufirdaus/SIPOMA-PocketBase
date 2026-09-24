@@ -24,6 +24,7 @@ interface ParameterSetting {
   pcc_max_value?: number;
   min_value?: number;
   max_value?: number;
+  cement_type_limits?: Record<string, { min?: number | null; max?: number | null }>;
 }
 
 // Analysis data row interface
@@ -39,6 +40,19 @@ function getMinMaxForCementType(
   parameter: ParameterSetting,
   cementType: string
 ): { min: number | undefined; max: number | undefined } {
+  if (parameter.cement_type_limits && cementType) {
+    const limit =
+      parameter.cement_type_limits[cementType] ??
+      parameter.cement_type_limits[cementType.toUpperCase()] ??
+      parameter.cement_type_limits[cementType.toLowerCase()];
+    if (limit && (limit.min !== undefined || limit.max !== undefined)) {
+      return {
+        min: limit.min !== null && limit.min !== undefined ? limit.min : parameter.min_value,
+        max: limit.max !== null && limit.max !== undefined ? limit.max : parameter.max_value,
+      };
+    }
+  }
+
   if (cementType === 'OPC') {
     return {
       min: parameter.opc_min_value ?? parameter.min_value,

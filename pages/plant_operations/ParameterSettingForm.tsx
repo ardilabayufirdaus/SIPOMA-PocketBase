@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
-import { PlantUnit, ParameterSetting, ParameterDataType } from '../../types';
+import { PlantUnit, ParameterSetting, ParameterDataType, CementType } from '../../types';
 import { Settings, CheckCircle, AlertCircle, BarChart3 } from 'lucide-react';
+import { useCementTypes } from '../../hooks/useCementTypes';
 
 // Import Enhanced Components
 import { EnhancedButton } from '../../components/ui/EnhancedComponents';
@@ -15,6 +16,7 @@ interface FormProps {
   plantUnits?: PlantUnit[];
   loading?: boolean;
   hideCementSettings?: boolean;
+  cementTypes?: CementType[];
 }
 
 const ParameterSettingForm: React.FC<FormProps> = ({
@@ -25,6 +27,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
   plantUnits: providedPlantUnits,
   loading: providedLoading,
   hideCementSettings = false,
+  cementTypes: providedCementTypes,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const formRef = React.useRef<HTMLFormElement>(null);
@@ -42,12 +45,22 @@ const ParameterSettingForm: React.FC<FormProps> = ({
     is_oee_feeder: false,
     is_oee_quality: false,
   });
+  const [cementTypeLimits, setCementTypeLimits] = useState<
+    Record<string, { min?: number | undefined; max?: number | undefined }>
+  >({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const { records: hookPlantUnits, loading: hookPlantUnitsLoading } = usePlantUnits();
   const plantUnits = providedPlantUnits !== undefined ? providedPlantUnits : hookPlantUnits;
   const plantUnitsLoading = providedLoading !== undefined ? providedLoading : hookPlantUnitsLoading;
+
+  const { records: hookCementTypes } = useCementTypes();
+  const availableCementTypes = useMemo(() => {
+    if (hideCementSettings) return [];
+    const list = providedCementTypes !== undefined ? providedCementTypes : hookCementTypes;
+    return list.filter((c) => c.is_active !== false);
+  }, [hideCementSettings, providedCementTypes, hookCementTypes]);
 
   const categoryOptions = useMemo(() => {
     let categories = Array.from(new Set(plantUnits.map((u) => u.category)));
@@ -170,6 +183,23 @@ const ParameterSettingForm: React.FC<FormProps> = ({
       const err = validateField(key, value);
       if (err) newErrors[key] = err;
     });
+
+    if (!hideCementSettings && availableCementTypes.length > 0) {
+      availableCementTypes.forEach((c) => {
+        const lim = cementTypeLimits[c.name];
+        if (
+          lim &&
+          lim.min !== undefined &&
+          lim.min !== null &&
+          lim.max !== undefined &&
+          lim.max !== null &&
+          lim.min > lim.max
+        ) {
+          newErrors[`cement_${c.name}`] = `${c.name} Min tidak boleh lebih dari ${c.name} Max`;
+        }
+      });
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -237,11 +267,37 @@ const ParameterSettingForm: React.FC<FormProps> = ({
       return;
     }
     setIsSubmitting(true);
+
+    const finalLimits: Record<string, { min: number | null; max: number | null }> = {};
+    if (!hideCementSettings) {
+      availableCementTypes.forEach((c) => {
+        const lim = cementTypeLimits[c.name];
+        finalLimits[c.name] = {
+          min: lim?.min !== undefined && lim?.min !== null ? Number(lim.min) : null,
+          max: lim?.max !== undefined && lim?.max !== null ? Number(lim.max) : null,
+        };
+      });
+    }
+
+    const opcItem = availableCementTypes.find((c) => c.name === 'OPC' || c.code === 'OPC');
+    const pccItem = availableCementTypes.find((c) => c.name === 'PCC' || c.code === 'PCC');
+    const opcLim = opcItem ? finalLimits[opcItem.name] : null;
+    const pccLim = pccItem ? finalLimits[pccItem.name] : null;
+
+    const submissionData = {
+      ...formData,
+      cement_type_limits: hideCementSettings ? undefined : finalLimits,
+      opc_min_value: opcLim && opcLim.min !== null ? opcLim.min : (formData.opc_min_value ?? null),
+      opc_max_value: opcLim && opcLim.max !== null ? opcLim.max : (formData.opc_max_value ?? null),
+      pcc_min_value: pccLim && pccLim.min !== null ? pccLim.min : (formData.pcc_min_value ?? null),
+      pcc_max_value: pccLim && pccLim.max !== null ? pccLim.max : (formData.pcc_max_value ?? null),
+    };
+
     setTimeout(() => {
       if (recordToEdit) {
-        onSave({ ...recordToEdit, ...formData });
+        onSave({ ...recordToEdit, ...submissionData });
       } else {
-        onSave(formData);
+        onSave(submissionData);
       }
       setIsSubmitting(false);
     }, 1000);
@@ -263,6 +319,28 @@ const ParameterSettingForm: React.FC<FormProps> = ({
         is_oee_feeder: recordToEdit.is_oee_feeder ?? false,
         is_oee_quality: recordToEdit.is_oee_quality ?? false,
       });
+
+      const limits: Record<string, { min?: number | undefined; max?: number | undefined }> = {};
+      availableCementTypes.forEach((c) => {
+        const existing =
+          recordToEdit.cement_type_limits?.[c.name] ??
+          recordToEdit.cement_type_limits?.[c.code] ??
+          recordToEdit.cement_type_limits?.[c.id];
+        let min = existing?.min !== null ? existing?.min : undefined;
+        let max = existing?.max !== null ? existing?.max : undefined;
+
+        if (min === undefined && (c.code === 'OPC' || c.name === 'OPC'))
+          min = recordToEdit.opc_min_value ?? undefined;
+        if (max === undefined && (c.code === 'OPC' || c.name === 'OPC'))
+          max = recordToEdit.opc_max_value ?? undefined;
+        if (min === undefined && (c.code === 'PCC' || c.name === 'PCC'))
+          min = recordToEdit.pcc_min_value ?? undefined;
+        if (max === undefined && (c.code === 'PCC' || c.name === 'PCC'))
+          max = recordToEdit.pcc_max_value ?? undefined;
+
+        limits[c.name] = { min, max };
+      });
+      setCementTypeLimits(limits);
     } else {
       setFormData({
         parameter: '',
@@ -278,8 +356,13 @@ const ParameterSettingForm: React.FC<FormProps> = ({
         is_oee_feeder: false,
         is_oee_quality: false,
       });
+      const limits: Record<string, { min?: number | undefined; max?: number | undefined }> = {};
+      availableCementTypes.forEach((c) => {
+        limits[c.name] = { min: undefined, max: undefined };
+      });
+      setCementTypeLimits(limits);
     }
-  }, [recordToEdit]);
+  }, [recordToEdit, availableCementTypes]);
 
   return (
     <motion.div
@@ -531,45 +614,102 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                   </div>
                 </div>
 
-                {!hideCementSettings && (
-                  <div className="bg-[#059669]/5 rounded-lg p-4">
-                    <h4 className="text-lg font-medium text-[#333333] mb-4 flex items-center">
-                      <BarChart3 className="h-5 w-5 mr-2 text-[#059669]" />
-                      OPC Cement Settings
-                    </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label
-                          htmlFor="opc_min_value"
-                          className="block text-sm font-medium text-[#333333]"
-                        >
-                          OPC Min Value
-                        </label>
-                        <input
-                          type="number"
-                          name="opc_min_value"
-                          id="opc_min_value"
-                          value={formData.opc_min_value?.toString() || ''}
-                          onChange={handleChange}
-                          className="block w-full px-4 py-3 bg-white border border-[#94a3b8]/50 rounded-lg sm:text-sm"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label
-                          htmlFor="opc_max_value"
-                          className="block text-sm font-medium text-[#333333]"
-                        >
-                          OPC Max Value
-                        </label>
-                        <input
-                          type="number"
-                          name="opc_max_value"
-                          id="opc_max_value"
-                          value={formData.opc_max_value?.toString() || ''}
-                          onChange={handleChange}
-                          className="block w-full px-4 py-3 bg-white border border-[#94a3b8]/50 rounded-lg sm:text-sm"
-                        />
-                      </div>
+                {!hideCementSettings && availableCementTypes.length > 0 && (
+                  <div className="bg-[#059669]/5 rounded-lg p-5 border border-[#059669]/20 space-y-4">
+                    <div className="flex items-center justify-between border-b border-[#059669]/20 pb-2">
+                      <h4 className="text-base font-semibold text-[#111827] flex items-center">
+                        <BarChart3 className="h-5 w-5 mr-2 text-[#059669]" />
+                        Batas Nilai Berdasarkan Tipe Produk / Semen
+                      </h4>
+                      <span className="text-xs text-[#059669] font-semibold">
+                        {availableCementTypes.length} Tipe Produk
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {availableCementTypes.map((c) => {
+                        const lim = cementTypeLimits[c.name] || {};
+                        const errKey = `cement_${c.name}`;
+                        const hasErr = !!errors[errKey];
+
+                        return (
+                          <div
+                            key={c.id}
+                            className="p-4 rounded-lg bg-white border border-[#94a3b8]/30 shadow-sm space-y-3"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-semibold text-sm text-[#111827] flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-[#059669] inline-block" />
+                                {c.name}
+                              </span>
+                              <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-[#059669]/10 text-[#059669] border border-[#059669]/30">
+                                {c.code || c.name}
+                              </span>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label
+                                  htmlFor={`limit_${c.name}_min`}
+                                  className="block text-xs font-medium text-[#333333] mb-1"
+                                >
+                                  Min
+                                </label>
+                                <input
+                                  type="number"
+                                  id={`limit_${c.name}_min`}
+                                  value={lim.min !== undefined && lim.min !== null ? lim.min : ''}
+                                  onChange={(e) => {
+                                    const val =
+                                      e.target.value === ''
+                                        ? undefined
+                                        : parseFloat(e.target.value);
+                                    setCementTypeLimits((prev) => ({
+                                      ...prev,
+                                      [c.name]: { ...prev[c.name], min: val },
+                                    }));
+                                  }}
+                                  placeholder="0"
+                                  className="block w-full px-3 py-2 bg-white border border-[#94a3b8]/50 rounded-lg text-sm font-mono text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669]"
+                                />
+                              </div>
+
+                              <div>
+                                <label
+                                  htmlFor={`limit_${c.name}_max`}
+                                  className="block text-xs font-medium text-[#333333] mb-1"
+                                >
+                                  Max
+                                </label>
+                                <input
+                                  type="number"
+                                  id={`limit_${c.name}_max`}
+                                  value={lim.max !== undefined && lim.max !== null ? lim.max : ''}
+                                  onChange={(e) => {
+                                    const val =
+                                      e.target.value === ''
+                                        ? undefined
+                                        : parseFloat(e.target.value);
+                                    setCementTypeLimits((prev) => ({
+                                      ...prev,
+                                      [c.name]: { ...prev[c.name], max: val },
+                                    }));
+                                  }}
+                                  placeholder="100"
+                                  className="block w-full px-3 py-2 bg-white border border-[#94a3b8]/50 rounded-lg text-sm font-mono text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669]"
+                                />
+                              </div>
+                            </div>
+
+                            {hasErr && (
+                              <p className="text-xs text-[#C7162B] flex items-center gap-1 mt-1">
+                                <AlertCircle className="w-3.5 h-3.5" />
+                                {errors[errKey]}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

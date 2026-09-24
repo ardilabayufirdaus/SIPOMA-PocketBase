@@ -93,6 +93,11 @@ export enum ParameterDataType {
   TEXT = 'Text',
 }
 
+export interface CementTypeLimit {
+  min?: number | null;
+  max?: number | null;
+}
+
 export interface ParameterSetting {
   id: string;
   parameter: string;
@@ -105,6 +110,7 @@ export interface ParameterSetting {
   opc_max_value?: number;
   pcc_min_value?: number;
   pcc_max_value?: number;
+  cement_type_limits?: Record<string, CementTypeLimit>;
   is_oee_feeder?: boolean;
   is_oee_quality?: boolean;
 }

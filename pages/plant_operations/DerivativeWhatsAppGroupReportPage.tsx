@@ -448,30 +448,12 @@ const DerivativeWhatsAppGroupReportPage: React.FC = () => {
           selectedPlantCategory
         );
 
-        const productTypeParam = allParameterData.find((p) => {
-          const paramSetting = parameterSettings.find((s) => s.id === p.parameter_id);
-          return (
-            paramSetting &&
-            (paramSetting.parameter === 'Tipe Produk' ||
-              paramSetting.parameter.toLowerCase().includes('tipe produk')) &&
-            paramSetting.data_type === 'Text'
-          );
-        });
-
-        let productType = 'N/A';
-        if (productTypeParam && productTypeParam.hourly_values) {
-          const allHours = Array.from({ length: 24 }, (_, i) => i + 1);
-          const productTypeValues = allHours.map((hour) => productTypeParam.hourly_values[hour]);
-          productType = calculateTextMode(productTypeValues);
-        }
-
         const efficiency =
           runningHoursAvg > 0 ? (totalProduction / (feedAvg * runningHoursAvg)) * 100 : 0;
         const statusEmoji = efficiency >= 95 ? '🟢' : efficiency >= 85 ? '🟡' : '🔴';
         const calculatedFeedRate = runningHoursAvg > 0 ? totalProduction / runningHoursAvg : 0;
 
         report += `• Status: ${statusEmoji}\n`;
-        report += `• Tipe Produk: ${productType}\n`;
         report += `• Laju Umpan: ${formatIndonesianNumber(calculatedFeedRate, 2)} TPH\n`;
         report += `• Jam Operasi: ${formatIndonesianNumber(runningHoursAvg, 2)} Jam\n`;
         report += `• Total Produksi: ${formatIndonesianNumber(totalProduction, 2)} Ton\n\n`;
@@ -516,13 +498,7 @@ const DerivativeWhatsAppGroupReportPage: React.FC = () => {
         }
 
         // Summary keywords already displayed in top section
-        const summaryKeywords = [
-          'tipe produk',
-          'product type',
-          'running hours',
-          'jam operasi',
-          'operation hours',
-        ];
+        const summaryKeywords = ['running hours', 'jam operasi', 'operation hours'];
 
         const detailParameters = unitParameters.filter((p) => {
           const pLower = p.parameter.toLowerCase();

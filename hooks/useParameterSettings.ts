@@ -165,6 +165,8 @@ export const useParameterSettings = () => {
         opc_max_value: record.opc_max_value === undefined ? null : record.opc_max_value,
         pcc_min_value: record.pcc_min_value === undefined ? null : record.pcc_min_value,
         pcc_max_value: record.pcc_max_value === undefined ? null : record.pcc_max_value,
+        cement_type_limits:
+          record.cement_type_limits !== undefined ? record.cement_type_limits : null,
       };
 
       try {
@@ -190,6 +192,8 @@ export const useParameterSettings = () => {
         opc_max_value: updateData.opc_max_value === undefined ? null : updateData.opc_max_value,
         pcc_min_value: updateData.pcc_min_value === undefined ? null : updateData.pcc_min_value,
         pcc_max_value: updateData.pcc_max_value === undefined ? null : updateData.pcc_max_value,
+        cement_type_limits:
+          updateData.cement_type_limits !== undefined ? updateData.cement_type_limits : null,
       };
 
       try {

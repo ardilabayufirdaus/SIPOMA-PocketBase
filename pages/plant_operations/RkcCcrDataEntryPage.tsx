@@ -4342,10 +4342,6 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                   : String(hourValue);
                             }
 
-                            const isProductTypeParameter = param.parameter
-                              .toLowerCase()
-                              .includes('tipe produk');
-
                             // Determine cell background and text color based on parameter value vs min/max (Sesuai COP Analysis)
                             let cellBgClass =
                               hour % 2 === 0
@@ -4355,11 +4351,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                               'text-slate-800 dark:text-slate-200 font-mono font-medium';
                             let cellBorderClass = 'border-transparent';
 
-                            if (
-                              param.data_type === ParameterDataType.NUMBER &&
-                              value &&
-                              !isProductTypeParameter
-                            ) {
+                            if (param.data_type === ParameterDataType.NUMBER && value) {
                               const numValue = parseIndonesianNumber(value);
                               if (numValue !== null) {
                                 const isBelowMin =
@@ -4397,129 +4389,91 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                 role="gridcell"
                               >
                                 <div className="relative flex items-center justify-center">
-                                  {isProductTypeParameter ? (
-                                    <select
-                                      ref={(el) => {
-                                        const refKey = getInputRef(
-                                          'parameter',
-                                          hour - 1,
-                                          paramIndex
-                                        );
-                                        setInputRef(refKey, el);
-                                      }}
-                                      value={value}
-                                      onChange={(e) => {
-                                        handleParameterDataChange(param.id, hour, e.target.value);
-                                      }}
-                                      onBlur={(e) => {
-                                        saveParameterChange(param.id, hour, e.target.value);
-                                      }}
-                                      onKeyDown={(e) =>
-                                        handleKeyDown(e, 'parameter', hour - 1, paramIndex)
+                                  <input
+                                    ref={(el) => {
+                                      const refKey = getInputRef('parameter', hour - 1, paramIndex);
+                                      setInputRef(refKey, el);
+                                    }}
+                                    type="text"
+                                    value={value}
+                                    onChange={(e) => {
+                                      let newValue = e.target.value;
+
+                                      if (newValue.endsWith('.')) {
+                                        newValue = newValue.slice(0, -1) + ',';
                                       }
-                                      disabled={!canWrite}
-                                      className={`w-full h-7 text-center text-xs px-1 border border-transparent focus:border-primary-500 rounded focus:ring-1 focus:ring-primary-500 ${cellTextClass} ${
-                                        isCurrentlySaving ? 'opacity-50 cursor-not-allowed' : ''
-                                      }`}
-                                      aria-label={`${t.parameter} ${param.parameter} ${t.hour} ${hour}`}
-                                      title={`${t.choose_product_type} ${t.hour} ${hour}`}
-                                    >
-                                      <option value="">{t.choose_product_type}</option>
-                                      <option value="OPC">OPC</option>
-                                      <option value="PCC">PCC</option>
-                                    </select>
-                                  ) : (
-                                    <input
-                                      ref={(el) => {
-                                        const refKey = getInputRef(
-                                          'parameter',
-                                          hour - 1,
-                                          paramIndex
-                                        );
-                                        setInputRef(refKey, el);
-                                      }}
-                                      type="text"
-                                      value={value}
-                                      onChange={(e) => {
-                                        let newValue = e.target.value;
 
-                                        if (newValue.endsWith('.')) {
-                                          newValue = newValue.slice(0, -1) + ',';
-                                        }
+                                      if (newValue !== '-' && newValue !== '') {
+                                        const parts = newValue.split(',');
+                                        let integerPart = parts[0];
+                                        const decimalPart = parts.length > 1 ? ',' + parts[1] : '';
 
-                                        if (newValue !== '-' && newValue !== '') {
-                                          const parts = newValue.split(',');
-                                          let integerPart = parts[0];
-                                          const decimalPart =
-                                            parts.length > 1 ? ',' + parts[1] : '';
+                                        const dotCount = (integerPart.match(/\./g) || []).length;
+                                        if (dotCount > 0) {
+                                          const lastDotIndex = integerPart.lastIndexOf('.');
+                                          const charsAfterDot =
+                                            integerPart.length - lastDotIndex - 1;
 
-                                          const dotCount = (integerPart.match(/\./g) || []).length;
-                                          if (dotCount > 0) {
-                                            const lastDotIndex = integerPart.lastIndexOf('.');
-                                            const charsAfterDot =
-                                              integerPart.length - lastDotIndex - 1;
-
-                                            if (
-                                              dotCount > 1 ||
-                                              charsAfterDot === 3 ||
-                                              decimalPart !== ''
-                                            ) {
-                                              integerPart = integerPart.replace(/\./g, '');
-                                            }
-                                          }
-
-                                          const cleanInt = integerPart.replace(/\./g, '');
-                                          if (!isNaN(Number(cleanInt)) && cleanInt !== '') {
-                                            if (cleanInt.includes('.')) {
-                                              newValue =
-                                                cleanInt.replace('.', ',') +
-                                                decimalPart.replace(',', '');
-                                            } else {
-                                              integerPart = cleanInt.replace(
-                                                /\B(?=(\d{3})+(?!\d))/g,
-                                                '.'
-                                              );
-                                              newValue = integerPart + decimalPart;
-                                            }
+                                          if (
+                                            dotCount > 1 ||
+                                            charsAfterDot === 3 ||
+                                            decimalPart !== ''
+                                          ) {
+                                            integerPart = integerPart.replace(/\./g, '');
                                           }
                                         }
 
-                                        handleParameterDataChange(param.id, hour, newValue);
-                                      }}
-                                      onBlur={async (e) => {
-                                        if (param.data_type === ParameterDataType.NUMBER) {
-                                          const parsed = parseIndonesianNumber(e.target.value);
-                                          if (parsed !== null) {
-                                            e.target.value = formatIndonesianInput(
-                                              parsed,
-                                              getPrecisionForParameter(param.parameter, param.unit)
+                                        const cleanInt = integerPart.replace(/\./g, '');
+                                        if (!isNaN(Number(cleanInt)) && cleanInt !== '') {
+                                          if (cleanInt.includes('.')) {
+                                            newValue =
+                                              cleanInt.replace('.', ',') +
+                                              decimalPart.replace(',', '');
+                                          } else {
+                                            integerPart = cleanInt.replace(
+                                              /\B(?=(\d{3})+(?!\d))/g,
+                                              '.'
                                             );
+                                            newValue = integerPart + decimalPart;
                                           }
                                         }
-
-                                        const value =
-                                          param.data_type === ParameterDataType.NUMBER
-                                            ? parseIndonesianNumber(e.target.value) !== null
-                                              ? parseIndonesianNumber(e.target.value)?.toString()
-                                              : ''
-                                            : e.target.value;
-
-                                        await saveParameterChange(param.id, hour, value || '');
-                                      }}
-                                      onKeyDown={(e) =>
-                                        handleKeyDown(e, 'parameter', hour - 1, paramIndex)
                                       }
-                                      disabled={!canWrite}
-                                      className={`w-full h-7 text-center font-mono text-xs font-semibold px-1 py-0.5 border border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-primary-500 focus:rounded ${cellTextClass}`}
-                                      aria-label={`${t.parameter} ${param.parameter} ${t.hour} ${hour}`}
-                                      title={`${t.parameter} ${param.parameter} ${t.hour} ${hour}`}
-                                      placeholder={
+
+                                      handleParameterDataChange(param.id, hour, newValue);
+                                    }}
+                                    onBlur={async (e) => {
+                                      if (param.data_type === ParameterDataType.NUMBER) {
+                                        const parsed = parseIndonesianNumber(e.target.value);
+                                        if (parsed !== null) {
+                                          e.target.value = formatIndonesianInput(
+                                            parsed,
+                                            getPrecisionForParameter(param.parameter, param.unit)
+                                          );
+                                        }
+                                      }
+
+                                      const value =
                                         param.data_type === ParameterDataType.NUMBER
-                                          ? ''
-                                          : t.placeholder_information
-                                      }
-                                    />
-                                  )}
+                                          ? parseIndonesianNumber(e.target.value) !== null
+                                            ? parseIndonesianNumber(e.target.value)?.toString()
+                                            : ''
+                                          : e.target.value;
+
+                                      await saveParameterChange(param.id, hour, value || '');
+                                    }}
+                                    onKeyDown={(e) =>
+                                      handleKeyDown(e, 'parameter', hour - 1, paramIndex)
+                                    }
+                                    disabled={!canWrite}
+                                    className={`w-full h-7 text-center font-mono text-xs font-semibold px-1 py-0.5 border border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-primary-500 focus:rounded ${cellTextClass}`}
+                                    aria-label={`${t.parameter} ${param.parameter} ${t.hour} ${hour}`}
+                                    title={`${t.parameter} ${param.parameter} ${t.hour} ${hour}`}
+                                    placeholder={
+                                      param.data_type === ParameterDataType.NUMBER
+                                        ? ''
+                                        : t.placeholder_information
+                                    }
+                                  />
                                 </div>
                               </td>
                             );

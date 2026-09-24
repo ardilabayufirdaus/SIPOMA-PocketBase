@@ -922,10 +922,6 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                   <th className="px-3.5 py-2.5 whitespace-nowrap">{t['category'] || 'Kategori'}</th>
                   <th className="px-3.5 py-2.5 whitespace-nowrap">Min</th>
                   <th className="px-3.5 py-2.5 whitespace-nowrap">Max</th>
-                  <th className="px-3.5 py-2.5 whitespace-nowrap">OPC Min</th>
-                  <th className="px-3.5 py-2.5 whitespace-nowrap">OPC Max</th>
-                  <th className="px-3.5 py-2.5 whitespace-nowrap">PCC Min</th>
-                  <th className="px-3.5 py-2.5 whitespace-nowrap">PCC Max</th>
                   {canWrite && (
                     <th className="px-3.5 py-2.5 text-right whitespace-nowrap w-20">Aksi</th>
                   )}
@@ -934,7 +930,7 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
                 {paginatedParams.length === 0 ? (
                   <tr>
-                    <td colSpan={canWrite ? 12 : 11} className="p-0">
+                    <td colSpan={canWrite ? 8 : 7} className="p-0">
                       {renderEmptyState(
                         'Tidak ada parameter untuk filter yang dipilih.',
                         () => handleOpenAddModal('parameterSetting'),
@@ -982,26 +978,6 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
                       <td className="px-3.5 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
                         {param.data_type === ParameterDataType.NUMBER
                           ? (param.max_value ?? '-')
-                          : '-'}
-                      </td>
-                      <td className="px-3.5 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                        {param.data_type === ParameterDataType.NUMBER
-                          ? (param.opc_min_value ?? '-')
-                          : '-'}
-                      </td>
-                      <td className="px-3.5 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                        {param.data_type === ParameterDataType.NUMBER
-                          ? (param.opc_max_value ?? '-')
-                          : '-'}
-                      </td>
-                      <td className="px-3.5 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                        {param.data_type === ParameterDataType.NUMBER
-                          ? (param.pcc_min_value ?? '-')
-                          : '-'}
-                      </td>
-                      <td className="px-3.5 py-2 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                        {param.data_type === ParameterDataType.NUMBER
-                          ? (param.pcc_max_value ?? '-')
                           : '-'}
                       </td>
                       {canWrite && (
@@ -1889,6 +1865,7 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
             t={t}
             plantUnits={plantUnits}
             loading={plantUnitsLoading}
+            hideCementSettings={true}
           />
         )}
         {activeModal === 'siloCapacity' && (

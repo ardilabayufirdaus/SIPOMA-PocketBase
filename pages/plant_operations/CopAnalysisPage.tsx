@@ -1,6 +1,6 @@
 /// <reference types="node" />
 
-import React, { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import {
   ChevronDown,
   TrendingUp,
@@ -98,6 +98,19 @@ const getMinMaxForCementType = (
   parameter: ParameterSetting,
   cementType: string
 ): { min: number | undefined; max: number | undefined } => {
+  if (parameter.cement_type_limits && cementType) {
+    const limit =
+      parameter.cement_type_limits[cementType] ??
+      parameter.cement_type_limits[cementType.toUpperCase()] ??
+      parameter.cement_type_limits[cementType.toLowerCase()];
+    if (limit && (limit.min !== undefined || limit.max !== undefined)) {
+      return {
+        min: limit.min !== null && limit.min !== undefined ? limit.min : parameter.min_value,
+        max: limit.max !== null && limit.max !== undefined ? limit.max : parameter.max_value,
+      };
+    }
+  }
+
   if (cementType === 'OPC') {
     return {
       min: parameter.opc_min_value ?? parameter.min_value,
@@ -1164,6 +1177,19 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     }
   }, [plantUnits, selectedCategory, selectedUnit]);
 
+  // Active cement types sorted by Master Data sort order
+  const activeCementTypes = useMemo(
+    () => (cementTypes || []).filter((c) => c.is_active !== false),
+    [cementTypes]
+  );
+
+  // Set default selectedCementType to first active cement type from Master Data
+  useEffect(() => {
+    if (activeCementTypes.length > 0 && !selectedCementType) {
+      setSelectedCementType(activeCementTypes[0].name);
+    }
+  }, [activeCementTypes, selectedCementType]);
+
   const unitsForCategory = useMemo(() => {
     if (!selectedCategory) return [];
     return plantUnits
@@ -1259,366 +1285,12 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const refreshData = async () => {
-    // Reset previous state
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Validate required data
-      if (!selectedCategory || !selectedUnit) {
-        setAnalysisData([]);
-        setFooterData([]);
-        setIsLoading(false);
-        return;
-      }
-
-      // Get footer parameters from allParameters based on copFooterParameterIds and selected unit/category
-      const footerParameters = allParameters.filter(
-        (param) =>
-          copFooterParameterIds.includes(param.id) &&
-          param.category === selectedCategory &&
-          param.unit === selectedUnit
-      );
-
-      const targetParamIds = new Set([
-        ...filteredCopParameters.map((p) => p.id),
-        ...footerParameters.map((p) => p.id),
-      ]);
-
-      const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
-      const startDate = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-01`;
-      const endDate = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`;
-      const dates = Array.from({ length: daysInMonth }, (_, i) => {
-        const date = new Date(Date.UTC(filterYear, filterMonth, i + 1));
-        return date.toISOString().split('T')[0];
-      });
-
-      // Clear existing cache for this month
-      const monthCacheKey = `cop-month-${filterYear}-${filterMonth}-${selectedCategory}-${selectedUnit}`;
-      await indexedDBCache.delete(monthCacheKey);
-
-      // Fast single-query monthly fetch (0.2s vs 30s+)
-      let monthlyFooterData = await getFooterDataForDateRange(startDate, endDate, selectedUnit);
-      if (!monthlyFooterData || monthlyFooterData.length === 0) {
-        monthlyFooterData = await getFooterDataForDateRange(startDate, endDate, selectedCategory);
-      }
-
-      if (monthlyFooterData && monthlyFooterData.length > 0) {
-        await indexedDBCache.set(monthCacheKey, monthlyFooterData, 12 * 60 * 60 * 1000);
-      }
-
-      const dailyAverages = new Map<string, Map<string, number>>();
-      const dailyMetrics = new Map<
-        string,
-        Map<string, { average: number; total: number; min: number; max: number }>
-      >();
-
-      (monthlyFooterData || []).forEach((footerData) => {
-        if (
-          footerData &&
-          footerData.average !== null &&
-          footerData.average !== undefined &&
-          !isNaN(footerData.average) &&
-          targetParamIds.has(footerData.parameter_id)
-        ) {
-          if (!dailyAverages.has(footerData.parameter_id)) {
-            dailyAverages.set(footerData.parameter_id, new Map());
-          }
-          dailyAverages.get(footerData.parameter_id)!.set(footerData.date, footerData.average);
-
-          if (!dailyMetrics.has(footerData.parameter_id)) {
-            dailyMetrics.set(footerData.parameter_id, new Map());
-          }
-          dailyMetrics.get(footerData.parameter_id)!.set(footerData.date, {
-            average: footerData.average,
-            total:
-              typeof footerData.total === 'number' && !isNaN(footerData.total)
-                ? footerData.total
-                : footerData.average,
-            min:
-              typeof footerData.minimum === 'number' && !isNaN(footerData.minimum)
-                ? footerData.minimum
-                : footerData.average,
-            max:
-              typeof footerData.maximum === 'number' && !isNaN(footerData.maximum)
-                ? footerData.maximum
-                : footerData.average,
-          });
-        }
-      });
-
-      // Fallback: If any parameter is missing daily average for dates in the month, check ccr_parameter_data
-      try {
-        const missingParams = Array.from(targetParamIds).filter((paramId) => {
-          return dates.some((d) => !dailyAverages.get(paramId)?.has(d));
-        });
-
-        if (missingParams.length > 0) {
-          const chunkSize = 15;
-          for (let i = 0; i < missingParams.length; i += chunkSize) {
-            const chunk = missingParams.slice(i, i + chunkSize);
-            const paramFilter = chunk.map((id) => `parameter_id="${id}"`).join(' || ');
-            const rawRecords = await pb.collection('ccr_parameter_data').getFullList({
-              filter: `date >= '${startDate}' && date <= '${endDate}' && (${paramFilter})`,
-              fields:
-                'parameter_id,date,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24',
-            });
-
-            rawRecords.forEach((rec: any) => {
-              const recDate = rec.date ? rec.date.split('T')[0] : '';
-              if (recDate && rec.parameter_id && targetParamIds.has(rec.parameter_id)) {
-                if (!dailyAverages.has(rec.parameter_id)) {
-                  dailyAverages.set(rec.parameter_id, new Map());
-                }
-                if (!dailyAverages.get(rec.parameter_id)!.has(recDate)) {
-                  const vals: number[] = [];
-                  for (let h = 1; h <= 24; h++) {
-                    const v = rec[`hour${h}`];
-                    if (v !== null && v !== undefined && v !== '') {
-                      const cleanStr = String(v).trim().replace(',', '.');
-                      const num = parseFloat(cleanStr);
-                      if (!isNaN(num) && isFinite(num)) vals.push(num);
-                    }
-                  }
-                  if (vals.length > 0) {
-                    const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-                    const tot = vals.reduce((a, b) => a + b, 0);
-                    const minVal = Math.min(...vals);
-                    const maxVal = Math.max(...vals);
-
-                    dailyAverages.get(rec.parameter_id)!.set(recDate, avg);
-
-                    if (!dailyMetrics.has(rec.parameter_id)) {
-                      dailyMetrics.set(rec.parameter_id, new Map());
-                    }
-                    dailyMetrics.get(rec.parameter_id)!.set(recDate, {
-                      average: avg,
-                      total: tot,
-                      min: minVal,
-                      max: maxVal,
-                    });
-                  }
-                }
-              }
-            });
-          }
-        }
-      } catch {
-        // Ignore fallback error
-      }
-
-      // Process main parameters data
-      const mainData = await new Promise<AnalysisDataRow[]>((resolve) => {
-        setTimeout(() => {
-          const result = filteredCopParameters
-            .map((parameter) => {
-              try {
-                // Validate parameter has required fields
-                if (!parameter || !parameter.id || !parameter.parameter) {
-                  return null;
-                }
-
-                const dailyValues = dates.map((dateString) => {
-                  const avg = dailyAverages.get(parameter.id)?.get(dateString);
-
-                  // Validate average value
-                  if (avg !== undefined && (isNaN(avg) || !isFinite(avg))) {
-                    return { value: null, raw: undefined };
-                  }
-
-                  // Use helper function for consistent min/max calculation
-                  const { min: min_value, max: max_value } = getMinMaxForCementType(
-                    parameter,
-                    selectedCementType
-                  );
-
-                  // Validate min/max values
-                  if (min_value === undefined || max_value === undefined) {
-                    return { value: null, raw: avg };
-                  }
-
-                  if (max_value <= min_value) {
-                    return { value: null, raw: avg };
-                  }
-
-                  if (avg === undefined) {
-                    return { value: null, raw: avg };
-                  }
-
-                  const percentage = ((avg - min_value) / (max_value - min_value)) * 100;
-
-                  // Validate percentage calculation
-                  if (isNaN(percentage) || !isFinite(percentage)) {
-                    return { value: null, raw: avg };
-                  }
-
-                  return { value: percentage, raw: avg };
-                });
-
-                const validDailyPercentages = dailyValues
-                  .map((d) => d.value)
-                  .filter((v): v is number => v !== null && !isNaN(v) && isFinite(v));
-                const monthlyAverage =
-                  validDailyPercentages.length > 0
-                    ? validDailyPercentages.reduce((a, b) => a + b, 0) /
-                      validDailyPercentages.length
-                    : null;
-
-                const validDailyRaw = dailyValues
-                  .map((d) => d.raw)
-                  .filter(
-                    (v): v is number => v !== undefined && v !== null && !isNaN(v) && isFinite(v)
-                  );
-                const monthlyAverageRaw =
-                  validDailyRaw.length > 0
-                    ? validDailyRaw.reduce((a, b) => a + b, 0) / validDailyRaw.length
-                    : null;
-
-                return {
-                  parameter,
-                  dailyValues,
-                  monthlyAverage,
-                  monthlyAverageRaw,
-                };
-              } catch {
-                return null;
-              }
-            })
-            .filter((p): p is NonNullable<typeof p> => p !== null);
-
-          resolve(result);
-        }, 0);
-      });
-
-      // Process footer parameters data independently
-      const footerResult = await new Promise<AnalysisDataRow[]>((resolve) => {
-        setTimeout(() => {
-          const result = footerParameters
-            .map((parameter) => {
-              try {
-                // Validate parameter has required fields
-                if (!parameter || !parameter.id || !parameter.parameter) {
-                  return null;
-                }
-
-                const aggType: CopFooterAggregationType =
-                  copFooterAggregationMap.get(parameter.id) || 'average';
-
-                const dailyValues = dates.map((dateString) => {
-                  const metric = dailyMetrics.get(parameter.id)?.get(dateString);
-                  let dailyVal: number | undefined = undefined;
-                  if (metric) {
-                    if (aggType === 'total') dailyVal = metric.total;
-                    else if (aggType === 'min') dailyVal = metric.min;
-                    else if (aggType === 'max') dailyVal = metric.max;
-                    else dailyVal = metric.average;
-                  } else {
-                    dailyVal = dailyAverages.get(parameter.id)?.get(dateString);
-                  }
-
-                  // Validate daily value
-                  if (dailyVal !== undefined && (isNaN(dailyVal) || !isFinite(dailyVal))) {
-                    return { value: null, raw: undefined };
-                  }
-
-                  // Use helper function for consistent min/max calculation
-                  const { min: min_value, max: max_value } = getMinMaxForCementType(
-                    parameter,
-                    selectedCementType
-                  );
-
-                  // Validate min/max values
-                  if (min_value === undefined || max_value === undefined) {
-                    return { value: null, raw: dailyVal };
-                  }
-
-                  if (max_value <= min_value) {
-                    return { value: null, raw: dailyVal };
-                  }
-
-                  if (dailyVal === undefined) {
-                    return { value: null, raw: dailyVal };
-                  }
-
-                  const percentage = ((dailyVal - min_value) / (max_value - min_value)) * 100;
-
-                  // Validate percentage calculation
-                  if (isNaN(percentage) || !isFinite(percentage)) {
-                    return { value: null, raw: dailyVal };
-                  }
-
-                  return { value: percentage, raw: dailyVal };
-                });
-
-                const validDailyPercentages = dailyValues
-                  .map((d) => d.value)
-                  .filter((v): v is number => v !== null && !isNaN(v) && isFinite(v));
-                const monthlyAverage =
-                  validDailyPercentages.length > 0
-                    ? validDailyPercentages.reduce((a, b) => a + b, 0) /
-                      validDailyPercentages.length
-                    : null;
-
-                const validDailyRaw = dailyValues
-                  .map((d) => d.raw)
-                  .filter(
-                    (v): v is number => v !== undefined && v !== null && !isNaN(v) && isFinite(v)
-                  );
-
-                let monthlyAverageRaw: number | null = null;
-                if (validDailyRaw.length > 0) {
-                  if (aggType === 'total') {
-                    monthlyAverageRaw = validDailyRaw.reduce((a, b) => a + b, 0);
-                  } else if (aggType === 'min') {
-                    monthlyAverageRaw = Math.min(...validDailyRaw);
-                  } else if (aggType === 'max') {
-                    monthlyAverageRaw = Math.max(...validDailyRaw);
-                  } else {
-                    monthlyAverageRaw =
-                      validDailyRaw.reduce((a, b) => a + b, 0) / validDailyRaw.length;
-                  }
-                }
-
-                return {
-                  parameter,
-                  dailyValues,
-                  monthlyAverage,
-                  monthlyAverageRaw,
-                  aggregationType: aggType,
-                };
-              } catch {
-                return null;
-              }
-            })
-            .filter((p): p is NonNullable<typeof p> => p !== null);
-
-          resolve(result);
-        }, 0);
-      });
-
-      setAnalysisData(mainData);
-      setFooterData(footerResult);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      setError(
-        `Failed to load COP analysis data: ${errorMessage}. Please check your filters and try again.`
-      );
-      setAnalysisData([]);
-      setFooterData([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const fetchDataAndAnalyze = async () => {
-      // Reset previous state
+  const loadCopAnalysisData = useCallback(
+    async (isForceRefresh = false) => {
       setIsLoading(true);
       setError(null);
 
       try {
-        // Validate required data
         if (!selectedCategory || !selectedUnit) {
           setAnalysisData([]);
           setFooterData([]);
@@ -1633,7 +1305,6 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           return;
         }
 
-        // Get footer parameters from allParameters based on copFooterParameterIds and selected unit/category
         const footerParameters = allParameters.filter(
           (param) =>
             copFooterParameterIds.includes(param.id) &&
@@ -1646,7 +1317,6 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           ...footerParameters.map((p) => p.id),
         ]);
 
-        // Fast single-query monthly fetch (0.2s vs 30s+)
         const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
         const startDate = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-01`;
         const endDate = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`;
@@ -1655,23 +1325,84 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           return date.toISOString().split('T')[0];
         });
 
-        const monthCacheKey = `cop-month-${filterYear}-${filterMonth}-${selectedCategory}-${selectedUnit}`;
-        let monthlyFooterData = (await indexedDBCache.get(monthCacheKey)) as CcrFooterData[] | null;
+        const monthCacheKey = `cop-month-${filterYear}-${filterMonth}-${selectedCategory}-${selectedUnit}-${selectedCementType || 'all'}`;
+        const rawCcrCacheKey = `ccr-raw-param-${filterYear}-${filterMonth}-${selectedCategory}-${selectedUnit}`;
 
-        if (!monthlyFooterData) {
-          monthlyFooterData = await getFooterDataForDateRange(startDate, endDate, selectedUnit);
-          if (!monthlyFooterData || monthlyFooterData.length === 0) {
-            monthlyFooterData = await getFooterDataForDateRange(
-              startDate,
-              endDate,
-              selectedCategory
-            );
+        if (isForceRefresh) {
+          await indexedDBCache.delete(monthCacheKey);
+          await indexedDBCache.delete(rawCcrCacheKey);
+        }
+
+        // 1. Find product type parameter for this unit
+        const keywords = [
+          'tipe produk',
+          'tipe_produk',
+          'product type',
+          'tipe product',
+          'tipe semen',
+          'product',
+        ];
+        const ptParam = allParameters.find(
+          (p) =>
+            p.category === selectedCategory &&
+            p.unit === selectedUnit &&
+            keywords.some((k) => (p.parameter || '').toLowerCase().trim() === k)
+        );
+
+        // 2. Fetch raw ccr_parameter_data for this month
+        let rawRecords: any[] | null = null;
+        if (!isForceRefresh) {
+          rawRecords = (await indexedDBCache.get(rawCcrCacheKey)) as any[] | null;
+        }
+
+        if (!rawRecords || rawRecords.length === 0) {
+          try {
+            rawRecords = await pb.collection('ccr_parameter_data').getFullList({
+              filter: `plant_unit="${selectedUnit}" && date >= "${startDate}" && date <= "${endDate}"`,
+              fields:
+                'id,parameter_id,date,plant_unit,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24',
+              requestKey: null,
+            });
+          } catch (err) {
+            console.warn('Direct plant_unit fetch failed, falling back to chunking', err);
           }
 
-          if (monthlyFooterData && monthlyFooterData.length > 0) {
-            await indexedDBCache.set(monthCacheKey, monthlyFooterData, 12 * 60 * 60 * 1000);
+          if (!rawRecords || rawRecords.length === 0) {
+            const allNeededIds = Array.from(targetParamIds);
+            if (ptParam && !allNeededIds.includes(ptParam.id)) {
+              allNeededIds.push(ptParam.id);
+            }
+            const chunkSize = 15;
+            rawRecords = [];
+            for (let i = 0; i < allNeededIds.length; i += chunkSize) {
+              const chunk = allNeededIds.slice(i, i + chunkSize);
+              const paramFilter = chunk.map((id) => `parameter_id="${id}"`).join(' || ');
+              const chunkRecords = await pb.collection('ccr_parameter_data').getFullList({
+                filter: `date >= '${startDate}' && date <= '${endDate}' && (${paramFilter})`,
+                fields:
+                  'id,parameter_id,date,plant_unit,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24',
+                requestKey: null,
+              });
+              rawRecords.push(...chunkRecords);
+            }
+          }
+
+          if (rawRecords && rawRecords.length > 0) {
+            await indexedDBCache.set(rawCcrCacheKey, rawRecords, 6 * 60 * 60 * 1000);
           }
         }
+
+        // Group rawRecords by date & parameter_id
+        const recordsByDateAndParam = new Map<string, Map<string, any>>();
+        (rawRecords || []).forEach((rec: any) => {
+          const recDate = rec.date ? rec.date.split('T')[0] : '';
+          if (recDate && rec.parameter_id) {
+            if (!recordsByDateAndParam.has(recDate)) {
+              recordsByDateAndParam.set(recDate, new Map());
+            }
+            recordsByDateAndParam.get(recDate)!.set(rec.parameter_id, rec);
+          }
+        });
 
         const dailyAverages = new Map<string, Map<string, number>>();
         const dailyMetrics = new Map<
@@ -1679,107 +1410,129 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           Map<string, { average: number; total: number; min: number; max: number }>
         >();
 
-        (monthlyFooterData || []).forEach((footerData) => {
-          if (
-            footerData &&
-            footerData.average !== null &&
-            footerData.average !== undefined &&
-            !isNaN(footerData.average) &&
-            targetParamIds.has(footerData.parameter_id)
-          ) {
-            if (!dailyAverages.has(footerData.parameter_id)) {
-              dailyAverages.set(footerData.parameter_id, new Map());
-            }
-            dailyAverages.get(footerData.parameter_id)!.set(footerData.date, footerData.average);
+        // Compute hourly-filtered daily averages and metrics
+        dates.forEach((dateString) => {
+          const ptRecord = ptParam
+            ? recordsByDateAndParam.get(dateString)?.get(ptParam.id)
+            : undefined;
+          let matchingHours: number[] = [];
 
-            if (!dailyMetrics.has(footerData.parameter_id)) {
-              dailyMetrics.set(footerData.parameter_id, new Map());
+          if (selectedCementType) {
+            if (ptRecord) {
+              const targetType = selectedCementType.trim().toUpperCase();
+              for (let h = 1; h <= 24; h++) {
+                const val = (ptRecord[`hour${h}`] || '').toString().trim().toUpperCase();
+                if (val === targetType) {
+                  matchingHours.push(h);
+                }
+              }
+            } else {
+              // No product type logged on this day
+              matchingHours = [];
             }
-            dailyMetrics.get(footerData.parameter_id)!.set(footerData.date, {
-              average: footerData.average,
-              total:
-                typeof footerData.total === 'number' && !isNaN(footerData.total)
-                  ? footerData.total
-                  : footerData.average,
-              min:
-                typeof footerData.minimum === 'number' && !isNaN(footerData.minimum)
-                  ? footerData.minimum
-                  : footerData.average,
-              max:
-                typeof footerData.maximum === 'number' && !isNaN(footerData.maximum)
-                  ? footerData.maximum
-                  : footerData.average,
+          } else {
+            // "Semua" selected, all 24 hours
+            matchingHours = Array.from({ length: 24 }, (_, i) => i + 1);
+          }
+
+          if (matchingHours.length > 0) {
+            targetParamIds.forEach((paramId) => {
+              const rec = recordsByDateAndParam.get(dateString)?.get(paramId);
+              if (rec) {
+                const vals: number[] = [];
+                for (const h of matchingHours) {
+                  const v = rec[`hour${h}`];
+                  if (v !== null && v !== undefined && v !== '') {
+                    const cleanStr = String(v).trim().replace(',', '.');
+                    const num = parseFloat(cleanStr);
+                    if (!isNaN(num) && isFinite(num)) {
+                      vals.push(num);
+                    }
+                  }
+                }
+
+                if (vals.length > 0) {
+                  const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+                  const tot = vals.reduce((a, b) => a + b, 0);
+                  const minVal = Math.min(...vals);
+                  const maxVal = Math.max(...vals);
+
+                  if (!dailyAverages.has(paramId)) {
+                    dailyAverages.set(paramId, new Map());
+                  }
+                  dailyAverages.get(paramId)!.set(dateString, avg);
+
+                  if (!dailyMetrics.has(paramId)) {
+                    dailyMetrics.set(paramId, new Map());
+                  }
+                  dailyMetrics.get(paramId)!.set(dateString, {
+                    average: avg,
+                    total: tot,
+                    min: minVal,
+                    max: maxVal,
+                  });
+                }
+              }
             });
           }
         });
 
-        // Fallback: If any parameter is missing daily average for dates in the month, check ccr_parameter_data
-        try {
-          const missingParams = Array.from(targetParamIds).filter((paramId) => {
-            return dates.some((d) => !dailyAverages.get(paramId)?.has(d));
-          });
-
-          if (missingParams.length > 0) {
-            const chunkSize = 15;
-            for (let i = 0; i < missingParams.length; i += chunkSize) {
-              const chunk = missingParams.slice(i, i + chunkSize);
-              const paramFilter = chunk.map((id) => `parameter_id="${id}"`).join(' || ');
-              const rawRecords = await pb.collection('ccr_parameter_data').getFullList({
-                filter: `date >= '${startDate}' && date <= '${endDate}' && (${paramFilter})`,
-                fields:
-                  'parameter_id,date,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24',
-              });
-
-              rawRecords.forEach((rec: any) => {
-                const recDate = rec.date ? rec.date.split('T')[0] : '';
-                if (recDate && rec.parameter_id && targetParamIds.has(rec.parameter_id)) {
-                  if (!dailyAverages.has(rec.parameter_id)) {
-                    dailyAverages.set(rec.parameter_id, new Map());
-                  }
-                  if (!dailyAverages.get(rec.parameter_id)!.has(recDate)) {
-                    const vals: number[] = [];
-                    for (let h = 1; h <= 24; h++) {
-                      const v = rec[`hour${h}`];
-                      if (v !== null && v !== undefined && v !== '') {
-                        const cleanStr = String(v).trim().replace(',', '.');
-                        const num = parseFloat(cleanStr);
-                        if (!isNaN(num) && isFinite(num)) vals.push(num);
-                      }
-                    }
-                    if (vals.length > 0) {
-                      const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-                      const tot = vals.reduce((a, b) => a + b, 0);
-                      const minVal = Math.min(...vals);
-                      const maxVal = Math.max(...vals);
-
-                      dailyAverages.get(rec.parameter_id)!.set(recDate, avg);
-
-                      if (!dailyMetrics.has(rec.parameter_id)) {
-                        dailyMetrics.set(rec.parameter_id, new Map());
-                      }
-                      dailyMetrics.get(rec.parameter_id)!.set(recDate, {
-                        average: avg,
-                        total: tot,
-                        min: minVal,
-                        max: maxVal,
-                      });
-                    }
-                  }
-                }
-              });
-            }
+        // If selectedCementType is empty ("Semua Tipe"), fallback to ccr_footer_data if available
+        if (!selectedCementType) {
+          let monthlyFooterData = await getFooterDataForDateRange(startDate, endDate, selectedUnit);
+          if (!monthlyFooterData || monthlyFooterData.length === 0) {
+            monthlyFooterData = await getFooterDataForDateRange(
+              startDate,
+              endDate,
+              selectedCategory
+            );
           }
-        } catch {
-          // Ignore fallback error
+          (monthlyFooterData || []).forEach((footerData) => {
+            if (
+              footerData &&
+              footerData.average !== null &&
+              footerData.average !== undefined &&
+              !isNaN(footerData.average) &&
+              targetParamIds.has(footerData.parameter_id)
+            ) {
+              if (!dailyAverages.has(footerData.parameter_id)) {
+                dailyAverages.set(footerData.parameter_id, new Map());
+              }
+              if (!dailyAverages.get(footerData.parameter_id)!.has(footerData.date)) {
+                dailyAverages
+                  .get(footerData.parameter_id)!
+                  .set(footerData.date, footerData.average);
+              }
+              if (!dailyMetrics.has(footerData.parameter_id)) {
+                dailyMetrics.set(footerData.parameter_id, new Map());
+              }
+              if (!dailyMetrics.get(footerData.parameter_id)!.has(footerData.date)) {
+                dailyMetrics.get(footerData.parameter_id)!.set(footerData.date, {
+                  average: footerData.average,
+                  total:
+                    typeof footerData.total === 'number' && !isNaN(footerData.total)
+                      ? footerData.total
+                      : footerData.average,
+                  min:
+                    typeof footerData.minimum === 'number' && !isNaN(footerData.minimum)
+                      ? footerData.minimum
+                      : footerData.average,
+                  max:
+                    typeof footerData.maximum === 'number' && !isNaN(footerData.maximum)
+                      ? footerData.maximum
+                      : footerData.average,
+                });
+              }
+            }
+          });
         }
 
-        // Process data asynchronously to avoid blocking UI
-        const data = await new Promise<AnalysisDataRow[]>((resolve) => {
+        // Process main parameters data
+        const mainData = await new Promise<AnalysisDataRow[]>((resolve) => {
           setTimeout(() => {
             const result = filteredCopParameters
               .map((parameter) => {
                 try {
-                  // Validate parameter has required fields
                   if (!parameter || !parameter.id || !parameter.parameter) {
                     return null;
                   }
@@ -1787,33 +1540,25 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   const dailyValues = dates.map((dateString) => {
                     const avg = dailyAverages.get(parameter.id)?.get(dateString);
 
-                    // Validate average value
-                    if (avg !== undefined && (isNaN(avg) || !isFinite(avg))) {
+                    if (avg === undefined || isNaN(avg) || !isFinite(avg)) {
                       return { value: null, raw: undefined };
                     }
 
-                    // Use helper function for consistent min/max calculation
                     const { min: min_value, max: max_value } = getMinMaxForCementType(
                       parameter,
                       selectedCementType
                     );
 
-                    // Validate min/max values
-                    if (min_value === undefined || max_value === undefined) {
-                      return { value: null, raw: avg };
-                    }
-
-                    if (max_value <= min_value) {
-                      return { value: null, raw: avg };
-                    }
-
-                    if (avg === undefined) {
+                    if (
+                      min_value === undefined ||
+                      max_value === undefined ||
+                      max_value <= min_value
+                    ) {
                       return { value: null, raw: avg };
                     }
 
                     const percentage = ((avg - min_value) / (max_value - min_value)) * 100;
 
-                    // Validate percentage calculation
                     if (isNaN(percentage) || !isFinite(percentage)) {
                       return { value: null, raw: avg };
                     }
@@ -1853,10 +1598,8 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               .filter((p): p is NonNullable<typeof p> => p !== null);
 
             resolve(result);
-          }, 0); // Use setTimeout to move to next tick, preventing UI blocking
+          }, 0);
         });
-
-        setAnalysisData(data);
 
         // Process footer parameters data independently
         const footerResult = await new Promise<AnalysisDataRow[]>((resolve) => {
@@ -1864,7 +1607,6 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             const result = footerParameters
               .map((parameter) => {
                 try {
-                  // Validate parameter has required fields
                   if (!parameter || !parameter.id || !parameter.parameter) {
                     return null;
                   }
@@ -1884,33 +1626,25 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       dailyVal = dailyAverages.get(parameter.id)?.get(dateString);
                     }
 
-                    // Validate daily value
-                    if (dailyVal !== undefined && (isNaN(dailyVal) || !isFinite(dailyVal))) {
+                    if (dailyVal === undefined || isNaN(dailyVal) || !isFinite(dailyVal)) {
                       return { value: null, raw: undefined };
                     }
 
-                    // Use helper function for consistent min/max calculation
                     const { min: min_value, max: max_value } = getMinMaxForCementType(
                       parameter,
                       selectedCementType
                     );
 
-                    // Validate min/max values
-                    if (min_value === undefined || max_value === undefined) {
-                      return { value: null, raw: dailyVal };
-                    }
-
-                    if (max_value <= min_value) {
-                      return { value: null, raw: dailyVal };
-                    }
-
-                    if (dailyVal === undefined) {
+                    if (
+                      min_value === undefined ||
+                      max_value === undefined ||
+                      max_value <= min_value
+                    ) {
                       return { value: null, raw: dailyVal };
                     }
 
                     const percentage = ((dailyVal - min_value) / (max_value - min_value)) * 100;
 
-                    // Validate percentage calculation
                     if (isNaN(percentage) || !isFinite(percentage)) {
                       return { value: null, raw: dailyVal };
                     }
@@ -1964,18 +1698,8 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           }, 0);
         });
 
+        setAnalysisData(mainData);
         setFooterData(footerResult);
-
-        // Save to cache for future use
-        // Temporarily disabled due to authentication issues
-        // await saveAnalysisToCache(
-        //   selectedCategory,
-        //   selectedUnit,
-        //   filterYear,
-        //   filterMonth,
-        //   selectedCementType,
-        //   data
-        // );
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         setError(
@@ -1986,21 +1710,28 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       } finally {
         setIsLoading(false);
       }
-    };
+    },
+    [
+      selectedCategory,
+      selectedUnit,
+      selectedCementType,
+      filterYear,
+      filterMonth,
+      filteredCopParameters,
+      allParameters,
+      copFooterParameterIds,
+      copFooterAggregationMap,
+      getFooterDataForDateRange,
+    ]
+  );
 
-    fetchDataAndAnalyze();
-  }, [
-    filterMonth,
-    filterYear,
-    filteredCopParameters,
-    allParameters,
-    getFooterDataForDate,
-    selectedCategory,
-    selectedUnit,
-    selectedCementType,
-    // getCachedAnalysis,
-    // saveAnalysisToCache,
-  ]);
+  const refreshData = useCallback(() => {
+    loadCopAnalysisData(true);
+  }, [loadCopAnalysisData]);
+
+  useEffect(() => {
+    loadCopAnalysisData(false);
+  }, [loadCopAnalysisData]);
   const dailyQaf = useMemo(() => {
     if (!analysisData || analysisData.length === 0) {
       return { daily: [], monthly: { value: null, inRange: 0, total: 0 } };
@@ -3019,14 +2750,12 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 onChange={(e) => setSelectedCementType(e.target.value)}
                 className="w-full text-xs font-medium bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg pl-3 pr-8 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/40 appearance-none cursor-pointer"
               >
-                <option value="">Semua (Default)</option>
-                {cementTypes
-                  .filter((c) => c.is_active !== false)
-                  .map((type) => (
-                    <option key={type.id || type.name} value={type.name}>
-                      {type.name}
-                    </option>
-                  ))}
+                {activeCementTypes.map((type) => (
+                  <option key={type.id || type.name} value={type.name}>
+                    {type.name}
+                  </option>
+                ))}
+                <option value="">Semua Tipe</option>
               </select>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
