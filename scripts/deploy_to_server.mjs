@@ -74,7 +74,7 @@ conn.on('ready', async () => {
     const envCheck = await runRemoteCommand('pwd; ls -la project/ || true');
     
     // Check if git pull is needed on server repo
-    await runRemoteCommand('if [ -d "$HOME/project/sipoma-pocketbase" ]; then cd $HOME/project/sipoma-pocketbase && git fetch origin main && git reset --hard origin/main && git log -n 1 --oneline; fi');
+    await runRemoteCommand('if [ -d "$HOME/project/sipoma-pocketbase" ]; then cd $HOME/project/sipoma-pocketbase && git config http.sslVerify false && git fetch origin main && git reset --hard origin/main && git log -n 1 --oneline; fi');
 
     // 2. Upload local dist folder to server
     console.log('\n📦 Uploading local dist/ to server...');
