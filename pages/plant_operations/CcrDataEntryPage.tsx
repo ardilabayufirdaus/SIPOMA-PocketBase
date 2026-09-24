@@ -62,6 +62,7 @@ import { usePermissions } from '../../utils/permissions';
 import { isSuperAdmin, canAccessMonthlyExportImport } from '../../utils/roleHelpers';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { usePlantOperationsAccess } from '../../hooks/usePlantOperationsAccess';
+import { useCementTypes } from '../../hooks/useCementTypes';
 
 // Import PocketBase client and hooks
 import { pb } from '../../utils/pocketbase-simple';
@@ -130,6 +131,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
   // Access control
   const { canWrite } = usePlantOperationsAccess('CM');
+  const { records: cementTypes } = useCementTypes();
   const [, setSelectedProfile] = useState<ParameterProfile | null>(null);
 
   // New state for undo stack
@@ -4438,11 +4440,16 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                         title={`Pilih tipe produk untuk jam ${hour}`}
                                       >
                                         <option value="">-</option>
-                                        {['OPC', 'PPC', ' PCC'].map((option) => (
-                                          <option key={option} value={option}>
-                                            {option}
-                                          </option>
-                                        ))}
+                                        {value && !cementTypes.some((c) => c.name === value) && (
+                                          <option value={value}>{value}</option>
+                                        )}
+                                        {cementTypes
+                                          .filter((c) => c.is_active !== false)
+                                          .map((c) => (
+                                            <option key={c.id || c.name} value={c.name}>
+                                              {c.name}
+                                            </option>
+                                          ))}
                                       </select>
                                     ) : (
                                       <input

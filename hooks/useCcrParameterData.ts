@@ -96,7 +96,7 @@ export const useCcrParameterData = () => {
         let filter = `date="${isoDate}"`;
         if (plantUnit && plantUnit !== 'all') {
           const sanitizedUnit = plantUnit.replace(/[^a-zA-Z0-9]/g, '_');
-          filter += ` && plant_unit="${sanitizedUnit}"`;
+          filter += ` && (plant_unit="${plantUnit}" || plant_unit="${sanitizedUnit}")`;
         }
 
         const data = await safeApiCall(() =>
@@ -216,7 +216,7 @@ export const useCcrParameterData = () => {
         let filter = `date="${isoDate}"`;
         if (plantUnit && plantUnit !== 'all') {
           const sanitizedUnit = plantUnit.replace(/[^a-zA-Z0-9]/g, '_');
-          filter += ` && plant_unit="${sanitizedUnit}"`;
+          filter += ` && (plant_unit="${plantUnit}" || plant_unit="${sanitizedUnit}")`;
         }
 
         const data = await safeApiCall(() =>
@@ -488,7 +488,7 @@ export const useCcrParameterData = () => {
         let filter = `date >= "${isoStartDate}" && date <= "${isoEndDate}"`;
         if (plantUnit && plantUnit !== 'all') {
           const sanitizedUnit = plantUnit.replace(/[^a-zA-Z0-9]/g, '_');
-          filter += ` && plant_unit="${sanitizedUnit}"`;
+          filter += ` && (plant_unit="${plantUnit}" || plant_unit="${sanitizedUnit}")`;
         }
 
         const result = await pb.collection('ccr_parameter_data').getFullList({

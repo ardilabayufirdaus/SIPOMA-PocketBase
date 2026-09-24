@@ -9,10 +9,11 @@ import { useParameterSettings } from '../../hooks/useParameterSettings';
 import { useSiloCapacities } from '../../hooks/useSiloCapacities';
 import { useAuth } from '../../hooks/useAuth';
 import { useCcrInformationData } from '../../hooks/useCcrInformationData';
+import { useCementTypes } from '../../hooks/useCementTypes';
 import { syncOperationalDataForDate } from '../../utils/operationalSyncUtils';
 import { formatDate } from '../../utils/formatters';
 
-import { CcrDowntimeData, CcrParameterDataWithName } from '../../types';
+import { CcrDowntimeData, CcrParameterDataWithName, CementType } from '../../types';
 import { Card } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import RealtimeIndicator from '../../components/ui/RealtimeIndicator';
@@ -42,37 +43,98 @@ const formatIndonesianNumber = (num: number, decimals: number = 1): string => {
   });
 };
 
-// Helper function to calculate mode (most frequent value) from array of strings
-const calculateTextMode = (
-  values: (string | number | null | undefined | { value: string | number })[]
-): string => {
-  const validValues = values
-    .filter((v) => v !== null && v !== undefined && v !== '')
-    .map((v) => {
-      // Handle both string/number values and complex objects with 'value' property
-      if (typeof v === 'object' && v && 'value' in v) {
-        return String(v.value).trim();
-      }
-      return String(v).trim();
-    })
-    .filter((v) => v !== '');
-  if (validValues.length === 0) return 'N/A';
+interface ProductTimeSlot {
+  hour: number;
+  startTime: string;
+  endTime: string;
+  isNextDay?: boolean;
+  value?: unknown;
+}
 
-  const frequency: Record<string, number> = {};
-  validValues.forEach((value) => {
-    frequency[value] = (frequency[value] || 0) + 1;
+// Helper to format hour string 'HH:00'
+const formatHourStr = (h: number): string => {
+  return String(h).padStart(2, '0') + ':00';
+};
+
+// Helper function to resolve product type with time intervals (e.g. "OPC (07:00 - 11:00), PCC (11:00 - 15:00)")
+const calculateProductTypeWithIntervals = (
+  slots: ProductTimeSlot[],
+  cementTypes: CementType[] = []
+): string => {
+  const canonicalMap = new Map<string, string>();
+  cementTypes.forEach((c) => {
+    if (c.name) canonicalMap.set(c.name.trim().toLowerCase(), c.name.trim());
+    if (c.code) canonicalMap.set(c.code.trim().toLowerCase(), c.name.trim());
   });
 
-  let maxCount = 0;
-  let mode = 'N/A';
-  for (const [value, count] of Object.entries(frequency)) {
-    if (count > maxCount) {
-      maxCount = count;
-      mode = value;
+  const normalizeValue = (v: unknown): string => {
+    if (v === null || v === undefined || v === '') return '';
+    let str = '';
+    if (typeof v === 'object' && v && 'value' in v) {
+      str = String((v as { value: unknown }).value).trim();
+    } else {
+      str = String(v).trim();
+    }
+    if (str.toUpperCase() === 'PPC') {
+      str = 'PCC';
+    }
+    if (!str || str === '-') return '';
+    const canonical = canonicalMap.get(str.toLowerCase());
+    return canonical || str;
+  };
+
+  const intervals: { product: string; start: string; end: string }[] = [];
+  let current: { product: string; start: string; end: string } | null = null;
+
+  for (const slot of slots) {
+    const prod = normalizeValue(slot.value);
+    if (!prod) {
+      if (current) {
+        intervals.push(current);
+        current = null;
+      }
+      continue;
+    }
+
+    if (!current) {
+      current = {
+        product: prod,
+        start: slot.startTime,
+        end: slot.endTime,
+      };
+    } else if (current.product === prod && current.end === slot.startTime) {
+      current.end = slot.endTime;
+    } else {
+      intervals.push(current);
+      current = {
+        product: prod,
+        start: slot.startTime,
+        end: slot.endTime,
+      };
     }
   }
 
-  return mode;
+  if (current) {
+    intervals.push(current);
+  }
+
+  if (intervals.length === 0) return 'N/A';
+
+  // Group intervals by product preserving order of first appearance
+  const productOrder: string[] = [];
+  const productIntervalsMap = new Map<string, string[]>();
+
+  intervals.forEach((inv) => {
+    if (!productIntervalsMap.has(inv.product)) {
+      productOrder.push(inv.product);
+      productIntervalsMap.set(inv.product, []);
+    }
+    productIntervalsMap.get(inv.product)!.push(`${inv.start} - ${inv.end}`);
+  });
+
+  return productOrder
+    .map((prod) => `${prod} (${productIntervalsMap.get(prod)!.join(', ')})`)
+    .join(', ');
 };
 
 // Helper function to normalize strings for flexible parameter matching
@@ -278,6 +340,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
   const { records: parameterSettings } = useParameterSettings();
   const { records: silos } = useSiloCapacities();
   const { getInformationForDate } = useCcrInformationData();
+  const { records: cementTypes } = useCementTypes();
 
   const plantCategories = useMemo(() => {
     const categories = [...new Set(plantUnits.map((unit) => unit.category))];
@@ -314,8 +377,16 @@ const WhatsAppGroupReportPage: React.FC = () => {
   // Helper function to find a parameter setting
   const findParam = useCallback(
     (category: string, unit: string, aliases: string[]) => {
+      const normUnit = normalizeParamName(unit);
       return parameterSettings.find((s) => {
-        if (s.category !== category || s.unit !== unit) return false;
+        if (s.category !== category) return false;
+        const normSettingUnit = normalizeParamName(s.unit);
+        const unitMatches =
+          s.unit === unit ||
+          normSettingUnit === normUnit ||
+          normSettingUnit.includes(normUnit) ||
+          normUnit.includes(normSettingUnit);
+        if (!unitMatches) return false;
         const norm = normalizeParamName(s.parameter);
         return aliases.some((a) => norm.includes(normalizeParamName(a)));
       });
@@ -474,51 +545,44 @@ const WhatsAppGroupReportPage: React.FC = () => {
     [user]
   );
 
-  // Helper to resolve product type
+  // Helper to resolve product type with time intervals
   const resolveProductType = useCallback(
     (
       parameterData: CcrParameterDataWithName[],
       category: string,
       unit: string,
-      hours: number[],
-      nextDayParameterData?: CcrParameterDataWithName[],
-      nextDayHours?: number[]
+      slots: { hour: number; startTime: string; endTime: string; isNextDay?: boolean }[],
+      nextDayParameterData?: CcrParameterDataWithName[]
     ): string => {
       const ptSetting = findParam(category, unit, [
         'tipe produk',
         'tipe_produk',
         'product type',
         'tipe product',
+        'tipe semen',
+        'product',
       ]);
       if (!ptSetting) return 'N/A';
 
-      const values: any[] = [];
       const ptParam = parameterData.find((p) => p.parameter_id === ptSetting.id);
-      if (ptParam && ptParam.hourly_values) {
-        hours.forEach((h) => {
-          if (ptParam.hourly_values[h] !== undefined && ptParam.hourly_values[h] !== null) {
-            values.push(ptParam.hourly_values[h]);
-          }
-        });
-      }
+      const nextPtParam = nextDayParameterData?.find((p) => p.parameter_id === ptSetting.id);
 
-      if (nextDayParameterData && nextDayHours && nextDayHours.length > 0) {
-        const nextPtParam = nextDayParameterData.find((p) => p.parameter_id === ptSetting.id);
-        if (nextPtParam && nextPtParam.hourly_values) {
-          nextDayHours.forEach((h) => {
-            if (
-              nextPtParam.hourly_values[h] !== undefined &&
-              nextPtParam.hourly_values[h] !== null
-            ) {
-              values.push(nextPtParam.hourly_values[h]);
-            }
-          });
+      const slotsWithValues: ProductTimeSlot[] = slots.map((s) => {
+        let val: unknown = undefined;
+        if (s.isNextDay && nextPtParam && nextPtParam.hourly_values) {
+          val = nextPtParam.hourly_values[s.hour];
+        } else if (ptParam && ptParam.hourly_values) {
+          val = ptParam.hourly_values[s.hour];
         }
-      }
+        return {
+          ...s,
+          value: val,
+        };
+      });
 
-      return calculateTextMode(values);
+      return calculateProductTypeWithIntervals(slotsWithValues, cementTypes);
     },
-    [findParam]
+    [findParam, cementTypes]
   );
 
   // Helper function to calculate total downtime duration for category
@@ -659,12 +723,20 @@ const WhatsAppGroupReportPage: React.FC = () => {
           selectedPlantCategory
         );
 
-        const allHours = Array.from({ length: 24 }, (_, i) => i + 1);
+        const dailySlots: ProductTimeSlot[] = Array.from({ length: 24 }, (_, i) => {
+          const hour = i + 1;
+          return {
+            hour,
+            startTime: formatHourStr(hour - 1),
+            endTime: hour === 24 ? '24:00' : formatHourStr(hour),
+            isNextDay: false,
+          };
+        });
         const productType = resolveProductType(
           allParameterData,
           selectedPlantCategory,
           unit,
-          allHours
+          dailySlots
         );
 
         const calculatedFeedRate = runningHours > 0 ? totalProduction / runningHours : 0;
@@ -925,11 +997,17 @@ const WhatsAppGroupReportPage: React.FC = () => {
           selectedPlantCategory
         );
 
+        const shift1Slots: ProductTimeSlot[] = shift1Hours.map((h) => ({
+          hour: h,
+          startTime: formatHourStr(h - 1),
+          endTime: formatHourStr(h),
+          isNextDay: false,
+        }));
         const productType = resolveProductType(
           allParameterData,
           selectedPlantCategory,
           unit,
-          shift1Hours
+          shift1Slots
         );
 
         const calculatedFeedRate = runningHours > 0 ? totalProduction / runningHours : 0;
@@ -1184,11 +1262,17 @@ const WhatsAppGroupReportPage: React.FC = () => {
           selectedPlantCategory
         );
 
+        const shift2Slots: ProductTimeSlot[] = shift2Hours.map((h) => ({
+          hour: h,
+          startTime: formatHourStr(h - 1),
+          endTime: formatHourStr(h),
+          isNextDay: false,
+        }));
         const productType = resolveProductType(
           allParameterData,
           selectedPlantCategory,
           unit,
-          shift2Hours
+          shift2Slots
         );
 
         const calculatedFeedRate = runningHours > 0 ? totalProduction / runningHours : 0;
@@ -1497,13 +1581,22 @@ const WhatsAppGroupReportPage: React.FC = () => {
           nextDayFooterMap
         );
 
+        const shift3Slots: ProductTimeSlot[] = [
+          { hour: 24, startTime: '23:00', endTime: '00:00', isNextDay: false },
+          ...shift3ContHours.map((h) => ({
+            hour: h,
+            startTime: formatHourStr(h - 1),
+            endTime: formatHourStr(h),
+            isNextDay: true,
+          })),
+        ];
+
         const productType = resolveProductType(
           allParameterData,
           selectedPlantCategory,
           unit,
-          shift3TodayHours,
-          nextDayParameterData,
-          shift3ContHours
+          shift3Slots,
+          nextDayParameterData
         );
 
         const calculatedFeedRate =

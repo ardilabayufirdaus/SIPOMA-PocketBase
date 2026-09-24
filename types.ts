@@ -69,6 +69,18 @@ export interface AddUserData {
 }
 
 // Plant Operations Master Data
+export interface CementType {
+  id: string;
+  name: string;
+  code?: string;
+  description?: string;
+  category?: string;
+  is_active?: boolean;
+  sort_order?: number;
+  created?: string;
+  updated?: string;
+}
+
 export interface PlantUnit {
   id: string;
   unit: string;

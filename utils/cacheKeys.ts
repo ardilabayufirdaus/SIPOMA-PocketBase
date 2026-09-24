@@ -7,6 +7,7 @@ export const CacheKeys = {
   // Plant Operations
   PLANT_UNITS: 'plant_units',
   PARAMETER_SETTINGS: 'parameter_settings',
+  CEMENT_TYPES: 'cement_types',
   SILO_CAPACITIES: 'silo_capacities',
   REPORT_SETTINGS: 'report_settings',
   PIC_SETTINGS: 'pic_settings',

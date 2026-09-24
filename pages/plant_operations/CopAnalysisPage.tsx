@@ -25,6 +25,7 @@ import {
 import { ParameterSetting, CcrFooterData } from '../../types';
 import { formatDate, formatNumberIndonesian } from '../../utils/formatters';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
+import { useCementTypes } from '../../hooks/useCementTypes';
 
 import { useParameterSettings } from '../../hooks/useParameterSettings';
 import { useCopParameters } from '../../hooks/useCopParameters';
@@ -681,6 +682,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [filterYear, setFilterYear] = useState(new Date().getFullYear());
 
   const { records: plantUnits } = usePlantUnits();
+  const { records: cementTypes } = useCementTypes();
 
   // Permission checker
   const { currentUser: loggedInUser } = useCurrentUser();
@@ -3018,8 +3020,13 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 className="w-full text-xs font-medium bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg pl-3 pr-8 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/40 appearance-none cursor-pointer"
               >
                 <option value="">Semua (Default)</option>
-                <option value="OPC">OPC</option>
-                <option value="PPC">PPC</option>
+                {cementTypes
+                  .filter((c) => c.is_active !== false)
+                  .map((type) => (
+                    <option key={type.id || type.name} value={type.name}>
+                      {type.name}
+                    </option>
+                  ))}
               </select>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>

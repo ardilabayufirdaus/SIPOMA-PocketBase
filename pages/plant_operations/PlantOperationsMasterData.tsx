@@ -20,6 +20,7 @@ import {
   Check,
   AlertCircle,
   X,
+  Tag,
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -46,6 +47,7 @@ import { useSiloCapacities } from '../../hooks/useSiloCapacities';
 import { useReportSettings } from '../../hooks/useReportSettings';
 import { useSimpleReportSettings } from '../../hooks/useSimpleReportSettings';
 import { usePicSettings } from '../../hooks/usePicSettings';
+import { useCementTypes } from '../../hooks/useCementTypes';
 import { usePlantOperationsAccess } from '../../hooks/usePlantOperationsAccess';
 
 // Types
@@ -57,6 +59,7 @@ import {
   ReportSetting,
   SimpleReportSetting,
   PicSetting,
+  CementType,
 } from '../../types';
 
 type MasterDataRecord =
@@ -71,7 +74,9 @@ type MasterDataRecord =
   | SimpleReportSetting
   | Omit<SimpleReportSetting, 'id'>
   | PicSetting
-  | Omit<PicSetting, 'id'>;
+  | Omit<PicSetting, 'id'>
+  | CementType
+  | Omit<CementType, 'id'>;
 
 // Forms
 import PlantUnitForm from './PlantUnitForm';
@@ -79,6 +84,7 @@ import ParameterSettingForm from './ParameterSettingForm';
 import SiloCapacityForm from './SiloCapacityForm';
 import ReportSettingForm from './ReportSettingForm';
 import PicSettingForm from './PicSettingForm';
+import CementTypeForm from './CementTypeForm';
 
 type ModalType =
   | 'plantUnit'
@@ -87,9 +93,10 @@ type ModalType =
   | 'reportSetting'
   | 'simpleReportSetting'
   | 'picSetting'
+  | 'cementType'
   | null;
 
-type TabType = 'parameters' | 'units_pic' | 'silo' | 'cop' | 'reports' | 'all';
+type TabType = 'parameters' | 'units_pic' | 'silo' | 'cement_types' | 'cop' | 'reports' | 'all';
 type CopSubTab = 'cop_params' | 'cop_footer';
 type ReportSubTab = 'standard' | 'simple';
 
@@ -173,6 +180,22 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
     setCurrentPage: setPicCurrentPage,
   } = usePagination(picSettings, 10);
 
+  // Cement Types State
+  const {
+    records: cementTypes,
+    loading: cementTypesLoading,
+    addRecord: addCementType,
+    updateRecord: updateCementType,
+    deleteRecord: deleteCementType,
+  } = useCementTypes();
+  const [editingCementType, setEditingCementType] = useState<CementType | null>(null);
+  const {
+    paginatedData: paginatedCementTypes,
+    currentPage: ctCurrentPage,
+    totalPages: ctTotalPages,
+    setCurrentPage: setCtCurrentPage,
+  } = usePagination(cementTypes, 10);
+
   // Modal State
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -211,6 +234,8 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
       }
       case 'picSetting':
         return picSettings.find((p) => p.id === deletingRecord.id)?.pic || 'Unknown PIC';
+      case 'cementType':
+        return cementTypes.find((c) => c.id === deletingRecord.id)?.name || 'Unknown Tipe Produk';
       default:
         return 'Unknown Record';
     }
@@ -676,6 +701,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
     if (type === 'reportSetting') setEditingReportSetting(null);
     if (type === 'simpleReportSetting') setEditingSimpleReportSetting(null);
     if (type === 'picSetting') setEditingPic(null);
+    if (type === 'cementType') setEditingCementType(null);
     setActiveModal(type);
   };
 
@@ -687,6 +713,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
     if (type === 'simpleReportSetting')
       setEditingSimpleReportSetting(record as SimpleReportSetting);
     if (type === 'picSetting') setEditingPic(record as PicSetting);
+    if (type === 'cementType') setEditingCementType(record as CementType);
     setActiveModal(type);
   };
 
@@ -704,6 +731,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
     setEditingReportSetting(null);
     setEditingSimpleReportSetting(null);
     setEditingPic(null);
+    setEditingCementType(null);
     setDeletingRecord(null);
   };
 
@@ -716,6 +744,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
       if (deletingRecord.type === 'simpleReportSetting')
         deleteSimpleReportSetting(deletingRecord.id);
       if (deletingRecord.type === 'picSetting') deletePicSetting(deletingRecord.id);
+      if (deletingRecord.type === 'cementType') deleteCementType(deletingRecord.id);
     }
     handleCloseModals();
   }, [
@@ -726,6 +755,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
     deleteReportSetting,
     deleteSimpleReportSetting,
     deletePicSetting,
+    deleteCementType,
   ]);
 
   const handleSave = (type: ModalType, record: MasterDataRecord) => {
@@ -756,6 +786,10 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
     if (type === 'picSetting') {
       if ('id' in record) updatePicSetting(record as PicSetting);
       else addPicSetting(record as PicSetting);
+    }
+    if (type === 'cementType') {
+      if ('id' in record) updateCementType((record as CementType).id, record as CementType);
+      else addCementType(record as Omit<CementType, 'id'>);
     }
     handleCloseModals();
   };
@@ -1010,6 +1044,12 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
       label: t['silo_capacity_title'] || 'Kapasitas Silo',
       icon: <Layers className="w-4 h-4" />,
       count: siloCapacities.length,
+    },
+    {
+      id: 'cement_types',
+      label: 'Tipe Produk / Semen',
+      icon: <Tag className="w-4 h-4" />,
+      count: cementTypes.length,
     },
     {
       id: 'cop',
@@ -1818,6 +1858,132 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
         </div>
       )}
 
+      {/* Tab: Cement Types Card */}
+      {(activeTab === 'cement_types' || activeTab === 'all') && (
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all">
+          {renderSectionHeader(
+            'Master Tipe Produk / Semen',
+            'Manajemen daftar produk semen untuk CCR logsheet dan analisis performa pabrik',
+            <Tag className="w-4 h-4" />,
+            () => handleOpenAddModal('cementType')
+          )}
+
+          {/* Table Area */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left border-collapse text-xs">
+              <thead className="bg-slate-700 dark:bg-slate-800 text-white uppercase text-[11px] font-bold tracking-wider sticky top-0 z-10 border-b border-slate-600 dark:border-slate-700">
+                <tr>
+                  <th className="px-4 py-2.5 whitespace-nowrap w-12 text-center">#</th>
+                  <th className="px-4 py-2.5 whitespace-nowrap">Tipe Produk</th>
+                  <th className="px-4 py-2.5 whitespace-nowrap">Kode</th>
+                  <th className="px-4 py-2.5 whitespace-nowrap">Deskripsi</th>
+                  <th className="px-4 py-2.5 whitespace-nowrap text-center">Urutan</th>
+                  <th className="px-4 py-2.5 whitespace-nowrap text-center">Status</th>
+                  {canWrite && (
+                    <th className="px-4 py-2.5 text-right whitespace-nowrap w-24">Aksi</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                {cementTypesLoading ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-slate-400">
+                      <div className="flex items-center justify-center gap-2">
+                        <LoadingSpinner size="sm" />
+                        <span>Memuat data tipe produk...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : cementTypes.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="p-0">
+                      {renderEmptyState(
+                        'Belum ada tipe produk yang terdaftar.',
+                        () => handleOpenAddModal('cementType'),
+                        'Tambah Tipe Produk'
+                      )}
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedCementTypes.map((item, index) => {
+                    const rowNumber = (ctCurrentPage - 1) * 10 + index + 1;
+                    return (
+                      <tr
+                        key={item.id}
+                        className="hover:bg-slate-50 dark:hover:bg-slate-850/50 transition-colors"
+                      >
+                        <td className="px-4 py-2 text-center text-slate-500 font-mono text-[11px]">
+                          {rowNumber}
+                        </td>
+                        <td className="px-4 py-2 font-bold text-slate-900 dark:text-white">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-primary-500 shrink-0" />
+                            <span>{item.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-2 font-mono font-semibold text-slate-600 dark:text-slate-300">
+                          {item.code || '-'}
+                        </td>
+                        <td className="px-4 py-2 text-slate-500 dark:text-slate-400 max-w-xs truncate">
+                          {item.description || '-'}
+                        </td>
+                        <td className="px-4 py-2 text-center font-mono text-slate-600 dark:text-slate-400">
+                          {item.sort_order ?? '-'}
+                        </td>
+                        <td className="px-4 py-2 text-center">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                              item.is_active !== false
+                                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                            }`}
+                          >
+                            {item.is_active !== false ? 'Aktif' : 'Non-aktif'}
+                          </span>
+                        </td>
+                        {canWrite && (
+                          <td className="px-4 py-2 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditModal('cementType', item)}
+                                className="p-1 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950/40 transition-colors focus-visible:ring-2 focus-visible:ring-primary-500"
+                                title="Edit Tipe Produk"
+                                aria-label="Edit Tipe Produk"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenDeleteModal(item.id, 'cementType')}
+                                className="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
+                                title="Hapus Tipe Produk"
+                                aria-label="Hapus Tipe Produk"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+          {cementTypes.length > 10 && (
+            <div className="px-4 py-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-850/30">
+              <Pagination
+                currentPage={ctCurrentPage}
+                totalPages={ctTotalPages}
+                onPageChange={setCtCurrentPage}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Tab 4: COP Configuration */}
       {(activeTab === 'cop' || activeTab === 'all') && (
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all">
@@ -2592,7 +2758,11 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                       ? editingPic
                         ? t['edit_pic_title'] || 'Edit PIC'
                         : t['add_pic_title'] || 'Tambah PIC'
-                      : ''
+                      : activeModal === 'cementType'
+                        ? editingCementType
+                          ? 'Edit Tipe Produk / Semen'
+                          : 'Tambah Tipe Produk / Semen'
+                        : ''
         }
       >
         {activeModal === 'plantUnit' && (
@@ -2652,6 +2822,21 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
           <PicSettingForm
             recordToEdit={editingPic}
             onSave={(r) => handleSave('picSetting', r)}
+            onCancel={handleCloseModals}
+            t={t}
+          />
+        )}
+        {activeModal === 'cementType' && (
+          <CementTypeForm
+            recordToEdit={editingCementType}
+            onSave={(r, oldName) => {
+              if ('id' in r) {
+                updateCementType(r.id, r, oldName);
+              } else {
+                addCementType(r);
+              }
+              handleCloseModals();
+            }}
             onCancel={handleCloseModals}
             t={t}
           />
