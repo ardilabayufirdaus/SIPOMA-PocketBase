@@ -2,20 +2,32 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import { DashboardFilters } from '../../../components/plant-operations/FilterSection';
 import { useCcrMaterialUsage } from '../../../hooks/useCcrMaterialUsage';
+import { useRkcCcrMaterialUsage } from '../../../hooks/useRkcCcrMaterialUsage';
 import { useMoistureData } from '../../../hooks/useMoistureData';
 import { formatNumber } from '../../../utils/formatters';
 
 interface ProductionCapacityTableProps {
   filters: DashboardFilters;
   plantUnit: string;
+  section?: 'CM' | 'RKC' | 'Derivative';
 }
 
 const ProductionCapacityTable: React.FC<ProductionCapacityTableProps> = ({
   filters,
   plantUnit,
+  section = 'CM',
 }) => {
-  const { getDataForUnitAndDate, loading: capacityLoading } = useCcrMaterialUsage();
-  const { data: moistureData, loading: moistureLoading } = useMoistureData(filters, plantUnit);
+  const cmUsage = useCcrMaterialUsage();
+  const rkcUsage = useRkcCcrMaterialUsage();
+  const getDataForUnitAndDate =
+    section === 'RKC' ? rkcUsage.getDataForUnitAndDate : cmUsage.getDataForUnitAndDate;
+  const capacityLoading = section === 'RKC' ? rkcUsage.loading : cmUsage.loading;
+
+  const { data: moistureData, loading: moistureLoading } = useMoistureData(
+    filters,
+    plantUnit,
+    section
+  );
   const [totalProduction, setTotalProduction] = useState<number | null>(null);
 
   useEffect(() => {

@@ -3,6 +3,7 @@ import { ProjectTask } from '../types';
 import { pb } from '../utils/pocketbase-simple';
 import { EnhancedButton } from './ui/EnhancedComponents';
 import { Camera, Image as ImageIcon, X, Trash2, UploadCloud, AlertCircle } from 'lucide-react';
+import { formatDate } from '../utils/formatters';
 
 type TaskFormData = Omit<ProjectTask, 'id' | 'project_id'>;
 
@@ -257,15 +258,22 @@ const ProjectTaskForm: React.FC<FormProps> = ({ taskToEdit, onSave, onCancel, t 
               >
                 Rencana Mulai <span className="text-rose-500">*</span>
               </label>
-              <input
-                type="date"
-                name="planned_start"
-                id="task-planned-start"
-                value={formData.planned_start}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
+              <div className="relative group/date">
+                <div className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-mono font-semibold text-slate-900 dark:text-white flex items-center justify-between pointer-events-none group-hover/date:border-slate-400 dark:group-hover/date:border-slate-600">
+                  <span>
+                    {formData.planned_start ? formatDate(formData.planned_start) : '--/--/----'}
+                  </span>
+                </div>
+                <input
+                  type="date"
+                  name="planned_start"
+                  id="task-planned-start"
+                  value={formData.planned_start}
+                  onChange={handleChange}
+                  required
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                />
+              </div>
             </div>
             <div>
               <label
@@ -274,17 +282,28 @@ const ProjectTaskForm: React.FC<FormProps> = ({ taskToEdit, onSave, onCancel, t 
               >
                 Rencana Selesai <span className="text-rose-500">*</span>
               </label>
-              <input
-                type="date"
-                name="planned_end"
-                id="task-planned-end"
-                value={formData.planned_end}
-                onChange={handleChange}
-                required
-                className={`w-full px-3 py-2 bg-white dark:bg-slate-800 border rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                  errors.planned_end ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700'
-                }`}
-              />
+              <div className="relative group/date">
+                <div
+                  className={`w-full px-3 py-2 bg-white dark:bg-slate-800 border rounded-xl text-xs font-mono font-semibold text-slate-900 dark:text-white flex items-center justify-between pointer-events-none group-hover/date:border-slate-400 dark:group-hover/date:border-slate-600 ${
+                    errors.planned_end
+                      ? 'border-rose-500'
+                      : 'border-slate-300 dark:border-slate-700'
+                  }`}
+                >
+                  <span>
+                    {formData.planned_end ? formatDate(formData.planned_end) : '--/--/----'}
+                  </span>
+                </div>
+                <input
+                  type="date"
+                  name="planned_end"
+                  id="task-planned-end"
+                  value={formData.planned_end}
+                  onChange={handleChange}
+                  required
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                />
+              </div>
               {errors.planned_end && (
                 <p className="text-[10px] text-rose-500 mt-1 font-medium">{errors.planned_end}</p>
               )}
@@ -302,14 +321,21 @@ const ProjectTaskForm: React.FC<FormProps> = ({ taskToEdit, onSave, onCancel, t 
               >
                 Realisasi Mulai
               </label>
-              <input
-                type="date"
-                name="actual_start"
-                id="task-actual-start"
-                value={formData.actual_start ?? ''}
-                onChange={handleChange}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
+              <div className="relative group/date">
+                <div className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-mono font-semibold text-slate-900 dark:text-white flex items-center justify-between pointer-events-none group-hover/date:border-slate-400 dark:group-hover/date:border-slate-600">
+                  <span>
+                    {formData.actual_start ? formatDate(formData.actual_start) : '--/--/----'}
+                  </span>
+                </div>
+                <input
+                  type="date"
+                  name="actual_start"
+                  id="task-actual-start"
+                  value={formData.actual_start ?? ''}
+                  onChange={handleChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                />
+              </div>
             </div>
             <div>
               <label
@@ -318,16 +344,25 @@ const ProjectTaskForm: React.FC<FormProps> = ({ taskToEdit, onSave, onCancel, t 
               >
                 Realisasi Selesai
               </label>
-              <input
-                type="date"
-                name="actual_end"
-                id="task-actual-end"
-                value={formData.actual_end ?? ''}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 bg-white dark:bg-slate-800 border rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
-                  errors.actual_end ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700'
-                }`}
-              />
+              <div className="relative group/date">
+                <div
+                  className={`w-full px-3 py-2 bg-white dark:bg-slate-800 border rounded-xl text-xs font-mono font-semibold text-slate-900 dark:text-white flex items-center justify-between pointer-events-none group-hover/date:border-slate-400 dark:group-hover/date:border-slate-600 ${
+                    errors.actual_end ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700'
+                  }`}
+                >
+                  <span>
+                    {formData.actual_end ? formatDate(formData.actual_end) : '--/--/----'}
+                  </span>
+                </div>
+                <input
+                  type="date"
+                  name="actual_end"
+                  id="task-actual-end"
+                  value={formData.actual_end ?? ''}
+                  onChange={handleChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                />
+              </div>
               {errors.actual_end && (
                 <p className="text-[10px] text-rose-500 mt-1 font-medium">{errors.actual_end}</p>
               )}

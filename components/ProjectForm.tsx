@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Project, ProjectStatus } from '../types';
 
-// Import Enhanced Components
 import { EnhancedButton } from './ui/EnhancedComponents';
+import { formatDate } from '../utils/formatters';
 
 interface ProjectFormProps {
   t: Record<string, string>;
@@ -182,14 +182,19 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ t, onSave, onCancel, project 
           >
             {t.project_start_date || 'Start Date'}
           </label>
-          <input
-            type="date"
-            name="start_date"
-            id="project-start-date"
-            value={formData.start_date}
-            onChange={handleChange}
-            className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl shadow-sm text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-          />
+          <div className="relative group/date">
+            <div className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl shadow-sm text-sm font-mono font-medium text-slate-900 dark:text-white flex items-center justify-between pointer-events-none group-hover/date:border-slate-400 dark:group-hover/date:border-slate-600">
+              <span>{formData.start_date ? formatDate(formData.start_date) : '--/--/----'}</span>
+            </div>
+            <input
+              type="date"
+              name="start_date"
+              id="project-start-date"
+              value={formData.start_date}
+              onChange={handleChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+            />
+          </div>
         </div>
 
         <div>
@@ -199,18 +204,25 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ t, onSave, onCancel, project 
           >
             {t.project_target_date || 'Target Completion Date'}
           </label>
-          <input
-            type="date"
-            name="end_date"
-            id="project-end-date"
-            value={formData.end_date}
-            onChange={handleChange}
-            className={`w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 border rounded-xl shadow-sm text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
-              errors.end_date
-                ? 'border-red-500 dark:border-red-500 ring-1 ring-red-500'
-                : 'border-slate-300 dark:border-slate-700'
-            }`}
-          />
+          <div className="relative group/date">
+            <div
+              className={`w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 border rounded-xl shadow-sm text-sm font-mono font-medium text-slate-900 dark:text-white flex items-center justify-between pointer-events-none group-hover/date:border-slate-400 dark:group-hover/date:border-slate-600 ${
+                errors.end_date
+                  ? 'border-red-500 dark:border-red-500 ring-1 ring-red-500'
+                  : 'border-slate-300 dark:border-slate-700'
+              }`}
+            >
+              <span>{formData.end_date ? formatDate(formData.end_date) : '--/--/----'}</span>
+            </div>
+            <input
+              type="date"
+              name="end_date"
+              id="project-end-date"
+              value={formData.end_date}
+              onChange={handleChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+            />
+          </div>
           {errors.end_date && (
             <p className="text-xs text-red-500 dark:text-red-400 mt-1 font-medium">
               {errors.end_date}

@@ -66,6 +66,7 @@ interface PlantOperationsPageProps {
 }
 
 const DerivativeReportPage = React.lazy(() => import('./plant_operations/DerivativeReportPage'));
+const RkcReportPage = React.lazy(() => import('./plant_operations/RkcReportPage'));
 
 const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({ activePage, t, section }) => {
   const renderContent = () => {
@@ -74,9 +75,10 @@ const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({ activePage, t
         return <PlantOperationsDashboardPage t={t} section={section} />;
       case 'op_report':
         if (section === 'Derivative') return <DerivativeReportPage t={t} />;
+        if (section === 'RKC') return <RkcReportPage t={t} />;
         return <ReportPage t={t} />;
       case 'op_people_champion':
-        return <PeopleChampionPage />;
+        return <PeopleChampionPage section={section} />;
       case 'op_wag_report':
         if (section === 'Derivative') return <DerivativeWhatsAppGroupReportPage />;
         return section === 'RKC' ? <RkcWhatsAppGroupReportPage /> : <WhatsAppGroupReportPage />;
@@ -101,9 +103,9 @@ const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({ activePage, t
         if (section === 'Derivative') return <DerivativeCopAnalysisPage t={t} />;
         return section === 'RKC' ? <RkcCopAnalysisPage t={t} /> : <CopAnalysisPage t={t} />;
       case 'op_work_instruction_library':
-        return <WorkInstructionLibraryPage t={t} />;
+        return <WorkInstructionLibraryPage t={t} section={section} />;
       case 'op_monitoring':
-        return <MonitoringPage t={t} />;
+        return <MonitoringPage t={t} section={section} />;
       default: {
         const pageTitle = t[activePage as keyof typeof t] || activePage;
         return <PlaceholderPage title={pageTitle} t={t} />;

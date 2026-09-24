@@ -44,7 +44,11 @@ interface ParameterSetting {
   id: string;
 }
 
-export const useMoistureData = (filters: DashboardFilters, plantUnit: string) => {
+export const useMoistureData = (
+  filters: DashboardFilters,
+  plantUnit: string,
+  section?: 'CM' | 'RKC' | 'Derivative'
+) => {
   const [data, setData] = useState<MoistureData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,8 +69,22 @@ export const useMoistureData = (filters: DashboardFilters, plantUnit: string) =>
       setError(null);
 
       try {
+        const paramSettingsCol =
+          section === 'RKC'
+            ? 'rkc_parameter_settings'
+            : section === 'Derivative'
+              ? 'derivative_parameter_settings'
+              : 'parameter_settings';
+
+        const paramDataCol =
+          section === 'RKC'
+            ? 'rkc_ccr_parameter_data'
+            : section === 'Derivative'
+              ? 'derivative_ccr_parameter_data'
+              : 'ccr_parameter_data';
+
         // First, fetch parameter settings for the selected plant unit
-        const paramSettings = await pb.collection('parameter_settings').getFullList({
+        const paramSettings = await pb.collection(paramSettingsCol).getFullList({
           filter: `unit="${plantUnit}"`,
         });
 
@@ -103,7 +121,7 @@ export const useMoistureData = (filters: DashboardFilters, plantUnit: string) =>
         // Fetch all parameter data for the selected date and plant unit
         // Use multiple OR conditions instead of regex for better compatibility
         const filterConditions = parameterIds.map((id) => `parameter_id="${id}"`).join(' || ');
-        const paramData = await pb.collection('ccr_parameter_data').getFullList({
+        const paramData = await pb.collection(paramDataCol).getFullList({
           filter: `date="${filters.date}" && (${filterConditions})`,
         });
 
@@ -169,7 +187,7 @@ export const useMoistureData = (filters: DashboardFilters, plantUnit: string) =>
     };
 
     fetchMoistureData();
-  }, [filters.date, plantUnit]);
+  }, [filters.date, plantUnit, section]);
 
   return { data, loading, error };
 };

@@ -66,13 +66,18 @@ export default function UnifiedPlantOpsDashboard() {
           {/* Date selector */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Date</label>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900"
-              disabled={isLoading}
-            />
+            <div className="relative group/date">
+              <div className="px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 font-mono text-sm min-w-[130px] flex items-center justify-between pointer-events-none">
+                <span>{selectedDate ? formatDate(selectedDate) : '--/--/----'}</span>
+              </div>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                disabled={isLoading}
+              />
+            </div>
           </div>
 
           {/* Plant unit selector */}

@@ -3,6 +3,7 @@ import { PresentationChartLineIcon } from '@heroicons/react/24/outline';
 
 import FilterSection, { DashboardFilters } from '../../components/plant-operations/FilterSection';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
+import { useRkcPlantUnits } from '../../hooks/useRkcPlantUnits';
 import MoistureContentTable from './components/MoistureContentTable';
 import ProductionCapacityTable from './components/ProductionCapacityTable';
 import MonthlyCapacityTable from './components/MonthlyCapacityTable';
@@ -11,10 +12,14 @@ import { EnhancedButton } from '../../components/ui/EnhancedComponents';
 
 interface MonitoringPageProps {
   t: Record<string, string>;
+  section?: 'CM' | 'RKC' | 'Derivative';
 }
 
-const MonitoringPage: React.FC<MonitoringPageProps> = ({ t }) => {
-  const { records: plantUnits, loading: plantUnitsLoading } = usePlantUnits();
+const MonitoringPage: React.FC<MonitoringPageProps> = ({ t, section = 'CM' }) => {
+  const cmUnits = usePlantUnits();
+  const rkcUnits = useRkcPlantUnits();
+  const plantUnits = section === 'RKC' ? rkcUnits.records : cmUnits.records;
+  const plantUnitsLoading = section === 'RKC' ? rkcUnits.loading : cmUnits.loading;
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -66,7 +71,7 @@ const MonitoringPage: React.FC<MonitoringPageProps> = ({ t }) => {
             <div>
               <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-primary-500/20 text-primary-300 border border-primary-500/30 rounded-full">
-                  CM Plant Operations
+                  {section === 'RKC' ? 'RKC Plant Operations' : 'CM Plant Operations'}
                 </span>
                 <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700 rounded-full">
                   Equipment Monitoring
@@ -104,11 +109,23 @@ const MonitoringPage: React.FC<MonitoringPageProps> = ({ t }) => {
       {filters.plantUnit ? (
         <div className="w-full space-y-4 sm:space-y-5">
           {isMonthlyView ? (
-            <MonthlyCapacityTable filters={filters} plantUnit={filters.plantUnit} />
+            <MonthlyCapacityTable
+              filters={filters}
+              plantUnit={filters.plantUnit}
+              section={section}
+            />
           ) : (
             <>
-              <ProductionCapacityTable filters={filters} plantUnit={filters.plantUnit} />
-              <MoistureContentTable filters={filters} plantUnit={filters.plantUnit} />
+              <ProductionCapacityTable
+                filters={filters}
+                plantUnit={filters.plantUnit}
+                section={section}
+              />
+              <MoistureContentTable
+                filters={filters}
+                plantUnit={filters.plantUnit}
+                section={section}
+              />
             </>
           )}
         </div>

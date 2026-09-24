@@ -794,7 +794,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
       points.push({
         day: i + 1,
         date: currentDate.toISOString().split('T')[0],
-        formattedDate: `${currentDate.getDate()}/${currentDate.getMonth() + 1}`,
+        formattedDate: formatDate(currentDate),
         planned: Number(planned.toFixed(1)),
         actual: Number(actual.toFixed(1)),
         baseline: Number(baseline.toFixed(1)),

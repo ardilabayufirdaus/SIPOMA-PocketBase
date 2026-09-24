@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BrainCircuit,
@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { usePredictiveData, AnomalyData } from '../../hooks/usePredictiveData';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
+import { useRkcPlantUnits } from '../../hooks/useRkcPlantUnits';
+import { useDerivativePlantUnits } from '../../hooks/useDerivativePlantUnits';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -39,12 +41,25 @@ ChartJS.register(
 
 interface PredictiveMaintenanceProps {
   plantUnit?: string;
+  section?: 'CM' | 'RKC' | 'Derivative';
 }
 
-const PredictiveMaintenance: React.FC<PredictiveMaintenanceProps> = ({ plantUnit }) => {
-  const { records: plantUnits } = usePlantUnits();
+const PredictiveMaintenance: React.FC<PredictiveMaintenanceProps> = ({
+  plantUnit,
+  section = 'CM',
+}) => {
+  const cmUnits = usePlantUnits();
+  const rkcUnits = useRkcPlantUnits();
+  const derivUnits = useDerivativePlantUnits();
+
+  const plantUnits = useMemo(() => {
+    if (section === 'RKC') return rkcUnits.records;
+    if (section === 'Derivative') return derivUnits.records;
+    return cmUnits.records;
+  }, [section, rkcUnits.records, derivUnits.records, cmUnits.records]);
+
   const [selectedUnit, setSelectedUnit] = useState<string>(plantUnit || 'all');
-  const { anomalies, loading, fetchPredictiveAnalytics } = usePredictiveData();
+  const { anomalies, loading, fetchPredictiveAnalytics } = usePredictiveData(section);
 
   useEffect(() => {
     fetchPredictiveAnalytics(selectedUnit);
@@ -162,7 +177,7 @@ const PredictiveMaintenance: React.FC<PredictiveMaintenanceProps> = ({ plantUnit
 const AnomalyCard = React.forwardRef<HTMLDivElement, { anomaly: AnomalyData; index: number }>(
   ({ anomaly, index }, ref) => {
     const chartData = {
-      labels: anomaly.history.map((h) => format(new Date(h.date), 'dd/MM')),
+      labels: anomaly.history.map((h) => format(new Date(h.date), 'dd/MM/yyyy')),
       datasets: [
         {
           label: 'Daily Avg',
@@ -297,8 +312,10 @@ AnomalyCard.displayName = 'AnomalyCard';
 
 const format = (date: Date, pattern: string) => {
   // Simple format helper
-  if (pattern === 'dd/MM') {
-    return `${date.getDate()}/${date.getMonth() + 1}`;
+  if (pattern === 'dd/MM' || pattern === 'dd/MM/yyyy') {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${day}/${month}/${date.getFullYear()}`;
   }
   return date.toISOString();
 };

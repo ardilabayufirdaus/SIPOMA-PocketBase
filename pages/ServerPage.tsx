@@ -576,7 +576,7 @@ const ServerPage: React.FC = () => {
                 Server Manager
               </h1>
               <p className="text-xs text-slate-300 font-normal mt-0.5 flex items-center gap-2 flex-wrap">
-                <span>Host: 172.18.6.98</span>
+                <span>Host: 172.18.80.101</span>
                 <span>• {stats?.battery || 'Power Safe'}</span>
                 {stats?.temp && <span className="text-emerald-400">• Temp: {stats.temp}</span>}
                 {stats?.uptime && <span>• Uptime: {stats.uptime}</span>}

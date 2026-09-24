@@ -716,7 +716,7 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
       // --- FALLBACK: RAW CALCULATION ---
       try {
-        const paramSettings = (await pb.collection('parameter_settings').getFullList({
+        const paramSettings = (await pb.collection('rkc_parameter_settings').getFullList({
           filter: `unit='${selectedUnit}' && (parameter~'H2O' || parameter~'Set. Feeder')`,
         })) as unknown as ParameterSetting[];
 

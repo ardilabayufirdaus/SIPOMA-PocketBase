@@ -1544,7 +1544,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
         // First, check if record exists to determine if we need to update or create
         const filter = `date="${formattedDate}" && silo_id="${siloId}"`;
 
-        const existingRecords = await pb.collection('ccr_silo_data').getFullList({
+        const existingRecords = await pb.collection('rkc_ccr_silo_data').getFullList({
           filter,
           sort: '-created',
           expand: 'silo_id',
@@ -1564,7 +1564,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
           // Record exists - update it
           const recordId = unitFilteerrorRecords[0].id;
 
-          await pb.collection('ccr_silo_data').update(recordId, updateData);
+          await pb.collection('rkc_ccr_silo_data').update(recordId, updateData);
         } else {
           // No record - create new one
           const createData = {
@@ -1574,7 +1574,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
             [flatFieldName]: value,
           };
 
-          await pb.collection('ccr_silo_data').create(createData);
+          await pb.collection('rkc_ccr_silo_data').create(createData);
         }
 
         // Refetch data to update the UI with force refresh to ensure freshest data
@@ -1917,7 +1917,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
 
               // Get existing record for this parameter and date
               const filter = `date="${selectedDate}" && parameter_id="${paramId}"`;
-              const existingRecords = await pb.collection('ccr_parameter_data').getFullList({
+              const existingRecords = await pb.collection('rkc_ccr_parameter_data').getFullList({
                 filter: filter,
               });
 
@@ -1937,7 +1937,9 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                 const existingRecord = existingRecords[0];
                 updateFields.name = effectiveUserName; // For backward compatibility
 
-                await pb.collection('ccr_parameter_data').update(existingRecord.id, updateFields);
+                await pb
+                  .collection('rkc_ccr_parameter_data')
+                  .update(existingRecord.id, updateFields);
               } else {
                 // Create new record
                 const createFields: Record<string, string | number | null> = {
@@ -1948,7 +1950,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                   ...updateFields,
                 };
 
-                await pb.collection('ccr_parameter_data').create(createFields);
+                await pb.collection('rkc_ccr_parameter_data').create(createFields);
               }
 
               successCount += paramChanges.length;
@@ -2003,7 +2005,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
     try {
       // Get all parameter records for the selected date and unit
       const filter = `date='${selectedDate}' && plant_unit='${selectedUnit}'`;
-      const records = await pb.collection('ccr_parameter_data').getFullList({
+      const records = await pb.collection('rkc_ccr_parameter_data').getFullList({
         filter: filter,
       });
 
@@ -2020,7 +2022,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
         const batch = records.slice(i, i + batchSize);
         await Promise.all(
           batch.map(async (record) => {
-            await pb.collection('ccr_parameter_data').delete(record.id);
+            await pb.collection('rkc_ccr_parameter_data').delete(record.id);
             deletedCount++;
           })
         );
@@ -2064,7 +2066,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
     try {
       // Get all parameter records for the selected date and unit
       const filter = `date='${selectedDate}' && plant_unit='${selectedUnit}'`;
-      const records = await pb.collection('ccr_parameter_data').getFullList({
+      const records = await pb.collection('rkc_ccr_parameter_data').getFullList({
         filter: filter,
       });
 
@@ -2093,7 +2095,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
             updateData.name = null;
 
             if (Object.keys(updateData).length > 0) {
-              await pb.collection('ccr_parameter_data').update(record.id, updateData);
+              await pb.collection('rkc_ccr_parameter_data').update(record.id, updateData);
               updatedCount++;
             }
           })
@@ -2392,7 +2394,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
       // Get downtime data directly from database
       console.log('Fetching downtime data...');
       const downtimeData = await pb
-        .collection('ccr_downtime_data')
+        .collection('rkc_ccr_downtime_data')
         .getFullList({
           filter: `date='${selectedDate}' && unit='${selectedUnit}'`,
           sort: 'start_time',
@@ -2406,7 +2408,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
       // Get footer data directly from database
       console.log('Fetching footer data...');
       const footerData = await pb
-        .collection('ccr_footer_data')
+        .collection('rkc_ccr_footer_data')
         .getFullList({
           filter: `date="${selectedDate}"`,
           sort: 'created',
@@ -2420,7 +2422,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
       // Get silo data directly from database
       console.log('Fetching silo data...');
       const siloData = await pb
-        .collection('ccr_silo_data')
+        .collection('rkc_ccr_silo_data')
         .getFullList({
           filter: `date="${selectedDate}"`,
           sort: 'silo_id',
@@ -2435,7 +2437,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
       // Get silo capacities for name lookup (fallback)
       console.log('Fetching silo capacities for name lookup...');
       const siloCapacities = await pb
-        .collection('silo_capacities')
+        .collection('rkc_silo_capacities')
         .getFullList({
           sort: 'silo_name',
         })
@@ -2670,7 +2672,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
       // Export Material Usage Data
       console.log('Fetching material usage data...');
       const materialUsageData = await pb
-        .collection('ccr_material_usage')
+        .collection('rkc_ccr_material_usage')
         .getFullList({
           filter: `date='${selectedDate}' && plant_unit='${selectedUnit}'`,
           sort: 'created',
@@ -3277,7 +3279,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                 try {
                   // Console statement removed for production
                   // Delete existing downtime data for import dates
-                  const existingRecords = await pb.collection('ccr_downtime_data').getFullList({
+                  const existingRecords = await pb.collection('rkc_ccr_downtime_data').getFullList({
                     filter: importDates.map((date) => `date='${date}'`).join(' || '),
                   });
                   console.log(
@@ -3288,7 +3290,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
 
                   for (const record of existingRecords) {
                     // Console statement removed for production
-                    await pb.collection('ccr_downtime_data').delete(record.id);
+                    await pb.collection('rkc_ccr_downtime_data').delete(record.id);
                   }
 
                   showToast(`Deleted existing downtime data for dates: ${importDates.join(', ')}`);
@@ -3432,7 +3434,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                 try {
                   // Console statement removed for production
                   // Delete existing silo data for import dates
-                  const existingRecords = await pb.collection('ccr_silo_data').getFullList({
+                  const existingRecords = await pb.collection('rkc_ccr_silo_data').getFullList({
                     filter: importDates.map((date) => `date='${date}'`).join(' || '),
                   });
                   console.log(
@@ -3443,7 +3445,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
 
                   for (const record of existingRecords) {
                     // Console statement removed for production
-                    await pb.collection('ccr_silo_data').delete(record.id);
+                    await pb.collection('rkc_ccr_silo_data').delete(record.id);
                   }
 
                   // Refresh silo data to reflect changes
@@ -4832,6 +4834,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                 selectedCategory={selectedCategory}
                 disabled={!selectedCategory || !selectedUnit || !canWrite}
                 t={t}
+                section="RKC"
               />
             </div>
           </EnhancedCard>
@@ -5134,12 +5137,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                     <div className="flex items-center space-x-2">
                       <span className="text-sm font-medium text-neutral-700">{t.date}:</span>
                       <span className="text-sm text-neutral-900 font-semibold">
-                        {new Date(deletingRecord.date).toLocaleDateString('id-ID', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })}
+                        {formatDate(deletingRecord.date)}
                       </span>
                     </div>
                     {deletingRecord.problem && (
@@ -5529,13 +5527,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                             : t.another_user || 'Pengguna Lain')}
                       </span>
                       {profile.user_id === loggedInUser?.id && ` (${t.you || 'Anda'})`} •{' '}
-                      {profile.created_at
-                        ? new Date(profile.created_at).toLocaleDateString('id-ID', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })
-                        : '-'}
+                      {profile.created_at ? formatDate(profile.created_at) : '-'}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0 ml-3">
@@ -5637,6 +5629,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
         selectedUnit={selectedUnit}
         t={t}
         onSuccess={refreshData}
+        section="RKC"
       />
 
       {/* Navigation Help Modal */}

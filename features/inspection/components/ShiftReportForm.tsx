@@ -7,6 +7,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import { useUserStore } from '../../../stores/userStore';
 import { useEffect } from 'react';
 import { InspectionArea } from '../../../services/pocketbase';
+import { formatDate } from '../../../utils/formatters';
 
 import {
   DailyReport,
@@ -176,12 +177,17 @@ const ShiftReportForm: React.FC<ShiftReportFormProps> = ({
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               Report Date
             </label>
-            <input
-              type="date"
-              value={reportDate}
-              onChange={(e) => setReportDate(e.target.value)}
-              className="bg-transparent border-none text-sm font-bold text-slate-800 dark:text-white focus:ring-0 outline-none cursor-pointer p-0"
-            />
+            <div className="relative group/date flex items-center">
+              <span className="text-sm font-bold text-slate-800 dark:text-white font-mono pointer-events-none">
+                {reportDate ? formatDate(reportDate) : '--/--/----'}
+              </span>
+              <input
+                type="date"
+                value={reportDate}
+                onChange={(e) => setReportDate(e.target.value)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              />
+            </div>
           </div>
         </div>
         <button

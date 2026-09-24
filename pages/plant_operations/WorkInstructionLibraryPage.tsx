@@ -2,6 +2,8 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useWorkInstructions } from '../../hooks/useWorkInstructions';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
+import { useRkcPlantUnits } from '../../hooks/useRkcPlantUnits';
+import { useDerivativePlantUnits } from '../../hooks/useDerivativePlantUnits';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { usePermissions } from '../../utils/permissions';
 import { usePlantOperationsAccess } from '../../hooks/usePlantOperationsAccess';
@@ -16,14 +18,29 @@ import ExclamationTriangleIcon from '../../components/icons/ExclamationTriangleI
 import MagnifyingGlassIcon from '../../components/icons/MagnifyingGlassIcon';
 import RealtimeIndicator from '../../components/ui/RealtimeIndicator';
 
-const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
+interface WorkInstructionLibraryPageProps {
+  t: any;
+  section?: 'CM' | 'RKC' | 'Derivative';
+}
+
+const WorkInstructionLibraryPage: React.FC<WorkInstructionLibraryPageProps> = ({
+  t,
+  section = 'CM',
+}) => {
   const { instructions, loading, error, addInstruction, updateInstruction, deleteInstruction } =
     useWorkInstructions();
-  const { records: plantUnits } = usePlantUnits();
+  const cmUnits = usePlantUnits();
+  const rkcUnits = useRkcPlantUnits();
+  const derivativeUnits = useDerivativePlantUnits();
+  const plantUnits = useMemo(() => {
+    if (section === 'RKC') return rkcUnits.records;
+    if (section === 'Derivative') return derivativeUnits.records;
+    return cmUnits.records;
+  }, [section, cmUnits.records, rkcUnits.records, derivativeUnits.records]);
 
   const { currentUser: loggedInUser } = useCurrentUser();
   const permissionChecker = usePermissions(loggedInUser);
-  const { canWrite } = usePlantOperationsAccess('CM');
+  const { canWrite } = usePlantOperationsAccess(section === 'Derivative' ? 'DERIVATIVE' : section);
 
   const [isFormModalOpen, setFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -170,7 +187,11 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
             <div>
               <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full">
-                  Plant Operations
+                  {section === 'RKC'
+                    ? 'RKC Plant Operations'
+                    : section === 'Derivative'
+                      ? 'Derivative Plant Operations'
+                      : 'CM Plant Operations'}
                 </span>
                 <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700 rounded-full">
                   WI Library
@@ -533,6 +554,7 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
           onCancel={handleCloseModals}
           t={t}
           readOnly={!canWrite}
+          plantUnits={plantUnits}
         />
       </Modal>
 

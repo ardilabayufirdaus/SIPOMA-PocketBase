@@ -5,7 +5,7 @@
 # ==========================================
 
 SERVER_USER="ardilabayufirdaus"
-SERVER_IP="172.18.6.98" 
+SERVER_IP="172.18.80.101"
 SERVER_PATH="~/project/sipoma-pocketbase"
 SOURCE_PATH="/home/ardilabayufirdaus/Repository Github/SIPOMA-PocketBase"
 

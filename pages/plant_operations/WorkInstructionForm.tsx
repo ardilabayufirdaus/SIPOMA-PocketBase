@@ -19,6 +19,7 @@ interface FormProps {
   onCancel: () => void;
   t: any;
   readOnly?: boolean;
+  plantUnits?: any[];
 }
 
 const WorkInstructionForm: React.FC<FormProps> = ({
@@ -27,6 +28,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({
   onCancel,
   t,
   readOnly = false,
+  plantUnits: passedPlantUnits,
 }) => {
   // Enhanced accessibility hooks
   const announceToScreenReader = useAccessibility();
@@ -35,7 +37,8 @@ const WorkInstructionForm: React.FC<FormProps> = ({
   const colorScheme = useColorScheme();
 
   // Fetch plant units for dropdowns
-  const { records: plantUnits, loading: plantUnitsLoading } = usePlantUnits();
+  const { records: defaultPlantUnits, loading: plantUnitsLoading } = usePlantUnits();
+  const plantUnits = passedPlantUnits || defaultPlantUnits;
 
   // FIX: Use snake_case for properties to match WorkInstruction type
   const [formData, setFormData] = useState({

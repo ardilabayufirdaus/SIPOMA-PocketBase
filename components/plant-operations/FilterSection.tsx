@@ -4,6 +4,7 @@ import { EnhancedButton } from '../ui/EnhancedComponents';
 import { usePermissions } from '../../utils/permissions';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { PlantUnit } from '../../types';
+import { formatDate } from '../../utils/formatters';
 
 export interface DashboardFilters {
   plantCategory: string;
@@ -174,13 +175,20 @@ const FilterSection: React.FC<FilterSectionProps> = ({
               </svg>
               Date
             </label>
-            <input
-              type="date"
-              id="filter-date"
-              value={filters.date}
-              onChange={(e) => handleFieldChange('date', e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
-            />
+            <div className="relative group/date">
+              <div className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm font-medium flex items-center justify-between pointer-events-none group-hover/date:border-slate-300">
+                <span className="font-mono">
+                  {filters.date ? formatDate(filters.date) : '--/--/----'}
+                </span>
+              </div>
+              <input
+                type="date"
+                id="filter-date"
+                value={filters.date}
+                onChange={(e) => handleFieldChange('date', e.target.value)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              />
+            </div>
           </div>
 
           {/* Reset Button */}

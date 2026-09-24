@@ -2346,7 +2346,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
       // Get downtime data directly from database
       console.log('Fetching downtime data...');
       const downtimeData = await pb
-        .collection('ccr_downtime_data')
+        .collection('derivative_ccr_downtime_data')
         .getFullList({
           filter: `date='${selectedDate}' && unit='${selectedUnit}'`,
           sort: 'start_time',
@@ -2360,7 +2360,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
       // Get footer data directly from database
       console.log('Fetching footer data...');
       const footerData = await pb
-        .collection('ccr_footer_data')
+        .collection('derivative_ccr_footer_data')
         .getFullList({
           filter: `date="${selectedDate}"`,
           sort: 'created',
@@ -2374,7 +2374,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
       // Get silo data directly from database
       console.log('Fetching silo data...');
       const siloData = await pb
-        .collection('ccr_silo_data')
+        .collection('derivative_ccr_silo_data')
         .getFullList({
           filter: `date="${selectedDate}"`,
           sort: 'silo_id',
@@ -2389,7 +2389,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
       // Get silo capacities for name lookup (fallback)
       console.log('Fetching silo capacities for name lookup...');
       const siloCapacities = await pb
-        .collection('silo_capacities')
+        .collection('derivative_silo_capacities')
         .getFullList({
           sort: 'silo_name',
         })
@@ -2481,7 +2481,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
 
       // Get all parameter settings for footer data lookup
       const allParameterSettings = await pb
-        .collection('parameter_settings')
+        .collection('derivative_parameter_settings')
         .getFullList({
           sort: 'parameter',
         })
@@ -2624,7 +2624,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
       // Export Material Usage Data
       console.log('Fetching material usage data...');
       const materialUsageData = await pb
-        .collection('ccr_material_usage')
+        .collection('derivative_ccr_material_usage')
         .getFullList({
           filter: `date='${selectedDate}' && plant_unit='${selectedUnit}'`,
           sort: 'created',
@@ -5059,12 +5059,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                     <div className="flex items-center space-x-2">
                       <span className="text-sm font-medium text-neutral-700">{t.date}:</span>
                       <span className="text-sm text-neutral-900 font-semibold">
-                        {new Date(deletingRecord.date).toLocaleDateString('id-ID', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })}
+                        {formatDate(deletingRecord.date)}
                       </span>
                     </div>
                     {deletingRecord.problem && (
@@ -5449,14 +5444,8 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
                             ? loggedInUser?.name || t.you || 'Anda'
                             : t.another_user || 'Pengguna Lain')}
                       </span>
-                      {profile.user_id === loggedInUser?.id && ` (${t.you || 'Anda'})`} â€¢{' '}
-                      {profile.created_at
-                        ? new Date(profile.created_at).toLocaleDateString('id-ID', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })
-                        : '-'}
+                      {profile.user_id === loggedInUser?.id && ` (${t.you || 'Anda'})`} •{' '}
+                      {profile.created_at ? formatDate(profile.created_at) : '-'}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0 ml-3">
@@ -5554,6 +5543,7 @@ const DerivativeCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t
         selectedUnit={selectedUnit}
         t={t}
         onSuccess={refreshData}
+        section="Derivative"
       />
 
       {/* Navigation Help Modal */}

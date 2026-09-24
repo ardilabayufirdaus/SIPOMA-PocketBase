@@ -8,6 +8,7 @@ import {
   ContractCurrency,
 } from '../../types';
 import { formatContractCurrency } from '../../hooks/useContractsData';
+import { formatDate } from '../../utils/formatters';
 
 interface ContractFormModalProps {
   isOpen: boolean;
@@ -527,13 +528,18 @@ export const ContractFormModal: React.FC<ContractFormModalProps> = ({
                       {t.start_date || 'Tanggal Mulai Masa Berlaku'}{' '}
                       <span className="text-rose-500">*</span>
                     </label>
-                    <input
-                      type="date"
-                      required
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                    />
+                    <div className="relative group/date">
+                      <div className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono font-bold text-slate-900 dark:text-white flex items-center justify-between pointer-events-none group-hover/date:border-slate-300 dark:group-hover/date:border-slate-600">
+                        <span>{startDate ? formatDate(startDate) : '--/--/----'}</span>
+                      </div>
+                      <input
+                        type="date"
+                        required
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                    </div>
                   </div>
 
                   <div>
@@ -541,13 +547,18 @@ export const ContractFormModal: React.FC<ContractFormModalProps> = ({
                       {t.end_date || 'Tanggal Akhir Masa Berlaku (Expiry Date)'}{' '}
                       <span className="text-rose-500">*</span>
                     </label>
-                    <input
-                      type="date"
-                      required
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                    />
+                    <div className="relative group/date">
+                      <div className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono font-bold text-slate-900 dark:text-white flex items-center justify-between pointer-events-none group-hover/date:border-slate-300 dark:group-hover/date:border-slate-600">
+                        <span>{endDate ? formatDate(endDate) : '--/--/----'}</span>
+                      </div>
+                      <input
+                        type="date"
+                        required
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                    </div>
                     <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1">
                       *{' '}
                       {t.h90_reminder_desc ||

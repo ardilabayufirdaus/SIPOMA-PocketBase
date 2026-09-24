@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { DashboardFilters } from '../../../components/plant-operations/FilterSection';
 import { useProductionCapacity } from '../../../hooks/useProductionCapacity';
-import { formatNumber } from '../../../utils/formatters';
+import { useRkcProductionCapacity } from '../../../hooks/useRkcProductionCapacity';
+import { formatNumber, formatDate } from '../../../utils/formatters';
 
 interface MonthlyCapacityTableProps {
   filters: DashboardFilters;
   plantUnit: string;
+  section?: 'CM' | 'RKC' | 'Derivative';
 }
 
 interface DailyCapacity {
@@ -16,8 +18,15 @@ interface DailyCapacity {
   moisture: number;
 }
 
-const MonthlyCapacityTable: React.FC<MonthlyCapacityTableProps> = ({ filters, plantUnit }) => {
-  const { getMonthlyCapacity } = useProductionCapacity();
+const MonthlyCapacityTable: React.FC<MonthlyCapacityTableProps> = ({
+  filters,
+  plantUnit,
+  section = 'CM',
+}) => {
+  const cmCap = useProductionCapacity();
+  const rkcCap = useRkcProductionCapacity();
+  const getMonthlyCapacity =
+    section === 'RKC' ? rkcCap.getMonthlyCapacity : cmCap.getMonthlyCapacity;
   const [data, setData] = useState<DailyCapacity[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -202,11 +211,7 @@ const MonthlyCapacityTable: React.FC<MonthlyCapacityTableProps> = ({ filters, pl
                         className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors"
                       >
                         <td className="px-3 py-2 whitespace-nowrap text-xs font-mono font-medium text-slate-800 dark:text-slate-200">
-                          {new Date(row.date).toLocaleDateString('id-ID', {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
+                          {formatDate(row.date)}
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-xs font-mono text-slate-700 dark:text-slate-300 text-right">
                           {row.moisture?.toFixed(2)}%

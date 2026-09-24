@@ -60,7 +60,7 @@ export const exportDashboardToPDF = async (
   doc.setFont('helvetica', 'normal');
   doc.text(t.project_dashboard_title || 'Project Management Dashboard', margin, 28);
 
-  const dateStr = format(new Date(), 'dd MMMM yyyy, HH:mm');
+  const dateStr = format(new Date(), 'dd/MM/yyyy, HH:mm');
   doc.setFontSize(10);
   doc.text(`Generated on: ${dateStr}`, pageWidth - margin, 20, { align: 'right' });
   doc.text(`Health Score: ${metrics.projectHealthScore}%`, pageWidth - margin, 28, {
@@ -346,7 +346,7 @@ export const exportProjectDetailReportToPDF = async (
   doc.setTextColor(203, 213, 225);
   doc.text('CONFIDENTIAL - FOR INTERNAL MANAGEMENT USE ONLY', margin, 27);
 
-  const dateStr = format(new Date(), 'dd MMMM yyyy, HH:mm');
+  const dateStr = format(new Date(), 'dd/MM/yyyy, HH:mm');
   doc.setFontSize(8.5);
   doc.setTextColor(255, 255, 255);
   doc.text(`Dicetak: ${dateStr}`, pageWidth - margin, 14, { align: 'right' });

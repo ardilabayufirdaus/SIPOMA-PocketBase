@@ -16,6 +16,8 @@ import {
   MonthlyImportResult,
 } from '../../../utils/excelMonthlyUtils';
 import { usePlantUnits } from '../../../hooks/usePlantUnits';
+import { useRkcPlantUnits } from '../../../hooks/useRkcPlantUnits';
+import { useDerivativePlantUnits } from '../../../hooks/useDerivativePlantUnits';
 import { canAccessMonthlyExportImport } from '../../../utils/roleHelpers';
 import { pb } from '../../../utils/pocketbase-simple';
 
@@ -25,6 +27,7 @@ interface MonthlyExportImportModalProps {
   selectedUnit: string;
   t: Record<string, string>;
   onSuccess?: () => void;
+  section?: 'CM' | 'RKC' | 'Derivative';
 }
 
 const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
@@ -33,6 +36,7 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
   selectedUnit,
   t,
   onSuccess,
+  section = 'CM',
 }) => {
   const currentDate = new Date();
   const [selectedYear, setSelectedYear] = useState<number>(currentDate.getFullYear());
@@ -45,7 +49,15 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
     }
   }, [selectedUnit, isOpen]);
 
-  const { records: plantUnits } = usePlantUnits();
+  const cmUnits = usePlantUnits();
+  const rkcUnits = useRkcPlantUnits();
+  const derivUnits = useDerivativePlantUnits();
+
+  const plantUnits = useMemo(() => {
+    if (section === 'RKC') return rkcUnits.records;
+    if (section === 'Derivative') return derivUnits.records;
+    return cmUnits.records;
+  }, [section, rkcUnits.records, derivUnits.records, cmUnits.records]);
 
   const availableUnitNames = useMemo(() => {
     const names = plantUnits.map((u) => u.unit);
@@ -85,7 +97,7 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
     setIsExporting(true);
     setNotification(null);
     try {
-      await exportMonthlyCcrData(selectedYear, selectedMonth, unit);
+      await exportMonthlyCcrData(selectedYear, selectedMonth, unit, section);
       setNotification({
         type: 'success',
         message: 'Ekspor data bulanan berhasil di-download!',
@@ -109,7 +121,7 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
     setImportResult(null);
 
     try {
-      const parsed = await parseMonthlyCcrImport(file, unit);
+      const parsed = await parseMonthlyCcrImport(file, unit, section);
       setImportResult(parsed);
       if (parsed.invalidRows > 0) {
         setNotification({
@@ -141,9 +153,13 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
     setSaveProgress({ current: 0, total: importResult.data.length });
 
     try {
-      const res = await saveMonthlyCcrImportToDb(importResult.data, (current, total) => {
-        setSaveProgress({ current, total });
-      });
+      const res = await saveMonthlyCcrImportToDb(
+        importResult.data,
+        (current, total) => {
+          setSaveProgress({ current, total });
+        },
+        section
+      );
 
       setNotification({
         type: 'success',
@@ -168,287 +184,283 @@ const MonthlyExportImportModal: React.FC<MonthlyExportImportModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
       <div className="relative w-full max-w-2xl bg-slate-900 text-white border border-white/20 rounded-3xl shadow-xl overflow-hidden font-sans">
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 bg-gradient-to-r from-white/5 to-transparent">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary-600 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                <DocumentDuplicateIcon className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-white tracking-wide">
-                  Ekspor / Impor Bulanan CCR
-                </h3>
-                <p className="text-xs text-white/60">
-                  Kelola data CCR operasional dalam rentang 1 bulan penuh
-                </p>
-              </div>
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 bg-gradient-to-r from-white/5 to-transparent">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary-600 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+              <DocumentDuplicateIcon className="w-5 h-5 text-white" />
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 text-white/60 hover:text-white rounded-xl hover:bg-white/10 transition duration-200"
+            <div>
+              <h3 className="text-xl font-bold text-white tracking-wide">
+                Ekspor / Impor Bulanan CCR
+              </h3>
+              <p className="text-xs text-white/60">
+                Kelola data CCR operasional dalam rentang 1 bulan penuh
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 text-white/60 hover:text-white rounded-xl hover:bg-white/10 transition duration-200"
+          >
+            <XMarkIcon className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto scrollbar-hide">
+          {/* Filter Selection */}
+          <div className="grid grid-cols-3 gap-4 p-4 rounded-2xl bg-white/5 border border-white/10">
+            <div>
+              <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
+                Bulan
+              </label>
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                className="w-full px-3 py-2.5 bg-black/40 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-[#059669]"
+              >
+                {monthsList.map((m) => (
+                  <option key={m.value} value={m.value} className="bg-[#0f172a] text-white">
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
+                Tahun
+              </label>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                className="w-full px-3 py-2.5 bg-black/40 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-[#059669]"
+              >
+                {yearsList.map((y) => (
+                  <option key={y} value={y} className="bg-[#0f172a] text-white">
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
+                Unit Pabrik
+              </label>
+              <select
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+                className="w-full px-3 py-2.5 bg-black/40 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-[#059669]"
+              >
+                <option value="ALL" className="bg-[#0f172a] text-white">
+                  Semua Unit (ALL)
+                </option>
+                {availableUnitNames.map((u) => (
+                  <option key={u} value={u} className="bg-[#0f172a] text-white">
+                    {u}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Notification Alert */}
+          {notification && (
+            <div
+              className={`p-4 rounded-2xl flex items-center gap-3 border text-sm font-medium ${
+                notification.type === 'success'
+                  ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-200'
+                  : 'bg-rose-500/20 border-rose-500/40 text-rose-200'
+              }`}
             >
-              <XMarkIcon className="w-6 h-6" />
+              {notification.type === 'success' ? (
+                <CheckCircleIcon className="w-5 h-5 shrink-0 text-emerald-400" />
+              ) : (
+                <ExclamationTriangleIcon className="w-5 h-5 shrink-0 text-rose-400" />
+              )}
+              <span>{notification.message}</span>
+            </div>
+          )}
+
+          {/* Tabs Navigation */}
+          <div className="flex border-b border-white/10">
+            <button
+              onClick={() => setActiveTab('export')}
+              className={`flex-1 py-3 text-center text-sm font-bold border-b-2 flex items-center justify-center gap-2 ${
+                activeTab === 'export'
+                  ? 'border-[#059669] text-[#059669]'
+                  : 'border-transparent text-white/50 hover:text-white'
+              }`}
+            >
+              <DocumentArrowDownIcon className="w-5 h-5" />
+              Ekspor Bulanan
+            </button>
+            <button
+              onClick={() => setActiveTab('import')}
+              className={`flex-1 py-3 text-center text-sm font-bold border-b-2 flex items-center justify-center gap-2 ${
+                activeTab === 'import'
+                  ? 'border-[#059669] text-[#059669]'
+                  : 'border-transparent text-white/50 hover:text-white'
+              }`}
+            >
+              <DocumentArrowUpIcon className="w-5 h-5" />
+              Impor Bulanan
             </button>
           </div>
 
-          {/* Body */}
-          <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto scrollbar-hide">
-            {/* Filter Selection */}
-            <div className="grid grid-cols-3 gap-4 p-4 rounded-2xl bg-white/5 border border-white/10">
-              <div>
-                <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
-                  Bulan
-                </label>
-                <select
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                  className="w-full px-3 py-2.5 bg-black/40 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-[#059669]"
-                >
-                  {monthsList.map((m) => (
-                    <option key={m.value} value={m.value} className="bg-[#0f172a] text-white">
-                      {m.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {/* Tab 1: Export Content */}
+          {activeTab === 'export' && (
+            <div className="space-y-4 pt-2">
+              <p className="text-sm text-white/70 leading-relaxed">
+                Unduh seluruh data entri parameter CCR untuk bulan{' '}
+                <strong className="text-white">
+                  {monthsList.find((m) => m.value === selectedMonth)?.label} {selectedYear}
+                </strong>{' '}
+                ke dalam format berkas Excel (.xlsx).
+              </p>
 
-              <div>
-                <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
-                  Tahun
-                </label>
-                <select
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(Number(e.target.value))}
-                  className="w-full px-3 py-2.5 bg-black/40 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-[#059669]"
-                >
-                  {yearsList.map((y) => (
-                    <option key={y} value={y} className="bg-[#0f172a] text-white">
-                      {y}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold text-white text-sm">Download Template / Data Bulanan</h4>
+                  <p className="text-xs text-white/50">
+                    Termasuk semua parameter aktif dan kolom 24 jam.
+                  </p>
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
-                  Unit Pabrik
-                </label>
-                <select
-                  value={unit}
-                  onChange={(e) => setUnit(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-black/40 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-[#059669]"
+                <button
+                  onClick={handleExport}
+                  disabled={isExporting}
+                  className="flex items-center gap-2.5 px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-sm font-bold rounded-xl shadow-lg transition duration-200 disabled:opacity-50"
                 >
-                  <option value="ALL" className="bg-[#0f172a] text-white">
-                    Semua Unit (ALL)
-                  </option>
-                  {availableUnitNames.map((u) => (
-                    <option key={u} value={u} className="bg-[#0f172a] text-white">
-                      {u}
-                    </option>
-                  ))}
-                </select>
+                  {isExporting ? (
+                    <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <DocumentArrowDownIcon className="w-5 h-5" />
+                  )}
+                  <span>{isExporting ? 'Mengekspor...' : 'Download Excel'}</span>
+                </button>
               </div>
             </div>
+          )}
 
-            {/* Notification Alert */}
-            {notification && (
-              <div
-                className={`p-4 rounded-2xl flex items-center gap-3 border text-sm font-medium ${
-                  notification.type === 'success'
-                    ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-200'
-                    : 'bg-rose-500/20 border-rose-500/40 text-rose-200'
-                }`}
-              >
-                {notification.type === 'success' ? (
-                  <CheckCircleIcon className="w-5 h-5 shrink-0 text-emerald-400" />
-                ) : (
-                  <ExclamationTriangleIcon className="w-5 h-5 shrink-0 text-rose-400" />
-                )}
-                <span>{notification.message}</span>
+          {/* Tab 2: Import Content */}
+          {activeTab === 'import' && (
+            <div className="space-y-4 pt-2">
+              <p className="text-sm text-white/70 leading-relaxed">
+                Unggah berkas Excel bulanan untuk memperbarui atau memasukkan data CCR sekaligus ke
+                database.
+              </p>
+
+              {/* File Upload Dropzone */}
+              <div className="relative p-6 border-2 border-dashed border-white/20 hover:border-[#059669]/60 rounded-2xl bg-black/20 text-center transition duration-200">
+                <input
+                  type="file"
+                  accept=".xlsx, .xls"
+                  onChange={handleFileUpload}
+                  disabled={isParsing || isSaving}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                />
+                <div className="flex flex-col items-center gap-2">
+                  <DocumentArrowUpIcon className="w-10 h-10 text-[#059669]" />
+                  <span className="text-sm font-bold text-white">
+                    Klik atau seret berkas Excel di sini
+                  </span>
+                  <span className="text-xs text-white/40">Format didukung: .xlsx, .xls</span>
+                </div>
               </div>
-            )}
 
-            {/* Tabs Navigation */}
-            <div className="flex border-b border-white/10">
-              <button
-                onClick={() => setActiveTab('export')}
-                className={`flex-1 py-3 text-center text-sm font-bold border-b-2 flex items-center justify-center gap-2 ${
-                  activeTab === 'export'
-                    ? 'border-[#059669] text-[#059669]'
-                    : 'border-transparent text-white/50 hover:text-white'
-                }`}
-              >
-                <DocumentArrowDownIcon className="w-5 h-5" />
-                Ekspor Bulanan
-              </button>
-              <button
-                onClick={() => setActiveTab('import')}
-                className={`flex-1 py-3 text-center text-sm font-bold border-b-2 flex items-center justify-center gap-2 ${
-                  activeTab === 'import'
-                    ? 'border-[#059669] text-[#059669]'
-                    : 'border-transparent text-white/50 hover:text-white'
-                }`}
-              >
-                <DocumentArrowUpIcon className="w-5 h-5" />
-                Impor Bulanan
-              </button>
-            </div>
+              {isParsing && (
+                <div className="flex items-center justify-center gap-3 p-4">
+                  <ArrowPathIcon className="w-5 h-5 animate-spin text-[#059669]" />
+                  <span className="text-sm font-medium text-white/70">
+                    Membaca data dari Excel...
+                  </span>
+                </div>
+              )}
 
-            {/* Tab 1: Export Content */}
-            {activeTab === 'export' && (
-              <div className="space-y-4 pt-2">
-                <p className="text-sm text-white/70 leading-relaxed">
-                  Unduh seluruh data entri parameter CCR untuk bulan{' '}
-                  <strong className="text-white">
-                    {monthsList.find((m) => m.value === selectedMonth)?.label} {selectedYear}
-                  </strong>{' '}
-                  ke dalam format berkas Excel (.xlsx).
-                </p>
+              {/* Import Preview */}
+              {importResult && (
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between text-xs font-bold text-white/70">
+                    <span>Preview Ringkasan Baris Data:</span>
+                    <span className="text-emerald-400">{importResult.validRows} Siap Diimpor</span>
+                  </div>
 
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
-                  <div>
-                    <h4 className="font-bold text-white text-sm">
-                      Download Template / Data Bulanan
-                    </h4>
-                    <p className="text-xs text-white/50">
-                      Termasuk semua parameter aktif dan kolom 24 jam.
-                    </p>
+                  {/* Progress Bar when saving */}
+                  {isSaving && saveProgress && (
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-xs font-bold text-white/70">
+                        <span>Menyimpan ke Database...</span>
+                        <span>
+                          {saveProgress.current} / {saveProgress.total}
+                        </span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-[#059669] to-emerald-400 transition-all duration-200"
+                          style={{
+                            width: `${(saveProgress.current / saveProgress.total) * 100}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="max-h-48 overflow-y-auto border border-white/10 rounded-xl bg-black/40 p-2 scrollbar-hide text-xs">
+                    <table className="w-full text-left">
+                      <thead className="text-white/40 border-b border-white/10 uppercase">
+                        <tr>
+                          <th className="p-2">Tanggal</th>
+                          <th className="p-2">Parameter</th>
+                          <th className="p-2 text-center">Unit</th>
+                          <th className="p-2 text-right">Data Jam</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5 text-white/80">
+                        {importResult.data.slice(0, 15).map((row, idx) => (
+                          <tr key={idx}>
+                            <td className="p-2">{row.date}</td>
+                            <td className="p-2 font-medium text-white">{row.parameter_name}</td>
+                            <td className="p-2 text-center">{row.unit}</td>
+                            <td className="p-2 text-right">
+                              {Object.values(row.hours).filter((v) => v !== null).length} / 24
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {importResult.data.length > 15 && (
+                      <p className="p-2 text-center text-white/40 text-[10px]">
+                        ...dan {importResult.data.length - 15} baris lainnya.
+                      </p>
+                    )}
                   </div>
 
                   <button
-                    onClick={handleExport}
-                    disabled={isExporting}
-                    className="flex items-center gap-2.5 px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-sm font-bold rounded-xl shadow-lg transition duration-200 disabled:opacity-50"
+                    onClick={handleSaveImport}
+                    disabled={isSaving || importResult.validRows === 0}
+                    className="w-full py-3 bg-gradient-to-r from-[#059669] to-[#111827] hover:from-[#059669]/90 hover:to-[#111827]/90 text-white font-bold text-sm rounded-xl shadow-lg transition duration-200 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    {isExporting ? (
+                    {isSaving ? (
                       <ArrowPathIcon className="w-5 h-5 animate-spin" />
                     ) : (
-                      <DocumentArrowDownIcon className="w-5 h-5" />
+                      <CheckCircleIcon className="w-5 h-5" />
                     )}
-                    <span>{isExporting ? 'Mengekspor...' : 'Download Excel'}</span>
+                    <span>
+                      {isSaving
+                        ? 'Menyimpan Data...'
+                        : `Simpan ${importResult.validRows} Record ke Database`}
+                    </span>
                   </button>
                 </div>
-              </div>
-            )}
-
-            {/* Tab 2: Import Content */}
-            {activeTab === 'import' && (
-              <div className="space-y-4 pt-2">
-                <p className="text-sm text-white/70 leading-relaxed">
-                  Unggah berkas Excel bulanan untuk memperbarui atau memasukkan data CCR sekaligus
-                  ke database.
-                </p>
-
-                {/* File Upload Dropzone */}
-                <div className="relative p-6 border-2 border-dashed border-white/20 hover:border-[#059669]/60 rounded-2xl bg-black/20 text-center transition duration-200">
-                  <input
-                    type="file"
-                    accept=".xlsx, .xls"
-                    onChange={handleFileUpload}
-                    disabled={isParsing || isSaving}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                  />
-                  <div className="flex flex-col items-center gap-2">
-                    <DocumentArrowUpIcon className="w-10 h-10 text-[#059669]" />
-                    <span className="text-sm font-bold text-white">
-                      Klik atau seret berkas Excel di sini
-                    </span>
-                    <span className="text-xs text-white/40">Format didukung: .xlsx, .xls</span>
-                  </div>
-                </div>
-
-                {isParsing && (
-                  <div className="flex items-center justify-center gap-3 p-4">
-                    <ArrowPathIcon className="w-5 h-5 animate-spin text-[#059669]" />
-                    <span className="text-sm font-medium text-white/70">
-                      Membaca data dari Excel...
-                    </span>
-                  </div>
-                )}
-
-                {/* Import Preview */}
-                {importResult && (
-                  <div className="space-y-3 pt-2">
-                    <div className="flex items-center justify-between text-xs font-bold text-white/70">
-                      <span>Preview Ringkasan Baris Data:</span>
-                      <span className="text-emerald-400">
-                        {importResult.validRows} Siap Diimpor
-                      </span>
-                    </div>
-
-                    {/* Progress Bar when saving */}
-                    {isSaving && saveProgress && (
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between text-xs font-bold text-white/70">
-                          <span>Menyimpan ke Database...</span>
-                          <span>
-                            {saveProgress.current} / {saveProgress.total}
-                          </span>
-                        </div>
-                        <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-[#059669] to-emerald-400 transition-all duration-200"
-                            style={{
-                              width: `${(saveProgress.current / saveProgress.total) * 100}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="max-h-48 overflow-y-auto border border-white/10 rounded-xl bg-black/40 p-2 scrollbar-hide text-xs">
-                      <table className="w-full text-left">
-                        <thead className="text-white/40 border-b border-white/10 uppercase">
-                          <tr>
-                            <th className="p-2">Tanggal</th>
-                            <th className="p-2">Parameter</th>
-                            <th className="p-2 text-center">Unit</th>
-                            <th className="p-2 text-right">Data Jam</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5 text-white/80">
-                          {importResult.data.slice(0, 15).map((row, idx) => (
-                            <tr key={idx}>
-                              <td className="p-2">{row.date}</td>
-                              <td className="p-2 font-medium text-white">{row.parameter_name}</td>
-                              <td className="p-2 text-center">{row.unit}</td>
-                              <td className="p-2 text-right">
-                                {Object.values(row.hours).filter((v) => v !== null).length} / 24
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      {importResult.data.length > 15 && (
-                        <p className="p-2 text-center text-white/40 text-[10px]">
-                          ...dan {importResult.data.length - 15} baris lainnya.
-                        </p>
-                      )}
-                    </div>
-
-                    <button
-                      onClick={handleSaveImport}
-                      disabled={isSaving || importResult.validRows === 0}
-                      className="w-full py-3 bg-gradient-to-r from-[#059669] to-[#111827] hover:from-[#059669]/90 hover:to-[#111827]/90 text-white font-bold text-sm rounded-xl shadow-lg transition duration-200 disabled:opacity-50 flex items-center justify-center gap-2"
-                    >
-                      {isSaving ? (
-                        <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                      ) : (
-                        <CheckCircleIcon className="w-5 h-5" />
-                      )}
-                      <span>
-                        {isSaving
-                          ? 'Menyimpan Data...'
-                          : `Simpan ${importResult.validRows} Record ke Database`}
-                      </span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
+    </div>
   );
 };
 

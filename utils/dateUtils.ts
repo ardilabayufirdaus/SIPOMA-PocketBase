@@ -143,17 +143,22 @@ export const formatDateObjectToISO8601 = (date: Date): string => {
  * @param format The format string: 'yyyy-MM-dd', 'dd/MM/yyyy', etc.
  * @returns Formatted date string
  */
-export function formatDate(date: Date, format: string): string {
-  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+export function formatDate(date: Date | string, format: string = 'dd/MM/yyyy'): string {
+  if (!date) {
     return '';
   }
 
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // +1 because getMonth() returns 0-11
-  const year = date.getFullYear();
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (!(d instanceof Date) || isNaN(d.getTime())) {
+    return '';
+  }
+
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0'); // +1 because getMonth() returns 0-11
+  const year = d.getFullYear();
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  const seconds = String(d.getSeconds()).padStart(2, '0');
 
   switch (format) {
     case 'yyyy-MM-dd':

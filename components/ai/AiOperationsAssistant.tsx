@@ -13,6 +13,7 @@ import { Card } from '../ui/Card'; // Direct import
 import Button from '../ui/Button'; // Direct import
 import { ParameterSetting } from '../../types';
 import { genAIService } from '../../services/genAIService'; // Import Service
+import { formatDate } from '../../utils/formatters';
 
 // Interface for Analysis Data (matching CopAnalysisPage)
 interface AnalysisDataRow {
@@ -189,7 +190,7 @@ export const AiOperationsAssistant: React.FC<AiOperationsAssistantProps> = ({
 
     // Prepare Context string for AI
     const contextSummary = `
-ANALYSIS DATE: ${new Date().toLocaleDateString()}
+ANALYSIS DATE: ${formatDate(new Date())}
 UNIT: ${selectedUnit || 'General'}
 HEALTH SCORE: ${statsResult.score}/100
 

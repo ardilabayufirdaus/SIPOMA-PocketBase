@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Users } from 'lucide-react';
 import { User } from '../../types';
+import { formatDate } from '../../utils/formatters';
 
 interface DashboardHeaderProps {
   user: User | null;
@@ -66,12 +67,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-xs">
           <Calendar className="w-3.5 h-3.5 text-primary-600 dark:text-primary-400" />
           <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-            {new Date().toLocaleDateString(language === 'en' ? 'en-US' : 'id-ID', {
-              weekday: 'short',
-              day: 'numeric',
-              month: 'short',
-              year: 'numeric',
-            })}
+            {formatDate(new Date())}
           </span>
         </div>
 

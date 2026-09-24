@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import OeeMetricCard from './OeeMetricCard';
-import { useDerivativePlantUnits } from '../../hooks/useDerivativePlantUnits';
-import { useDerivativeParameterSettings } from '../../hooks/useDerivativeParameterSettings';
+import { useRkcPlantUnits } from '../../hooks/useRkcPlantUnits';
+import { useRkcParameterSettings } from '../../hooks/useRkcParameterSettings';
 import { pb } from '../../utils/pocketbase-simple';
 import {
   calculateAvailabilityRange,
@@ -17,19 +17,19 @@ import OeeLeaderboard from './OeeLeaderboard';
 import { exportOeeDashboard } from '../../utils/exportOeeDashboard';
 import { OeeTabType } from './OeeDashboardSection';
 
-interface DerivativeOeeDashboardSectionProps {
+interface RkcOeeDashboardSectionProps {
   date: string;
   selectedUnit: string;
   activeTab?: OeeTabType;
 }
 
-const DerivativeOeeDashboardSection: React.FC<DerivativeOeeDashboardSectionProps> = ({
+const RkcOeeDashboardSection: React.FC<RkcOeeDashboardSectionProps> = ({
   date,
   selectedUnit,
   activeTab = 'all',
 }) => {
-  const { records: plantUnits, loading: unitsLoading } = useDerivativePlantUnits();
-  const { records: parameterSettings, loading: settingsLoading } = useDerivativeParameterSettings();
+  const { records: plantUnits, loading: unitsLoading } = useRkcPlantUnits();
+  const { records: parameterSettings, loading: settingsLoading } = useRkcParameterSettings();
 
   const [allData, setAllData] = useState<{
     parameters: any[];
@@ -57,7 +57,7 @@ const DerivativeOeeDashboardSection: React.FC<DerivativeOeeDashboardSectionProps
   };
 
   const currentHour = new Date().getHours();
-  const cacheKey = `derivative-oee-results-${date}-${currentHour}`;
+  const cacheKey = `rkc-oee-results-${date}-${currentHour}`;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,9 +74,9 @@ const DerivativeOeeDashboardSection: React.FC<DerivativeOeeDashboardSectionProps
       const fullRangeFilter = `date >= "${firstDayOfYear}" && date <= "${date} 23:59:59"`;
 
       try {
-        const [params, downtime, capacity, materialUsage, summaries] = await Promise.all([
+        const [params, downtime, capacity, materialUsage] = await Promise.all([
           pb
-            .collection('derivative_ccr_parameter_data')
+            .collection('rkc_ccr_parameter_data')
             .getFullList({
               filter: mtdRangeFilter,
               fields:
@@ -84,20 +84,16 @@ const DerivativeOeeDashboardSection: React.FC<DerivativeOeeDashboardSectionProps
             })
             .catch(() => []),
           pb
-            .collection('derivative_ccr_downtime_data')
+            .collection('rkc_ccr_downtime_data')
             .getFullList({ filter: mtdRangeFilter })
             .catch(() => []),
           pb
-            .collection('derivative_monitoring_production_capacity')
+            .collection('rkc_monitoring_production_capacity')
             .getFullList({ filter: mtdRangeFilter })
             .catch(() => []),
           pb
-            .collection('derivative_ccr_material_usage')
+            .collection('rkc_ccr_material_usage')
             .getFullList({ filter: mtdRangeFilter })
-            .catch(() => []),
-          pb
-            .collection('derivative_oee_daily_summary')
-            .getFullList({ filter: fullRangeFilter })
             .catch(() => []),
         ]);
 
@@ -106,10 +102,10 @@ const DerivativeOeeDashboardSection: React.FC<DerivativeOeeDashboardSectionProps
           downtime: downtime || [],
           capacity: capacity || [],
           materialUsage: materialUsage || [],
-          summaries: summaries || [],
+          summaries: [],
         });
       } catch (err) {
-        console.error('Failed to fetch Derivative OEE data:', err);
+        console.error('Failed to fetch RKC OEE data:', err);
       } finally {
         setLoading(false);
       }
@@ -256,12 +252,7 @@ const DerivativeOeeDashboardSection: React.FC<DerivativeOeeDashboardSectionProps
           });
         }
 
-        const totalActualOutput = Math.max(
-          source1Output,
-          source2Output,
-          source3Output,
-          source4Output
-        );
+        const actualOutput = Math.max(source1Output, source2Output, source3Output, source4Output);
 
         const dtMinutes = downtimeInRange.reduce(
           (sum, d) => sum + (parseFloat(d.duration_minutes || d.duration) || 0),
@@ -269,7 +260,7 @@ const DerivativeOeeDashboardSection: React.FC<DerivativeOeeDashboardSectionProps
         );
         const operatingMinutes = Math.max(0, days * 1440 - dtMinutes);
 
-        const prodRecords = [{ actualOutput: totalActualOutput, operatingMinutes }];
+        const prodRecords = [{ actualOutput, operatingMinutes }];
         const performance = calculatePerformanceRange(prodRecords, designCapacity);
 
         const qualityChecks: any[] = [];
@@ -290,162 +281,105 @@ const DerivativeOeeDashboardSection: React.FC<DerivativeOeeDashboardSectionProps
           });
         });
         const quality = calculateQualityRange(qualityChecks);
+        const oee = calculateOee(availability, performance, quality);
 
         return {
           availability,
           performance,
           quality,
-          oee: calculateOee(availability, performance, quality),
-        };
-      };
-
-      const calculateRangeFromSummaries = (startDate: string, endDate: string) => {
-        const rangeSummaries = allData.summaries.filter(
-          (s) =>
-            matchUnit(s.unit, unitId) &&
-            normalize(s.date) >= startDate &&
-            normalize(s.date) <= endDate
-        );
-
-        if (rangeSummaries.length > 0) {
-          const avg = (field: string) =>
-            rangeSummaries.reduce((sum, s) => sum + (s[field] || 0), 0) / rangeSummaries.length;
-          return {
-            availability: avg('availability'),
-            performance: avg('performance'),
-            quality: avg('quality'),
-            oee: avg('oee'),
-          };
-        }
-
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        const dailyOeeResults: any[] = [];
-
-        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-          const dayStr = d.toISOString().split('T')[0];
-          const res = calculateRangeOee(dayStr, dayStr);
-          if (res.availability > 0 || res.performance > 0 || res.quality < 100) {
-            dailyOeeResults.push(res);
-          }
-        }
-
-        if (dailyOeeResults.length === 0) {
-          return calculateRangeOee(startDate, endDate);
-        }
-
-        const avgRes = (field: 'availability' | 'performance' | 'quality' | 'oee') =>
-          dailyOeeResults.reduce((sum, r) => sum + (r[field] || 0), 0) / dailyOeeResults.length;
-
-        return {
-          availability: avgRes('availability'),
-          performance: avgRes('performance'),
-          quality: avgRes('quality'),
-          oee: avgRes('oee'),
+          oee,
+          operatingHours: operatingMinutes / 60,
+          actualOutput,
+          designCapacity,
         };
       };
 
       const daily = calculateRangeOee(targetDateStr, targetDateStr);
-      const mtd = calculateRangeFromSummaries(startOfMonth, targetDateStr);
-      const ytd = calculateRangeFromSummaries(startOfYear, targetDateStr);
-
-      const dailyFromSummary = allData.summaries.find(
-        (s) => normalize(s.date) === targetDateStr && matchUnit(s.unit, unitId)
-      );
-
-      const finalDaily =
-        daily.oee > 0 || !dailyFromSummary
-          ? daily
-          : {
-              availability: dailyFromSummary.availability || 0,
-              performance: dailyFromSummary.performance || 0,
-              quality: dailyFromSummary.quality || 0,
-              oee: dailyFromSummary.oee || 0,
-            };
+      const mtd = calculateRangeOee(startOfMonth, targetDateStr);
+      const ytd = calculateRangeOee(startOfYear, targetDateStr);
 
       return {
-        unit: unitId,
-        daily: finalDaily,
+        unit: unit.unit,
+        daily,
+        mtd,
+        ytd,
         comparisons: {
           monthly: mtd.oee,
           mtd: mtd.oee,
-          ytd: ytd.oee > 0 ? ytd.oee : mtd.oee,
+          ytd: ytd.oee,
         },
       };
     });
 
     return calculatedMetrics;
-  }, [allData, plantUnits, parameterSettings, date, selectedUnit, cacheKey]);
+  }, [plantUnits, parameterSettings, allData, date, selectedUnit]);
 
-  const plantOverallOee = useMemo(() => {
-    if (unitMetrics.length === 0) return 0;
-    const sum = unitMetrics.reduce((acc, m) => acc + m.daily.oee, 0);
-    return sum / unitMetrics.length;
+  const plantAverage = useMemo(() => {
+    if (unitMetrics.length === 0) return { oee: 0, availability: 0, performance: 0, quality: 0 };
+    const sum = unitMetrics.reduce(
+      (acc, m) => ({
+        oee: acc.oee + m.daily.oee,
+        availability: acc.availability + m.daily.availability,
+        performance: acc.performance + m.daily.performance,
+        quality: acc.quality + m.daily.quality,
+      }),
+      { oee: 0, availability: 0, performance: 0, quality: 0 }
+    );
+    const count = unitMetrics.length;
+    return {
+      oee: sum.oee / count,
+      availability: sum.availability / count,
+      performance: sum.performance / count,
+      quality: sum.quality / count,
+    };
   }, [unitMetrics]);
 
-  if (loading || unitsLoading || settingsLoading) {
+  if (unitsLoading || settingsLoading || loading) {
     return (
-      <div className="flex items-center justify-center p-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <Loader2 className="w-8 h-8 text-emerald-600 animate-spin mr-3" />
-        <span className="text-slate-600 dark:text-slate-300 font-medium">
-          Calculating Derivative Plant-wide OEE Metrics...
+      <div className="flex flex-col items-center justify-center p-12 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl rounded-[2.5rem] border border-white/60 dark:border-slate-800 shadow-sm">
+        <Loader2 className="w-8 h-8 text-primary-500 animate-spin mb-4" />
+        <span className="text-slate-600 dark:text-slate-400 font-bold tracking-wider uppercase text-xs">
+          Memuat Data OEE RKC...
         </span>
       </div>
     );
   }
 
-  const showOee = activeTab === 'oee' || activeTab === 'all';
-  const showDowntime = activeTab === 'downtime' || activeTab === 'all';
-  const showTrends = activeTab === 'trends' || activeTab === 'all';
+  const showOee = activeTab === 'all' || activeTab === 'oee';
+  const showDowntime = activeTab === 'all' || activeTab === 'downtime';
+  const showTrends = activeTab === 'all' || activeTab === 'trends';
 
   return (
-    <div className="space-y-6 md:space-y-8">
-      {/* OEE PERFORMANCE SECTION */}
+    <div className="space-y-6">
+      {/* OEE & PERFORMANCE SECTION */}
       {showOee && (
         <div className="space-y-6">
-          {/* Overall OEE Hero Card */}
-          <div className="relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-emerald-500/10 via-teal-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
-
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
-                  <TrendingUp className="w-8 h-8 md:w-10 md:h-10 text-white" />
+          {/* Header Action Bar */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 sm:p-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-primary-500/20">
+                  <TrendingUp className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50">
-                      Derivative Operations Intelligence
-                    </span>
-                    <span className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-semibold">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      Derivative Active
-                    </span>
-                  </div>
-                  <h3 className="text-sm md:text-base font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Plant Overall Performance
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight font-display">
+                    Overall Equipment Effectiveness (OEE) — RKC
                   </h3>
-                  <div className="flex items-baseline gap-2 mt-1">
-                    <span className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight font-mono">
-                      {plantOverallOee.toFixed(2)}
-                    </span>
-                    <span className="text-2xl md:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
-                      %
-                    </span>
-                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Pemantauan efektivitas, ketersediaan alat, dan performa operasional unit RKC
+                  </p>
                 </div>
               </div>
-
-              <div className="flex flex-col md:items-end gap-3 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 pt-4 md:pt-0 md:pl-8">
-                <div className="text-xs text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed text-left md:text-right">
-                  Kalkulasi agregat efektivitas peralatan operasional Derivative terverifikasi
-                  berdasarkan kapasitas desain aktual dan ketersediaan mesin.
-                </div>
+              <div className="flex items-center gap-3">
                 <button
-                  onClick={() => exportOeeDashboard(date, unitMetrics, allData)}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50 min-h-[36px]"
-                  title="Export Derivative OEE Data to Spreadsheet"
-                  aria-label="Export Derivative OEE Data to Spreadsheet"
+                  onClick={() =>
+                    exportOeeDashboard(date, unitMetrics, {
+                      parameters: allData.parameters,
+                      downtime: allData.downtime,
+                      capacity: allData.capacity,
+                    })
+                  }
+                  className="flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold transition-all shadow-sm shadow-emerald-600/20 min-h-[36px]"
                 >
                   <FileSpreadsheet className="w-4 h-4" />
                   <span>Export Spreadsheet</span>
@@ -454,12 +388,12 @@ const DerivativeOeeDashboardSection: React.FC<DerivativeOeeDashboardSectionProps
             </div>
           </div>
 
-          {/* Derivative OEE Unit Leaderboard */}
+          {/* RKC OEE Unit Leaderboard */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-1.5 h-5 bg-emerald-600 rounded-full" />
               <h3 className="text-base md:text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                Derivative OEE Unit Leaderboard
+                RKC OEE Unit Leaderboard
               </h3>
             </div>
             <OeeLeaderboard
@@ -553,4 +487,4 @@ const DerivativeOeeDashboardSection: React.FC<DerivativeOeeDashboardSectionProps
   );
 };
 
-export default DerivativeOeeDashboardSection;
+export default RkcOeeDashboardSection;

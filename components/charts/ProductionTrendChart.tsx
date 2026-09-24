@@ -12,6 +12,7 @@ import {
 } from 'chart.js';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+import { formatDate } from '../../utils/formatters';
 
 interface ProductionTrendChartProps {
   data: Array<{
@@ -68,10 +69,7 @@ export const ProductionTrendChart: React.FC<ProductionTrendChartProps> = ({
   const chartData = {
     labels: data.map((item) => {
       const date = new Date(item.timestamp);
-      return date.toLocaleDateString('id-ID', {
-        month: 'short',
-        day: 'numeric',
-      });
+      return formatDate(date);
     }),
     datasets: displayParameters.map((param, index) => {
       const datasetData = data.map((item) => {

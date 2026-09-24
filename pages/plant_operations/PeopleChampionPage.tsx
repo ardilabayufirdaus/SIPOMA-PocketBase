@@ -13,9 +13,15 @@ import {
 import { ParameterSetting } from '../../types';
 import { formatNumberIndonesian } from '../../utils/formatters';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
+import { useRkcPlantUnits } from '../../hooks/useRkcPlantUnits';
+import { useDerivativePlantUnits } from '../../hooks/useDerivativePlantUnits';
 import { useUsers } from '../../hooks/useUsers';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
+import { useRkcParameterSettings } from '../../hooks/useRkcParameterSettings';
+import { useDerivativeParameterSettings } from '../../hooks/useDerivativeParameterSettings';
 import { useCopParameters } from '../../hooks/useCopParameters';
+import { useRkcCopParameters } from '../../hooks/useRkcCopParameters';
+import { useDerivativeCopParameters } from '../../hooks/useDerivativeCopParameters';
 import { pb } from '../../utils/pocketbase-simple';
 import Modal from '../../components/Modal';
 import { Card } from '../../components/ui/Card';
@@ -361,12 +367,32 @@ const OperatorAchievementChart: React.FC<{
   );
 };
 
-const PeopleChampionPage: React.FC = () => {
-  const { records: allParameters } = useParameterSettings();
+interface PeopleChampionPageProps {
+  section?: 'CM' | 'RKC' | 'Derivative';
+}
+
+const PeopleChampionPage: React.FC<PeopleChampionPageProps> = ({ section = 'CM' }) => {
+  const cmParams = useParameterSettings();
+  const rkcParams = useRkcParameterSettings();
+  const derivativeParams = useDerivativeParameterSettings();
+  const allParameters = useMemo(() => {
+    if (section === 'RKC') return rkcParams.records;
+    if (section === 'Derivative') return derivativeParams.records;
+    return cmParams.records;
+  }, [section, cmParams.records, rkcParams.records, derivativeParams.records]);
+
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth());
   const [filterYear, setFilterYear] = useState(new Date().getFullYear());
 
-  const { records: plantUnits } = usePlantUnits();
+  const cmUnits = usePlantUnits();
+  const rkcUnits = useRkcPlantUnits();
+  const derivativeUnits = useDerivativePlantUnits();
+  const plantUnits = useMemo(() => {
+    if (section === 'RKC') return rkcUnits.records;
+    if (section === 'Derivative') return derivativeUnits.records;
+    return cmUnits.records;
+  }, [section, cmUnits.records, rkcUnits.records, derivativeUnits.records]);
+
   const { users } = useUsers();
 
   const { currentUser: loggedInUser } = useCurrentUser();
@@ -405,7 +431,21 @@ const PeopleChampionPage: React.FC = () => {
   const [breakdownPage, setBreakdownPage] = useState(1);
   const ITEMS_PER_PAGE = 5;
 
-  const { copParameterIds } = useCopParameters(selectedCategory, selectedUnit);
+  const cmCop = useCopParameters(selectedCategory, selectedUnit);
+  const rkcCop = useRkcCopParameters(selectedCategory, selectedUnit);
+  const derivativeCop = useDerivativeCopParameters(selectedCategory, selectedUnit);
+  const copParameterIds = useMemo(() => {
+    if (section === 'RKC') return rkcCop.copParameterIds;
+    if (section === 'Derivative') return derivativeCop.copParameterIds;
+    return cmCop.copParameterIds;
+  }, [section, cmCop.copParameterIds, rkcCop.copParameterIds, derivativeCop.copParameterIds]);
+
+  const ccrCollectionName =
+    section === 'RKC'
+      ? 'rkc_ccr_parameter_data'
+      : section === 'Derivative'
+        ? 'derivative_ccr_parameter_data'
+        : 'ccr_parameter_data';
 
   // Memoized lists for selects
   const yearOptions = useMemo(() => {
@@ -549,7 +589,7 @@ const PeopleChampionPage: React.FC = () => {
 
         while (retryCount < maxRetries) {
           try {
-            records = await pb.collection('ccr_parameter_data').getFullList({
+            records = await pb.collection(ccrCollectionName).getFullList({
               filter: dateFilter,
               fields:
                 'name,parameter_id,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24',
@@ -775,7 +815,15 @@ const PeopleChampionPage: React.FC = () => {
     };
 
     calculateGlobalOperatorRanking();
-  }, [plantUnits, allParameters, relevantOperators, filterYear, filterMonth, selectedCementType]);
+  }, [
+    plantUnits,
+    allParameters,
+    relevantOperators,
+    filterYear,
+    filterMonth,
+    selectedCementType,
+    ccrCollectionName,
+  ]);
 
   // Calculate operator achievement data
   useEffect(() => {
@@ -809,7 +857,7 @@ const PeopleChampionPage: React.FC = () => {
 
         const parameterIds = copParams.map((p) => p.id);
 
-        const records = await pb.collection('ccr_parameter_data').getFullList({
+        const records = await pb.collection(ccrCollectionName).getFullList({
           filter: dateFilter,
           fields:
             'name,parameter_id,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24',
@@ -962,6 +1010,7 @@ const PeopleChampionPage: React.FC = () => {
     filterMonth,
     selectedCementType,
     selectedOperator,
+    ccrCollectionName,
   ]);
 
   return (
@@ -977,7 +1026,11 @@ const PeopleChampionPage: React.FC = () => {
             <div>
               <div className="flex items-center gap-2 mb-0.5">
                 <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-primary-500/20 text-primary-300 border border-primary-500/30 rounded-full">
-                  CM Plant Operations
+                  {section === 'RKC'
+                    ? 'RKC Plant Operations'
+                    : section === 'Derivative'
+                      ? 'Derivative Plant Operations'
+                      : 'CM Plant Operations'}
                 </span>
                 <RealtimeIndicator
                   isConnected={true}
@@ -998,7 +1051,11 @@ const PeopleChampionPage: React.FC = () => {
 
       {/* Filter Section - Compact & Precision */}
       <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xs border border-slate-200 dark:border-slate-800 p-3 sm:p-3.5 w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 items-end">
+        <div
+          className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 ${
+            !section || section === 'CM' ? 'lg:grid-cols-5' : 'lg:grid-cols-4'
+          } gap-2.5 items-end`}
+        >
           {/* Plant Category */}
           <div className="space-y-1">
             <label
@@ -1052,35 +1109,37 @@ const PeopleChampionPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Cement Type */}
-          <div className="space-y-1">
-            <label
-              htmlFor="cop-filter-cement-type"
-              className="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider"
-            >
-              <Beaker className="w-3 h-3 text-slate-400" />
-              Cement Type
-            </label>
-            <div className="relative">
-              <select
-                id="cop-filter-cement-type"
-                value={selectedCementType}
-                onChange={(e) => setSelectedCementType(e.target.value)}
-                className="w-full appearance-none pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 text-xs font-semibold transition-colors cursor-pointer min-h-[36px]"
+          {/* Cement Type (CM only) */}
+          {(!section || section === 'CM') && (
+            <div className="space-y-1">
+              <label
+                htmlFor="cop-filter-cement-type"
+                className="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider"
               >
-                <option value="" className="dark:bg-slate-900">
-                  Pilih Cement Type
-                </option>
-                <option value="OPC" className="dark:bg-slate-900">
-                  OPC
-                </option>
-                <option value="PCC" className="dark:bg-slate-900">
-                  PCC
-                </option>
-              </select>
-              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                <Beaker className="w-3 h-3 text-slate-400" />
+                Cement Type
+              </label>
+              <div className="relative">
+                <select
+                  id="cop-filter-cement-type"
+                  value={selectedCementType}
+                  onChange={(e) => setSelectedCementType(e.target.value)}
+                  className="w-full appearance-none pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 text-xs font-semibold transition-colors cursor-pointer min-h-[36px]"
+                >
+                  <option value="" className="dark:bg-slate-900">
+                    Pilih Cement Type
+                  </option>
+                  <option value="OPC" className="dark:bg-slate-900">
+                    OPC
+                  </option>
+                  <option value="PCC" className="dark:bg-slate-900">
+                    PCC
+                  </option>
+                </select>
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Month */}
           <div className="space-y-1">

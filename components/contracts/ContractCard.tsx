@@ -44,8 +44,11 @@ export const ContractCard: React.FC<ContractCardProps> = ({
     if (!dateStr) return '-';
     try {
       const d = new Date(dateStr);
-      const locale = language === 'en' ? 'en-US' : 'id-ID';
-      return d.toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
+      if (isNaN(d.getTime())) return dateStr;
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
     } catch {
       return dateStr;
     }

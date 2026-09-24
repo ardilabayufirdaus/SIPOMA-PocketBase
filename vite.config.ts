@@ -237,7 +237,7 @@ export default defineConfig(async (_env) => {
           },
         },
         '/api': {
-          target: 'http://172.18.6.98:8090',
+          target: 'http://172.18.80.101:8090',
           changeOrigin: true,
           secure: false,
           ws: true,

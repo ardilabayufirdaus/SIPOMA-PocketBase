@@ -6,10 +6,15 @@ import MoistureChart from './MoistureChart';
 interface MoistureContentTableProps {
   filters: DashboardFilters;
   plantUnit: string;
+  section?: 'CM' | 'RKC' | 'Derivative';
 }
 
-const MoistureContentTable: React.FC<MoistureContentTableProps> = ({ filters, plantUnit }) => {
-  const { data: moistureData, loading, error } = useMoistureData(filters, plantUnit);
+const MoistureContentTable: React.FC<MoistureContentTableProps> = ({
+  filters,
+  plantUnit,
+  section = 'CM',
+}) => {
+  const { data: moistureData, loading, error } = useMoistureData(filters, plantUnit, section);
 
   const formatValue = (value: number | null): string => {
     if (value === null) return '-';

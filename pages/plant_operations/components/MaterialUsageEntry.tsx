@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useCcrMaterialUsage } from '../../../hooks/useCcrMaterialUsage';
+import { useRkcCcrMaterialUsage } from '../../../hooks/useRkcCcrMaterialUsage';
 import { useCcrFooterData } from '../../../hooks/useCcrFooterData';
+import { useRkcCcrFooterData } from '../../../hooks/useRkcCcrFooterData';
 import { useParameterSettings } from '../../../hooks/useParameterSettings';
+import { useRkcParameterSettings } from '../../../hooks/useRkcParameterSettings';
 import { formatNumber, formatNumberWithPrecision } from '../../../utils/formatters';
 import { pb } from '../../../utils/pocketbase-simple';
 
@@ -11,6 +14,7 @@ interface MaterialUsageEntryProps {
   selectedCategory: string;
   disabled?: boolean;
   t: any; // Using any for flexibility with translation structure
+  section?: 'CM' | 'RKC';
 }
 
 interface MaterialUsageData {
@@ -37,10 +41,19 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
   selectedCategory,
   disabled: _disabled = false,
   t,
+  section = 'CM',
 }) => {
-  const { saveMaterialUsageSilent, loading, error } = useCcrMaterialUsage();
-  const { getFooterDataForDate } = useCcrFooterData();
-  const { records: parameterSettings } = useParameterSettings();
+  const cmMaterial = useCcrMaterialUsage();
+  const rkcMaterial = useRkcCcrMaterialUsage();
+  const { saveMaterialUsageSilent, loading, error } = section === 'RKC' ? rkcMaterial : cmMaterial;
+
+  const cmFooter = useCcrFooterData();
+  const rkcFooter = useRkcCcrFooterData();
+  const { getFooterDataForDate } = section === 'RKC' ? rkcFooter : cmFooter;
+
+  const cmSettings = useParameterSettings();
+  const rkcSettings = useRkcParameterSettings();
+  const { records: parameterSettings } = section === 'RKC' ? rkcSettings : cmSettings;
 
   const [materialData, setMaterialData] = useState<Record<string, MaterialUsageData>>({});
   const materialUpdateInProgress = useRef(new Set<string>());
@@ -208,7 +221,8 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
     let debounceTimer: NodeJS.Timeout;
 
     const subscribe = async () => {
-      unsubscribe = await pb.collection('ccr_footer_data').subscribe('*', (e) => {
+      const footerColl = section === 'RKC' ? 'rkc_ccr_footer_data' : 'ccr_footer_data';
+      unsubscribe = await pb.collection(footerColl).subscribe('*', (e) => {
         // Check if the change is relevant to our current date
         if (e.record.date === selectedDate) {
           // Debounce the sync to avoid overload

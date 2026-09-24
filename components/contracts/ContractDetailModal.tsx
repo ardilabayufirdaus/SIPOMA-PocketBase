@@ -86,12 +86,12 @@ export const ContractDetailModal: React.FC<ContractDetailModalProps> = ({
   const formatDate = (dStr: string) => {
     if (!dStr) return '-';
     try {
-      const locale = language === 'en' ? 'en-US' : 'id-ID';
-      return new Date(dStr).toLocaleDateString(locale, {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-      });
+      const d = new Date(dStr);
+      if (isNaN(d.getTime())) return dStr;
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
     } catch {
       return dStr;
     }

@@ -20,6 +20,28 @@ export interface MonthlyImportResult {
   data: MonthlyImportRow[];
 }
 
+const getMonthlyCollections = (section: 'CM' | 'RKC' | 'Derivative' = 'CM') => {
+  if (section === 'RKC') {
+    return {
+      paramSettings: 'rkc_parameter_settings',
+      paramData: 'rkc_ccr_parameter_data',
+      footerData: 'rkc_ccr_footer_data',
+    };
+  }
+  if (section === 'Derivative') {
+    return {
+      paramSettings: 'derivative_parameter_settings',
+      paramData: 'derivative_ccr_parameter_data',
+      footerData: 'derivative_ccr_footer_data',
+    };
+  }
+  return {
+    paramSettings: 'parameter_settings',
+    paramData: 'ccr_parameter_data',
+    footerData: 'ccr_footer_data',
+  };
+};
+
 /**
  * Generate and download monthly CCR data export to Excel
  * Format Kolom:
@@ -30,8 +52,10 @@ export interface MonthlyImportResult {
 export async function exportMonthlyCcrData(
   year: number,
   month: number,
-  selectedUnit: string
+  selectedUnit: string,
+  section: 'CM' | 'RKC' | 'Derivative' = 'CM'
 ): Promise<void> {
+  const col = getMonthlyCollections(section);
   const monthStr = String(month).padStart(2, '0');
   const daysInMonth = new Date(year, month, 0).getDate();
   const startDate = `${year}-${monthStr}-01`;
@@ -43,7 +67,7 @@ export async function exportMonthlyCcrData(
     paramSettingsFilter = `unit="${selectedUnit}" || unit="ALL"`;
   }
 
-  const parameters = await pb.collection('parameter_settings').getFullList<ParameterSetting>({
+  const parameters = await pb.collection(col.paramSettings).getFullList<ParameterSetting>({
     filter: paramSettingsFilter || '',
     sort: 'parameter',
   });
@@ -54,7 +78,7 @@ export async function exportMonthlyCcrData(
 
   // 2. Fetch Parameter Data for the month
   const dataFilter = `date >= "${startDate}" && date <= "${endDate}"`;
-  const records = await pb.collection('ccr_parameter_data').getFullList<any>({
+  const records = await pb.collection(col.paramData).getFullList<any>({
     filter: dataFilter,
     limit: 5000,
   });
@@ -182,9 +206,10 @@ export async function exportMonthlyCcrData(
 export async function downloadMonthlyTemplate(
   year: number,
   month: number,
-  selectedUnit: string
+  selectedUnit: string,
+  section: 'CM' | 'RKC' | 'Derivative' = 'CM'
 ): Promise<void> {
-  await exportMonthlyCcrData(year, month, selectedUnit);
+  await exportMonthlyCcrData(year, month, selectedUnit, section);
 }
 
 /**
@@ -192,8 +217,10 @@ export async function downloadMonthlyTemplate(
  */
 export async function parseMonthlyCcrImport(
   file: File,
-  selectedUnit?: string
+  selectedUnit?: string,
+  section: 'CM' | 'RKC' | 'Derivative' = 'CM'
 ): Promise<MonthlyImportResult> {
+  const col = getMonthlyCollections(section);
   const workbook = new ExcelJS.Workbook();
   const arrayBuffer = await file.arrayBuffer();
   await workbook.xlsx.load(arrayBuffer);
@@ -225,7 +252,7 @@ export async function parseMonthlyCcrImport(
     paramFilter = `unit="${selectedUnit}" || unit="ALL"`;
   }
 
-  const parameters = await pb.collection('parameter_settings').getFullList<ParameterSetting>({
+  const parameters = await pb.collection(col.paramSettings).getFullList<ParameterSetting>({
     filter: paramFilter || '',
   });
 
@@ -353,8 +380,10 @@ export async function parseMonthlyCcrImport(
  */
 export async function saveMonthlyCcrImportToDb(
   entries: MonthlyImportRow[],
-  onProgress?: (current: number, total: number) => void
+  onProgress?: (current: number, total: number) => void,
+  section: 'CM' | 'RKC' | 'Derivative' = 'CM'
 ): Promise<{ success: number; failed: number }> {
+  const col = getMonthlyCollections(section);
   let success = 0;
   let failed = 0;
   const total = entries.length;
@@ -370,7 +399,7 @@ export async function saveMonthlyCcrImportToDb(
 
   if (minDate && maxDate) {
     try {
-      const existingRecords = await pb.collection('ccr_parameter_data').getFullList<any>({
+      const existingRecords = await pb.collection(col.paramData).getFullList<any>({
         filter: `date >= "${minDate}" && date <= "${maxDate}"`,
       });
 
@@ -389,7 +418,7 @@ export async function saveMonthlyCcrImportToDb(
   const existingFooterMap = new Map<string, any>(); // `${date}_${parameter_id}` -> footer record
   if (minDate && maxDate) {
     try {
-      const footerRecords = await pb.collection('ccr_footer_data').getFullList<any>({
+      const footerRecords = await pb.collection(col.footerData).getFullList<any>({
         filter: `date >= "${minDate}" && date <= "${maxDate}"`,
       });
       footerRecords.forEach((rec) => {
@@ -399,7 +428,7 @@ export async function saveMonthlyCcrImportToDb(
         existingFooterMap.set(`${cleanDate}_${rec.parameter_id}`, rec);
       });
     } catch (err) {
-      console.warn('Pre-fetch ccr_footer_data failed', err);
+      console.warn('Pre-fetch footer data failed', err);
     }
   }
 
@@ -473,13 +502,13 @@ export async function saveMonthlyCcrImportToDb(
           payload.hourly_values = existingHourlyValues;
 
           if (existingRec) {
-            await pb.collection('ccr_parameter_data').update(existingRec.id, payload);
+            await pb.collection(col.paramData).update(existingRec.id, payload);
           } else {
-            const created = await pb.collection('ccr_parameter_data').create(payload);
+            const created = await pb.collection(col.paramData).create(payload);
             existingMap.set(key, created);
           }
 
-          // --- ALSO SYNC CCR_FOOTER_DATA (DAILY STATS FOR COP ANALYSIS) ---
+          // --- ALSO SYNC FOOTER_DATA (DAILY STATS FOR COP ANALYSIS) ---
           const numericVals: number[] = [];
           for (let h = 1; h <= 24; h++) {
             const rawVal =
@@ -549,12 +578,12 @@ export async function saveMonthlyCcrImportToDb(
             const existingFooter = existingFooterMap.get(key);
             if (existingFooter) {
               await pb
-                .collection('ccr_footer_data')
+                .collection(col.footerData)
                 .update(existingFooter.id, footerPayload)
                 .catch(() => null);
             } else {
               const createdFooter = await pb
-                .collection('ccr_footer_data')
+                .collection(col.footerData)
                 .create(footerPayload)
                 .catch(() => null);
               if (createdFooter) existingFooterMap.set(key, createdFooter);

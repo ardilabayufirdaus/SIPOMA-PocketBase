@@ -17,6 +17,7 @@ import CogIcon from '../components/icons/CogIcon';
 import { useEffect } from 'react';
 import { InspectionReport } from '../services/pocketbase';
 import RealtimeIndicator from '../components/ui/RealtimeIndicator';
+import { formatDate } from '../utils/formatters';
 
 // Local Interface for UI development
 import { DailyReport } from '../types';
@@ -299,11 +300,7 @@ const InspectionPage: React.FC = () => {
   // Filter logic for reports
   const filteredReports = useMemo(() => {
     return reports.filter((report) => {
-      const reportDateLabel = new Date(report.date).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
+      const reportDateLabel = formatDate(report.date);
       const matchesSearch =
         report.unitName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         reportDateLabel.toLowerCase().includes(searchTerm.toLowerCase());
@@ -602,12 +599,7 @@ const InspectionPage: React.FC = () => {
                       >
                         <td className="py-2 px-3.5 whitespace-nowrap font-mono text-xs">
                           <span className="font-bold text-slate-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                            {new Date(report.date).toLocaleDateString('id-ID', {
-                              weekday: 'short',
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric',
-                            })}
+                            {formatDate(report.date)}
                           </span>
                         </td>
                         <td className="py-2 px-3.5 whitespace-nowrap">
@@ -727,13 +719,7 @@ const InspectionPage: React.FC = () => {
                     </h3>
                     <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mt-1">
                       <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse"></span>
-                      {currentContextName} •{' '}
-                      {new Date(selectedReport.date).toLocaleDateString(undefined, {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
+                      {currentContextName} • {formatDate(selectedReport.date)}
                     </p>
                   </div>
                 </div>

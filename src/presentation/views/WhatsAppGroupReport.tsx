@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import { GroupReport } from '../../domain/entities/whatsapp';
+import { formatDate } from '../../../utils/formatters';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -83,8 +84,8 @@ export const WhatsAppGroupReport: React.FC<WhatsAppGroupReportProps> = ({
             <div className="bg-white p-4 rounded-lg shadow-md">
               <h4 className="text-sm font-medium text-gray-500">Report Period</h4>
               <p className="text-sm font-medium text-gray-700">
-                {latestReport.period.startDate.toLocaleDateString()} -{' '}
-                {latestReport.period.endDate.toLocaleDateString()}
+                {formatDate(latestReport.period.startDate)} -{' '}
+                {formatDate(latestReport.period.endDate)}
               </p>
             </div>
           </div>
@@ -170,14 +171,13 @@ export const WhatsAppGroupReport: React.FC<WhatsAppGroupReportProps> = ({
                 <div>
                   <span className="font-medium capitalize">{report.reportType} Report</span>
                   <span className="text-gray-500 ml-2">
-                    {report.period.startDate.toLocaleDateString()} -{' '}
-                    {report.period.endDate.toLocaleDateString()}
+                    {formatDate(report.period.startDate)} - {formatDate(report.period.endDate)}
                   </span>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-600">{report.metrics.totalMessages} messages</p>
                   <p className="text-xs text-gray-500">
-                    Generated: {report.generatedAt.toLocaleDateString()}
+                    Generated: {formatDate(report.generatedAt)}
                   </p>
                 </div>
               </div>

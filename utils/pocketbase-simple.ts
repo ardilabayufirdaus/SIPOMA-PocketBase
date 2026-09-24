@@ -49,9 +49,11 @@ export const getPocketbaseUrl = (): string => {
     const { origin, hostname, port } = window.location;
     if (
       port === '8090' ||
+      hostname === '172.18.80.101' ||
       hostname === '172.18.6.98' ||
       hostname === 'localhost' ||
       hostname === '127.0.0.1' ||
+      origin.includes('172.18.80.101') ||
       origin.includes('172.18.6.98')
     ) {
       return origin;
@@ -59,7 +61,7 @@ export const getPocketbaseUrl = (): string => {
   }
   const url =
     import.meta.env.VITE_POCKETBASE_URL ||
-    (typeof window !== 'undefined' ? window.location.origin : 'http://172.18.6.98:8090');
+    (typeof window !== 'undefined' ? window.location.origin : 'http://172.18.80.101:8090');
   return url.replace(/\/$/, '');
 };
 

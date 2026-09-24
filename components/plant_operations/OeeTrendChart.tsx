@@ -37,7 +37,7 @@ const OeeTrendChart: React.FC<OeeTrendChartProps> = ({ summaries, unitId }) => {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .slice(-30); // Last 30 days
 
-    const labels = unitData.map((s) => formatDate(new Date(s.date), 'dd/MM'));
+    const labels = unitData.map((s) => formatDate(new Date(s.date), 'dd/MM/yyyy'));
     const oeeValues = unitData.map((s) => s.oee || 0);
     const availValues = unitData.map((s) => s.availability || 0);
 

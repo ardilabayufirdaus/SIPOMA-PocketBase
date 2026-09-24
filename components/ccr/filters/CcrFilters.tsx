@@ -28,11 +28,7 @@ const CcrFilters: React.FC<CcrFiltersProps> = memo(
     // Format date untuk display (dd/mm/yyyy)
     const formattedDateDisplay = useMemo(() => {
       if (!selectedDate) return '';
-      const date = new Date(selectedDate);
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}/${month}/${year}`;
+      return formatDate(selectedDate);
     }, [selectedDate]);
 
     return (

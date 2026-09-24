@@ -66,19 +66,46 @@ const chunkArray = <T>(array: T[], size: number): T[][] => {
   return result;
 };
 
+const getOperationalCollections = (section: 'CM' | 'RKC' | 'Derivative' = 'CM') => {
+  if (section === 'RKC') {
+    return {
+      paramSettings: 'rkc_parameter_settings',
+      paramData: 'rkc_ccr_parameter_data',
+      footerData: 'rkc_ccr_footer_data',
+      materialUsage: 'rkc_ccr_material_usage',
+    };
+  }
+  if (section === 'Derivative') {
+    return {
+      paramSettings: 'derivative_parameter_settings',
+      paramData: 'derivative_ccr_parameter_data',
+      footerData: 'derivative_ccr_footer_data',
+      materialUsage: 'derivative_ccr_material_usage',
+    };
+  }
+  return {
+    paramSettings: 'parameter_settings',
+    paramData: 'ccr_parameter_data',
+    footerData: 'ccr_footer_data',
+    materialUsage: 'ccr_material_usage',
+  };
+};
+
 // Helper function to process a single day logic
 const processDaySync = async (
   day: number,
   month: number,
   year: number,
-  parameterSettings: ParameterSetting[]
+  parameterSettings: ParameterSetting[],
+  section: 'CM' | 'RKC' | 'Derivative' = 'CM'
 ) => {
+  const col = getOperationalCollections(section);
   const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   const formattedDate = formatDateToISO8601(dateStr);
 
   // 1. Ambil data parameter mentah untuk tanggal ini
   const rawData = await safeApiCall(() =>
-    pb.collection('ccr_parameter_data').getFullList({
+    pb.collection(col.paramData).getFullList({
       filter: `date="${formattedDate}"`,
     })
   );
@@ -92,7 +119,7 @@ const processDaySync = async (
 
   // 2. Ambil semua Footer Data yang sudah ada untuk tanggal ini
   const existingFooters = await safeApiCall(() =>
-    pb.collection('ccr_footer_data').getFullList({
+    pb.collection(col.footerData).getFullList({
       filter: `date="${formattedDate}"`,
     })
   );
@@ -169,10 +196,10 @@ const processDaySync = async (
         chunk.map((op) => {
           if (op.existingId) {
             return safeApiCall(() =>
-              pb.collection('ccr_footer_data').update(op.existingId, op.payload)
+              pb.collection(col.footerData).update(op.existingId, op.payload)
             );
           } else {
-            return safeApiCall(() => pb.collection('ccr_footer_data').create(op.payload));
+            return safeApiCall(() => pb.collection(col.footerData).create(op.payload));
           }
         })
       );
@@ -182,7 +209,7 @@ const processDaySync = async (
 
   // 4. Ambil semua Material Usage yang sudah ada untuk tanggal ini
   const existingMaterials = await safeApiCall(() =>
-    pb.collection('ccr_material_usage').getFullList({
+    pb.collection(col.materialUsage).getFullList({
       filter: `date="${formattedDate}"`,
     })
   );
@@ -281,10 +308,10 @@ const processDaySync = async (
         chunk.map((op) => {
           if (op.existingId) {
             return safeApiCall(() =>
-              pb.collection('ccr_material_usage').update(op.existingId, op.payload)
+              pb.collection(col.materialUsage).update(op.existingId, op.payload)
             );
           } else {
-            return safeApiCall(() => pb.collection('ccr_material_usage').create(op.payload));
+            return safeApiCall(() => pb.collection(col.materialUsage).create(op.payload));
           }
         })
       );
@@ -296,13 +323,15 @@ const processDaySync = async (
 export const syncOperationalDataForMonth = async (
   month: number,
   year: number,
-  onProgress?: (current: number, total: number) => void
+  onProgress?: (current: number, total: number) => void,
+  section: 'CM' | 'RKC' | 'Derivative' = 'CM'
 ) => {
-  logger.info(`Starting operational data sync for ${month}/${year}`);
+  const col = getOperationalCollections(section);
+  logger.info(`Starting operational data sync for ${month}/${year} (${section})`);
 
   // 1. Ambil semua parameter settings
   const parameterSettings = await safeApiCall(() =>
-    pb.collection('parameter_settings').getFullList<ParameterSetting>()
+    pb.collection(col.paramSettings).getFullList<ParameterSetting>()
   );
 
   if (!parameterSettings) {
@@ -323,7 +352,7 @@ export const syncOperationalDataForMonth = async (
     await Promise.all(
       chunk.map(async (day) => {
         try {
-          await processDaySync(day, month, year, parameterSettings);
+          await processDaySync(day, month, year, parameterSettings, section);
         } catch (err) {
           logger.error(`Error processing day ${day}:`, err);
         } finally {
@@ -336,14 +365,18 @@ export const syncOperationalDataForMonth = async (
     await sleep(100);
   }
 
-  logger.info(`Operational data sync completed for ${month}/${year}`);
+  logger.info(`Operational data sync completed for ${month}/${year} (${section})`);
 };
 
 /**
  * Sinkronisasi data operasional untuk satu tanggal spesifik.
  * Digunakan sebelum generate report untuk memastikan data aktual.
  */
-export const syncOperationalDataForDate = async (dateStr: string) => {
+export const syncOperationalDataForDate = async (
+  dateStr: string,
+  section: 'CM' | 'RKC' | 'Derivative' = 'CM'
+) => {
+  const col = getOperationalCollections(section);
   let year: number;
   let month: number;
   let day: number;
@@ -360,11 +393,11 @@ export const syncOperationalDataForDate = async (dateStr: string) => {
     day = date.getDate();
   }
 
-  logger.info(`Starting single day operational data sync for ${dateStr}`);
+  logger.info(`Starting single day operational data sync for ${dateStr} (${section})`);
 
   // 1. Ambil semua parameter settings
   const parameterSettings = await safeApiCall(() =>
-    pb.collection('parameter_settings').getFullList<ParameterSetting>()
+    pb.collection(col.paramSettings).getFullList<ParameterSetting>()
   );
 
   if (!parameterSettings) {
@@ -372,7 +405,7 @@ export const syncOperationalDataForDate = async (dateStr: string) => {
   }
 
   // 2. Proses sync untuk hari tersebut
-  await processDaySync(day, month, year, parameterSettings);
+  await processDaySync(day, month, year, parameterSettings, section);
 
-  logger.info(`Single day operational data sync completed for ${dateStr}`);
+  logger.info(`Single day operational data sync completed for ${dateStr} (${section})`);
 };

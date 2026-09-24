@@ -249,8 +249,40 @@ export const useRkcProductionCapacity = () => {
     [syncCapacity]
   );
 
-  // Omitted: syncAllHistory and getMonthlyCapacity for brevity unless needed.
-  // Returning empty stubs for compatibility if needed.
+  // Fetch monthly capacity data for RKC
+  const getMonthlyCapacity = useCallback(
+    async (month: string, plantUnit: string, plantCategory?: string) => {
+      // month format: YYYY-MM
+      if (!month || !plantUnit) return [];
 
-  return { syncCapacity, recalculateAndSyncCapacity };
+      try {
+        const startDate = `${month}-01`;
+        const [year, m] = month.split('-').map(Number);
+        const lastDay = new Date(year, m, 0).getDate();
+        const endDate = `${month}-${lastDay}`;
+
+        let filter = `date >= "${startDate}" && date <= "${endDate}" && plant_unit="${plantUnit}"`;
+        if (plantCategory) {
+          filter += ` && plant_category="${plantCategory}"`;
+        }
+
+        const records = await safeApiCall(
+          () =>
+            pb.collection('rkc_monitoring_production_capacity').getFullList({
+              filter,
+              sort: 'date',
+            }),
+          { retries: 2 }
+        );
+
+        return records;
+      } catch (err) {
+        logger.error('Failed to fetch RKC monthly capacity', err);
+        return null;
+      }
+    },
+    []
+  );
+
+  return { syncCapacity, recalculateAndSyncCapacity, getMonthlyCapacity };
 };

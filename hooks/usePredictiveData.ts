@@ -15,9 +15,23 @@ export interface AnomalyData {
   history: { date: string; value: number }[];
 }
 
-export const usePredictiveData = () => {
+export const usePredictiveData = (section: 'CM' | 'RKC' | 'Derivative' = 'CM') => {
   const [loading, setLoading] = useState(false);
   const [anomalies, setAnomalies] = useState<AnomalyData[]>([]);
+
+  const paramDataColl =
+    section === 'RKC'
+      ? 'rkc_ccr_parameter_data'
+      : section === 'Derivative'
+        ? 'derivative_ccr_parameter_data'
+        : 'ccr_parameter_data';
+
+  const paramSettingsColl =
+    section === 'RKC'
+      ? 'rkc_parameter_settings'
+      : section === 'Derivative'
+        ? 'derivative_parameter_settings'
+        : 'parameter_settings';
 
   const fetchPredictiveAnalytics = useCallback(async (plantUnit: string) => {
     setLoading(true);
@@ -32,7 +46,7 @@ export const usePredictiveData = () => {
       }
 
       const records = await safeApiCall(() =>
-        pb.collection('ccr_parameter_data').getFullList({
+        pb.collection(paramDataColl).getFullList({
           filter,
           sort: 'date',
           requestKey: null,
@@ -67,7 +81,7 @@ export const usePredictiveData = () => {
       const detectedAnomalies: AnomalyData[] = [];
 
       // We need parameter names (from parameter_settings)
-      const settings = await safeApiCall(() => pb.collection('parameter_settings').getFullList());
+      const settings = await safeApiCall(() => pb.collection(paramSettingsColl).getFullList());
       const settingMap = new Map(settings?.map((s) => [s.id, s]) || []);
 
       Object.entries(paramGroups).forEach(([paramId, history]) => {

@@ -21,6 +21,7 @@ import {
 } from '../../types';
 import { CcrInformationData } from '../../hooks/useCcrInformationData';
 import {
+  formatDate,
   formatDateWithDay,
   formatNumberIndonesian,
   calculateDuration,
@@ -947,13 +948,18 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               >
                 {t.select_date || 'REPORT DATE'}
               </label>
-              <input
-                type="date"
-                id="report-date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-xs font-medium min-h-[36px] transition-all cursor-pointer"
-              />
+              <div className="relative group/date">
+                <div className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 text-xs font-mono font-medium min-h-[36px] flex items-center justify-between pointer-events-none group-hover/date:border-slate-300 dark:group-hover/date:border-slate-600">
+                  <span>{selectedDate ? formatDate(selectedDate) : '--/--/----'}</span>
+                </div>
+                <input
+                  type="date"
+                  id="report-date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                />
+              </div>
             </div>
 
             {/* Core Action Buttons */}

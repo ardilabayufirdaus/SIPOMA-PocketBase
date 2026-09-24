@@ -5173,15 +5173,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     <div className="flex items-center space-x-2">
                       <span className="text-sm font-medium text-neutral-700">{t.date}:</span>
                       <span className="text-sm text-neutral-900 font-semibold">
-                        {new Date(deletingRecord.date).toLocaleDateString(
-                          t.locale_code || 'id-ID',
-                          {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                          }
-                        )}
+                        {formatDate(deletingRecord.date)}
                       </span>
                     </div>
                     {deletingRecord.problem && (
@@ -5493,13 +5485,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             : t.another_user || 'Pengguna Lain')}
                       </span>
                       {profile.user_id === loggedInUser?.id && ` (${t.you || 'Anda'})`} •{' '}
-                      {profile.created_at
-                        ? new Date(profile.created_at).toLocaleDateString('id-ID', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })
-                        : '-'}
+                      {profile.created_at ? formatDate(profile.created_at) : '-'}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0 ml-3">

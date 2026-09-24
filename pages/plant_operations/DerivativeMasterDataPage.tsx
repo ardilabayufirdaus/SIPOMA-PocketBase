@@ -1887,6 +1887,8 @@ const DerivativeMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }
             onSave={(r) => handleSave('parameterSetting', r)}
             onCancel={handleCloseModals}
             t={t}
+            plantUnits={plantUnits}
+            loading={plantUnitsLoading}
           />
         )}
         {activeModal === 'siloCapacity' && (

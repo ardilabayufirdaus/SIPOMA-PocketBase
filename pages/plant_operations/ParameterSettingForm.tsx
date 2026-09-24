@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
 import { PlantUnit, ParameterSetting, ParameterDataType } from '../../types';
@@ -44,6 +44,36 @@ const ParameterSettingForm: React.FC<FormProps> = ({
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const { records: hookPlantUnits, loading: hookPlantUnitsLoading } = usePlantUnits();
+  const plantUnits = providedPlantUnits !== undefined ? providedPlantUnits : hookPlantUnits;
+  const plantUnitsLoading = providedLoading !== undefined ? providedLoading : hookPlantUnitsLoading;
+
+  const categoryOptions = useMemo(() => {
+    let categories = Array.from(new Set(plantUnits.map((u) => u.category)));
+    if (formData.category && !categories.includes(formData.category)) {
+      categories = [formData.category, ...categories];
+    }
+    return categories;
+  }, [plantUnits, formData.category]);
+
+  const unitOptions = useMemo(() => {
+    let units: string[] = [];
+    if (formData.category) {
+      const filtered = plantUnits.filter((u) => u.category === formData.category);
+      if (filtered.length > 0) {
+        units = Array.from(new Set(filtered.map((u) => u.unit)));
+      } else {
+        units = Array.from(new Set(plantUnits.map((u) => u.unit)));
+      }
+    } else {
+      units = Array.from(new Set(plantUnits.map((u) => u.unit)));
+    }
+    if (formData.unit && !units.includes(formData.unit)) {
+      units = [formData.unit, ...units];
+    }
+    return units;
+  }, [plantUnits, formData.category, formData.unit]);
 
   // Validasi field
   const validateField = (name: string, value: any): string => {
@@ -148,6 +178,43 @@ const ParameterSettingForm: React.FC<FormProps> = ({
     const { name, value, type } = e.target;
     const processedValue =
       type === 'number' ? (value === '' ? undefined : parseFloat(value)) : value;
+
+    if (name === 'unit') {
+      const matched = plantUnits.find((u) => u.unit === value);
+      const newCategory = matched?.category || formData.category;
+      setFormData((prev) => ({
+        ...prev,
+        unit: value,
+        category: newCategory,
+      }));
+      setTouched((prev) => ({ ...prev, unit: true, ...(newCategory ? { category: true } : {}) }));
+      setErrors((prev) => ({
+        ...prev,
+        unit: validateField('unit', value),
+        ...(newCategory ? { category: validateField('category', newCategory) } : {}),
+      }));
+      return;
+    }
+
+    if (name === 'category') {
+      const unitBelongsToCategory = plantUnits.some(
+        (u) => u.unit === formData.unit && u.category === value
+      );
+      const newUnit = unitBelongsToCategory ? formData.unit : '';
+      setFormData((prev) => ({
+        ...prev,
+        category: value,
+        unit: newUnit,
+      }));
+      setTouched((prev) => ({ ...prev, category: true, ...(newUnit ? {} : { unit: false }) }));
+      setErrors((prev) => ({
+        ...prev,
+        category: validateField('category', value),
+        ...(newUnit ? { unit: validateField('unit', newUnit) } : { unit: '' }),
+      }));
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: processedValue,
@@ -213,13 +280,6 @@ const ParameterSettingForm: React.FC<FormProps> = ({
       });
     }
   }, [recordToEdit]);
-
-  const { records: hookPlantUnits, loading: hookPlantUnitsLoading } = usePlantUnits();
-  const plantUnits = providedPlantUnits || hookPlantUnits;
-  const plantUnitsLoading = providedLoading !== undefined ? providedLoading : hookPlantUnitsLoading;
-
-  const unitOptions = Array.from(new Set(plantUnits.map((u) => u.unit)));
-  const categoryOptions = Array.from(new Set(plantUnits.map((u) => u.category)));
 
   return (
     <motion.div

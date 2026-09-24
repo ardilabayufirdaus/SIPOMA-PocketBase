@@ -4,6 +4,7 @@ import OeeDashboardSection, {
   OeeTabType,
 } from '../../components/plant_operations/OeeDashboardSection';
 import DerivativeOeeDashboardSection from '../../components/plant_operations/DerivativeOeeDashboardSection';
+import RkcOeeDashboardSection from '../../components/plant_operations/RkcOeeDashboardSection';
 import { usePlantOperationsDataOptimizer } from '../../hooks/usePlantOperationsDataOptimizer';
 import PredictiveMaintenance from '../../components/monitoring/PredictiveMaintenance';
 import { useServerStats } from '../../hooks/useServerStats';
@@ -89,20 +90,23 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
           {/* Header Right Controls: Date Picker & Refresh Button */}
           <div className="flex items-center gap-2.5 self-start md:self-auto shrink-0">
             {/* Compact Date Picker */}
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1.5 rounded-xl shadow-inner focus-within:ring-2 focus-within:ring-primary-500">
-              <Calendar className="w-4 h-4 text-primary-300 shrink-0" />
-              <div className="flex flex-col">
+            <div className="relative flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1.5 rounded-xl shadow-inner focus-within:ring-2 focus-within:ring-primary-500 cursor-pointer">
+              <Calendar className="w-4 h-4 text-primary-300 shrink-0 pointer-events-none" />
+              <div className="flex flex-col pointer-events-none">
                 <span className="text-[9px] font-bold text-slate-300 uppercase tracking-wider leading-none">
                   Tanggal Observasi
                 </span>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="bg-transparent text-xs font-bold text-white border-0 p-0 focus:ring-0 cursor-pointer outline-none [color-scheme:dark]"
-                  aria-label="Pilih Tanggal Observasi"
-                />
+                <span className="text-xs font-bold text-white font-mono leading-tight">
+                  {selectedDate ? formatDate(selectedDate) : '--/--/----'}
+                </span>
               </div>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                aria-label="Pilih Tanggal Observasi"
+              />
             </div>
 
             {/* Refresh Button */}
@@ -163,6 +167,12 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
                 selectedUnit="all"
                 activeTab={activeTab as OeeTabType}
               />
+            ) : section === 'RKC' ? (
+              <RkcOeeDashboardSection
+                date={selectedDate}
+                selectedUnit="all"
+                activeTab={activeTab as OeeTabType}
+              />
             ) : (
               <OeeDashboardSection
                 date={selectedDate}
@@ -191,15 +201,7 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
               </div>
             </div>
 
-            <PredictiveMaintenance
-              plantUnit={
-                section === 'CM'
-                  ? 'all'
-                  : section === 'Derivative'
-                    ? 'DEV-1 (Slurry Prep)'
-                    : 'RKC Unit'
-              }
-            />
+            <PredictiveMaintenance plantUnit="all" section={section} />
           </section>
         )}
       </main>
