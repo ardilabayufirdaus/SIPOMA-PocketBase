@@ -4,7 +4,7 @@ import path from 'path';
 
 const SSH_CONFIG = {
   host: '172.18.80.101',
-  port: 22,
+  port: 2222,
   username: 'ardilabayufirdaus',
   password: '270989',
 };
