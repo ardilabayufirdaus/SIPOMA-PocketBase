@@ -25,6 +25,7 @@ import { BudgetComparisonChart } from '../../components/charts/BudgetComparisonC
 import { addMonths, format, isBefore, startOfMonth, startOfDay } from 'date-fns';
 import { exportDashboardToPDF } from '../../utils/pdfExportUtils';
 import RealtimeIndicator from '../../components/ui/RealtimeIndicator';
+import ProjectEngineering3DIllustration from '../../components/illustrations/ProjectEngineering3DIllustration';
 
 const LoadingSpinner: React.FC = () => (
   <div className="flex items-center justify-center min-h-[300px]">
@@ -420,6 +421,14 @@ const ProjectDashboardPage: React.FC<{
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* 3D Isometric Engineering Illustration (Option A: Hero Anchor) */}
+          <div className="hidden lg:block w-48 xl:w-60 shrink-0 mx-1 self-center">
+            <ProjectEngineering3DIllustration
+              variant="hero"
+              className="w-full scale-105 drop-shadow-[0_10px_30px_rgba(5,150,105,0.25)]"
+            />
           </div>
 
           <div className="flex flex-col sm:flex-row lg:flex-col items-stretch sm:items-center lg:items-end gap-2.5 shrink-0">

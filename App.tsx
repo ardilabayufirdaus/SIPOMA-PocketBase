@@ -83,6 +83,7 @@ const App: React.FC = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
   const [isProfileModalOpen, setProfileModalOpen] = useState(false);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const [showPasswordDisplay, setShowPasswordDisplay] = useState(false);
   const [generatedPassword] = useState('');
   const [newUsername] = useState('');
@@ -580,6 +581,8 @@ const App: React.FC = () => {
                 onToggleSidebar={handleToggleSidebar}
                 currentLanguage={language}
                 onLanguageChange={setLanguage}
+                isChatbotOpen={isChatbotOpen}
+                onToggleChatbot={() => setIsChatbotOpen((prev) => !prev)}
               />
               <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30 dark:from-slate-900/50 dark:via-transparent dark:to-slate-800/30 page-transition relative">
                 <div className="w-full h-full pb-20">{renderPageContent()}</div>
@@ -659,7 +662,7 @@ const App: React.FC = () => {
 
         <LogoutProgress isVisible={isLogoutInProgress} stage={logoutStage} />
 
-        <ChatbotWidget />
+        <ChatbotWidget isOpen={isChatbotOpen} onClose={() => setIsChatbotOpen(false)} />
       </Suspense>
     </SimpleErrorBoundary>
   );

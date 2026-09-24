@@ -23,6 +23,12 @@ import {
   ChevronRight,
   ChevronLeft,
   Download,
+  Maximize,
+  Minimize,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Sparkles,
 } from 'lucide-react';
 import { EnhancedButton, useAccessibility } from '../../components/ui/EnhancedComponents';
 import RealtimeIndicator from '../../components/ui/RealtimeIndicator';
@@ -474,6 +480,8 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
   const [isImportConfirmModalOpen, setImportConfirmModalOpen] = useState(false);
   const [isProjectEditMode, setProjectEditMode] = useState(false);
   const [isPresentationMode, setIsPresentationMode] = useState(false);
+  const [presentationView, setPresentationView] = useState<'s-curve' | 'gantt'>('s-curve');
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
@@ -514,16 +522,45 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
   const sCurveChartRef = useRef<any>(null);
   const { announceToScreenReader } = useAccessibility();
 
-  // Keyboard shortcut to close Presentation Mode
+  // Toggle Native Fullscreen for Executive Projector View
+  const toggleFullScreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      document.documentElement
+        .requestFullscreen()
+        .then(() => setIsFullscreen(true))
+        .catch(() => {});
+    } else {
+      if (document.exitFullscreen) {
+        document
+          .exitFullscreen()
+          .then(() => setIsFullscreen(false))
+          .catch(() => {});
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  // Keyboard shortcut to close Presentation Mode (ESC) and toggle Fullscreen (F)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isPresentationMode) {
+      if (!isPresentationMode) return;
+      if (e.key === 'Escape') {
         setIsPresentationMode(false);
+      } else if (e.key === 'f' || e.key === 'F') {
+        if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
+        toggleFullScreen();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isPresentationMode]);
+  }, [isPresentationMode, toggleFullScreen]);
 
   const activeProject = useMemo(
     () => projects.find((p) => p.id === projectId),
@@ -646,26 +683,44 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
         return sum + ((task.percent_complete || 0) / 100) * weight;
       }, 0) * 100;
 
-    const projectStartDate = tasksWithDurations[0]?.plannedStart;
-    const projectEndDate = tasksWithDurations[tasksWithDurations.length - 1]?.plannedEnd;
+    const validStartTimes = tasksWithDurations.map((t) => t.plannedStart.getTime());
+    const validEndTimes = tasksWithDurations.map((t) => t.plannedEnd.getTime());
+    const projectStartDate =
+      validStartTimes.length > 0 ? new Date(Math.min(...validStartTimes)) : new Date();
+    const projectEndDate =
+      validEndTimes.length > 0 ? new Date(Math.max(...validEndTimes)) : new Date();
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayTime = today.getTime();
 
     let plannedProgress = 0;
     let daysElapsed = 0;
     let totalProjectDays = 0;
 
-    if (projectStartDate && projectEndDate) {
+    if (validStartTimes.length > 0 && validEndTimes.length > 0) {
       totalProjectDays = Math.max(
         1,
         Math.ceil((projectEndDate.getTime() - projectStartDate.getTime()) / (1000 * 3600 * 24)) + 1
       );
-      if (today >= projectStartDate) {
+      if (todayTime >= projectStartDate.getTime()) {
         daysElapsed = Math.max(
           0,
-          Math.floor((today.getTime() - projectStartDate.getTime()) / (1000 * 3600 * 24))
+          Math.floor((todayTime - projectStartDate.getTime()) / (1000 * 3600 * 24))
         );
-        plannedProgress = Math.min(100, (daysElapsed / totalProjectDays) * 100);
       }
+      let plannedWeightSum = 0;
+      tasksWithDurations.forEach((task) => {
+        const tStart = task.plannedStart.getTime();
+        const tEnd = task.plannedEnd.getTime();
+        if (todayTime >= tEnd) {
+          plannedWeightSum += task.duration;
+        } else if (todayTime >= tStart) {
+          const tSpan = Math.max(1, tEnd - tStart);
+          const tElapsed = Math.max(0, todayTime - tStart);
+          plannedWeightSum += task.duration * Math.min(1, tElapsed / tSpan);
+        }
+      });
+      plannedProgress = Math.min(100, Math.max(0, (plannedWeightSum / totalWeight) * 100));
     }
 
     const deviation = overallProgress - plannedProgress;
@@ -743,65 +798,120 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
   // S-Curve Points
   const sCurveData = useMemo(() => {
     if (!activeProjectTasks || activeProjectTasks.length === 0) {
-      return { points: [], duration: 0, startDate: new Date() };
+      return { points: [], duration: 0, startDate: new Date(), todayIndex: -1 };
     }
 
-    const tasks = activeProjectTasks.map((task) => ({
-      ...task,
-      plannedStart: task.planned_start ? new Date(task.planned_start) : new Date(),
-      plannedEnd: task.planned_end ? new Date(task.planned_end) : new Date(),
-      actualStart: task.actual_start ? new Date(task.actual_start) : null,
-      actualEnd: task.actual_end ? new Date(task.actual_end) : null,
-      duration:
-        ((task.planned_end ? new Date(task.planned_end).getTime() : 0) -
-          (task.planned_start ? new Date(task.planned_start).getTime() : 0)) /
-          (1000 * 3600 * 24) +
+    const tasks = activeProjectTasks.map((task) => {
+      const pStart = task.planned_start ? new Date(task.planned_start) : new Date();
+      pStart.setHours(0, 0, 0, 0);
+      const pEnd = task.planned_end ? new Date(task.planned_end) : new Date();
+      pEnd.setHours(0, 0, 0, 0);
+      const aStart = task.actual_start ? new Date(task.actual_start) : null;
+      if (aStart) aStart.setHours(0, 0, 0, 0);
+      const aEnd = task.actual_end ? new Date(task.actual_end) : null;
+      if (aEnd) aEnd.setHours(0, 0, 0, 0);
+      const dur = Math.max(
         1,
-    }));
+        Math.round((pEnd.getTime() - pStart.getTime()) / (1000 * 3600 * 24)) + 1
+      );
+      return {
+        ...task,
+        plannedStart: pStart,
+        plannedEnd: pEnd,
+        actualStart: aStart,
+        actualEnd: aEnd,
+        duration: dur,
+      };
+    });
 
     const validStartTimes = tasks.map((task) => task.plannedStart.getTime());
     const validEndTimes = tasks.map((task) => task.plannedEnd.getTime());
 
     const startDate = new Date(Math.min(...validStartTimes));
+    startDate.setHours(0, 0, 0, 0);
     const endDate = new Date(Math.max(...validEndTimes));
+    endDate.setHours(0, 0, 0, 0);
     const duration = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) + 1;
     const totalWeight = tasks.reduce((sum, task) => sum + task.duration, 0);
 
-    if (duration <= 0 || totalWeight <= 0) return { points: [], duration: 0, startDate };
+    if (duration <= 0 || totalWeight <= 0) {
+      return { points: [], duration: 0, startDate, todayIndex: -1 };
+    }
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayTime = today.getTime();
+
+    let todayIndex = -1;
     const points = [];
+
     for (let i = 0; i < duration; i++) {
       const currentDate = new Date(startDate);
       currentDate.setDate(startDate.getDate() + i);
+      currentDate.setHours(0, 0, 0, 0);
+      const currentTime = currentDate.getTime();
 
-      const normalizedDay = duration > 1 ? i / (duration - 1) : 1;
-      // Sigmoid S-Curve model for planned curve
-      const planned = Math.min(100, 100 * (1 / (1 + Math.exp(-7 * (normalizedDay - 0.5)))));
-      const baseline = Math.min(100, normalizedDay * 100);
+      if (currentTime === todayTime) {
+        todayIndex = i;
+      } else if (todayIndex === -1 && currentTime > todayTime) {
+        todayIndex = Math.max(0, i - 1);
+      }
 
-      let actualCompleted = 0;
+      const isFuture = currentTime > todayTime;
+
+      // 1. Planned Progress based on Work Breakdown Schedule (WBS)
+      let plannedWeightSum = 0;
       tasks.forEach((task) => {
-        if (task.actualEnd && currentDate >= task.actualEnd) {
-          actualCompleted += task.duration;
-        } else if (task.actualStart && currentDate >= task.actualStart) {
-          const progress = task.percent_complete || 0;
-          actualCompleted += (task.duration * progress) / 100;
+        const taskStart = task.plannedStart.getTime();
+        const taskEnd = task.plannedEnd.getTime();
+        if (currentTime >= taskEnd) {
+          plannedWeightSum += task.duration;
+        } else if (currentTime >= taskStart) {
+          const taskSpan = Math.max(1, taskEnd - taskStart);
+          const elapsed = Math.max(0, currentTime - taskStart);
+          const ratio = Math.min(1, elapsed / taskSpan);
+          plannedWeightSum += task.duration * ratio;
         }
       });
+      const planned = Math.min(100, Math.max(0, (plannedWeightSum / totalWeight) * 100));
 
-      const actual = totalWeight > 0 ? Math.min(100, (actualCompleted / totalWeight) * 100) : 0;
+      // 2. Baseline Linear
+      const normalizedDay = duration > 1 ? i / (duration - 1) : 1;
+      const baseline = Math.min(100, normalizedDay * 100);
+
+      // 3. Actual Progress (ONLY UP TO TODAY)
+      let actual: number | null = null;
+      if (!isFuture) {
+        let actualCompleted = 0;
+        tasks.forEach((task) => {
+          if (task.actualEnd && currentTime >= task.actualEnd.getTime()) {
+            actualCompleted += task.duration * ((task.percent_complete || 100) / 100);
+          } else if (task.actualStart && currentTime >= task.actualStart.getTime()) {
+            const progress = task.percent_complete || 0;
+            actualCompleted += (task.duration * progress) / 100;
+          }
+        });
+        actual = Math.min(100, (actualCompleted / totalWeight) * 100);
+      }
 
       points.push({
         day: i + 1,
         date: currentDate.toISOString().split('T')[0],
         formattedDate: formatDate(currentDate),
         planned: Number(planned.toFixed(1)),
-        actual: Number(actual.toFixed(1)),
+        actual: actual !== null ? Number(actual.toFixed(1)) : null,
         baseline: Number(baseline.toFixed(1)),
+        isFuture,
+        isToday: currentTime === todayTime,
       });
     }
 
-    return { points, duration, startDate };
+    if (todayIndex === -1) {
+      if (todayTime > endDate.getTime()) todayIndex = duration - 1;
+      else todayIndex = 0;
+    }
+
+    return { points, duration, startDate, todayIndex };
   }, [activeProjectTasks]);
 
   // Chart.js S-Curve Datasets
@@ -818,25 +928,33 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
           label: t.legend_planned_progress || 'Rencana (Planned S-Curve)',
           data: planned,
           borderColor: '#6366f1', // Indigo
-          backgroundColor: 'rgba(99, 102, 241, 0.08)',
-          borderWidth: 3,
+          backgroundColor: 'rgba(99, 102, 241, 0.06)',
+          borderWidth: 2.5,
           borderDash: [5, 5],
-          tension: 0.35,
+          tension: 0.25,
           pointRadius: 0,
           pointHoverRadius: 6,
-          fill: true,
+          pointHoverBackgroundColor: '#6366f1',
+          fill: false,
         },
         {
           label: t.legend_actual_progress || 'Realisasi Aktual (Actual)',
           data: actual,
           borderColor: '#10b981', // Emerald
-          backgroundColor: 'rgba(16, 185, 129, 0.15)',
+          backgroundColor: 'rgba(16, 185, 129, 0.12)',
           borderWidth: 3.5,
-          tension: 0.3,
-          pointRadius: 0,
+          tension: 0.2,
+          pointRadius: (ctx: any) => {
+            const idx = ctx.dataIndex;
+            return idx === sCurveData.todayIndex ? 5 : 0;
+          },
+          pointBackgroundColor: '#10b981',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
           pointHoverRadius: 7,
           pointHoverBackgroundColor: '#10b981',
           fill: true,
+          spanGaps: false,
         },
         {
           label: t.baseline_progress || 'Baseline Linear',
@@ -851,6 +969,43 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
       ],
     };
   }, [sCurveData, t]);
+
+  // Top Critical / Bottleneck Tasks for Executive Presentation Mode
+  const criticalTasks = useMemo(() => {
+    if (!activeProjectTasks) return [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return activeProjectTasks
+      .filter((task) => (task.percent_complete || 0) < 100)
+      .map((task) => {
+        const pEnd = task.planned_end ? new Date(task.planned_end) : null;
+        if (pEnd) pEnd.setHours(0, 0, 0, 0);
+        const isOverdue = pEnd ? pEnd < today : false;
+        const daysOverdue =
+          pEnd && isOverdue
+            ? Math.round((today.getTime() - pEnd.getTime()) / (1000 * 3600 * 24))
+            : 0;
+        return {
+          ...task,
+          isOverdue,
+          daysOverdue,
+        };
+      })
+      .sort((a, b) => {
+        if (a.isOverdue && !b.isOverdue) return -1;
+        if (!a.isOverdue && b.isOverdue) return 1;
+        if (a.isOverdue && b.isOverdue) return b.daysOverdue - a.daysOverdue;
+        return (a.percent_complete || 0) - (b.percent_complete || 0);
+      })
+      .slice(0, 4);
+  }, [activeProjectTasks]);
+
+  // Tasks with field photographic evidence for Executive Evidence Reel
+  const tasksWithPhotos = useMemo(() => {
+    if (!activeProjectTasks) return [];
+    return activeProjectTasks.filter((t) => t.photos && t.photos.length > 0);
+  }, [activeProjectTasks]);
 
   // Filtered Tasks for Table
   const filteredTasks = useMemo(() => {
@@ -1689,64 +1844,166 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
               <div className="min-h-[400px]">
                 <Suspense fallback={<LoadingSpinner />}>
                   {chartView === 's-curve' ? (
-                    <div className="h-[420px] w-full relative">
-                      <Line
-                        ref={sCurveChartRef}
-                        data={chartJSData}
-                        options={{
-                          responsive: true,
-                          maintainAspectRatio: false,
-                          interaction: {
-                            mode: 'index',
-                            intersect: false,
-                          },
-                          plugins: {
-                            legend: {
-                              position: 'top',
-                              align: 'end',
-                              labels: {
+                    <div className="flex flex-col gap-4">
+                      {/* Executive Progress & Variance KPI Strip */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 p-3 sm:p-3.5 rounded-2xl bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+                        {/* KPI 1: Planned to Date */}
+                        <div className="flex flex-col">
+                          <span className="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0" />
+                            Rencana s/d Hari Ini
+                          </span>
+                          <span className="text-base sm:text-lg font-black text-indigo-600 dark:text-indigo-400 tabular-nums mt-0.5">
+                            {performanceMetrics.plannedProgress}%
+                          </span>
+                        </div>
+
+                        {/* KPI 2: Actual to Date */}
+                        <div className="flex flex-col">
+                          <span className="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
+                            Realisasi Aktual
+                          </span>
+                          <span className="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400 tabular-nums mt-0.5">
+                            {performanceMetrics.overallProgress}%
+                          </span>
+                        </div>
+
+                        {/* KPI 3: Deviasi / Varians */}
+                        <div className="flex flex-col">
+                          <span className="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400">
+                            Deviasi (Varians)
+                          </span>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span
+                              className={`text-base sm:text-lg font-black tabular-nums ${
+                                performanceMetrics.deviation >= 0
+                                  ? 'text-emerald-600 dark:text-emerald-400'
+                                  : 'text-rose-600 dark:text-rose-400'
+                              }`}
+                            >
+                              {performanceMetrics.deviation > 0
+                                ? `+${performanceMetrics.deviation}%`
+                                : `${performanceMetrics.deviation}%`}
+                            </span>
+                            <span
+                              className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold uppercase tracking-tight ${
+                                performanceMetrics.deviation >= 0
+                                  ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                  : 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                              }`}
+                            >
+                              {performanceMetrics.deviation >= 0 ? 'Ahead' : 'Behind'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* KPI 4: SPI & Status */}
+                        <div className="flex flex-col">
+                          <span className="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400">
+                            Indeks Jadwal (SPI)
+                          </span>
+                          <div className="flex items-baseline gap-2 mt-0.5">
+                            <span className="text-base sm:text-lg font-black text-slate-800 dark:text-slate-200 tabular-nums">
+                              {performanceMetrics.spi.toFixed(2)}
+                            </span>
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+                              (Cut-off: {formatDate(new Date())})
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Chart Area */}
+                      <div className="h-[400px] w-full relative">
+                        <Line
+                          ref={sCurveChartRef}
+                          data={chartJSData}
+                          options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: {
+                              mode: 'index',
+                              intersect: false,
+                            },
+                            plugins: {
+                              legend: {
+                                position: 'top',
+                                align: 'end',
+                                labels: {
+                                  usePointStyle: true,
+                                  boxWidth: 8,
+                                  font: { weight: 'bold', size: 12 },
+                                  color: '#64748b',
+                                },
+                              },
+                              tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                                titleColor: '#ffffff',
+                                bodyColor: '#e2e8f0',
+                                padding: 12,
+                                cornerRadius: 12,
+                                boxPadding: 6,
                                 usePointStyle: true,
-                                boxWidth: 8,
-                                font: { weight: 'bold', size: 12 },
-                                color: '#64748b',
+                                callbacks: {
+                                  label: (context: any) => {
+                                    const label = context.dataset.label || '';
+                                    const val = context.parsed.y;
+                                    if (val === null || val === undefined) return `${label}: -`;
+                                    return `${label}: ${val.toFixed(1)}%`;
+                                  },
+                                  afterBody: (tooltipItems: any) => {
+                                    const item = tooltipItems[0];
+                                    if (!item) return '';
+                                    const p = sCurveData.points[item.dataIndex];
+                                    if (!p || p.actual === null) {
+                                      return '\nℹ️ Periode Proyeksi Rencana';
+                                    }
+                                    const diff = Number((p.actual - p.planned).toFixed(1));
+                                    const statusStr =
+                                      diff > 0
+                                        ? `+${diff}% (Ahead of Schedule)`
+                                        : diff < 0
+                                          ? `${diff}% (Behind Schedule)`
+                                          : '0.0% (On Schedule)';
+                                    return `\nDeviasi vs Rencana: ${statusStr}`;
+                                  },
+                                },
                               },
                             },
-                            tooltip: {
-                              backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                              titleColor: '#ffffff',
-                              bodyColor: '#e2e8f0',
-                              padding: 12,
-                              cornerRadius: 12,
-                              boxPadding: 6,
-                              usePointStyle: true,
-                            },
-                          },
-                          scales: {
-                            y: {
-                              beginAtZero: true,
-                              max: 100,
-                              title: {
-                                display: true,
-                                text: 'Persentase Kumulatif (%)',
-                                color: '#94a3b8',
-                                font: { size: 11, weight: 'bold' },
+                            scales: {
+                              y: {
+                                beginAtZero: true,
+                                max: 100,
+                                title: {
+                                  display: true,
+                                  text: 'Persentase Kumulatif (%)',
+                                  color: '#94a3b8',
+                                  font: { size: 11, weight: 'bold' },
+                                },
+                                grid: { color: 'rgba(148, 163, 184, 0.12)' },
+                                ticks: { color: '#94a3b8' },
                               },
-                              grid: { color: 'rgba(148, 163, 184, 0.12)' },
-                              ticks: { color: '#94a3b8' },
-                            },
-                            x: {
-                              title: {
-                                display: true,
-                                text: 'Timeline Proyek',
-                                color: '#94a3b8',
-                                font: { size: 11, weight: 'bold' },
+                              x: {
+                                title: {
+                                  display: true,
+                                  text: 'Timeline Proyek',
+                                  color: '#94a3b8',
+                                  font: { size: 11, weight: 'bold' },
+                                },
+                                grid: { display: false },
+                                ticks: {
+                                  color: '#94a3b8',
+                                  maxRotation: 0,
+                                  autoSkip: true,
+                                  maxTicksLimit: 10,
+                                  font: { size: 10, weight: '600' },
+                                },
                               },
-                              grid: { display: false },
-                              ticks: { color: '#94a3b8', maxRotation: 45 },
                             },
-                          },
-                        }}
-                      />
+                          }}
+                        />
+                      </div>
                     </div>
                   ) : (
                     <div className="py-2">
@@ -2015,125 +2272,504 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
         <div className="fixed inset-0 z-50 bg-slate-950 text-white overflow-y-auto p-6 sm:p-10 animate-in fade-in zoom-in-95 duration-200">
           <div className="max-w-[1440px] mx-auto space-y-8">
             {/* Top Deck Bar */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
               <div>
-                <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">
-                  <span>EXECUTIVE MANAGEMENT BRIEFING DECK</span>
+                <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1.5">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20">
+                    <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                    EXECUTIVE BRIEFING DECK
+                  </span>
                   <span>•</span>
-                  <span>CONFIDENTIAL</span>
+                  <span className="text-slate-400 font-semibold tracking-normal">
+                    {projectOverview.duration > 0
+                      ? `${projectOverview.duration} Hari Kalender`
+                      : 'Proyek'}
+                  </span>
                 </div>
-                <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
                   {activeProject?.title}
                 </h1>
-                <p className="text-slate-400 text-sm mt-1">
-                  {activeProject?.description || 'Laporan Eksekutif Perkembangan Proyek'}
+                <p className="text-slate-400 text-sm mt-1 max-w-3xl line-clamp-2">
+                  {activeProject?.description ||
+                    'Laporan Eksekutif Perkembangan Proyek & Analisis Kinerja'}
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                {/* View Switcher: S-Curve vs Gantt */}
+                <div className="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-1 shadow-inner">
+                  <button
+                    onClick={() => setPresentationView('s-curve')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 transition-all ${
+                      presentationView === 's-curve'
+                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <PresentationChartLineIcon className="w-4 h-4" />
+                    <span>Kurva-S Pro</span>
+                  </button>
+                  <button
+                    onClick={() => setPresentationView('gantt')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 transition-all ${
+                      presentationView === 'gantt'
+                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Bars4Icon className="w-4 h-4" />
+                    <span>Timeline Gantt</span>
+                  </button>
+                </div>
+
+                {/* Native Fullscreen Button */}
+                <button
+                  onClick={toggleFullScreen}
+                  className="p-2.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl border border-slate-800 transition-all shadow-md"
+                  title={
+                    isFullscreen
+                      ? 'Keluar Fullscreen Proyektor (F)'
+                      : 'Mode Layar Penuh Proyektor (F)'
+                  }
+                  aria-label="Toggle Fullscreen"
+                >
+                  {isFullscreen ? (
+                    <Minimize className="w-4 h-4 text-amber-400" />
+                  ) : (
+                    <Maximize className="w-4 h-4 text-slate-300" />
+                  )}
+                </button>
+
+                {/* Export PDF Button */}
                 <button
                   onClick={handleExportPDF}
                   disabled={isExportingPDF}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl border border-indigo-400/30 transition-all flex items-center gap-2 shadow-lg shadow-indigo-600/30"
+                  className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl border border-indigo-400/30 transition-all flex items-center gap-2 shadow-lg shadow-indigo-600/30 disabled:opacity-50"
                   title="Cetak / Simpan Dokumen Laporan PDF Eksekutif Resmi"
                 >
                   <DocumentArrowDownIcon className="w-4 h-4 text-white" />
-                  <span>{isExportingPDF ? 'Menyiapkan PDF...' : 'Cetak / Simpan PDF'}</span>
+                  <span>{isExportingPDF ? 'Menyiapkan PDF...' : 'Cetak PDF'}</span>
                 </button>
+
+                {/* Close Button */}
                 <button
                   onClick={() => setIsPresentationMode(false)}
-                  className="p-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-rose-600/30"
+                  className="p-2.5 bg-rose-600/90 hover:bg-rose-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-rose-600/30"
                   title="Tutup Mode Presentasi (ESC)"
+                  aria-label="Tutup Mode Presentasi"
                 >
                   <XMarkIcon className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-            {/* 4 Big Presentation KPI Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Overall Progress
-                </span>
-                <p className="text-5xl font-black text-emerald-400 my-2">
-                  {performanceMetrics.overallProgress.toFixed(1)}%
-                </p>
-                <span className="text-xs text-slate-300 font-medium">
-                  Target Kurva: {performanceMetrics.plannedProgress.toFixed(1)}%
-                </span>
+            {/* 5 Big Strategic Presentation KPI Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              {/* Card 1: Realisasi vs Target */}
+              <div className="bg-slate-900/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      Realisasi Fisik
+                    </span>
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  </div>
+                  <p className="text-4xl font-black text-emerald-400 my-2">
+                    {performanceMetrics.overallProgress.toFixed(1)}%
+                  </p>
+                </div>
+                <div>
+                  <div className="w-full bg-slate-800 rounded-full h-1.5 mb-2 overflow-hidden">
+                    <div
+                      className="bg-emerald-400 h-1.5 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min(100, performanceMetrics.overallProgress)}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-xs text-slate-400 font-medium">
+                    Target Kurva:{' '}
+                    <span className="text-indigo-400 font-semibold">
+                      {performanceMetrics.plannedProgress.toFixed(1)}%
+                    </span>
+                  </span>
+                </div>
               </div>
 
-              <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Status & Deviasi
-                </span>
-                <p className="text-3xl font-black text-indigo-300 my-3">
-                  {performanceMetrics.projectStatus}
-                </p>
-                <span className="text-xs text-slate-300 font-medium">
-                  Deviasi: {performanceMetrics.deviation > 0 ? '+' : ''}
-                  {performanceMetrics.deviation}%
-                </span>
+              {/* Card 2: Status & Deviasi (SPI) */}
+              <div className="bg-slate-900/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl flex flex-col justify-between">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    Status & Deviasi
+                  </span>
+                  <p
+                    className={`text-2xl font-black my-2 truncate ${
+                      performanceMetrics.deviation > 3
+                        ? 'text-emerald-400'
+                        : performanceMetrics.deviation < -3
+                          ? 'text-rose-400'
+                          : 'text-indigo-300'
+                    }`}
+                  >
+                    {performanceMetrics.projectStatus}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-400">
+                    Deviasi:{' '}
+                    <strong
+                      className={
+                        performanceMetrics.deviation >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                      }
+                    >
+                      {performanceMetrics.deviation > 0 ? '+' : ''}
+                      {performanceMetrics.deviation}%
+                    </strong>
+                  </span>
+                  <span className="text-slate-400 font-medium">
+                    SPI: <strong className="text-white">{performanceMetrics.spi}</strong>
+                  </span>
+                </div>
               </div>
 
-              <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Project Health Score
-                </span>
-                <p className="text-5xl font-black text-indigo-400 my-2">
-                  {performanceMetrics.healthScore}%
-                </p>
-                <span className="text-xs text-slate-300 font-medium">
-                  Kategori: {performanceMetrics.healthGrade}
-                </span>
+              {/* Card 3: Prakiraan Tanggal Selesai (Forecast) */}
+              <div className="bg-slate-900/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl flex flex-col justify-between">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                    Prakiraan Selesai
+                  </span>
+                  <p className="text-lg font-black text-cyan-300 my-2 leading-snug">
+                    {performanceMetrics.predictedCompletion
+                      ? formatDate(performanceMetrics.predictedCompletion.toISOString())
+                      : projectOverview.endDate
+                        ? formatDate(projectOverview.endDate.toISOString())
+                        : 'Belum Ada Target'}
+                  </p>
+                </div>
+                <div className="text-xs text-slate-400 flex items-center justify-between">
+                  <span>Target Kontrak:</span>
+                  <span className="text-slate-200 font-semibold">
+                    {projectOverview.endDate
+                      ? formatDate(projectOverview.endDate.toISOString())
+                      : '-'}
+                  </span>
+                </div>
               </div>
 
-              <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Total Anggaran
-                </span>
-                <p
-                  className="text-2xl font-black text-amber-400 my-3 truncate"
-                  title={formatRupiah(projectOverview.budget)}
-                >
-                  {formatRupiah(projectOverview.budget)}
-                </p>
-                <span className="text-xs text-slate-300 font-medium">
-                  Durasi: {projectOverview.duration} Hari
-                </span>
+              {/* Card 4: Health Score & Alert Early Warning */}
+              <div className="bg-slate-900/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      Project Health
+                    </span>
+                    <span
+                      className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                        performanceMetrics.healthScore >= 90
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          : performanceMetrics.healthScore >= 75
+                            ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
+                            : performanceMetrics.healthScore >= 60
+                              ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                              : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                      }`}
+                    >
+                      {performanceMetrics.healthGrade}
+                    </span>
+                  </div>
+                  <p className="text-4xl font-black text-white my-2">
+                    {performanceMetrics.healthScore}
+                    <span className="text-lg text-slate-500 font-normal">/100</span>
+                  </p>
+                </div>
+                <div className="text-xs">
+                  {projectOverview.overdueTasks > 0 ? (
+                    <span className="text-rose-400 font-bold flex items-center gap-1.5">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                      {projectOverview.overdueTasks} Tugas Perlu Akselerasi
+                    </span>
+                  ) : (
+                    <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                      Seluruh Jadwal Terkendali
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Card 5: Earned Value (EV) & Anggaran */}
+              <div className="bg-slate-900/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl flex flex-col justify-between">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    Earned Value (EV)
+                  </span>
+                  <p
+                    className="text-xl font-black text-amber-400 my-2 truncate"
+                    title={formatRupiah(
+                      (projectOverview.budget * performanceMetrics.overallProgress) / 100
+                    )}
+                  >
+                    {formatRupiah(
+                      (projectOverview.budget * performanceMetrics.overallProgress) / 100
+                    )}
+                  </p>
+                </div>
+                <div className="text-xs text-slate-400 flex flex-col gap-0.5">
+                  <div className="flex justify-between">
+                    <span>Total Pagu:</span>
+                    <span
+                      className="text-slate-200 font-semibold truncate ml-1"
+                      title={formatRupiah(projectOverview.budget)}
+                    >
+                      {formatRupiah(projectOverview.budget)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-[11px] text-slate-400">
+                    <span>Sisa Waktu:</span>
+                    <span className="text-cyan-300 font-medium">
+                      {performanceMetrics.daysRemaining} Hari
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Big S-Curve in Presentation Mode */}
-            <div className="bg-slate-900 rounded-3xl p-8 border border-slate-800 shadow-2xl">
-              <h3 className="text-xl font-bold text-white mb-4">Analisis Kurva-S Eksekutif</h3>
-              <div className="h-[420px] w-full">
-                <Line
-                  data={chartJSData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        position: 'top',
-                        labels: { color: '#cbd5e1', font: { size: 13, weight: 'bold' } },
+            {/* Centerpiece Visualization Stage: S-Curve or Gantt Timeline */}
+            <div className="bg-slate-900/90 rounded-3xl p-6 sm:p-8 border border-slate-800/80 shadow-2xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-slate-800/80 gap-3">
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                    {presentationView === 's-curve' ? (
+                      <>
+                        <PresentationChartLineIcon className="w-5 h-5 text-indigo-400" />
+                        <span>Analisis Kurva-S Progres Eksekutif</span>
+                      </>
+                    ) : (
+                      <>
+                        <Bars4Icon className="w-5 h-5 text-indigo-400" />
+                        <span>Timeline Jadwal Aktivitas (Gantt Chart Pro)</span>
+                      </>
+                    )}
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {presentationView === 's-curve'
+                      ? 'Membandingkan baseline linear, rencana S-Curve pembobotan WBS, dan realisasi aktual lapangan.'
+                      : 'Visualisasi rentang waktu durasi per aktivitas terhadap hari kalender pelaksanaan proyek.'}
+                  </p>
+                </div>
+
+                {presentationView === 's-curve' && (
+                  <div className="flex items-center gap-4 text-xs">
+                    <span className="flex items-center gap-1.5 text-slate-300">
+                      <span className="w-3 h-1 bg-[#6366f1] inline-block rounded-full"></span>
+                      <span>Rencana</span>
+                    </span>
+                    <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                      <span className="w-3 h-1.5 bg-[#10b981] inline-block rounded-full"></span>
+                      <span>Realisasi Lapangan</span>
+                    </span>
+                    <span className="flex items-center gap-1.5 text-slate-400">
+                      <span className="w-3 h-0.5 bg-[#94a3b8] inline-block"></span>
+                      <span>Baseline</span>
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {presentationView === 's-curve' ? (
+                <div className="h-[460px] w-full">
+                  <Line
+                    data={chartJSData}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          display: false,
+                        },
+                        tooltip: {
+                          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                          titleColor: '#f8fafc',
+                          bodyColor: '#e2e8f0',
+                          borderColor: '#334155',
+                          borderWidth: 1,
+                          padding: 12,
+                          callbacks: {
+                            label: (ctx) =>
+                              ` ${ctx.dataset.label}: ${ctx.parsed.y !== null ? ctx.parsed.y.toFixed(2) + '%' : '-'}`,
+                          },
+                        },
                       },
-                    },
-                    scales: {
-                      y: {
-                        beginAtZero: true,
-                        max: 100,
-                        grid: { color: 'rgba(255, 255, 255, 0.08)' },
-                        ticks: { color: '#94a3b8' },
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                          max: 100,
+                          grid: { color: 'rgba(255, 255, 255, 0.06)' },
+                          ticks: {
+                            color: '#94a3b8',
+                            callback: (v) => `${v}%`,
+                            font: { size: 11 },
+                          },
+                        },
+                        x: {
+                          grid: { display: false },
+                          ticks: {
+                            color: '#94a3b8',
+                            autoSkip: true,
+                            maxTicksLimit: 12,
+                            maxRotation: 0,
+                            font: { size: 11 },
+                          },
+                        },
                       },
-                      x: {
-                        grid: { display: false },
-                        ticks: { color: '#94a3b8' },
-                      },
-                    },
-                  }}
-                />
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="gantt-presentation-container">
+                  <ModernGanttChart
+                    tasks={activeProjectTasks}
+                    startDate={projectOverview.startDate || new Date()}
+                    duration={projectOverview.duration}
+                    t={t}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Bottom Executive Deep-Dive Grid (2 Columns) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Panel 1: Critical Bottlenecks & Overdue Tasks */}
+              <div className="bg-slate-900/90 rounded-3xl p-6 border border-slate-800/80 shadow-2xl">
+                <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800/80">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5 text-rose-400" />
+                    <h3 className="text-base sm:text-lg font-bold text-white">
+                      Aktivitas Prioritas & Perlu Akselerasi
+                    </h3>
+                  </div>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                    Top {criticalTasks.length} Isu
+                  </span>
+                </div>
+
+                {criticalTasks.length === 0 ? (
+                  <div className="py-12 flex flex-col items-center justify-center text-center">
+                    <CheckCircle2 className="w-12 h-12 text-emerald-400 mb-2" />
+                    <p className="text-sm font-bold text-white">Seluruh Aktivitas On-Track</p>
+                    <p className="text-xs text-slate-400 max-w-xs mt-1">
+                      Tidak ada tugas yang terdeteksi mengalami keterlambatan atau hambatan progres.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {criticalTasks.map((task) => (
+                      <div
+                        key={task.id}
+                        className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition-all"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p
+                              className="text-sm font-bold text-white truncate"
+                              title={task.activity}
+                            >
+                              {task.activity}
+                            </p>
+                            <div className="flex items-center gap-3 text-xs text-slate-400 mt-1">
+                              <span>
+                                Target Selesai:{' '}
+                                {task.planned_end ? formatDate(task.planned_end) : '-'}
+                              </span>
+                              {task.isOverdue && (
+                                <span className="text-rose-400 font-bold">
+                                  • Terlambat {task.daysOverdue} Hari
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span
+                              className={`text-xs font-black px-2 py-0.5 rounded-full ${
+                                task.isOverdue
+                                  ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                                  : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
+                              }`}
+                            >
+                              {task.percent_complete || 0}%
+                            </span>
+                          </div>
+                        </div>
+                        {/* Progress bar */}
+                        <div className="w-full bg-slate-800 rounded-full h-1.5 mt-2.5 overflow-hidden">
+                          <div
+                            className={`h-1.5 rounded-full ${task.isOverdue ? 'bg-rose-500' : 'bg-indigo-500'}`}
+                            style={{ width: `${task.percent_complete || 0}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Panel 2: Executive Photographic Evidence Reel */}
+              <div className="bg-slate-900/90 rounded-3xl p-6 border border-slate-800/80 shadow-2xl">
+                <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800/80">
+                  <div className="flex items-center gap-2">
+                    <Camera className="w-5 h-5 text-cyan-400" />
+                    <h3 className="text-base sm:text-lg font-bold text-white">
+                      Dokumentasi Fisik Lapangan Terverifikasi
+                    </h3>
+                  </div>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                    {tasksWithPhotos.length} Aktivitas Berfoto
+                  </span>
+                </div>
+
+                {tasksWithPhotos.length === 0 ? (
+                  <div className="py-12 flex flex-col items-center justify-center text-center">
+                    <LucideImage className="w-12 h-12 text-slate-600 mb-2" />
+                    <p className="text-sm font-bold text-slate-300">Belum Ada Dokumentasi Foto</p>
+                    <p className="text-xs text-slate-400 max-w-xs mt-1">
+                      Foto bukti fisik yang diunggah saat pembaruan tugas akan ditampilkan secara
+                      langsung di sini.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-[290px] overflow-y-auto pr-1">
+                    {tasksWithPhotos.flatMap((task) =>
+                      (task.photos || []).map((photoName, pIdx) => {
+                        const photoUrl = getTaskFileUrl(task, photoName);
+                        return (
+                          <div
+                            key={`${task.id}-${photoName}-${pIdx}`}
+                            onClick={() => {
+                              setGalleryModalTask(task);
+                              setSelectedGalleryPhotoIndex(pIdx);
+                            }}
+                            className="group relative aspect-video rounded-xl overflow-hidden bg-slate-950 border border-slate-800 cursor-pointer hover:border-cyan-500/60 transition-all shadow-md"
+                            title={`${task.activity} (Klik untuk perbesar)`}
+                          >
+                            <img
+                              src={photoUrl}
+                              alt={task.activity}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-90 group-hover:opacity-100 transition-opacity p-2 flex flex-col justify-end">
+                              <p className="text-[10px] font-bold text-white truncate">
+                                {task.activity}
+                              </p>
+                              <span className="text-[9px] text-cyan-300 font-semibold">
+                                {task.percent_complete || 0}% Fisik
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

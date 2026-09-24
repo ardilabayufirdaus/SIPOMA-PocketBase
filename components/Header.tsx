@@ -10,6 +10,7 @@ import { Page, Language, User } from '../types';
 import { useNotifications } from '../hooks/useNotifications';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { useTheme } from '../contexts/ThemeContext';
+import { ChatBubbleLeftEllipsisIcon } from '@heroicons/react/24/outline';
 import './Header.css';
 
 // Import Enhanced Components
@@ -35,6 +36,8 @@ interface HeaderProps {
   onToggleSidebar?: () => void;
   currentLanguage: Language;
   onLanguageChange: (lang: Language) => void;
+  isChatbotOpen?: boolean;
+  onToggleChatbot?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = React.memo(
@@ -47,6 +50,8 @@ const Header: React.FC<HeaderProps> = React.memo(
     onSignOut,
     currentUser,
     onToggleSidebar,
+    isChatbotOpen,
+    onToggleChatbot,
   }) => {
     const [isNotifMenuOpen, setIsNotifMenuOpen] = useState(false);
     const isMobile = useIsMobile();
@@ -109,6 +114,30 @@ const Header: React.FC<HeaderProps> = React.memo(
                   >
                     <PlusIcon className="w-3.5 h-3.5" />
                     <span>{t.add_user_button}</span>
+                  </button>
+                )}
+
+                {/* SIPOMA AI Assistant Header Button */}
+                {onToggleChatbot && (
+                  <button
+                    type="button"
+                    onClick={onToggleChatbot}
+                    className={`flex items-center gap-2 px-3 py-1.5 h-[34px] min-h-[34px] rounded-lg text-xs font-bold transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/40 active:scale-95 ${
+                      isChatbotOpen
+                        ? 'bg-primary-600 text-white shadow-primary-600/30 ring-2 ring-primary-400/40'
+                        : 'bg-white/5 hover:bg-white/10 text-white/90 hover:text-white border border-white/10 hover:border-primary-500/50'
+                    }`}
+                    title={isChatbotOpen ? 'Tutup SIPOMA AI' : 'Buka SIPOMA AI Assistant'}
+                    aria-label="SIPOMA AI Assistant"
+                  >
+                    <ChatBubbleLeftEllipsisIcon
+                      className={`w-4 h-4 ${isChatbotOpen ? 'text-white' : 'text-primary-400'}`}
+                      aria-hidden="true"
+                    />
+                    <span className="tracking-tight font-extrabold hidden sm:inline">
+                      SIPOMA AI
+                    </span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   </button>
                 )}
 

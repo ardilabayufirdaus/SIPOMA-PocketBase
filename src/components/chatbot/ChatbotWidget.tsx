@@ -11,8 +11,38 @@ import {
 import { chatbotService, Message } from '../../services/chatbotService';
 import ChatMessage from './ChatMessage';
 
-const ChatbotWidget: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
+export interface ChatbotWidgetProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+  showFloatingButton?: boolean;
+}
+
+const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
+  isOpen: propIsOpen,
+  onClose: propOnClose,
+  showFloatingButton = false,
+}) => {
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isOpen = propIsOpen !== undefined ? propIsOpen : internalIsOpen;
+
+  const handleClose = () => {
+    if (propOnClose) {
+      propOnClose();
+    } else {
+      setInternalIsOpen(false);
+    }
+  };
+
+  const handleToggle = () => {
+    if (propIsOpen !== undefined) {
+      if (propIsOpen && propOnClose) {
+        propOnClose();
+      }
+    } else {
+      setInternalIsOpen((prev) => !prev);
+    }
+  };
+
   const [isExpanded, setIsExpanded] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [messages, setMessages] = useState<Message[]>([
@@ -103,7 +133,7 @@ const ChatbotWidget: React.FC = () => {
                   )}
                 </button>
                 <button
-                  onClick={() => setIsOpen(false)}
+                  onClick={handleClose}
                   className="p-1.5 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors"
                 >
                   <XMarkIcon className="h-5 w-5" />
@@ -172,19 +202,21 @@ const ChatbotWidget: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* FAB */}
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen(!isOpen)}
-        className="pointer-events-auto p-4 bg-slate-900 text-white rounded-2xl shadow-2xl flex items-center gap-3 group relative overflow-hidden border border-slate-700"
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-600/40 to-transparent translate-x-[-100%] group-hover:translate-x-[0%] transition-transform duration-500" />
-        <div className="relative z-10 flex items-center gap-3">
-          <ChatBubbleLeftEllipsisIcon className="h-6 w-6" />
-          <span className="font-bold tracking-tight text-sm pr-1">SIPOMA AI</span>
-        </div>
-      </motion.button>
+      {/* FAB - only rendered if showFloatingButton is true */}
+      {showFloatingButton && (
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleToggle}
+          className="pointer-events-auto p-4 bg-slate-900 text-white rounded-2xl shadow-2xl flex items-center gap-3 group relative overflow-hidden border border-slate-700"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-primary-600/40 to-transparent translate-x-[-100%] group-hover:translate-x-[0%] transition-transform duration-500" />
+          <div className="relative z-10 flex items-center gap-3">
+            <ChatBubbleLeftEllipsisIcon className="h-6 w-6" />
+            <span className="font-bold tracking-tight text-sm pr-1">SIPOMA AI</span>
+          </div>
+        </motion.button>
+      )}
     </div>
   );
 };
