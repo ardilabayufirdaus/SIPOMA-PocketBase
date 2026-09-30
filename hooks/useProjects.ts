@@ -139,6 +139,9 @@ export const useProjects = () => {
           percent_complete: rest.percent_complete,
           project_id: rest.project_id,
         };
+        if ((rest as any)['photos-']) {
+          updatePayload['photos-'] = (rest as any)['photos-'];
+        }
       }
       await pb.collection('project_tasks').update(id, updatePayload);
       await fetchProjectsAndTasks();

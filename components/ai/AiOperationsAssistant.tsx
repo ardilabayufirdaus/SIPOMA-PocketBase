@@ -185,8 +185,8 @@ export const AiOperationsAssistant: React.FC<AiOperationsAssistantProps> = ({
     await new Promise((r) => setTimeout(r, 100)); // Small UI tick
     const statsResult = performAnalysis(analysisData, moistureData);
 
-    // Check for API Key - Now handled by backend
-    setAnalysisStep('Generating AI Insights via xAI Grok...');
+    // Check for API Key - Now handled by local Ollama on server
+    setAnalysisStep('Generating AI Insights via Ollama (Qwen 2.5:1.5B)...');
 
     // Prepare Context string for AI
     const contextSummary = `
@@ -212,7 +212,8 @@ ${statsResult.insights.map((i) => `- ${i.type.toUpperCase()}: ${i.message}`).joi
       statsResult.aiAnalysis = aiText;
     } catch (e) {
       console.error(e);
-      statsResult.aiAnalysis = 'Gagal menghubungi xAI. Menampilkan hasil statistik saja.';
+      statsResult.aiAnalysis =
+        'Gagal menghubungi layanan AI lokal. Menampilkan hasil statistik saja.';
     }
 
     setResult(statsResult);
@@ -468,7 +469,7 @@ ${statsResult.insights.map((i) => `- ${i.type.toUpperCase()}: ${i.message}`).joi
             <BrainCircuit className="w-6 h-6 text-indigo-600" />
             AI Operations Assistant{' '}
             <span className="text-xs bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">
-              Powered by xAI Grok
+              Powered by Ollama (Qwen 2.5:1.5B)
             </span>
           </h2>
           <p className="text-sm text-slate-600 mt-1">
@@ -605,7 +606,7 @@ ${statsResult.insights.map((i) => `- ${i.type.toUpperCase()}: ${i.message}`).joi
               </div>
               <h3 className="text-sm font-bold text-indigo-300 mb-3 flex items-center gap-2 relative z-10">
                 <Sparkles className="w-4 h-4" />
-                GROK Executive Summary
+                AI Executive Summary
               </h3>
               <div className="prose prose-invert prose-sm max-w-none relative z-10">
                 <p className="whitespace-pre-wrap leading-relaxed opacity-90">

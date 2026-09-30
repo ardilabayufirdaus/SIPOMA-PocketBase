@@ -14,40 +14,24 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Fetch API Key from PocketBase
-  let apiKey = '';
-  try {
-    // Dynamically import PocketBase to avoid build issues if not available in this context
-    // Note: Vercel functions support ESM if package.json has "type": "module" or .mjs extension
-    // Since this is .js and project is type: module, it should work.
-    const PocketBase = (await import('pocketbase')).default;
-    const pb = new PocketBase('https://db.sipoma.online');
-
-    // Attempt to fetch using broader filter for robustness (contains "xai")
-    const record = await pb.collection('api_key').getFirstListItem('provider ~ "xai"');
-    apiKey = record.key;
-  } catch (error) {
-    console.error('Failed to fetch API key from PocketBase:', error);
-    return res.status(500).json({
-      error: 'Configuration Error',
-      details: 'Could not retrieve API key from database.',
-    });
-  }
-
-  if (!apiKey) {
-    return res
-      .status(500)
-      .json({ error: 'Server configuration error: XAI_API_KEY not found in DB' });
-  }
+  const ollamaUrl = process.env.OLLAMA_API_URL || 'http://127.0.0.1:11434/v1/chat/completions';
 
   try {
-    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+    const payload = {
+      ...req.body,
+      model: req.body?.model || 'qwen2.5:1.5b',
+      options: {
+        num_thread: 1,
+        ...(req.body?.options || {}),
+      },
+    };
+
+    const response = await fetch(ollamaUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify(req.body),
+      body: JSON.stringify(payload),
     });
 
     const data = await response.json();
@@ -58,7 +42,7 @@ export default async function handler(req, res) {
 
     res.status(200).json(data);
   } catch (error) {
-    console.error('Error proxying to x.AI:', error);
-    res.status(500).json({ error: 'Failed to communicate with x.AI' });
+    console.error('Error proxying to Ollama:', error);
+    res.status(500).json({ error: 'Failed to communicate with local Ollama service' });
   }
 }

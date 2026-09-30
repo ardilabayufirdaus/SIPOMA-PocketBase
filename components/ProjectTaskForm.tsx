@@ -172,30 +172,38 @@ const ProjectTaskForm: React.FC<FormProps> = ({ taskToEdit, onSave, onCancel, t 
     e.preventDefault();
     if (!validate()) return;
 
-    // If new photos were added or existing photos modified, build FormData for PocketBase upload
-    if (
-      newPhotoFiles.length > 0 ||
-      (taskToEdit && existingPhotos.length !== (taskToEdit.photos?.length || 0))
-    ) {
+    // Detect photos that were removed from the existing task
+    const originalPhotos = taskToEdit?.photos || [];
+    const removedPhotos = originalPhotos.filter((photo) => !existingPhotos.includes(photo));
+    const hasPhotoChanges = newPhotoFiles.length > 0 || removedPhotos.length > 0;
+
+    // If new photos were added or existing photos removed, build FormData for PocketBase upload
+    if (hasPhotoChanges) {
       const payload = new FormData();
       payload.append('activity', formData.activity);
       if (formData.planned_start) payload.append('planned_start', formData.planned_start);
       if (formData.planned_end) payload.append('planned_end', formData.planned_end);
-      if (formData.actual_start) payload.append('actual_start', formData.actual_start);
-      if (formData.actual_end) payload.append('actual_end', formData.actual_end);
+      payload.append('actual_start', formData.actual_start || '');
+      payload.append('actual_end', formData.actual_end || '');
       payload.append('percent_complete', String(formData.percent_complete));
 
       if (taskToEdit?.project_id) {
         payload.append('project_id', taskToEdit.project_id);
       }
 
-      // Append new photo files
+      // Append new photo files to upload
       newPhotoFiles.forEach((file) => {
         payload.append('photos', file);
       });
 
+      // Append removed photos with PocketBase '-' modifier to delete them from storage & record
+      removedPhotos.forEach((filename) => {
+        payload.append('photos-', filename);
+      });
+
       // Pass FormData with target taskToEdit metadata if editing
       if (taskToEdit) {
+        payload.append('taskId', taskToEdit.id);
         (payload as any).taskId = taskToEdit.id;
         onSave(payload);
       } else {

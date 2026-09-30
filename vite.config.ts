@@ -181,60 +181,10 @@ export default defineConfig(async (_env) => {
       port: 5173,
       proxy: {
         '/api/xai': {
-          target: 'https://api.x.ai/v1/chat/completions',
+          target: 'http://172.18.80.101:11434',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/xai/, ''),
-          secure: true,
-          configure: (proxy, _options) => {
-            proxy.on('proxyReq', (proxyReq, req, _res) => {
-              // 1. CLEAR all incoming headers to prevent Cloudflare/WAF interference
-              const headers = proxyReq.getHeaders();
-              Object.keys(headers).forEach((h) => proxyReq.removeHeader(h));
-
-              // 2. SET only clean, required headers
-              proxyReq.setHeader('Host', 'api.x.ai');
-              proxyReq.setHeader('Accept', 'application/json');
-              proxyReq.setHeader('User-Agent', 'Vite/SIPOMA-Assistant');
-
-              if (xAiApiKey) {
-                proxyReq.setHeader('Authorization', `Bearer ${xAiApiKey}`);
-              } else {
-                console.error('❌ Proxy Config Error: xAiApiKey is missing!');
-              }
-
-              const contentType = req.headers['content-type'] || 'application/json';
-              proxyReq.setHeader('Content-Type', contentType);
-
-              if (req.headers['content-length']) {
-                proxyReq.setHeader('Content-Length', req.headers['content-length']);
-              }
-
-              // 3. Prevent any other headers from leaking (like cookies)
-            });
-
-            proxy.on('error', (err, _req, _res) => {
-              console.error('🔴 Proxy Error (xAI):', err);
-            });
-
-            proxy.on('proxyRes', (proxyRes, req, _res) => {
-              if (proxyRes.statusCode !== 200) {
-                console.warn(`⚠️ xAI Proxy: ${req.method} ${req.url} -> ${proxyRes.statusCode}`);
-
-                // Try to log the error body from x.AI
-                let body = '';
-                proxyRes.on('data', (chunk) => {
-                  body += chunk;
-                });
-                proxyRes.on('end', () => {
-                  try {
-                    console.error('🔴 xAI Error Response:', JSON.parse(body));
-                  } catch (e) {
-                    console.error('🔴 xAI Error Raw:', body);
-                  }
-                });
-              }
-            });
-          },
+          rewrite: () => '/v1/chat/completions',
+          secure: false,
         },
         '/api': {
           target: 'http://172.18.80.101:8090',

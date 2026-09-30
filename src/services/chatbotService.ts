@@ -98,9 +98,12 @@ Instructions for AI:
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'grok-4-1-fast-reasoning',
+          model: 'qwen2.5:1.5b',
           messages: [{ role: 'system', content: systemPrompt }, ...messages],
           stream: false,
+          options: {
+            num_thread: 1,
+          },
         }),
       });
 

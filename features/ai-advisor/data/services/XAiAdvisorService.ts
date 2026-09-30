@@ -43,9 +43,12 @@ export class XAiAdvisorService implements IAiAdvisorService {
             { role: 'system', content: 'You are a helpful expert assistant.' },
             { role: 'user', content: prompt },
           ],
-          model: 'grok-4-1-fast-reasoning',
+          model: 'qwen2.5:1.5b',
           stream: false,
           temperature: 0.2,
+          options: {
+            num_thread: 1,
+          },
         }),
       });
 
@@ -110,9 +113,12 @@ export class XAiAdvisorService implements IAiAdvisorService {
             },
             { role: 'user', content: prompt },
           ],
-          model: 'grok-4-1-fast-reasoning',
+          model: 'qwen2.5:1.5b',
           stream: false,
           temperature: 0.2, // Low temp for factual reporting
+          options: {
+            num_thread: 1,
+          },
         }),
       });
 
@@ -193,9 +199,12 @@ export class XAiAdvisorService implements IAiAdvisorService {
             { role: 'system', content: 'You are a JSON-speaking process optimization expert.' },
             { role: 'user', content: prompt },
           ],
-          model: 'grok-4-1-fast-reasoning',
+          model: 'qwen2.5:1.5b',
           stream: false,
           temperature: 0.1,
+          options: {
+            num_thread: 1,
+          },
           // xAI might not strictly support response_format: {type: 'json_object'} yet like OpenAI,
           // but we keep it or rely on the system prompt.
         }),

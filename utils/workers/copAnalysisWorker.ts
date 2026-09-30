@@ -40,30 +40,86 @@ function getMinMaxForCementType(
   parameter: ParameterSetting,
   cementType: string
 ): { min: number | undefined; max: number | undefined } {
-  if (parameter.cement_type_limits && cementType) {
-    const limit =
-      parameter.cement_type_limits[cementType] ??
-      parameter.cement_type_limits[cementType.toUpperCase()] ??
-      parameter.cement_type_limits[cementType.toLowerCase()];
-    if (limit && (limit.min !== undefined || limit.max !== undefined)) {
+  if (!cementType) {
+    return {
+      min: parameter.min_value,
+      max: parameter.max_value,
+    };
+  }
+
+  let limits = parameter.cement_type_limits;
+  if (typeof limits === 'string') {
+    try {
+      limits = JSON.parse(limits);
+    } catch {
+      limits = null;
+    }
+  }
+
+  const upperType = cementType.trim().toUpperCase();
+
+  if (limits && typeof limits === 'object') {
+    const limit = limits[cementType] ?? limits[upperType] ?? limits[cementType.toLowerCase()];
+
+    const hasValidMin =
+      limit?.min !== null && limit?.min !== undefined && !isNaN(Number(limit.min));
+    const hasValidMax =
+      limit?.max !== null && limit?.max !== undefined && !isNaN(Number(limit.max));
+
+    if (hasValidMin || hasValidMax) {
+      const fallbackMin =
+        upperType === 'OPC' &&
+        parameter.opc_min_value !== undefined &&
+        parameter.opc_min_value !== null
+          ? parameter.opc_min_value
+          : upperType === 'PCC' &&
+              parameter.pcc_min_value !== undefined &&
+              parameter.pcc_min_value !== null
+            ? parameter.pcc_min_value
+            : parameter.min_value;
+
+      const fallbackMax =
+        upperType === 'OPC' &&
+        parameter.opc_max_value !== undefined &&
+        parameter.opc_max_value !== null
+          ? parameter.opc_max_value
+          : upperType === 'PCC' &&
+              parameter.pcc_max_value !== undefined &&
+              parameter.pcc_max_value !== null
+            ? parameter.pcc_max_value
+            : parameter.max_value;
+
       return {
-        min: limit.min !== null && limit.min !== undefined ? limit.min : parameter.min_value,
-        max: limit.max !== null && limit.max !== undefined ? limit.max : parameter.max_value,
+        min: hasValidMin ? Number(limit.min) : fallbackMin,
+        max: hasValidMax ? Number(limit.max) : fallbackMax,
       };
     }
   }
 
-  if (cementType === 'OPC') {
+  if (upperType === 'OPC') {
     return {
-      min: parameter.opc_min_value ?? parameter.min_value,
-      max: parameter.opc_max_value ?? parameter.max_value,
+      min:
+        parameter.opc_min_value !== undefined && parameter.opc_min_value !== null
+          ? parameter.opc_min_value
+          : parameter.min_value,
+      max:
+        parameter.opc_max_value !== undefined && parameter.opc_max_value !== null
+          ? parameter.opc_max_value
+          : parameter.max_value,
     };
-  } else if (cementType === 'PCC') {
+  } else if (upperType === 'PCC') {
     return {
-      min: parameter.pcc_min_value ?? parameter.min_value,
-      max: parameter.pcc_max_value ?? parameter.max_value,
+      min:
+        parameter.pcc_min_value !== undefined && parameter.pcc_min_value !== null
+          ? parameter.pcc_min_value
+          : parameter.min_value,
+      max:
+        parameter.pcc_max_value !== undefined && parameter.pcc_max_value !== null
+          ? parameter.pcc_max_value
+          : parameter.max_value,
     };
   }
+
   // Default fallback
   return {
     min: parameter.min_value,

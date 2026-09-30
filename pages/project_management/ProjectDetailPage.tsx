@@ -1034,7 +1034,10 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
     async (taskOrFormData: Omit<ProjectTask, 'id' | 'project_id'> | ProjectTask | FormData) => {
       try {
         if (taskOrFormData instanceof FormData) {
-          const taskId = (taskOrFormData as any).taskId;
+          const taskId =
+            (taskOrFormData as any).taskId ||
+            (taskOrFormData.get('taskId') as string) ||
+            (taskOrFormData.get('id') as string);
           if (taskId) {
             await updateTask(taskId, taskOrFormData);
             setFeedbackMessage({
@@ -1997,7 +2000,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ t, projectId, onN
                                   maxRotation: 0,
                                   autoSkip: true,
                                   maxTicksLimit: 10,
-                                  font: { size: 10, weight: '600' },
+                                  font: { size: 10, weight: 600 },
                                 },
                               },
                             },

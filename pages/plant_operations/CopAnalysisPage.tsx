@@ -98,30 +98,86 @@ const getMinMaxForCementType = (
   parameter: ParameterSetting,
   cementType: string
 ): { min: number | undefined; max: number | undefined } => {
-  if (parameter.cement_type_limits && cementType) {
-    const limit =
-      parameter.cement_type_limits[cementType] ??
-      parameter.cement_type_limits[cementType.toUpperCase()] ??
-      parameter.cement_type_limits[cementType.toLowerCase()];
-    if (limit && (limit.min !== undefined || limit.max !== undefined)) {
+  if (!cementType) {
+    return {
+      min: parameter.min_value,
+      max: parameter.max_value,
+    };
+  }
+
+  let limits = parameter.cement_type_limits;
+  if (typeof limits === 'string') {
+    try {
+      limits = JSON.parse(limits);
+    } catch {
+      limits = null;
+    }
+  }
+
+  const upperType = cementType.trim().toUpperCase();
+
+  if (limits && typeof limits === 'object') {
+    const limit = limits[cementType] ?? limits[upperType] ?? limits[cementType.toLowerCase()];
+
+    const hasValidMin =
+      limit?.min !== null && limit?.min !== undefined && !isNaN(Number(limit.min));
+    const hasValidMax =
+      limit?.max !== null && limit?.max !== undefined && !isNaN(Number(limit.max));
+
+    if (hasValidMin || hasValidMax) {
+      const fallbackMin =
+        upperType === 'OPC' &&
+        parameter.opc_min_value !== undefined &&
+        parameter.opc_min_value !== null
+          ? parameter.opc_min_value
+          : upperType === 'PCC' &&
+              parameter.pcc_min_value !== undefined &&
+              parameter.pcc_min_value !== null
+            ? parameter.pcc_min_value
+            : parameter.min_value;
+
+      const fallbackMax =
+        upperType === 'OPC' &&
+        parameter.opc_max_value !== undefined &&
+        parameter.opc_max_value !== null
+          ? parameter.opc_max_value
+          : upperType === 'PCC' &&
+              parameter.pcc_max_value !== undefined &&
+              parameter.pcc_max_value !== null
+            ? parameter.pcc_max_value
+            : parameter.max_value;
+
       return {
-        min: limit.min !== null && limit.min !== undefined ? limit.min : parameter.min_value,
-        max: limit.max !== null && limit.max !== undefined ? limit.max : parameter.max_value,
+        min: hasValidMin ? Number(limit.min) : fallbackMin,
+        max: hasValidMax ? Number(limit.max) : fallbackMax,
       };
     }
   }
 
-  if (cementType === 'OPC') {
+  if (upperType === 'OPC') {
     return {
-      min: parameter.opc_min_value ?? parameter.min_value,
-      max: parameter.opc_max_value ?? parameter.max_value,
+      min:
+        parameter.opc_min_value !== undefined && parameter.opc_min_value !== null
+          ? parameter.opc_min_value
+          : parameter.min_value,
+      max:
+        parameter.opc_max_value !== undefined && parameter.opc_max_value !== null
+          ? parameter.opc_max_value
+          : parameter.max_value,
     };
-  } else if (cementType === 'PCC') {
+  } else if (upperType === 'PCC') {
     return {
-      min: parameter.pcc_min_value ?? parameter.min_value,
-      max: parameter.pcc_max_value ?? parameter.max_value,
+      min:
+        parameter.pcc_min_value !== undefined && parameter.pcc_min_value !== null
+          ? parameter.pcc_min_value
+          : parameter.min_value,
+      max:
+        parameter.pcc_max_value !== undefined && parameter.pcc_max_value !== null
+          ? parameter.pcc_max_value
+          : parameter.max_value,
     };
   }
+
   // Default fallback
   return {
     min: parameter.min_value,
@@ -1356,46 +1412,67 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         }
 
         if (!rawRecords || rawRecords.length === 0) {
-          try {
-            rawRecords = await pb.collection('ccr_parameter_data').getFullList({
-              filter: `plant_unit="${selectedUnit}" && date >= "${startDate}" && date <= "${endDate}"`,
-              fields:
-                'id,parameter_id,date,plant_unit,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24',
-              requestKey: null,
-            });
-          } catch (err) {
-            console.warn('Direct plant_unit fetch failed, falling back to chunking', err);
+          const allNeededIds = Array.from(targetParamIds);
+          if (ptParam && !allNeededIds.includes(ptParam.id)) {
+            allNeededIds.push(ptParam.id);
           }
 
-          if (!rawRecords || rawRecords.length === 0) {
-            const allNeededIds = Array.from(targetParamIds);
-            if (ptParam && !allNeededIds.includes(ptParam.id)) {
-              allNeededIds.push(ptParam.id);
-            }
-            const chunkSize = 15;
-            rawRecords = [];
-            for (let i = 0; i < allNeededIds.length; i += chunkSize) {
-              const chunk = allNeededIds.slice(i, i + chunkSize);
-              const paramFilter = chunk.map((id) => `parameter_id="${id}"`).join(' || ');
-              const chunkRecords = await pb.collection('ccr_parameter_data').getFullList({
+          // Chunk parameter IDs to ensure complete fetching even if plant_unit is null/empty in DB
+          const chunkSize = 15;
+          const chunkPromises: Promise<any[]>[] = [];
+          for (let i = 0; i < allNeededIds.length; i += chunkSize) {
+            const chunk = allNeededIds.slice(i, i + chunkSize);
+            const paramFilter = chunk.map((id) => `parameter_id="${id}"`).join(' || ');
+            chunkPromises.push(
+              pb.collection('ccr_parameter_data').getFullList({
                 filter: `date >= '${startDate}' && date <= '${endDate}' && (${paramFilter})`,
                 fields:
                   'id,parameter_id,date,plant_unit,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24',
                 requestKey: null,
-              });
-              rawRecords.push(...chunkRecords);
+              })
+            );
+          }
+
+          // Also query by plant_unit in parallel to ensure 100% coverage
+          const unitPromise = pb
+            .collection('ccr_parameter_data')
+            .getFullList({
+              filter: `plant_unit="${selectedUnit}" && date >= "${startDate}" && date <= "${endDate}"`,
+              fields:
+                'id,parameter_id,date,plant_unit,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24',
+              requestKey: null,
+            })
+            .catch(() => []);
+
+          const [chunkResults, unitRecords] = await Promise.all([
+            Promise.all(chunkPromises),
+            unitPromise,
+          ]);
+
+          const combined = [...chunkResults.flat(), ...unitRecords];
+          // Deduplicate by record ID
+          const seenIds = new Set<string>();
+          rawRecords = [];
+          for (const rec of combined) {
+            if (rec && rec.id && !seenIds.has(rec.id)) {
+              seenIds.add(rec.id);
+              rawRecords.push(rec);
             }
           }
 
           if (rawRecords && rawRecords.length > 0) {
-            await indexedDBCache.set(rawCcrCacheKey, rawRecords, 6 * 60 * 60 * 1000);
+            const now = new Date();
+            const isCurrentMonth =
+              filterYear === now.getFullYear() && filterMonth === now.getMonth();
+            const cacheTtl = isCurrentMonth ? 3 * 60 * 1000 : 60 * 60 * 1000;
+            await indexedDBCache.set(rawCcrCacheKey, rawRecords, cacheTtl);
           }
         }
 
         // Group rawRecords by date & parameter_id
         const recordsByDateAndParam = new Map<string, Map<string, any>>();
         (rawRecords || []).forEach((rec: any) => {
-          const recDate = rec.date ? rec.date.split('T')[0] : '';
+          const recDate = normalizeDateKey(rec.date);
           if (recDate && rec.parameter_id) {
             if (!recordsByDateAndParam.has(recDate)) {
               recordsByDateAndParam.set(recDate, new Map());
@@ -1495,19 +1572,20 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               !isNaN(footerData.average) &&
               targetParamIds.has(footerData.parameter_id)
             ) {
+              const footerDate = normalizeDateKey(footerData.date);
+              if (!footerDate) return;
+
               if (!dailyAverages.has(footerData.parameter_id)) {
                 dailyAverages.set(footerData.parameter_id, new Map());
               }
-              if (!dailyAverages.get(footerData.parameter_id)!.has(footerData.date)) {
-                dailyAverages
-                  .get(footerData.parameter_id)!
-                  .set(footerData.date, footerData.average);
+              if (!dailyAverages.get(footerData.parameter_id)!.has(footerDate)) {
+                dailyAverages.get(footerData.parameter_id)!.set(footerDate, footerData.average);
               }
               if (!dailyMetrics.has(footerData.parameter_id)) {
                 dailyMetrics.set(footerData.parameter_id, new Map());
               }
-              if (!dailyMetrics.get(footerData.parameter_id)!.has(footerData.date)) {
-                dailyMetrics.get(footerData.parameter_id)!.set(footerData.date, {
+              if (!dailyMetrics.get(footerData.parameter_id)!.has(footerDate)) {
+                dailyMetrics.get(footerData.parameter_id)!.set(footerDate, {
                   average: footerData.average,
                   total:
                     typeof footerData.total === 'number' && !isNaN(footerData.total)
@@ -2267,7 +2345,14 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   // Export to Excel function
   const exportToExcel = async () => {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('COP Analysis');
+    const worksheet = workbook.addWorksheet('COP Analysis', {
+      views: [{ showGridLines: true }],
+    });
+
+    // Month name in Indonesian
+    const monthName =
+      monthOptions[filterMonth]?.label ||
+      new Date(filterYear, filterMonth).toLocaleString('id-ID', { month: 'long' });
 
     // Set column widths
     worksheet.columns = [
@@ -2279,7 +2364,86 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       { width: 10 }, // Avg
     ];
 
-    // Header row
+    // 1. Report Title Banner
+    const titleRow = worksheet.addRow(['LAPORAN COP ANALYSIS - CM PLANT OPERATIONS']);
+    worksheet.mergeCells('A1:G1');
+    titleRow.height = 28;
+    for (let c = 1; c <= 7; c++) {
+      const cell = titleRow.getCell(c);
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF0F2942' }, // Deep Navy
+      };
+    }
+    titleRow.getCell(1).font = { name: 'Arial', size: 12, bold: true, color: { argb: 'FFFFFFFF' } };
+    titleRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+
+    // 2. Blank spacing row
+    const blankRow1 = worksheet.addRow([]);
+    blankRow1.height = 8;
+
+    // 3. Metadata Header Info (Kategori, Unit, Tipe Semen, Bulan, Tahun)
+    const metadataItems = [
+      { label: 'Kategori', value: selectedCategory || 'CM' },
+      { label: 'Unit', value: selectedUnit || '-' },
+      { label: 'Tipe Semen', value: selectedCementType || 'Semua Tipe' },
+      { label: 'Bulan', value: monthName },
+      { label: 'Tahun', value: String(filterYear) },
+    ];
+
+    metadataItems.forEach((item, idx) => {
+      const rowNum = 3 + idx;
+      const metaRow = worksheet.addRow([item.label, '', `: ${item.value}`]);
+      metaRow.height = 20;
+
+      for (let col = 1; col <= 2; col++) {
+        const cell = metaRow.getCell(col);
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          right: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+        };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFF8FAFC' },
+        };
+      }
+      for (let col = 3; col <= 7; col++) {
+        const cell = metaRow.getCell(col);
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          right: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+        };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFFFFFFF' },
+        };
+      }
+
+      worksheet.mergeCells(`A${rowNum}:B${rowNum}`);
+      const labelCell = worksheet.getCell(`A${rowNum}`);
+      labelCell.value = item.label;
+      labelCell.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FF334155' } };
+      labelCell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+
+      worksheet.mergeCells(`C${rowNum}:G${rowNum}`);
+      const valCell = worksheet.getCell(`C${rowNum}`);
+      valCell.value = `: ${item.value}`;
+      valCell.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FF0F172A' } };
+      valCell.alignment = { vertical: 'middle', horizontal: 'left' };
+    });
+
+    // 4. Blank spacing row before table
+    const blankRow2 = worksheet.addRow([]);
+    blankRow2.height = 10;
+
+    // 5. Main Table Header Row
     const headerRow = worksheet.addRow(['No.', 'Parameter', 'Min', 'Max', ...daysHeader, 'Avg.']);
 
     // Style header
@@ -2613,8 +2777,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     });
 
     // Generate filename
-    const monthName = new Date(filterYear, filterMonth).toLocaleString('id-ID', { month: 'long' });
-    const filename = `COP_Analysis_${selectedCategory}_${selectedUnit}_${monthName}_${filterYear}.xlsx`;
+    const filename = `COP_Analysis_${selectedCategory || 'CM'}_${selectedUnit || 'All'}_${monthName}_${filterYear}.xlsx`;
 
     // Save file
     const buffer = await workbook.xlsx.writeBuffer();
@@ -2661,8 +2824,19 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </div>
           </div>
 
-          {/* Quick Actions (Export XLSX Sesuai Aturan Pewarnaan Tombol) */}
+          {/* Quick Actions (Export XLSX & Refresh Data Sesuai Aturan Pewarnaan Tombol) */}
           <div className="flex items-center gap-2 self-stretch sm:self-auto">
+            <button
+              type="button"
+              onClick={refreshData}
+              disabled={isLoading}
+              className="inline-flex items-center justify-center gap-2 px-3.5 py-2 text-xs font-semibold text-white bg-slate-700/80 hover:bg-slate-700 active:bg-slate-800 border border-slate-600/80 rounded-lg shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed transition-all focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:outline-none min-h-[36px]"
+              title="Muat Ulang / Sinkronisasi Data Aktual Terkini"
+              aria-label="Refresh Data"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Refresh Data</span>
+            </button>
             <button
               type="button"
               onClick={exportToExcel}
@@ -2694,7 +2868,23 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               <select
                 id="cop-filter-category"
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                onChange={(e) => {
+                  const newCategory = e.target.value;
+                  setSelectedCategory(newCategory);
+                  const validUnits = plantUnits
+                    .filter(
+                      (u) =>
+                        u.category === newCategory &&
+                        permissionChecker.hasPlantOperationPermission(u.category, u.unit, 'READ')
+                    )
+                    .map((u) => u.unit)
+                    .sort();
+                  if (validUnits.length > 0) {
+                    setSelectedUnit(validUnits[0]);
+                  } else {
+                    setSelectedUnit('');
+                  }
+                }}
                 className="w-full text-xs font-medium bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg pl-3 pr-8 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/40 appearance-none cursor-pointer"
               >
                 {plantCategories.map((cat) => (

@@ -3,7 +3,7 @@ import { xaiService } from '../utils/aiService';
 export const genAIService = {
   async sendMessage(context: string, userQuery: string) {
     try {
-      const modelName = 'grok-4-1-fast-reasoning';
+      const modelName = 'qwen2.5:1.5b';
 
       const messages = [
         {

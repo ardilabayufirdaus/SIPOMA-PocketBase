@@ -34,7 +34,7 @@ export const xaiService = {
    */
   async chatCompletion(
     messages: ChatMessage[],
-    model: string = 'grok-beta'
+    model: string = 'qwen2.5:1.5b'
   ): Promise<ChatResponse> {
     try {
       const response = await fetch(API_ENDPOINT, {
@@ -48,6 +48,9 @@ export const xaiService = {
           model,
           stream: false,
           temperature: 0.7,
+          options: {
+            num_thread: 1,
+          },
         }),
       });
 
