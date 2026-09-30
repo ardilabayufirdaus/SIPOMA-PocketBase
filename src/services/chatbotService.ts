@@ -17,14 +17,14 @@ export const chatbotService = {
       const picSettings = await pb.collection('pic_settings').getFullList();
       const picList = picSettings.map((p) => p.pic).join(', ');
       const parameterSettings = await pb.collection('parameter_settings').getFullList({
-        limit: 50, // Limit to most important ones to save tokens
+        limit: 15, // Limit to most important ones to save tokens
         sort: '-created',
       });
 
-      // Fetch Recent Operational Data (last 5-10 records per collection)
+      // Fetch Recent Operational Data (last 3-5 records per collection)
       const recentDowntime = await pb
         .collection('ccr_downtime_data')
-        .getList(1, 10, { sort: '-date' });
+        .getList(1, 5, { sort: '-date' });
       const recentSilo = await pb.collection('ccr_silo_data').getList(1, 5, { sort: '-date' });
       const recentCapacity = await pb
         .collection('monitoring_production_capacity')
@@ -50,7 +50,7 @@ ${plantUnits.map((u) => `- ${u.unit} (${u.category}): ${u.description || ''}`).j
 
 Recent Work Instructions (WI):
 ${workInstructions
-  .slice(0, 10)
+  .slice(0, 5)
   .map((wi) => `- ${wi.activity}: ${wi.doc_title} (${wi.link})`)
   .join('\n')}
 
@@ -90,7 +90,18 @@ Instructions for AI:
 
   async sendMessage(messages: Message[]) {
     try {
-      const systemPrompt = await this.getSystemContext();
+      const lastUserMsg =
+        [...messages]
+          .reverse()
+          .find((m) => m.role === 'user')
+          ?.content.trim()
+          .toLowerCase() || '';
+      const isSimpleGreeting =
+        /^(halo|hai|hi|hello|selamat\s+(pagi|siang|sore|malam)|ping|test)\b/i.test(lastUserMsg);
+
+      const systemPrompt = isSimpleGreeting
+        ? 'Anda adalah SIPOMA Assistant, asisten AI operasional pabrik semen SIPOMA. Jawab dengan ramah, sopan, dan singkat dalam Bahasa Indonesia.'
+        : await this.getSystemContext();
 
       const response = await fetch('/api/xai', {
         method: 'POST',

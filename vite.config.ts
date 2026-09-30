@@ -181,10 +181,11 @@ export default defineConfig(async (_env) => {
       port: 5173,
       proxy: {
         '/api/xai': {
-          target: 'http://172.18.80.101:11434',
+          target: 'https://172.18.80.101',
           changeOrigin: true,
-          rewrite: () => '/v1/chat/completions',
           secure: false,
+          timeout: 180000,
+          proxyTimeout: 180000,
         },
         '/api': {
           target: 'http://172.18.80.101:8090',
